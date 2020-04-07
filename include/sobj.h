@@ -11,7 +11,7 @@
 #include "sobj/stext.h"
 #include "sobj/stable.h"
 #include "sobj/sfunc.h"
-#include "sobj/sset.h"
+//#include "sobj/sset.h"
 #include "sobj/snode.h"
 #include "sutil/sdb.h"
 #include "sutil/sjson.h"
