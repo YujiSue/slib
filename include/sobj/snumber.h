@@ -55,10 +55,6 @@ namespace slib {
 #ifdef MAC_OS
         SNumber(unsigned long long ui);
 #endif
-#ifdef LINUX_OS
-		SNumber(sinteger i);
-		SNumber(suinteger ui);
-#endif
         SNumber(float f);
         SNumber(double d);
         SNumber(sint n, sint d);

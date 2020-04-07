@@ -31,6 +31,7 @@
 #include <vector>
 #ifndef _MANAGED
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #endif

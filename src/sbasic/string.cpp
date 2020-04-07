@@ -135,7 +135,7 @@ String String::narrow(const char *s) {
     String str;
     if (s) {
         size_t i = 0, len = strlen(s);
-        while (s != '\0') {
+        while (s[0] != '\0') {
             str += Char::narrowChar(s);
             s += Char::u8size(s);
         }
