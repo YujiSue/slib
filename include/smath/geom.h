@@ -83,21 +83,21 @@ namespace slib {
 			extern inline v2d rotate(const v2d& p, const double& rad) {
 				return mat2d(cos(rad), -sin(rad), sin(rad), cos(rad)) * p;
 			}
-			extern inline v2f skew(const v2f& p, const float& ratio, AXIS dir) {
+			extern inline v2f skew(const v2f& p, const float& ratio, DIRECTION dir) {
 				if (dir == HORIZONTAL) return v2f(p.x + p.y * ratio, p.y);
 				else return v2f(p.x, p.x * ratio + p.y);
 			}
-			extern inline v2d skew(const v2d& p, const double& ratio, AXIS dir) {
+			extern inline v2d skew(const v2d& p, const double& ratio, DIRECTION dir) {
 				if (dir == HORIZONTAL) return v2f(p.x + p.y * ratio, p.y);
 				else return v2f(p.x, p.x * ratio + p.y);
 			}
-			extern inline v2f affine2d(const v2f& pos, const v2f& trans, const v2f& scale, const float& rot, const float& ratio, AXIS dir) {
+			extern inline v2f affine2d(const v2f& pos, const v2f& trans, const v2f& scale, const float& rot, const float& ratio, DIRECTION dir) {
 				return mat2f((float)cos(rot), (float)-sin(rot), (float)sin(rot), (float)cos(rot)) *
 					mat2f(scale.x, 0, 0, scale.y) *
 					mat2f(1.0f, dir == HORIZONTAL ? ratio : 0.0f, dir == VERTICAL ? ratio : 0.0f, 1.0f) *
 					pos + trans;
 			}
-			extern inline v2d affine2d(const v2d& pos, const v2d& trans, const v2d& scale, const double& rot, const double& ratio, AXIS dir) {
+			extern inline v2d affine2d(const v2d& pos, const v2d& trans, const v2d& scale, const double& rot, const double& ratio, DIRECTION dir) {
 				return mat2d({ cos(rot), -sin(rot), sin(rot), cos(rot) }) *
 					mat2d({ scale.x, 0, 0, scale.y }) *
 					mat2d({ 1.0, dir == HORIZONTAL ? ratio : 0.0, dir == VERTICAL ? ratio : 0.0, 1.0 }) * pos + trans;
