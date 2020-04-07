@@ -55,6 +55,9 @@ namespace slib {
 #ifdef MAC_OS
         SNumber(unsigned long long ui);
 #endif
+#ifdef LINUX_OS
+        SNumber(sinteger i);
+#endif
         SNumber(float f);
         SNumber(double d);
         SNumber(sint n, sint d);
@@ -96,6 +99,9 @@ namespace slib {
 #ifdef MAC_OS
 		SNumber operator+(const unsigned long long& num) const;
 #endif
+#ifdef LINUX_OS
+		SNumber operator+(const sinteger& num) const;
+#endif
 		SNumber operator+(const float& num) const;
 		SNumber operator+(const double& num) const;
 		SNumber operator+(const sfrac& num) const;
@@ -120,6 +126,9 @@ namespace slib {
 #ifdef MAC_OS
 		SNumber operator-(const unsigned long long& num) const;
 #endif
+#ifdef LINUX_OS
+		SNumber operator-(const sinteger& num) const;
+#endif
 		SNumber operator-(const float& num) const;
 		SNumber operator-(const double& num) const;
 		SNumber operator-(const sfrac& num) const;
@@ -142,6 +151,9 @@ namespace slib {
 #ifdef MAC_OS
 		SNumber operator*(const unsigned long long& num) const;
 #endif
+#ifdef LINUX_OS
+		SNumber operator*(const sinteger& num) const;
+#endif
 		SNumber operator*(const float& num) const;
 		SNumber operator*(const double& num) const;
 		SNumber operator*(const sfrac& num) const;
@@ -163,6 +175,9 @@ namespace slib {
 		SNumber operator/(const long long& num) const;
 #ifdef MAC_OS
 		SNumber operator/(const unsigned long long& num) const;
+#endif
+#ifdef LINUX_OS
+		SNumber operator/(const sinteger& num) const;
 #endif
 		SNumber operator/(const float& num) const;
 		SNumber operator/(const double& num) const;
@@ -188,6 +203,9 @@ namespace slib {
 		SNumber operator%(const long long& num) const;
 #ifdef MAC_OS
 		SNumber operator%(const unsigned long long& num) const;
+#endif
+#ifdef LINUX_OS
+		SNumber operator%(const sinteger& num) const;
 #endif
 		SNumber operator%(const float& num) const;
 		SNumber operator%(const double& num) const;
@@ -257,6 +275,9 @@ namespace slib {
 #ifdef MAC_OS
         operator unsigned long long() const;
 #endif
+#ifdef LINUX_OS
+        operator sinteger() const;
+#endif
         operator float() const;
         operator double() const;
         operator sfrac() const;
@@ -307,6 +328,9 @@ namespace slib {
 #ifdef MAC_OS
 	extern inline SNumber operator+(unsigned long long& num1, const SNumber& num2) { return SNumber(num1) += num2; };
 #endif
+#ifdef LINUX_OS
+	extern inline SNumber operator+(sinteger& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+#endif
 	extern inline SNumber operator+(float& num1, const SNumber& num2) { return SNumber(num1) += num2; };
 	extern inline SNumber operator+(double& num1, const SNumber& num2) { return SNumber(num1) += num2; };
 	extern inline SNumber operator+(sfrac& num1, const SNumber& num2) { return SNumber(num1) += num2; };
@@ -327,6 +351,9 @@ namespace slib {
 	extern inline SNumber operator-(long long& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #ifdef MAC_OS
 	extern inline SNumber operator-(unsigned long long& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+#endif
+#ifdef LINUX_OS
+	extern inline SNumber operator-(sinteger& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #endif
 	extern inline SNumber operator-(float& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator-(double& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
@@ -349,6 +376,9 @@ namespace slib {
 #ifdef MAC_OS
 	extern inline SNumber operator*(unsigned long long& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 #endif
+#ifdef LINUX_OS
+	extern inline SNumber operator*(sinteger& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
+#endif
 	extern inline SNumber operator*(float& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(double& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(sfrac& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
@@ -370,6 +400,9 @@ namespace slib {
 #ifdef MAC_OS
 	extern inline SNumber operator/(unsigned long long& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 #endif
+#ifdef LINUX_OS
+	extern inline SNumber operator/(sinteger& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
+#endif
 	extern inline SNumber operator/(float& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(double& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(sfrac& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
@@ -390,6 +423,9 @@ namespace slib {
 	extern inline SNumber operator%(long long& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 #ifdef MAC_OS
 	extern inline SNumber operator%(unsigned long long& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
+#endif
+#ifdef LINUX_OS
+	extern inline SNumber operator%(sinteger& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 #endif
 	extern inline SNumber operator%(float& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(double& num1, const SNumber& num2) { return SNumber(num1) %= num2; };

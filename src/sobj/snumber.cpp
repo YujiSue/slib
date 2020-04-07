@@ -28,7 +28,6 @@ SNumber::SNumber(unsigned long long ui) : _type(SNumber::UINTEGER) { _value._ui 
 #endif
 #ifdef LINUX_OS
 SNumber::SNumber(sinteger i) : _type(SNumber::INTEGER) { _value._i = i; }
-SNumber::SNumber(suinteger ui) : _type(SNumber::UINTEGER) { _value._ui = ui; }
 #endif
 SNumber::SNumber(float f) : _type(SNumber::REAL) { _value._r = f; }
 SNumber::SNumber(double d) : _type(SNumber::REAL) { _value._r = d; }
@@ -1161,6 +1160,9 @@ SNumber SNumber::operator+(const long long& num) const { return SNumber(*this) +
 #ifdef MAC_OS
 SNumber SNumber::operator+(const unsigned long long& num) const { return SNumber(*this) += num; }
 #endif
+#ifdef LINUX_OS
+SNumber SNumber::operator+(const sinteger& num) const { return SNumber(*this) += num; }
+#endif
 SNumber SNumber::operator+(const float& num) const { return SNumber(*this) += num; }
 SNumber SNumber::operator+(const double& num) const { return SNumber(*this) += num; }
 SNumber SNumber::operator+(const sfrac& num) const { return SNumber(*this) += num; }
@@ -1182,6 +1184,9 @@ SNumber SNumber::operator-(const unsigned long& num) const { return SNumber(*thi
 SNumber SNumber::operator-(const long long& num) const { return SNumber(*this) -= num; }
 #ifdef MAC_OS
 SNumber SNumber::operator-(const unsigned long long& num) const { return SNumber(*this) -= num; }
+#endif
+#ifdef LINUX_OS
+SNumber SNumber::operator-(const sinteger& num) const { return SNumber(*this) -= num; }
 #endif
 SNumber SNumber::operator-(const float& num) const { return SNumber(*this) -= num; }
 SNumber SNumber::operator-(const double& num) const { return SNumber(*this) -= num; }
@@ -1205,6 +1210,9 @@ SNumber SNumber::operator*(const long long& num) const { return SNumber(*this) *
 #ifdef MAC_OS
 SNumber SNumber::operator*(const unsigned long long& num) const { return SNumber(*this) *= num; }
 #endif
+#ifdef LINUX_OS
+SNumber SNumber::operator*(const sinteger& num) const { return SNumber(*this) *= num; }
+#endif
 SNumber SNumber::operator*(const float& num) const { return SNumber(*this) *= num; }
 SNumber SNumber::operator*(const double& num) const { return SNumber(*this) *= num; }
 SNumber SNumber::operator*(const sfrac& num) const { return SNumber(*this) *= num; }
@@ -1226,6 +1234,9 @@ SNumber SNumber::operator/(const unsigned long& num) const { return SNumber(*thi
 SNumber SNumber::operator/(const long long& num) const { return SNumber(*this) /= num; }
 #ifdef MAC_OS
 SNumber SNumber::operator/(const unsigned long long& num) const { return SNumber(*this) /= num; }
+#endif
+#ifdef LINUX_OS
+SNumber SNumber::operator/(const sinteger& num) const { return SNumber(*this) /= num; }
 #endif
 SNumber SNumber::operator/(const float& num) const { return SNumber(*this) /= num; }
 SNumber SNumber::operator/(const double& num) const { return SNumber(*this) /= num; }
@@ -1471,6 +1482,9 @@ SNumber SNumber::operator%(const unsigned long& num) const { return SNumber(*thi
 SNumber SNumber::operator%(const long long& num) const { return SNumber(*this) %= num; }
 #ifdef MAC_OS
 SNumber SNumber::operator%(const unsigned long long& num) const { return SNumber(*this) %= num; }
+#endif
+#ifdef LINUX_OS
+SNumber SNumber::operator%(const sinteger& num) const { return SNumber(*this) %= num; }
 #endif
 SNumber SNumber::operator%(const float& num) const { return SNumber(*this) %= num; }
 SNumber SNumber::operator%(const double& num) const { return SNumber(*this) %= num; }

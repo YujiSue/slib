@@ -12,9 +12,9 @@ namespace slib {
         class SLIB_DLL SFile : public SObject {
 		public:
 			enum SEEK_ORI {
-				BEGIN = 0,
-				CURRENT = 1,
-				END = 2,
+				BEGIN = std::ios_base::beg,
+				CURRENT = std::ios_base::cur,
+				END = std::ios_base::end,
 			};
 
         private:

@@ -132,6 +132,9 @@ namespace slib {
 #ifdef MAC_OS
         String(unsigned long long ui);
 #endif
+#ifdef LINUX_OS
+        String(sinteger i);
+#endif
         String(float f);
         String(double d);
         String(sbyte i);
@@ -167,6 +170,9 @@ namespace slib {
 #ifdef MAC_OS
         String &operator=(unsigned long long ui);
 #endif
+#ifdef LINUX_OS
+        String &operator=(sinteger i);
+#endif
         String &operator=(float f);
         String &operator=(double d);
         String &operator=(sbyte i);
@@ -196,6 +202,9 @@ namespace slib {
 #ifdef MAC_OS
         String &operator+=(unsigned long long ui);
 #endif
+#ifdef LINUX_OS
+        String &operator+=(sinteger i);
+#endif
         String &operator+=(float f);
         String &operator+=(double d);
         String &operator+=(sbyte i);
@@ -223,6 +232,9 @@ namespace slib {
 #ifdef MAC_OS
         String operator+(unsigned long long ui) const;
 #endif
+#ifdef LINUX_OS
+        String operator+(sinteger i) const;
+#endif
         String operator+(float f) const;
         String operator+(double d) const;
         String operator+(sbyte i) const;
@@ -249,6 +261,9 @@ namespace slib {
         String &operator<<(long long i);
 #ifdef MAC_OS
         String &operator<<(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        String &operator<<(sinteger i);
 #endif
         String &operator<<(float f);
         String &operator<<(double d);
@@ -408,6 +423,9 @@ namespace slib {
         operator long long() const;
 #ifdef MAC_OS
         operator unsigned long long() const;
+#endif
+#ifdef LINUX_OS
+        operator sinteger() const;
 #endif
         operator float() const;
         operator double() const;

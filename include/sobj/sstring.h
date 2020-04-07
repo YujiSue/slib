@@ -46,6 +46,9 @@ namespace slib {
 #ifdef MAC_OS
         SString(unsigned long long ui);
 #endif
+#ifdef LINUX_OS
+        SString(sinteger i);
+#endif
         SString(float f);
         SString(double d);
         SString(sbyte i);
@@ -78,6 +81,9 @@ namespace slib {
 #ifdef MAC_OS
         SString &operator=(unsigned long long ui);
 #endif
+#ifdef LINUX_OS
+        SString &operator=(sinteger i);
+#endif
         SString &operator=(float f);
         SString &operator=(double d);
         SString &operator=(sbyte i);
@@ -106,6 +112,9 @@ namespace slib {
         SString &operator+=(long long i);
 #ifdef MAC_OS
         SString &operator+=(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString &operator+=(sinteger i);
 #endif
         SString &operator+=(float f);
         SString &operator+=(double d);
@@ -138,6 +147,9 @@ namespace slib {
 #ifdef MAC_OS
         SString operator+(unsigned long long ui) const;
 #endif
+#ifdef LINUX_OS
+        SString operator+(sinteger i) const;
+#endif
         SString operator+(float f) const;
         SString operator+(double d) const;
         SString operator+(sbyte i) const;
@@ -168,6 +180,9 @@ namespace slib {
         SString &operator<<(long long i);
 #ifdef MAC_OS
         SString &operator<<(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString &operator<<(sinteger i);
 #endif
         SString &operator<<(float f);
         SString &operator<<(double d);

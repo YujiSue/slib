@@ -222,7 +222,7 @@ SharedMemory::SharedMemory(size_t s, const char* n, int i) : _size(s), _name(n) 
 	_pid = i;
 	_child = false;
 	FILE* fp;
-	fp = fopen(_name.c_str(), "w");
+	fp = fopen(_name.cstr(), "w");
 	fclose(fp);
 #endif
 }
@@ -249,9 +249,9 @@ void SharedMemory::create() {
 		throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	}
 #else
-	auto key = ftok(_name.c_str(), _pid);
+	auto key = ftok(_name.cstr(), _pid);
 	if (key == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
-	_sid = shmget(key, size, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+	_sid = shmget(key, _size, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
 	if (_sid == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	_memory = shmat(_sid, 0, 0);
 	_child = false;
@@ -271,7 +271,7 @@ void SharedMemory::share() {
 		throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	}
 #else
-	auto key = ftok(_name.c_str(), _pid);
+	auto key = ftok(_name.cstr(), _pid);
 	_sid = shmget(key, 0, 0);
 	if (_sid == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	_memory = shmat(_sid, 0, 0);
