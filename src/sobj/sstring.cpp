@@ -48,31 +48,37 @@ String SChar::getClass() const { return "char"; }
 String SChar::toString() const { return Char::toString(); }
 SObject *SChar::clone() const { return new SChar(*this); }
 
-SString::SString() : SObject(), String(), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(bool b) : SObject(), String(b?"true":"false"), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(int i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(unsigned int ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(size_t ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-#if defined(WIN64_OS)
-SString::SString(long i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(unsigned long ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
+SString::SString() : SObject(), String(), _char(SChar(this, cstr())) {}
+SString::SString(bool b) : SObject(), String(b?"true":"false"), _char(SChar(this, cstr())) {}
+SString::SString(int i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr())) {}
+SString::SString(unsigned int ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
+SString::SString(size_t ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
+#ifdef WIN64_OS
+SString::SString(long i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr())) {}
+#ifndef MAC_OS
+SString::SString(unsigned long ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
 #endif
-SString::SString(long long i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-#if defined(MAC_OS)
-SString::SString(unsigned long long ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
 #endif
-SString::SString(float f) : SObject(), String(std::to_string(f)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(double d) : SObject(), String(std::to_string(d)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(sbyte i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(subyte ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(sshort i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(sushort ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(const size_t &s, char c) : SObject(), String(s, c), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(char c) : SObject(), String(c), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(const SChar &c) : SObject(), String(c.toStr()), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(const char *s) : SObject(), String(s), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(const String &s) : SObject(), String(s), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
-SString::SString(const std::string &s) : SObject(), String(s), _char(SChar(this, cstr()))/*, _offset(nullptr)*/ {}
+SString::SString(long long i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr())) {}
+#ifdef MAC_OS
+SString::SString(unsigned long long ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
+#endif
+#ifdef LINUX_OS
+SString::SString(sinteger i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr())) {}
+SString::SString(suinteger ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
+#endif
+SString::SString(float f) : SObject(), String(std::to_string(f)), _char(SChar(this, cstr())) {}
+SString::SString(double d) : SObject(), String(std::to_string(d)), _char(SChar(this, cstr())) {}
+SString::SString(sbyte i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr())) {}
+SString::SString(subyte ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
+SString::SString(sshort i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr())) {}
+SString::SString(sushort ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
+SString::SString(const size_t &s, char c) : SObject(), String(s, c), _char(SChar(this, cstr())) {}
+SString::SString(char c) : SObject(), String(c), _char(SChar(this, cstr())) {}
+SString::SString(const SChar &c) : SObject(), String(c.toStr()), _char(SChar(this, cstr())) {}
+SString::SString(const char *s) : SObject(), String(s), _char(SChar(this, cstr())) {}
+SString::SString(const String &s) : SObject(), String(s), _char(SChar(this, cstr())) {}
+SString::SString(const std::string &s) : SObject(), String(s), _char(SChar(this, cstr())) {}
 SString::SString(const sobj &obj) : SString() {
     if (obj.isStr()) *this = obj.string();
     else *this = obj.toString();
@@ -98,13 +104,19 @@ SString &SString::operator=(bool b) { *this = (b?"true":"false"); return *this; 
 SString &SString::operator=(int i) { *this = std::to_string(i); return *this; }
 SString &SString::operator=(unsigned int ui) { *this = std::to_string(ui); return *this; }
 SString &SString::operator=(size_t ui) { *this = std::to_string(ui); return *this; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SString &SString::operator=(long i) { *this = std::to_string(i); return *this; }
+#ifndef MAC_OS
 SString &SString::operator=(unsigned long ui) { *this = std::to_string(ui); return *this; }
 #endif
+#endif
 SString &SString::operator=(long long i) { *this = std::to_string(i); return *this; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SString &SString::operator=(unsigned long long ui) { *this = std::to_string(ui); return *this; }
+#endif
+#ifdef LINUX_OS
+SString&& SString::operator=(sinteger i) { *this = std::to_string(i); return *this; }
+SString&& SString::operator=(suinteger ui) { *this = std::to_string(ui); return *this; }
 #endif
 SString &SString::operator=(float f) { *this = std::to_string(f); return *this; }
 SString &SString::operator=(double d) { *this = std::to_string(d); return *this; }
@@ -135,13 +147,19 @@ SString &SString::operator+=(bool b) { *this += (b?"true":"false"); return *this
 SString &SString::operator+=(int i) { *this += std::to_string(i); return *this; }
 SString &SString::operator+=(unsigned int ui) { *this += std::to_string(ui); return *this; }
 SString &SString::operator+=(size_t ui) { *this += std::to_string(ui); return *this; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SString &SString::operator+=(long i) { *this += std::to_string(i); return *this; }
+#ifndef MAC_OS
 SString &SString::operator+=(unsigned long ui) { *this += std::to_string(ui); return *this; }
 #endif
+#endif
 SString &SString::operator+=(long long i) { *this += std::to_string(i); return *this; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SString &SString::operator+=(unsigned long long ui) { *this += std::to_string(ui); return *this; }
+#endif
+#ifdef LINUX_OS
+SString& SString::operator+=(sinteger i) { *this += std::to_string(i); return *this; }
+SString& SString::operator+=(suinteger ui) { *this += std::to_string(ui); return *this; }
 #endif
 SString &SString::operator+=(float f) { *this += std::to_string(f); return *this; }
 SString &SString::operator+=(double d) { *this += std::to_string(d); return *this; }
@@ -166,13 +184,19 @@ SString SString::operator+(bool b) const { return SString(*this)+=(b?"true":"fal
 SString SString::operator+(int i) const { return SString(*this)+=std::to_string(i); }
 SString SString::operator+(unsigned int ui) const { return SString(*this)+=std::to_string(ui); }
 SString SString::operator+(size_t ui) const { return SString(*this)+=std::to_string(ui); }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SString SString::operator+(long i) const { return SString(*this)+=std::to_string(i); }
+#ifndef MAC_OS
 SString SString::operator+(unsigned long ui) const { return SString(*this)+=std::to_string(ui); }
 #endif
+#endif
 SString SString::operator+(long long i) const { return SString(*this)+=std::to_string(i); }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SString SString::operator+(unsigned long long ui) const { return SString(*this)+=std::to_string(ui); }
+#endif
+#ifdef LINUX_OS
+SString SString::operator+(sinteger i) const { return SString(*this) += std::to_string(i); }
+SString SString::operator+(suinteger ui) const { return SString(*this) += std::to_string(ui); }
 #endif
 SString SString::operator+(float f) const { return SString(*this)+=std::to_string(f); }
 SString SString::operator+(double d) const { return SString(*this)+=std::to_string(d); }
@@ -197,13 +221,19 @@ SString &SString::operator<<(bool b) { *this += (b?"true":"false"); return *this
 SString &SString::operator<<(int i) { *this += std::to_string(i); return *this; }
 SString &SString::operator<<(unsigned int ui) { *this += std::to_string(ui); return *this; }
 SString &SString::operator<<(size_t ui) { *this += std::to_string(ui); return *this; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SString &SString::operator<<(long i) { *this += std::to_string(i); return *this; }
+#ifndef MAC_OS
 SString &SString::operator<<(unsigned long ui) { *this += std::to_string(ui); return *this; }
 #endif
+#endif
 SString &SString::operator<<(long long i) { *this += std::to_string(i); return *this; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SString &SString::operator<<(unsigned long long ui) { *this += std::to_string(ui); return *this; }
+#endif
+#ifdef LINUX_OS
+SString& SString::operator<<(sinteger i) { *this += std::to_string(i); return *this; }
+SString& SString::operator<<(suinteger ui) { *this += std::to_string(ui); return *this; }
 #endif
 SString &SString::operator<<(float f) { *this += std::to_string(f); return *this; }
 SString &SString::operator<<(double d) { *this += std::to_string(d); return *this; }

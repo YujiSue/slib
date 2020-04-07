@@ -16,13 +16,19 @@ SNumber::SNumber(sushort ui) : _type(SNumber::UINTEGER) { _value._ui = ui; }
 SNumber::SNumber(int i) : _type(SNumber::INTEGER) { _value._i = i; }
 SNumber::SNumber(unsigned int ui) : _type(SNumber::UINTEGER) { _value._ui = ui; }
 SNumber::SNumber(size_t ui) : _type(SNumber::UINTEGER) { _value._ui = ui; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SNumber::SNumber(long i) : _type(SNumber::INTEGER) { _value._i = i; }
+#ifndef MAC_OS
 SNumber::SNumber(unsigned long ui) : _type(SNumber::UINTEGER) { _value._ui = ui; }
 #endif
+#endif
 SNumber::SNumber(long long i) : _type(SNumber::INTEGER) { _value._i = i; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SNumber::SNumber(unsigned long long ui) : _type(SNumber::UINTEGER) { _value._ui = ui; }
+#endif
+#ifdef LINUX_OS
+SNumber::SNumber(sinteger i) : _type(SNumber::INTEGER) { _value._i = i; }
+SNumber::SNumber(suinteger ui) : _type(SNumber::UINTEGER) { _value._ui = ui; }
 #endif
 SNumber::SNumber(float f) : _type(SNumber::REAL) { _value._r = f; }
 SNumber::SNumber(double d) : _type(SNumber::REAL) { _value._r = d; }
@@ -1145,12 +1151,14 @@ SNumber SNumber::operator+(const sushort& num) const { return SNumber(*this) += 
 SNumber SNumber::operator+(const int& num) const { return SNumber(*this) += num; }
 SNumber SNumber::operator+(const unsigned int& num) const { return SNumber(*this) += num; }
 SNumber SNumber::operator+(const size_t& num) const { return SNumber(*this) += num; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SNumber SNumber::operator+(const long& num) const { return SNumber(*this) += num; }
+#ifndef MAC_OS
 SNumber SNumber::operator+(const unsigned long& num) const { return SNumber(*this) += num; }
 #endif
+#endif
 SNumber SNumber::operator+(const long long& num) const { return SNumber(*this) += num; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SNumber SNumber::operator+(const unsigned long long& num) const { return SNumber(*this) += num; }
 #endif
 SNumber SNumber::operator+(const float& num) const { return SNumber(*this) += num; }
@@ -1165,12 +1173,14 @@ SNumber SNumber::operator-(const sushort& num) const { return SNumber(*this) -= 
 SNumber SNumber::operator-(const int& num) const { return SNumber(*this) -= num; }
 SNumber SNumber::operator-(const unsigned int& num) const { return SNumber(*this) -= num; }
 SNumber SNumber::operator-(const size_t& num) const { return SNumber(*this) -= num; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SNumber SNumber::operator-(const long& num) const { return SNumber(*this) -= num; }
+#ifndef MAC_OS
 SNumber SNumber::operator-(const unsigned long& num) const { return SNumber(*this) -= num; }
 #endif
+#endif
 SNumber SNumber::operator-(const long long& num) const { return SNumber(*this) -= num; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SNumber SNumber::operator-(const unsigned long long& num) const { return SNumber(*this) -= num; }
 #endif
 SNumber SNumber::operator-(const float& num) const { return SNumber(*this) -= num; }
@@ -1185,12 +1195,14 @@ SNumber SNumber::operator*(const sushort& num) const { return SNumber(*this) *= 
 SNumber SNumber::operator*(const int& num) const { return SNumber(*this) *= num; }
 SNumber SNumber::operator*(const unsigned int& num) const { return SNumber(*this) *= num; }
 SNumber SNumber::operator*(const size_t& num) const { return SNumber(*this) *= num; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SNumber SNumber::operator*(const long& num) const { return SNumber(*this) *= num; }
+#ifndef MAC_OS
 SNumber SNumber::operator*(const unsigned long& num) const { return SNumber(*this) *= num; }
 #endif
+#endif
 SNumber SNumber::operator*(const long long& num) const { return SNumber(*this) *= num; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SNumber SNumber::operator*(const unsigned long long& num) const { return SNumber(*this) *= num; }
 #endif
 SNumber SNumber::operator*(const float& num) const { return SNumber(*this) *= num; }
@@ -1205,12 +1217,14 @@ SNumber SNumber::operator/(const sushort& num) const { return SNumber(*this) /= 
 SNumber SNumber::operator/(const int& num) const { return SNumber(*this) /= num; }
 SNumber SNumber::operator/(const unsigned int& num) const { return SNumber(*this) /= num; }
 SNumber SNumber::operator/(const size_t& num) const { return SNumber(*this) /= num; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SNumber SNumber::operator/(const long& num) const { return SNumber(*this) /= num; }
+#ifndef MAC_OS
 SNumber SNumber::operator/(const unsigned long& num) const { return SNumber(*this) /= num; }
 #endif
+#endif
 SNumber SNumber::operator/(const long long& num) const { return SNumber(*this) /= num; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SNumber SNumber::operator/(const unsigned long long& num) const { return SNumber(*this) /= num; }
 #endif
 SNumber SNumber::operator/(const float& num) const { return SNumber(*this) /= num; }
@@ -1448,12 +1462,14 @@ SNumber SNumber::operator%(const sushort& num) const { return SNumber(*this) %= 
 SNumber SNumber::operator%(const int& num) const { return SNumber(*this) %= num; }
 SNumber SNumber::operator%(const unsigned int& num) const { return SNumber(*this) %= num; }
 SNumber SNumber::operator%(const size_t& num) const { return SNumber(*this) %= num; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SNumber SNumber::operator%(const long& num) const { return SNumber(*this) %= num; }
+#ifndef MAC_OS
 SNumber SNumber::operator%(const unsigned long& num) const { return SNumber(*this) %= num; }
 #endif
+#endif
 SNumber SNumber::operator%(const long long& num) const { return SNumber(*this) %= num; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SNumber SNumber::operator%(const unsigned long long& num) const { return SNumber(*this) %= num; }
 #endif
 SNumber SNumber::operator%(const float& num) const { return SNumber(*this) %= num; }
@@ -1857,19 +1873,20 @@ SNumber::operator sushort() const { return ushortValue(); }
 SNumber::operator int() const { return intValue(); }
 SNumber::operator unsigned int() const { return uintValue(); }
 SNumber::operator size_t() const { return sizeValue(); }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 SNumber::operator long() const { return longValue(); }
+#ifndef MAC_OS
 SNumber::operator unsigned long() const { return ulongValue(); }
 #endif
+#endif
 SNumber::operator long long() const { return llongValue(); }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 SNumber::operator unsigned long long() const { return ullongValue(); }
 #endif
 SNumber::operator float() const { return floatValue(); }
 SNumber::operator double() const { return doubleValue(); }
 SNumber::operator sfrac() const { return fraction(); }
 SNumber::operator scomp() const { return complex(); }
-
 bool SNumber::operator<(const SNumber &sn) const {
     switch (_type) {
         case SNumber::INTEGER:
