@@ -46,10 +46,6 @@ namespace slib {
 #ifdef MAC_OS
         SString(unsigned long long ui);
 #endif
-#ifdef LINUX_OS
-		SString(sinteger i);
-		SString(suinteger ui);
-#endif
         SString(float f);
         SString(double d);
         SString(sbyte i);
@@ -82,10 +78,6 @@ namespace slib {
 #ifdef MAC_OS
         SString &operator=(unsigned long long ui);
 #endif
-#ifdef LINUX_OS
-		SString& operator=(sinteger i);
-		SString& operator=(suinteger ui);
-#endif
         SString &operator=(float f);
         SString &operator=(double d);
         SString &operator=(sbyte i);
@@ -114,10 +106,6 @@ namespace slib {
         SString &operator+=(long long i);
 #ifdef MAC_OS
         SString &operator+=(unsigned long long ui);
-#endif
-#ifdef LINUX_OS
-		SString& operator+=(sinteger i);
-		SString& operator+=(suinteger ui);
 #endif
         SString &operator+=(float f);
         SString &operator+=(double d);
@@ -150,10 +138,6 @@ namespace slib {
 #ifdef MAC_OS
         SString operator+(unsigned long long ui) const;
 #endif
-#ifdef LINUX_OS
-		SString operator+(sinteger i) const;
-		SString operator+(suinteger ui) const;
-#endif
         SString operator+(float f) const;
         SString operator+(double d) const;
         SString operator+(sbyte i) const;
@@ -168,7 +152,7 @@ namespace slib {
         SString operator+(const String &s) const;
         SString operator+(const SString &s) const;
         SString operator+(const SNumber &n) const;
-		SString operator+(const sio::SFile& n);
+	SString operator+(const sio::SFile& n);
         SString operator+(const sobj &obj) const;
         
         SString &operator<<(bool b);
@@ -185,10 +169,6 @@ namespace slib {
 #ifdef MAC_OS
         SString &operator<<(unsigned long long ui);
 #endif
-#ifdef LINUX_OS
-		SString& operator<<(sinteger i);
-		SString& operator<<(suinteger ui);
-#endif
         SString &operator<<(float f);
         SString &operator<<(double d);
         SString &operator<<(sbyte i);
@@ -203,7 +183,7 @@ namespace slib {
         SString &operator<<(const String &s);
         SString &operator<<(const SString &s);
         SString &operator<<(const SNumber &n);
-		SString& operator<<(const sio::SFile& n);
+	SString& operator<<(const sio::SFile& n);
         SString &operator<<(const sobj &obj);
         
         SString &operator*=(const int & num);
@@ -215,8 +195,8 @@ namespace slib {
         void load(const char *path);
         void save(const char *path);
         
-		sobj& u8char(int idx = 0);
-		const sobj& u8char(int idx = 0) const;
+	sobj& u8char(int idx = 0);
+	const sobj& u8char(int idx = 0) const;
 
         //Override
         String getClass() const;

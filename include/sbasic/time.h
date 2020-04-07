@@ -2,7 +2,6 @@
 #define SLIB_TIME_H
 
 #include "sconfig.h"
-#include "smath/measure.h"
 #include "sbasic/string.h"
 #include "sbasic/map.h"
 

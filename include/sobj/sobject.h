@@ -158,7 +158,6 @@ namespace slib {
 #endif
 #ifdef LINUX_OS
 		SObjPtr(sinteger i);
-		SObjPtr(suinteger ui);
 #endif
         SObjPtr(float f);
         SObjPtr(double d);
@@ -503,7 +502,6 @@ namespace slib {
 #endif
 #ifdef LINUX_OS
 		operator sinteger() const;
-		operator suinteger() const;
 #endif
         operator float() const;
         operator double() const;
