@@ -85,12 +85,11 @@ size_t SSystem::getProcessID(const char* name) {
 #else
 	String res;
 	exec("ps -a", res);
-
+    
 
 	/*
 	 */
-
-
+    return NOT_FOUND;
 
 #endif
 }
