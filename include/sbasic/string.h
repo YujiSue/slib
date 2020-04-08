@@ -122,13 +122,18 @@ namespace slib {
         String(int i);
         String(unsigned int ui);
         String(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         String(long i);
+#ifndef MAC_OS
         String(unsigned long ui);
 #endif
+#endif
         String(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         String(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        String(sinteger i);
 #endif
         String(float f);
         String(double d);
@@ -155,13 +160,18 @@ namespace slib {
         String &operator=(int i);
         String &operator=(unsigned int ui);
         String &operator=(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         String &operator=(long i);
+#ifndef MAC_OS
         String &operator=(unsigned long ui);
 #endif
+#endif
         String &operator=(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         String &operator=(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        String &operator=(sinteger i);
 #endif
         String &operator=(float f);
         String &operator=(double d);
@@ -182,13 +192,18 @@ namespace slib {
         String &operator+=(int i);
         String &operator+=(unsigned int ui);
         String &operator+=(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         String &operator+=(long i);
+#ifndef MAC_OS
         String &operator+=(unsigned long ui);
 #endif
+#endif
         String &operator+=(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         String &operator+=(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        String &operator+=(sinteger i);
 #endif
         String &operator+=(float f);
         String &operator+=(double d);
@@ -207,13 +222,18 @@ namespace slib {
         String operator+(int i) const;
         String operator+(unsigned int ui) const;
         String operator+(size_t ui) const;
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         String operator+(long i) const;
+#ifndef MAC_OS
         String operator+(unsigned long ui) const;
 #endif
+#endif
         String operator+(long long i) const;
-#if defined(MAC_OS)
+#ifdef MAC_OS
         String operator+(unsigned long long ui) const;
+#endif
+#ifdef LINUX_OS
+        String operator+(sinteger i) const;
 #endif
         String operator+(float f) const;
         String operator+(double d) const;
@@ -232,13 +252,18 @@ namespace slib {
         String &operator<<(int i);
         String &operator<<(unsigned int ui);
         String &operator<<(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         String &operator<<(long i);
+#ifndef MAC_OS
         String &operator<<(unsigned long ui);
 #endif
+#endif
         String &operator<<(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         String &operator<<(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        String &operator<<(sinteger i);
 #endif
         String &operator<<(float f);
         String &operator<<(double d);
@@ -389,13 +414,18 @@ namespace slib {
         operator int() const;
         operator unsigned int() const;
         operator size_t() const;
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         operator long() const;
+#ifndef MAC_OS
         operator unsigned long() const;
 #endif
+#endif
         operator long long() const;
-#if defined(MAC_OS)
+#ifdef MAC_OS
         operator unsigned long long() const;
+#endif
+#ifdef LINUX_OS
+        operator sinteger() const;
 #endif
         operator float() const;
         operator double() const;

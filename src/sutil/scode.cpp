@@ -138,11 +138,11 @@ void SZip::load(const char* path) {
 		_contents.resize(cde.sum);
 		sforeach(_contents) readZippCent(_file, E_);
 	}
+    catch (sio::SIOException ie) {
+		ie.toString();
+	}
 	catch (SException ex) {
 		ex.toString();
-	}
-	catch (sio::SIOException ie) {
-		ie.toString();
 	}
 }
 void SZip::save(const char* path) {
@@ -240,10 +240,10 @@ void SZip::expand(SFile &ori, const char *dest, const char *decrypt) {
                 }
             }
         }
-    } catch (SException ex) {
-        ex.toString();
     } catch (sio::SIOException ie) {
         ie.toString();
+    } catch (SException ex) {
+        ex.toString();
     }
 }
 

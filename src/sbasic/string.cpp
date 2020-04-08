@@ -20,7 +20,6 @@ Regex::Regex(const char *s) {
     _rgx = std::regex(s_.substring(1, end-1), constant);
 }
 Regex::~Regex() {}
-
 bool Regex::match(const char *s) const { return std::regex_search(s, _rgx); }
 bool Regex::equal(const char *s) const { return std::regex_match(s, _rgx); }
 void Regex::search(CArray<size_t> &array, const char *s, const char *e) const {
@@ -43,7 +42,6 @@ void Regex::search(Array<String, SMemory<String>> &array, const char *s, const c
         if(std::regex_search(s, m, _rgx)) array.add(m.str());
     }
 }
-
 void Regex::split(Array<String, SMemory<String>> &array, const String *str) const {
     size_t off = 0;
     auto p = str->ptr();
@@ -137,9 +135,9 @@ String String::narrow(const char *s) {
     String str;
     if (s) {
         size_t i = 0, len = strlen(s);
-        while (i < len) {
+        while (s[0] != '\0') {
             str += Char::narrowChar(s);
-            i += Char::u8size(s);
+            s += Char::u8size(s);
         }
     }
     return str;
@@ -195,7 +193,6 @@ void String::_insert(const size_t idx, const char *s, size_t l) {
         else _append(s, std::forward<size_t>(l));
     }
 }
-
 const char *String::_find(const char *que, size_t s, const char *current, const char *end) const {
     const char *p_, *q_;
     size_t shift;
@@ -250,13 +247,18 @@ String::String(bool b) : String(b?"true":"false") {}
 String::String(int i) : String(std::to_string(i)) {}
 String::String(unsigned int ui) : String(std::to_string(ui)) {}
 String::String(size_t ui) : String(std::to_string(ui)) {}
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 String::String(long i) : String(std::to_string(i)) {}
+#ifndef MAC_OS
 String::String(unsigned long ui) : String(std::to_string(ui)) {}
 #endif
+#endif
 String::String(long long i) : String(std::to_string(i)) {}
-#if defined(MAC_OS)
+#ifdef MAC_OS
 String::String(unsigned long long ui) : String(std::to_string(ui)) {}
+#endif
+#ifdef LINUX_OS
+String::String(sinteger i) : String(std::to_string(i)) {}
 #endif
 String::String(float f) : String(std::to_string(f)) {}
 String::String(double d) : String(std::to_string(d)) {}
@@ -264,7 +266,6 @@ String::String(sbyte i) : String(std::to_string(i)) {}
 String::String(subyte ui) : String(std::to_string(ui)) {}
 String::String(sshort i) : String(std::to_string(i)) {}
 String::String(sushort ui) : String(std::to_string(ui)) {}
-
 String::String(size_t s, const char &c) : String() {
     if (s < SHORT_STRING_CAPACITY-1) {
         if (s) {
@@ -367,17 +368,21 @@ String &String::operator=(bool b) { *this = b?"true":"false"; return *this; }
 String &String::operator=(int i) { *this = std::to_string(i); return *this; }
 String &String::operator=(unsigned int ui) { *this = std::to_string(ui); return *this; }
 String &String::operator=(size_t ui) { *this = std::to_string(ui); return *this; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 String &String::operator=(long i) { *this = std::to_string(i); return *this; }
+#ifndef MAC_OS
 String &String::operator=(unsigned long ui) { *this = std::to_string(ui); return *this; }
 #endif
+#endif
 String &String::operator=(long long i) { *this = std::to_string(i); return *this; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 String &String::operator=(unsigned long long ui) { *this = std::to_string(ui); return *this; }
+#endif
+#ifdef LINUX_OS
+String &String::operator=(sinteger i) { *this = std::to_string(i); return *this; }
 #endif
 String &String::operator=(float f) { *this = std::to_string(f); return *this; }
 String &String::operator=(double d) { *this = std::to_string(d); return *this; }
-
 String &String::operator=(sbyte i) { *this = std::to_string(i); return *this; }
 String &String::operator=(subyte ui) { *this = std::to_string(ui); return *this; }
 String &String::operator=(sshort i) { *this = std::to_string(i); return *this; }
@@ -406,18 +411,22 @@ String &String::operator=(SObjPtr obj) {
     }
     return *this;
 }
-
 String &String::operator+=(bool b) { *this += b?"true":"false"; return *this; }
 String &String::operator+=(int i) { *this += std::to_string(i); return *this; }
 String &String::operator+=(unsigned int ui) { *this += std::to_string(ui); return *this; }
 String &String::operator+=(size_t ui) { *this += std::to_string(ui); return *this; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 String &String::operator+=(long i) { *this += std::to_string(i); return *this; }
+#ifndef MAC_OS
 String &String::operator+=(unsigned long ui) { *this += std::to_string(ui); return *this; }
 #endif
+#endif
 String &String::operator+=(long long i) { *this += std::to_string(i); return *this; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 String &String::operator+=(unsigned long long ui) { *this += std::to_string(ui); return *this; }
+#endif
+#ifdef LINUX_OS
+String &String::operator+=(sinteger i) { *this += std::to_string(i); return *this; }
 #endif
 String &String::operator+=(float f) { *this += std::to_string(f); return *this; }
 String &String::operator+=(double d) { *this += std::to_string(d); return *this; }
@@ -435,22 +444,25 @@ String &String::operator+=(SObjPtr obj) {
     else append(obj.toString());
     return *this;
 }
-
 String String::operator+(bool b) const { return String(*this)+=(b?"true":"false"); }
 String String::operator+(int i) const { return String(*this)+=i; }
 String String::operator+(unsigned int ui) const { return String(*this)+=ui; }
 String String::operator+(size_t ui) const { return String(*this)+=ui; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 String String::operator+(long i) const { return String(*this)+=i; }
+#ifndef MAC_OS
 String String::operator+(unsigned long ui) const { return String(*this)+=ui; }
 #endif
+#endif
 String String::operator+(long long i) const { return String(*this)+=i; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 String String::operator+(unsigned long long ui) const { return String(*this)+=ui; }
+#endif
+#ifdef LINUX_OS
+String String::operator+(sinteger i) const { return String(*this)+=i; }
 #endif
 String String::operator+(float f) const { return String(*this)+=f; }
 String String::operator+(double d) const { return String(*this)+=d; }
-
 String String::operator+(sbyte i) const { return String(*this)+=i; }
 String String::operator+(subyte ui) const { return String(*this)+=ui; }
 String String::operator+(sshort i) const { return String(*this)+=i; }
@@ -466,13 +478,18 @@ String &String::operator<<(bool b) { *this += b?"true":"false"; return *this; }
 String &String::operator<<(int i) { *this += std::to_string(i); return *this; }
 String &String::operator<<(unsigned int ui) { *this += std::to_string(ui); return *this; }
 String &String::operator<<(size_t ui) { *this += std::to_string(ui); return *this; }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 String &String::operator<<(long i) { *this += std::to_string(i); return *this; }
+#ifndef MAC_OS
 String &String::operator<<(unsigned long ui) { *this += std::to_string(ui); return *this; }
 #endif
+#endif
 String &String::operator<<(long long i) { *this += std::to_string(i); return *this; }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 String &String::operator<<(unsigned long long ui) { *this += std::to_string(ui); return *this; }
+#endif
+#ifdef LINUX_OS
+String &String::operator<<(sinteger i) { *this += std::to_string(i); return *this; }
 #endif
 String &String::operator<<(float f) { *this += std::to_string(f); return *this; }
 String &String::operator<<(double d) { *this += std::to_string(d); return *this; }
@@ -488,7 +505,6 @@ String &String::operator<<(const SString &s) { return (*this) += s; }
 String& String::operator<<(const SText& t) { return (*this) += t.string(); }
 String& String::operator<<(const sio::SFile& f) { return (*this) += f.path(); }
 String &String::operator<<(SObjPtr obj) { return (*this) += obj; }
-
 String &String::operator*=(int num) {
     if (!empty()) {
         if (!num) clear();
@@ -503,7 +519,6 @@ String &String::operator*=(int num) {
 String &String::operator*=(size_t num) { return (*this) *= (int)num; }
 String String::operator*(int num) const { return String(*this) *= num; }
 String String::operator*(size_t num) const { return String(*this) *= (int)num; }
-
 bool String::isNumeric() const {
     return equal(R(/[+-]*\\d+/)) || equal(R(/0x[0-9a-fA-F]+/)) ||
     equal(R(/nan/i)) || equal(R(/[+-]*inf/i)) || equal(R(/[+-]*infinity/i)) ||
@@ -515,7 +530,6 @@ bool String::isQuoted() const {
     if (ins.second < 2) return false;
     return (ins.first[0] == '\'' || ins.first[0] == '\"') && ins.first[0] == ins.first[ins.second-1] && ins.first[ins.second-2] != '\\';
 }
-
 bool String::empty() const { return !size(); }
 size_t String::size() const { return _isLong()?_str._ls.size:(_str._ss.size>>1); }
 size_t String::length() const { return size(); }
@@ -524,7 +538,6 @@ char *String::ptr(size_t idx) { return _isLong()?&_str._ls.str[idx]:_str._ss.str
 const char *String::ptr(size_t idx) const { return _isLong()?&_str._ls.str[idx]:_str._ss.str+idx; }
 const char *String::cstr() const { return _isLong()?_str._ls.str:_str._ss.str; }
 std::string String::toStr() const { return std::string(cstr()); }
-
 char &String::operator[] (int idx) { return at(idx); }
 const char &String::operator[] (int idx) const { return at(idx); }
 char &String::at(int idx) {
@@ -553,7 +566,6 @@ char &String::first(){ return at(0); }
 const char &String::first() const{ return at(0); }
 char &String::last() { return at(-1); }
 const char &String::last() const { return at(-1); }
-
 void String::interpret(subyte* bytes, size_t size) {
 	if (size < SHORT_STRING_CAPACITY - 1) {
 		if (size) Memory<char>::copy(_str._ss.str, (char*)bytes, size);
@@ -664,22 +676,18 @@ void String::swap(String &str) {
         CMemory<char>::copy(str._str._ss.str, tmpc, SHORT_STRING_CAPACITY);
     }
 }
-
 SArrayIterator<char> String::begin() { return SArrayIterator<char>(ptr()); }
 SArrayCIterator<char> String::begin() const { return SArrayCIterator<char>(cstr()); }
 SArrayIterator<char> String::end() { auto ins = _instance(); return SArrayIterator<char>(&ins.first[ins.second]); }
 SArrayCIterator<char> String::end() const { auto ins = _cinstance(); return SArrayCIterator<char>(&ins.first[ins.second]); }
-
 void String::add(const char &c) { _append(&c, 1); }
 void String::append(const char *s) { if (s) _append(s, strlen(s)); }
 void String::append(const std::string &s) { _append(s.c_str(), s.length()); }
 void String::append(const String &s) { auto ins = s._cinstance(); _append(ins.first, ins.second); }
 void String::append(const SString &s) { auto ins = s._cinstance(); _append(ins.first, ins.second); }
-
 void String::insert(size_t idx, const char *s) { if (s) _insert(idx, s, strlen(s)); }
 void String::insert(size_t idx, const std::string &s) { _insert(idx, s.c_str(), s.length()); }
 void String::insert(size_t idx, const String &s) { auto ins = s._cinstance(); _insert(idx, ins.first, ins.second); }
-
 void String::removeAt(size_t idx) { remove(idx, 1); }
 void String::remove(size_t off, size_t len) {
     auto ins = _instance();
@@ -776,14 +784,12 @@ void String::transform(subyte trans) {
     else if (trans&SString::TO_LOWER)
         std::transform(this->begin(), this->end(), begin(), tolower);
     if (trans&SString::TO_WIDE) {
-        /*
-         *
-         */
+		String tmp = String::wide(cstr());
+		this->swap(tmp);
     }
     else if (trans&SString::TO_NARROW) {
-        /*
-         *
-         */
+		String tmp = String::narrow(cstr());
+		this->swap(tmp);
     }
 }
 String String::substring(size_t off, size_t len) const {
@@ -818,7 +824,6 @@ String String::replaced(const char *ori, const char *alt) const {
 String String::replaced(const Regex &rgx, const char *alt) const {
     return rgx.replace(cstr(), alt);
 }
-
 String String::rearranged(const Regex &rgx, const intarray &order) const {
     return rgx.rearrange(cstr(), order);
 }
@@ -838,7 +843,6 @@ String String::transformed(uint8_t trans) const {
     str.transform(trans);
     return str;
 }
-
 size_t String::charCount() const { size_t count = 0; if (!empty()) { sforeachc(*this) ++count; } return count; }
 size_t String::charIndex(size_t idx) const { return (ubegin()+idx)->index(); }
 Char String::charAt(size_t idx) const { return *(ubegin()+idx); }
@@ -847,7 +851,6 @@ SUtf8Iterator String::ubegin() { return SUtf8Iterator(this, ptr()); }
 SUtf8CIterator String::ubegin() const { return SUtf8CIterator(this, ptr()); }
 SUtf8Iterator String::uend() { return SUtf8Iterator(this, ptr(size())); }
 SUtf8CIterator String::uend() const { return SUtf8CIterator(this, ptr(size())); }
-
 size_t String::count(const char *s, size_t offset) const {
     size_t c = 0;
     if (s) {
@@ -941,7 +944,6 @@ stringarray String::split(const char *sep, bool trim) const {
     }
     return array;
 }
-
 stringarray String::splitline(bool trim) const {
     stringarray array;
     if(empty()) return array;
@@ -1004,7 +1006,6 @@ bool String::endWith(const char *que) const {
     }
     return false;
 }
-
 bool String::boolean() const {
     auto ins = _cinstance();
     return strcmp(ins.first, "false") && strcmp(ins.first, "FALSE") && strcmp(ins.first, "NO") && strcmp(ins.first, "no");
@@ -1156,13 +1157,18 @@ String::operator sushort() const { return ushortValue(); }
 String::operator int() const { return intValue(); }
 String::operator unsigned int() const { return uintValue(); }
 String::operator size_t() const { return sizeValue(); }
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
 String::operator long() const { return longValue(); }
+#ifndef MAC_OS
 String::operator unsigned long() const { return ulongValue(); }
 #endif
+#endif
 String::operator long long() const { return llongValue(); }
-#if defined(MAC_OS)
+#ifdef MAC_OS
 String::operator unsigned long long() const { return ullongValue(); }
+#endif
+#ifdef LINUX_OS
+String::operator sinteger() const { return llongValue(); }
 #endif
 String::operator float() const { return floatValue(); }
 String::operator double() const { return doubleValue(); }
@@ -1180,7 +1186,6 @@ bool String::operator != (const char *s) const { return strcmp(cstr(), s); }
 bool String::operator != (const std::string &s) const { return strcmp(cstr(), s.c_str()); }
 bool String::operator != (const String &s) const { return strcmp(cstr(), s.cstr()); }
 bool String::operator != (const SString &s) const { return strcmp(cstr(), s.cstr()); }
-
 String slib::operator+(const char &c, const String &s) { return String(c)+s; }
 String slib::operator+(const char *s1, const String &s2) { return String(s1)+s2; }
 String slib::operator+(const std::string &s1, const String &s2) { return String(s1)+s2; }

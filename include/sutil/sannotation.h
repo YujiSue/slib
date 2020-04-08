@@ -69,13 +69,17 @@ namespace slib {
 	void SAnnotation<T, Data>::insert(const Range<T>& site, const Data& dat) {
 		if (_annotation.empty()) _annotation.add(annot_dat<T, Data>(site, dat));
 		else {
-			if (site < _annotation.first().site) _annotation.insert(0, annot_dat<T, Data>(site, dat));
+			auto it = _annotation.begin(), end = _annotation.end();
+			if (site < it->site) _annotation.insert(0, annot_dat<T, Data>(site, dat));
 			else {
-				sforeach(_annotation) {
-					if (E_.site < site) {
-						_annotation.insert(it+1, annot_dat<T, Data>(site, dat));
+				++it;
+				while (it < end) {
+					if ((it - 1)->site < site && site < it->site) {
+						_annotation.insert(it, annot_dat<T, Data>(site, dat)); return;
 					}
+					++it;
 				}
+				if ((end - 1)->site < site) _annotation.add(annot_dat<T, Data>(site, dat));
 			}	
 		}
 	}
@@ -83,22 +87,17 @@ namespace slib {
 	void SAnnotation<T, Data>::append(const Range<T>& site, const Data& dat) {
 		if (_annotation.empty()) _annotation.add(annot_dat<T, Data>(site, dat));
 		else {
-			if (site.end < _annotation.first().site.begin) _annotation.insert(0, annot_dat<T, Data>(site, dat));
-			else if (_annotation.last().site.end < site.begin) _annotation.add(annot_dat<T, Data>(site, dat));
+			auto it = _annotation.begin(), end = _annotation.end();
+			if (site.end < it->site.begin) _annotation.insert(0, annot_dat<T, Data>(site, dat));
 			else {
-				sforeach(_annotation) {
-					if (E_.site.include(site)) {
-						auto tmp = E_.data;
-						E_.site.begin = site.end + 1;
+				while (it < end) {
+					if (E_.site.overlap(site)) {
 
 					}
-					else if (E_.site.overlap(site)) {
-											}
-					else {
-						if (_annotation.begin() < it) {
-
-						}
-					}
+					else if (it < end - 1 && 
+						it->site.end < site.begin && site.end < (it + 1)->site.begin) 
+						_annotation.insert(it + 1, annot_dat<T, Data>(site, dat));
+					++it;
 				}
 			}
 		}
@@ -112,16 +111,20 @@ namespace slib {
 
 	}
 	template<typename T, class Data>
-	Range<sarr_iter<annot_dat<T, Data>>> SAnnotation<T, Data>::operator[](const Site& site) { return at(site); }
+	Range<sarr_iter<annot_dat<T, Data>>> SAnnotation<T, Data>::operator[](const T& site) { return at(site); }
 	template<typename T, class Data>
-	Range<sarr_citer<annot_dat<T, Data>>> SAnnotation<T, Data>::operator[](const Site& site) const { return at(site); }
+	Range<sarr_iter<annot_dat<T, Data>>> SAnnotation<T, Data>::operator[](const Range<T>& site) { return at(site); }
 	template<typename T, class Data>
-	Range<sarr_iter<annot_dat<T, Data>>> SAnnotation<T, Data>::at(const Site& site) {
+	Range<sarr_iter<annot_dat<T, Data>>> SAnnotation<T, Data>::at(const T& site) {
+
+
 		auto it = _annotation.begin(), end = _annotation.end();
-		if (site < E_.site) return Range<sarr_iter<annot_dat<Site, Data>>>(it, it);
+
+
+		if (site < E_.site) return Range<sarr_iter<annot_dat<T, Data>>>(it, it);
 		if ((end - 1)->site < site) {
-			if ((end - 1)->site.overlap(site)) return Range<sarr_iter<annot_dat<Site, Data>>>(end-1, end-1);
-			else return Range<sarr_iter<annot_dat<Site, Data>>>(end, end);
+			if ((end - 1)->site.overlap(site)) return Range<sarr_iter<annot_dat<T, Data>>>(end-1, end-1);
+			else return Range<sarr_iter<annot_dat<T, Data>>>(end, end);
 		}
 
 
@@ -131,11 +134,19 @@ namespace slib {
 
 	}
 	template<typename T, class Data>
-	Range<sarr_citer<annot_dat<T, Data>>> SAnnotation<T, Data>::at(const Site& site) const {
+	Range<sarr_iter<annot_dat<T, Data>>> SAnnotation<T, Data>::at(const Range<T>& site) {
 
 	}
 	template<typename T, class Data>
-	bool SAnnotation<T, Data>::isAnnotated(const Site& site) const {
+	bool SAnnotation<T, Data>::isAnnotated(const T& site) const {
+		auto range = at(site);
+		sforin(it, range.begin, range.end) {
+			if (E_,site.overlap(site)) return true;
+		}
+		return false;
+	}
+	template<typename T, class Data>
+	bool SAnnotation<T, Data>::isAnnotated(const Range<T>& site) const {
 		auto pos = at(site);
 		sforin(pit, pos.begin, pos.end) {
 			if (pit->overlap(site)) return true;

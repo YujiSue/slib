@@ -146,14 +146,18 @@ namespace slib {
         SObjPtr(int i);
         SObjPtr(unsigned int ui);
         SObjPtr(size_t ui);        
-#if defined(MAC_OS)
-#else
+#ifdef WIN64_OS
         SObjPtr(long i);
-        SObjPtr(unsigned long ui);      
+#ifndef MAC_OS
+        SObjPtr(unsigned long ui);
+#endif
 #endif
         SObjPtr(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         SObjPtr(unsigned long long i);
+#endif
+#ifdef LINUX_OS
+		SObjPtr(sinteger i);
 #endif
         SObjPtr(float f);
         SObjPtr(double d);
@@ -486,14 +490,18 @@ namespace slib {
         operator int() const;
         operator unsigned int() const;
         operator size_t() const;
-#if defined(MAC_OS)
-#else
+#ifdef WIN64_OS
         operator long() const;
+#ifndef MAC_OS
         operator unsigned long() const;
 #endif
+#endif
         operator long long() const;
-#if defined(MAC_OS)
+#ifdef MAC_OS
         operator unsigned long long() const;
+#endif
+#ifdef LINUX_OS
+		operator sinteger() const;
 #endif
         operator float() const;
         operator double() const;

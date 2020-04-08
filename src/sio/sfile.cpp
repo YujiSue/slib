@@ -122,7 +122,24 @@ void SFile::setOffset(suinteger off, bool rev) {
     else _stream.seekg(off, std::ios::beg);
 }
 void SFile::moveOffset(sinteger off) { _stream.seekg(off, std::ios::cur); }
-void SFile::seek(sinteger off, SEEK_ORI ori) { _stream.seekg(off, ori); }
+void SFile::seek(sinteger off, SEEK_ORI ori) {
+	std::ios_base::seekdir dir;
+	switch(ori) {
+		case BEGIN:
+		dir = std::ios_base::beg;
+		break;
+		case CURRENT:
+		dir = std::ios_base::cur;
+		break;
+		case END:
+		dir = std::ios_base::end;
+		break;
+		default:
+		dir = std::ios_base::beg;
+		break;
+	}
+	_stream.seekg(off, dir);
+}
 void SFile::flush() { _stream.flush(); }
 void SFile::clear() { _stream.clear(); }
 stringarray SFile::components(const char *sep) const {

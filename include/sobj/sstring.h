@@ -36,13 +36,18 @@ namespace slib {
         SString(int i);
         SString(unsigned int ui);
         SString(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         SString(long i);
+#ifndef MAC_OS
         SString(unsigned long ui);
 #endif
+#endif
         SString(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         SString(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString(sinteger i);
 #endif
         SString(float f);
         SString(double d);
@@ -66,13 +71,18 @@ namespace slib {
         SString &operator=(int i);
         SString &operator=(unsigned int ui);
         SString &operator=(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         SString &operator=(long i);
+#ifndef MAC_OS
         SString &operator=(unsigned long ui);
 #endif
+#endif
         SString &operator=(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         SString &operator=(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString &operator=(sinteger i);
 #endif
         SString &operator=(float f);
         SString &operator=(double d);
@@ -93,13 +103,18 @@ namespace slib {
         SString &operator+=(int i);
         SString &operator+=(unsigned int ui);
         SString &operator+=(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         SString &operator+=(long i);
+#ifndef MAC_OS
         SString &operator+=(unsigned long ui);
 #endif
+#endif
         SString &operator+=(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         SString &operator+=(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString &operator+=(sinteger i);
 #endif
         SString &operator+=(float f);
         SString &operator+=(double d);
@@ -122,13 +137,18 @@ namespace slib {
         SString operator+(int i) const;
         SString operator+(unsigned int ui) const;
         SString operator+(size_t ui) const;
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         SString operator+(long i) const;
+#ifndef MAC_OS
         SString operator+(unsigned long ui) const;
 #endif
+#endif
         SString operator+(long long i) const;
-#if defined(MAC_OS)
+#ifdef MAC_OS
         SString operator+(unsigned long long ui) const;
+#endif
+#ifdef LINUX_OS
+        SString operator+(sinteger i) const;
 #endif
         SString operator+(float f) const;
         SString operator+(double d) const;
@@ -144,20 +164,25 @@ namespace slib {
         SString operator+(const String &s) const;
         SString operator+(const SString &s) const;
         SString operator+(const SNumber &n) const;
-		SString operator+(const sio::SFile& n);
+	SString operator+(const sio::SFile& n);
         SString operator+(const sobj &obj) const;
         
         SString &operator<<(bool b);
         SString &operator<<(int i);
         SString &operator<<(unsigned int ui);
         SString &operator<<(size_t ui);
-#if defined(WIN64_OS)
+#ifdef WIN64_OS
         SString &operator<<(long i);
+#ifndef MAC_OS
         SString &operator<<(unsigned long ui);
 #endif
+#endif
         SString &operator<<(long long i);
-#if defined(MAC_OS)
+#ifdef MAC_OS
         SString &operator<<(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString &operator<<(sinteger i);
 #endif
         SString &operator<<(float f);
         SString &operator<<(double d);
@@ -173,7 +198,7 @@ namespace slib {
         SString &operator<<(const String &s);
         SString &operator<<(const SString &s);
         SString &operator<<(const SNumber &n);
-		SString& operator<<(const sio::SFile& n);
+	SString& operator<<(const sio::SFile& n);
         SString &operator<<(const sobj &obj);
         
         SString &operator*=(const int & num);
@@ -185,8 +210,8 @@ namespace slib {
         void load(const char *path);
         void save(const char *path);
         
-		sobj& u8char(int idx = 0);
-		const sobj& u8char(int idx = 0) const;
+	sobj& u8char(int idx = 0);
+	const sobj& u8char(int idx = 0) const;
 
         //Override
         String getClass() const;

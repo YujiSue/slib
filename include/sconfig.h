@@ -31,6 +31,7 @@
 #include <vector>
 #ifndef _MANAGED
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #endif
@@ -86,7 +87,8 @@
 #define S_IRWXG 0x0070
 #define S_IRWXO 0x0007
 #pragma warning(disable:4996)
-#elif __unix__
+#elif __linux__
+#define OS_TYPE LINUX_OS
 #include <dirent.h>
 #include <fts.h>
 #include <sys/ipc.h>
@@ -96,8 +98,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <cmath>
-#elif __linux__
-#define OS_TYPE LINUX_OS
+#elif __unix__
 #include <dirent.h>
 #include <fts.h>
 #include <sys/ipc.h>
