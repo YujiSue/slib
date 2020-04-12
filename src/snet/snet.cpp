@@ -1,12 +1,11 @@
 #include "snet/snet.h"
 
 using namespace slib;
-using namespace slib::snet;
 
-SDictionary slib::snet::STANDARD_HTTP =
+SDictionary slib::STANDARD_HTTP =
 { kv("url", ""), kv("ssl", false), kv("cookie", snull), kv("post", snull), kv("load", true)};
 
-SDictionary slib::snet::STANDARD_HTTPS =
+SDictionary slib::STANDARD_HTTPS =
 { kv("url", ""), kv("ssl", true), kv("cookie", snull), kv("post", snull), kv("load", true)};
 
 
@@ -18,7 +17,7 @@ SNetException::SNetException(const char* f, sint l, const char* func, sint e, co
 }
 SNetException::~SNetException() {}
 
-size_t slib::snet::writeCallback(void *buf, size_t size, size_t nmemb, void *ptr) {
+size_t slib::writeCallback(void *buf, size_t size, size_t nmemb, void *ptr) {
     size_t block = size * nmemb;
     auto dat = static_cast<SData *>(ptr);
     dat->append((subyte *)buf, block);

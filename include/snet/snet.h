@@ -9,9 +9,7 @@
 #include "sutil/scode.h"
 
 namespace slib {
-    namespace snet {
-        
-        #define SNET_ERROR 0x0090
+    #define SNET_ERROR 0x0090
         
         #define HTTP_CONNECTION 0x01
         #define FTP_CONNECTION  0x02
@@ -48,7 +46,6 @@ namespace slib {
             void ftp(const char *url, bool ssl = false, const char *info = nullptr);
             void connect(const SDictionary &dict);
         };
-    }
 }
 
 #endif
