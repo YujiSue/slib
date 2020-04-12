@@ -85,8 +85,6 @@ size_t SSystem::getProcessID(const char* name) {
 #else
 	String res;
 	exec("ps -a", res);
-    
-
 	/*
 	 */
     return NOT_FOUND;
@@ -108,7 +106,6 @@ void SSystem::killProcess(size_t pid) {
 
 SProcess::SProcess() : _complete(false) {
 #ifdef WIN_OS
-
 	_saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
 	_saAttr.bInheritHandle = TRUE;
 	_saAttr.lpSecurityDescriptor = NULL;
@@ -128,20 +125,24 @@ SProcess::SProcess() : _complete(false) {
 	_siStartInfo.hStdOutput = _pipe[3];
 	_siStartInfo.hStdInput = _pipe[0];
 	_siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
-	
 #else
-
+    _res = pipe(&_pipe[2]);
+    if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Child->Parent");
+    _res = pipe(&_pipe[0]);
+    if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Parent->Child");
+    STD_IN = fileno(stdin);
+    STD_OUT = fileno(stdout);
 #endif
 }
 SProcess::~SProcess() {
+    if (_wait && !_complete) wait();
 #ifdef WIN_OS
-	if (_wait && !_complete) wait();
 	CloseHandle(_piProcInfo.hProcess);
 	CloseHandle(_piProcInfo.hThread);
 	CloseHandle(_pipe[3]);
 	CloseHandle(_pipe[0]);
 #else
-
+    sforin(i, 0, 4) close(_pipe[i]);
 #endif
 }
 void SProcess::createChild(const char* cmd, bool wait) {
@@ -153,12 +154,32 @@ void SProcess::createChild(const char* cmd, bool wait) {
 #endif
 	if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PROCESS_ERR, "Create child process");
 #else
-
+    if ((_pid = fork()) < 0) {
+        sforin(i, 0, 4) close(_pipe[i]);
+        throw SException(ERR_INFO, SLIB_CREATE_PROCESS_ERR, "Create child process");
+    }
+    if (_pid == 0) {
+        close(_pipe[1]);
+        close(_pipe[2]);
+        dup2(_pipe[0], 0); close(_pipe[0]);
+        dup2(_pipe[3], 1); close(_pipe[3]);
+        if (execl(cmd, cmd, NULL) < 0) {
+            close(_pipe[0]);
+            close(_pipe[3]);
+            exit(1);
+        }
+    }
+    close(_pipe[0]);
+    close(_pipe[3]);
+    STD_IN = _pipe[2];
+    STD_OUT = _pipe[1];
 #endif
 	_wait = wait;
+    _complete = false;
 }
 
 void SProcess::send(const char *cmd, bool receive) {
+    _msg.clear();
 #ifdef WIN_OS
 	DWORD size;
 	_res = WriteFile(_pipe[1], String(cmd).localize().cstr(), strlen(cmd), &size, NULL);
@@ -173,10 +194,24 @@ void SProcess::send(const char *cmd, bool receive) {
 		}
 	}
 #else
-
+    write(STD_OUT, cmd, strlen(cmd));
+    if (receive) {
+        int size;
+        char buf[4096];
+        while (true) {
+            size = read(STD_IN, buf, 4096);
+            if (size < 0) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
+            else if (!size) break;
+            else {
+                buf[size] = '\0';
+                _msg += String(buf);
+            }
+        }
+    }
 #endif
 }
 void SProcess::receive() {
+    _msg.clear();
 #ifdef WIN_OS
 	DWORD dwRead;
 	CHAR chBuf[4096];
@@ -189,7 +224,17 @@ void SProcess::receive() {
 		}
 	}
 #else
-
+    int size;
+    char buf[4096];
+    while (true) {
+        size = read(STD_IN, buf, 4096);
+        if (size < 0) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
+        else if (!size) break;
+        else {
+            buf[size] = '\0';
+            _msg += String(buf);
+        }
+    }
 #endif
 }
 String& SProcess::message() { return _msg; }
@@ -198,7 +243,8 @@ void SProcess::wait() {
 	WaitForSingleObject(_piProcInfo.hProcess, INFINITE);
 	_complete = true;
 #else
-
+    waitpid(_pid, &_status, 0);
+    _complete = true;
 #endif
 }
 int SProcess::processID() {
@@ -212,7 +258,7 @@ void SProcess::kill() {
 #ifdef WIN_OS
 	TerminateProcess(_piProcInfo.hProcess, 0);
 #else
-
+    SSystem::exec(String("kill ")+(sint)_pid);
 #endif
 }
 

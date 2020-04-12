@@ -111,10 +111,10 @@
 #endif
 
 #ifndef SLIB_DLL
-#ifdef _WINDLL
-#define SLIB_DLL __declspec(dllexport)
-#elif defined(SLIBDLL)
+#if defined(SLIBDLL)
 #define SLIB_DLL __declspec(dllimport)
+#elif defined(_WINDLL)
+#define SLIB_DLL __declspec(dllexport)
 #else
 #define SLIB_DLL  
 #endif

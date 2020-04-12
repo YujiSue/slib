@@ -44,6 +44,8 @@ namespace slib {
 		PROCESS_INFORMATION _piProcInfo;
 		
 		#else
+        sint STD_IN, STD_OUT;
+        int _status;
 		pid_t _pid;
 		sint _pipe[4]; // parent->child in(0), out(1), child->parent in(2), out(3)
 		#endif
