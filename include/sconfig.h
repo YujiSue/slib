@@ -2,7 +2,6 @@
 #define SLIB_CONFIG_H
 
 #include <float.h>
-#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
