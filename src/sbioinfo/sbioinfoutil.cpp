@@ -3,6 +3,13 @@
 using namespace slib;
 using namespace slib::sbio;
 
+SBioInfoException::SBioInfoException(const char* f, sint l, const char* func, sint e, const char* target, const char* note) 
+			: SException(f, l, func, e, target, note) {
+            prefix = "sbioinfo";
+
+}
+SBioInfoException::~SBioInfoException() {}
+
 size_t slib::sbio::SBIUtil::countBin(sorder& order, srange range) {
     auto cap = range.length()>>13;
     if (cap < 8) cap = 8;

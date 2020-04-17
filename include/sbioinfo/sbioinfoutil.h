@@ -2,10 +2,16 @@
 #define SBIO_SBIOINFOUTIL_H
 
 #include "sobj.h"
-#include "sbio/sbio.h"
 
 namespace slib {
 	namespace sbio {
+		
+		class SBioInfoException : public SException {
+        public:
+            SBioInfoException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
+            ~SBioInfoException();
+        };
+		
 		constexpr sushort NOT_USE_FLAG = 0x4000;
 		constexpr sushort UNAVAILABLE_FLAG = 0x8000;
 
