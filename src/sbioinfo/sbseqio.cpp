@@ -111,7 +111,7 @@ void SBSeqIO::loadABI(sio::SFile &file, SBioSeq *seq) {
 		seq->_init();
 	}
 	file.readBytes(tmp, 4);
-	if (memcmp(magic, tmp, 4)) throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, tmp, "ABIF");
+	if (memcmp(magic, tmp, 4)) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, tmp, "ABIF");
 	seq->addAttribute("format", "ABIF");
 	sshort ver;
 	file.readShort(ver);
@@ -182,7 +182,7 @@ void SBSeqIO::loadFASTA(sushort type, sio::SFile& file, SBioSeq* seq) {
 	if (!file.isOpened()) file.open();
 	String row, str, name;
 	file.readLine(name);
-	if (name[0] != '>') throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, name, "FASTA");
+	if (name[0] != '>') throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, name, "FASTA");
 	name.clip(1);
 	while (!file.eof()) {
 		file.readLine(row);
@@ -202,7 +202,7 @@ void SBSeqIO::loadFASTA(sushort type, sio::SFile& file, SBSeqList* list) {
 		list->_attribute["_file_type"] = "fasta";
 		if (!file.isOpened()) file.open();
 		file.readLine(row);
-		if (!row.beginWith(">")) throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, row, "FASTA");
+		if (!row.beginWith(">")) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, row, "FASTA");
 		name = row.substring(1);
 		list->_index[name] = list->size();
 		if (!type) {
@@ -290,7 +290,7 @@ void SBSeqIO::makeIndex(sushort type, sio::SFile& file, SBSeqList* list) {
 		list->_attribute["_file"] = sio::SFile(file.path(), sio::READ);
 		if (!file.isOpened()) file.open();
 		file.readLine(row);
-		if (!row.beginWith(">")) throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, row, "FASTA");
+		if (!row.beginWith(">")) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, row, "FASTA");
 		list->_attribute["_offset"].add(file.offset());
 		name = row.substring(1);
 		list->_index[name] = list->size();

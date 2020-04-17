@@ -281,7 +281,7 @@ void SBioSeq::complement() {
             sseq::rcompi(*this);
             break;
         default:
-            throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA or RNA");
+            throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA or RNA");
             break;
     }
 }
@@ -302,7 +302,7 @@ void SBioSeq::splice(const sregion &region) {
             
             break;
         default:
-            throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA or RNA");
+            throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA or RNA");
             break;
     }
 }
@@ -313,7 +313,7 @@ void SBioSeq::transcribe() {
         _type = RNA_SEQ1;
         _init();
     }
-    else throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA");
+    else throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA");
 }
 void SBioSeq::rtranscribe() {
     if (_type & RNA_SEQ) {
@@ -322,7 +322,7 @@ void SBioSeq::rtranscribe() {
         _type = DNA_SEQ1;
         _init();
     }
-    else throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
+    else throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
     
 }
 void SBioSeq::translate(const CODON_TABLE &code) {
@@ -333,7 +333,7 @@ void SBioSeq::translate(const CODON_TABLE &code) {
         _type = AA_SEQ1;
         _init();
     }
-    else throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
+    else throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
 }
 
 SBioSeq SBioSeq::transcript() {
@@ -342,7 +342,7 @@ SBioSeq SBioSeq::transcript() {
         seq.transcribe();
         return seq;
     }
-    throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA");
+    throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "DNA");
 }
 SBioSeq SBioSeq::rtranscript() {
     if (_type & RNA_SEQ) {
@@ -350,7 +350,7 @@ SBioSeq SBioSeq::rtranscript() {
         seq.rtranscribe();
         return seq;
     }
-    throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
+    throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
 }
 SBioSeq SBioSeq::translated(const CODON_TABLE &code) {
     if (_type & RNA_SEQ) {
@@ -358,5 +358,5 @@ SBioSeq SBioSeq::translated(const CODON_TABLE &code) {
         seq.translate(code);
         return seq;
     }
-    throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
+    throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
 }

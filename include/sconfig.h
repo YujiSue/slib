@@ -112,13 +112,13 @@
 #include <cmath>
 #endif
 
-#ifndef SLIB_DLL
-#if defined(SLIBDLL)
-#define SLIB_DLL __declspec(dllimport)
+#ifndef SOBJ_DLL
+#if defined(USE_SOBJ_DLL)
+#define SOBJ_DLL __declspec(dllimport)
 #elif defined(_WINDLL)
-#define SLIB_DLL __declspec(dllexport)
+#define SOBJ_DLL __declspec(dllexport)
 #else
-#define SLIB_DLL  
+#define SOBJ_DLL  
 #endif
 #endif
 

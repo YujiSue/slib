@@ -20,7 +20,7 @@ void SFastq::importFq(const char *p) {
                 seq.resize(2*seq.length());
                 memcpy(seq.ptr(seq.length()), row[3].cstr(), seq.length());
             }
-            else throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, row[0]+".."+row[2]+"..", "FASTQ");
+            else throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, row[0]+".."+row[2]+"..", "FASTQ");
         }
     } catch (SIOException ie) {
 		ie.print();

@@ -9,8 +9,8 @@
 namespace slib {
     using namespace smath;
     
-    class SLIB_DLL STable;
-    class SLIB_DLL SColumn : public SArray {
+    class SOBJ_DLL STable;
+    class SOBJ_DLL SColumn : public SArray {
         friend STable;
     public:
         static const sushort NUMBER_COLUMN = 0x0010;
@@ -56,7 +56,7 @@ namespace slib {
         SObject *clone() const;
     };
     
-    class SLIB_DLL STable : public SObject {
+    class SOBJ_DLL STable : public SObject {
         friend SColumn;
 
     protected:

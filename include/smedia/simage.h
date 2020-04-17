@@ -11,7 +11,7 @@ namespace slib {
     using namespace smath;
     
     namespace smedia {
-        class SLIB_DLL SImage : public SObject {
+        class SOBJ_DLL SImage : public SObject {
             friend SImageIO;
         public:            
             typedef enum {

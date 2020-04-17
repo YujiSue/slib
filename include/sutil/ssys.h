@@ -8,10 +8,10 @@
 namespace slib {
 
     namespace smedia {
-        class SLIB_DLL SImage;
+        class SOBJ_DLL SImage;
     }
     
-    class SLIB_DLL SSystem {
+    class SOBJ_DLL SSystem {
     protected:
         
     public:
@@ -32,7 +32,7 @@ namespace slib {
         //sobj pasteFromBoard();
     };
 
-	class SLIB_DLL SProcess {
+	class SOBJ_DLL SProcess {
 	private:
 		bool _complete, _wait, _res;
 		String _msg;
@@ -63,7 +63,7 @@ namespace slib {
 		void kill();
 	};
 
-	class SLIB_DLL SharedMemory {
+	class SOBJ_DLL SharedMemory {
 	public:
 	private:
 		size_t _size;

@@ -11,7 +11,7 @@ namespace slib {
 
 #define DIMENSION_SIZE_DIFF(X, Y) String(X)+u8" ≠ "+String(Y)
 
-		class SLIB_DLL SMathException : public SException {
+		class SOBJ_DLL SMathException : public SException {
 		public:
 			SMathException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr) :
 				SException(f, l, func, e, target, note) {

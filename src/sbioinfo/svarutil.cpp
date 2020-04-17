@@ -530,7 +530,7 @@ inline void _setVCFInfo(Array<SVariant>& variants, String& data, sobj& info_attr
 			stringarray vals = E_.value.split(",");
 			if (vals.size() != variants.size()) {
 				std::cout << "err vcfinfo" << std::endl;
-				throw SBioException(ERR_INFO);
+				throw SBioInfoException(ERR_INFO);
 			}
 			sforin(v, 0, variants.size()) variants[v].attribute[E_.key] = vals[v];
 		}
@@ -547,7 +547,7 @@ inline void _setVCFFormat(Array<SVariant>& variants, String &keydat, String &for
 			if (variants.size() == 1) {
 				if (genotype.size() != 2) {
 					std::cout << "genotype error" << std::endl;
-					throw SBioException(ERR_INFO);
+					throw SBioInfoException(ERR_INFO);
 				}
 				if (genotype[0] == genotype[1]) variants[0].homo = true;
 				else variants[0].homo = false;
@@ -556,7 +556,7 @@ inline void _setVCFFormat(Array<SVariant>& variants, String &keydat, String &for
 			else {
 				if (genotype.size() < 2) {
 					std::cout << "genotype error" << std::endl;
-					throw SBioException(ERR_INFO);
+					throw SBioInfoException(ERR_INFO);
 				}
 				sforin(v, 0, variants.size()) {
 					size_t idx;
@@ -591,8 +591,8 @@ inline void _setVCFFormat(Array<SVariant>& variants, String &keydat, String &for
 }
 inline void _readVCFData(String& row, SVarList* list, Array<SVariant> &variants, sattribute* converter, bool format) {
 	stringarray data = row.split("\t");
-	if (format && data.size() < 10) throw SBioException(ERR_INFO);
-	else if (data.size() < 8) throw SBioException(ERR_INFO);
+	if (format && data.size() < 10) throw SBioInfoException(ERR_INFO);
+	else if (data.size() < 8) throw SBioInfoException(ERR_INFO);
 	stringarray alts = data[4].split(",");
 	int vcount = alts.size();
 	variants.resize(vcount);

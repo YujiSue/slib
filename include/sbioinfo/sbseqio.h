@@ -1,17 +1,17 @@
 #ifndef SBIO_SBSEQIO_H
 #define SBIO_SBSEQIO_H
 
-#include "sobj.h"
+#include "sbioinfoutil.h"
 
 namespace slib {
 	namespace sbio {
 
 		constexpr size_t FASTA_ROW_CHAR = 60;
 
-		class SLIB_DLL SBioSeq;
-		class SLIB_DLL SBSeqList;
+		class SBIOINFO_DLL SBioSeq;
+		class SBIOINFO_DLL SBSeqList;
 
-		struct SLIB_DLL abidir {
+		struct SBIOINFO_DLL abidir {
 			sint number;
 			sshort element_type;
 			sshort element_size;
@@ -29,7 +29,7 @@ namespace slib {
 			bool operator==(const abidir& dir) const;
 		};
 
-		class SLIB_DLL SBSeqIO {
+		class SBIOINFO_DLL SBSeqIO {
 			friend SBioSeq;
 		public:
 			SBSeqIO();

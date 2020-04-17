@@ -3,10 +3,19 @@
 
 #include "sobj.h"
 
+#ifndef SBIOINFO_DLL
+#if defined(USE_SBIOINFO_DLL)
+#define SBIOINFO_DLL __declspec(dllimport)
+#elif defined(_WINDLL)
+#define SBIOINFO_DLL __declspec(dllexport)
+#else
+#define SBIOINFO_DLL  
+#endif
+#endif
+
 namespace slib {
 	namespace sbio {
-		
-		class SBioInfoException : public SException {
+		class SBIOINFO_DLL SBioInfoException : public SException {
         public:
             SBioInfoException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SBioInfoException();
@@ -208,7 +217,7 @@ namespace slib {
 		constexpr sushort GENE_FUSION = 0x8000;
 
 
-		class SLIB_DLL SBIUtil {
+		class SBIOINFO_DLL SBIUtil {
 		public:
 			static double scoreVal(double v);
 			static double phredVal(double v);
@@ -220,7 +229,7 @@ namespace slib {
 
 		};
 
-		struct SLIB_DLL sbpos : public srange {
+		struct SBIOINFO_DLL sbpos : public srange {
 			sint idx;
 			bool dir;
 

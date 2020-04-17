@@ -20,7 +20,7 @@ namespace slib {
         constexpr sint DEFAULT_COMPRESS = 1;
         constexpr double DEFAULT_THRESHOLD = 1.0;
         
-        struct SLIB_DLL sbsearch_param {
+        struct SBIOINFO_DLL sbsearch_param {
             sushort ref_type, code_size;
             bool ds_search, multi_thread;
             sint min_match, seed_len, coded_seed_len, max_gap, max_miss, thread_count;
@@ -39,7 +39,7 @@ namespace slib {
             sobj toObj();
         };
         
-        struct SLIB_DLL spma {
+        struct SBIOINFO_DLL spma {
             typedef Array<spma *, CMemory<spma*>> pma_vec;
             typedef Array<std::pair<sint, sint>, RMemory<std::pair<sint, sint>>> pair_vec;
             
@@ -58,7 +58,7 @@ namespace slib {
             void init();
         };
         
-        class SLIB_DLL SBQuery {
+        class SBIOINFO_DLL SBQuery {
             typedef Array<spma> pma_vec;
             
         private:
@@ -104,7 +104,7 @@ namespace slib {
             
         };
         
-        class SLIB_DLL SBSearch {
+        class SBIOINFO_DLL SBSearch {
         public:
             typedef Array<std::pair<sint, sint>, RMemory<std::pair<sint, sint>>> match_array;
             
@@ -135,7 +135,7 @@ namespace slib {
             void reset();
         };
         
-        class SLIB_DLL SBExtend {
+        class SBIOINFO_DLL SBExtend {
             sbsearch_param *_par;
             subyte *_ref, *_que;
             int _rlen, _qlen, _rl, _ql, _len, *_score;

@@ -35,12 +35,12 @@ void SBSeqList::load(const char *path) {
 		sio::SFile file(path, sio::READ);
 		//Read magic
 		file.readBytes(magic, 4);
-		if (memcmp(magic, SLIB_SBIOSEQ_MAGIC, 4)) throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, magic, "SBIO_SEQ");
+		if (memcmp(magic, SLIB_SBIOSEQ_MAGIC, 4)) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, magic, "SBIO_SEQ");
 		//Read header
 		file.readSObject(_attribute);
 		//Read sequence count
 		file.readInt(tmp);
-        if (tmp < 1) throw SBioException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(tmp).c_str(), ">0");
+        if (tmp < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(tmp).c_str(), ">0");
         resize(tmp);
         sforin(i, 0, size()) {
             //Read sequence type
@@ -88,7 +88,7 @@ void SBSeqList::load(const char *path) {
         ie.print();
 		clear();
     }
-	catch (SBioException be) {
+	catch (SBioInfoException be) {
 		be.print();
 		clear();
 	}
@@ -216,7 +216,7 @@ void SBSeqList::index(const char *path) {
 		file.readSObject(_attribute);
         //Read sequence count
 		file.readInt(tmp);
-        if (tmp < 1) throw SBioException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(tmp).c_str(), ">0");
+        if (tmp < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(tmp).c_str(), ">0");
         resize(tmp);
 		_attribute["_offset"] = SArray(tmp);
         

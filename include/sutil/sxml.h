@@ -23,11 +23,11 @@ namespace slib {
 
 	}
         
-	class SLIB_DLL SXmlNode;
-	class SLIB_DLL SXmlDoc;
+	class SOBJ_DLL SXmlNode;
+	class SOBJ_DLL SXmlDoc;
         
 	using sxnode = SClsPtr<SXmlNode, NODE_OBJ>;
-	class SLIB_DLL SXmlNode : public SNode<SXmlNode> {
+	class SOBJ_DLL SXmlNode : public SNode<SXmlNode> {
 		friend SXmlDoc;
 	public:
 		static void encodeXML(String &str);
@@ -93,7 +93,7 @@ namespace slib {
 	/*
         #define sxml sptr<SXmlNode>
         
-        class SLIB_DLL SXmlNode : public Node<SXmlNode> {
+        class SOBJ_DLL SXmlNode : public Node<SXmlNode> {
             friend SXmlDoc;
         public:
             static constexpr sushort DEFINITION = 0x0100;
@@ -137,7 +137,7 @@ namespace slib {
             void parse(const char *s);
             String toString() const;
         };
-        class SLIB_DLL SXmlDoc {
+        class SOBJ_DLL SXmlDoc {
             friend SXmlNode;
         public:
             static constexpr sushort XML = 0x1000;

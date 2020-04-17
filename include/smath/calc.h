@@ -81,7 +81,7 @@ namespace slib {
         extern inline double splus(double n) { return log(1.0 + exp(n)); }
         extern inline double relu(double n) { return 0.0 < n ? n : 0.0; }
         
-        class SLIB_DLL SRandom {
+        class SOBJ_DLL SRandom {
             std::random_device _seed;
             std::mt19937 _engine;
 

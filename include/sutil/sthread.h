@@ -7,7 +7,7 @@ using namespace System::Threading;
 #include "sbasic/sbasic.h"
 
 namespace slib {
-    class SLIB_DLL SLock {
+    class SOBJ_DLL SLock {
 #ifdef _MANAGED
 	private:
 		int _lock;
@@ -31,7 +31,7 @@ namespace slib {
 #endif 
     };
 
-	class SLIB_DLL SAutoLock {
+	class SOBJ_DLL SAutoLock {
 	private:
 		SLock *_lock;
 	public:
@@ -39,7 +39,7 @@ namespace slib {
 		~SAutoLock();
 	};
 
-	class SLIB_DLL SThread {
+	class SOBJ_DLL SThread {
 	public:
 		typedef enum {
 			NO_TASK = 0,
@@ -77,7 +77,7 @@ namespace slib {
 		void complete();
 	};
 
-	class SLIB_DLL STask {
+	class SOBJ_DLL STask {
 	
 	private:
 		std::function<void()> _func;
@@ -98,7 +98,7 @@ namespace slib {
 		void operator()();
 
 	};
-	class SLIB_DLL SWork {
+	class SOBJ_DLL SWork {
 	public:
 		/*
 		typedef enum {

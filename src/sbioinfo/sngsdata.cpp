@@ -129,7 +129,7 @@ void SNGSData::load(const char *path) {
         char magic[4];
         file.readBytes(magic, 4);
         if(memcmp(BSM_MAGIC, magic, 3) != 0)
-            throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR , magic, u8"BSM");
+            throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR , magic, u8"BSM");
         sint tmp;
         file.readInt(tmp);
         if (tmp != ref_num) setNum(tmp);
@@ -140,7 +140,7 @@ void SNGSData::load(const char *path) {
         file.readInt(depth_bin);
         sforin(i, 0, ref_num) {
             file.readInt(tmp);
-            if(tmp != i) throw SBioException(ERR_INFO, SLIB_CONFLICT_ERROR, "reference index", "index value");
+            if(tmp != i) throw SBioInfoException(ERR_INFO, SLIB_CONFLICT_ERROR, "reference index", "index value");
             file.readInt(tmp);
             if (tmp != ref_length[i]) setLength(i, tmp);
             file.readInt(tmp);
@@ -357,7 +357,7 @@ inline void subtractVar(Array<svar_data> *v1, Array<svar_data> *v2, size_t dist)
 
 void SNGSData::subtract(SNGSData &sum, svariant_param *vp) {
     if (ref_num != sum.ref_num)
-        throw SBioException(ERR_INFO, SLIB_CONFLICT_ERROR, "reference count", "another summary");
+        throw SBioInfoException(ERR_INFO, SLIB_CONFLICT_ERROR, "reference count", "another summary");
     sforin(i, 0, ref_num) {
         sforin(j, 0, 5)
             _threads.addTask(subtractVar, &variants[5*i+j], &sum.variants[5*i+j], vp->max_dist);
@@ -425,7 +425,7 @@ inline void _merge_depth(float *dp1, float *dp2, sint size, sint length, sint bi
 
 void SNGSData::integrate(SNGSData &sum, svariant_param *vp) {
     if (ref_num != sum.ref_num || !(ref_length == sum.ref_length) || depth_bin != sum.depth_bin)
-        throw SBioException(ERR_INFO, SLIB_CONFLICT_ERROR, "ref_num", CONFLICT_TEXT("this", "sum"));
+        throw SBioInfoException(ERR_INFO, SLIB_CONFLICT_ERROR, "ref_num", CONFLICT_TEXT("this", "sum"));
     
     total_length = 0;
     average_length *= total_reads;

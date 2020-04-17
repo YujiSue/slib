@@ -5,7 +5,7 @@
 #include "sbasic/string.h"
 
 namespace slib {
-    class SLIB_DLL String;
+    class SOBJ_DLL String;
     
     constexpr suint SLIB_NULL_ERROR = 0x0001;
     constexpr suint SLIB_CAST_ERROR = 0x0002;
@@ -29,7 +29,7 @@ namespace slib {
 	
 	#define ERR_INFO __FILE__,__LINE__,__func__
     
-    class SLIB_DLL SException {
+    class SOBJ_DLL SException {
     public:
         sint err, line;
         String prefix, file, function, message, description;

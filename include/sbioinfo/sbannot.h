@@ -9,7 +9,7 @@ namespace slib {
     
     namespace sbio {
 
-		struct annot_info : public sbpos {
+		struct SBIOINFO_DLL annot_info : public sbpos {
 			sint _id, type;
 			String name;
 
@@ -19,7 +19,7 @@ namespace slib {
 			~annot_info();
 		};
 
-		struct chr_info : public annot_info {
+		struct SBIOINFO_DLL chr_info : public annot_info {
 			chr_info();
 			chr_info(const char* s, const sbpos& pos);
 			chr_info(const chr_info& c);
@@ -27,22 +27,22 @@ namespace slib {
 			chr_info& operator=(const chr_info& c);
 		};
 
-		struct contig_info : public annot_info {
+		struct SBIOINFO_DLL contig_info : public annot_info {
 			contig_info();
 			contig_info(const contig_info& c);
 			~contig_info();
 			contig_info& operator=(const contig_info& c);
 		};
 
-		struct struct_info : public annot_info {
+		struct SBIOINFO_DLL struct_info : public annot_info {
 			struct_info();
 			struct_info(const struct_info& s);
 			~struct_info();
 
 			struct_info& operator=(const struct_info& s);
 		};
-		struct gene_info;
-		struct transcript_info : public annot_info {
+		struct SBIOINFO_DLL gene_info;
+		struct SBIOINFO_DLL transcript_info : public annot_info {
 			gene_info* gene;
 			Array<struct_info> structures;
 
@@ -60,7 +60,7 @@ namespace slib {
 			Array<struct_info> messenger();
 		};
 
-		struct gene_info : public annot_info {
+		struct SBIOINFO_DLL gene_info : public annot_info {
 			String gene_id, description;
 			stringarray other_names;
 			Array<transcript_info*> transcripts;
@@ -76,7 +76,7 @@ namespace slib {
 			void addTranscript(transcript_info* t);
 		};
 
-		struct mut_info : public annot_info {
+		struct SBIOINFO_DLL mut_info : public annot_info {
 			String mut_id, strain;
 			sattribute attribute;
 
@@ -87,7 +87,7 @@ namespace slib {
 			mut_info& operator=(const mut_info& m);
 		};
 
-		struct feature_info : public annot_info {
+		struct SBIOINFO_DLL feature_info : public annot_info {
 			feature_info();
 			feature_info(const feature_info& f);
 			~feature_info();
@@ -95,7 +95,7 @@ namespace slib {
 			feature_info& operator=(const feature_info& f);
 		};
 
-		struct transcript_site {
+		struct SBIOINFO_DLL transcript_site {
 			sushort type, site;
 			String name, ori, alt;
 			sint pos;
@@ -108,7 +108,7 @@ namespace slib {
 			transcript_site& operator=(const transcript_site& trs);
 		};
 
-		struct gene_site {
+		struct SBIOINFO_DLL gene_site {
 			sushort type;
 			String name;
 			bool dir;
@@ -123,7 +123,7 @@ namespace slib {
 			gene_site& operator=(const gene_site& g);
 		};
 
-        class SBAnnotDB : public SDataBase {
+        class SBIOINFO_DLL SBAnnotDB : public SDataBase {
 			
 
             /*

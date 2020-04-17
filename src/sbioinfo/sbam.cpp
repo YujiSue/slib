@@ -113,9 +113,9 @@ void sbam::bai::load(const char *path) {
         sio::SFile file(path, sio::READ);
         file.readBytes(_magic, 4);
         if (memcmp(BAI_MAGIC, _magic, 4) != 0)
-            throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, _magic, "BAI");
+            throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, _magic, "BAI");
         file.readInt(ref_num);
-        if(ref_num < 0) throw SBioException(ERR_INFO, SLIB_RANGE_ERROR, "ref_num", ">0");
+        if(ref_num < 0) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, "ref_num", ">0");
         setNum(ref_num);
         sforin(i, 0, ref_num) {
             auto &map = _bin_map[i];
@@ -193,7 +193,7 @@ void sbam::bgzf_dat::load(SBamFile *bam) {
     if (bam->eof() || offset.file_offset == bam->size()) return;
     bam->readBytes(_magic, 16);
     if(memcmp(GZ_MAGIC, _magic, 16) != 0)
-        throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, _magic, "BGZF");
+        throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, _magic, "BGZF");
     bam->readUShort(ori_length);
     bam->readBytes(ori_data, ori_length-21);
     bam->readInt(block_length);
@@ -246,7 +246,7 @@ void SBamFile::_readHeader() {
     char s[4];
     _readData(s, 4);
     if(memcmp(BAM_MAGIC, s, 4) != 0)
-        throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, s, "BAM");
+        throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, s, "BAM");
     sint tmp;
     _readData(&tmp, 4);
     info.text.resize(tmp);
@@ -263,7 +263,7 @@ void SBamFile::_readHeader() {
 }
 void SBamFile::_checkError() {
 	if (_data->result == Z_STREAM_ERROR || _data->result == Z_DATA_ERROR || _data->result == Z_BUF_ERROR)
-            throw SBioException(ERR_INFO, SLIB_EXEC_ERROR, "inflate", std::to_string(_data->result).c_str());
+            throw SBioInfoException(ERR_INFO, SLIB_EXEC_ERROR, "inflate", std::to_string(_data->result).c_str());
 }
 void SBamFile::init() {
     if (isOpened()) close();
@@ -305,7 +305,7 @@ void SBamFile::setVOff(const sbam::voffset &off) {
 //void SBamFile::sort() {}
 //void SBamFile::CREATEIndex() {}
 inline void lenCheck(sint &len) {
-    if (len < 1) throw SBioException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(len).c_str(), READ_SIZE_ERR_MSG);
+    if (len < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(len).c_str(), READ_SIZE_ERR_MSG);
 }
 bool SBamFile::next(sbam::readinfo *ri) {
     if (!ri) ri = &read;
@@ -318,7 +318,7 @@ bool SBamFile::next(sbam::readinfo *ri) {
     _readData(&ri->pos.idx, 4); len-=4; lenCheck(len);
     _readData(&ri->pos.begin, 4); len-=4; lenCheck(len);
     if(ri->pos.idx < -1 || ri->pos.begin < -1)
-        throw SBioException(ERR_INFO, SLIB_FORMAT_ERROR, "position", "Read info");
+        throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "position", "Read info");
     _readData(&tmp, 4); len-=4; lenCheck(len);
     ri->name.resize(tmp&0xff);
     ri->mapq = (tmp>>8)&0xff;

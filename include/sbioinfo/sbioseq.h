@@ -9,14 +9,14 @@
 namespace slib {
     namespace sbio {
         
-        class SLIB_DLL SBioSeq;
-        class SLIB_DLL SBSeqList;
+        class SBIOINFO_DLL SBioSeq;
+        class SBIOINFO_DLL SBSeqList;
         
         #define sbseq sptr<SBioSeq>
         
         constexpr size_t MAX_FIND_SEQ_LENGTH = 1<<14;
         
-        class SLIB_DLL SBioSeq : public ubytearray {
+        class SBIOINFO_DLL SBioSeq : public ubytearray {
 			friend SBSeqIO;
             friend SBSeqList;
                         
@@ -106,7 +106,7 @@ namespace slib {
         #define srna(X) sbseq(COMPRESS1|RNA_SEQ, nullptr, (X))
         #define saa(X) sbseq(COMPRESS1|AA_SEQ, nullptr, (X))
         
-        class SLIB_DLL SBSeqList : public Array<sbseq> {
+        class SBIOINFO_DLL SBSeqList : public Array<sbseq> {
 			friend SBSeqIO;
 			friend SBioSeq;
             

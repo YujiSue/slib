@@ -13,7 +13,7 @@ namespace slib {
         constexpr sbyte DEFAULT_GAP_SCORE = -2;
         constexpr sbyte DEFAULT_GAP2_SCORE = -1;
         
-        struct SLIB_DLL salign_param {
+        struct SBIOINFO_DLL salign_param {
 			sbyte pm_score, am_score, mm_score, gap_score, gap2_score;
             sushort seq_type;
             sshort align_length;
@@ -31,7 +31,7 @@ namespace slib {
             void makeTable();
         };
         
-        struct SLIB_DLL scigar {
+        struct SBIOINFO_DLL scigar {
             static constexpr subyte MATCH = 0;
             static constexpr subyte INSERTION = 1;
             static constexpr subyte DELETION = 2;
@@ -58,7 +58,7 @@ namespace slib {
             bool operator != (const scigar &c) const;
         };
         
-        class SLIB_DLL SCigarArray : public BiArray<scigar> {
+        class SBIOINFO_DLL SCigarArray : public BiArray<scigar> {
         public:
             typedef BiArray<scigar> cigarray;
             
@@ -90,7 +90,7 @@ namespace slib {
             bool operator==(const SCigarArray &array) const;
         };
         
-        struct salign {
+        struct SBIOINFO_DLL salign {
             sbpos ref;
             srange aligned;
             sint score;
@@ -117,7 +117,7 @@ namespace slib {
 
 		#define alignarray Array<salign>
         
-        class SLIB_DLL SAlignment {
+        class SBIOINFO_DLL SAlignment {
             
         private:
             salign_param *_par;

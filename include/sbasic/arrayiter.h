@@ -23,8 +23,8 @@ namespace slib {
 		template<typename T_, class Ptr, class Container>
 		friend class Node;
 
-		friend class SLIB_DLL SArray;
-		friend class SLIB_DLL SData;
+		friend class SOBJ_DLL SArray;
+		friend class SOBJ_DLL SData;
 
 	public:
 		typedef std::random_access_iterator_tag iterator_category;
@@ -77,8 +77,8 @@ namespace slib {
 		friend class BiArray;
 		template<typename T_, class Ptr, class Container>
 		friend class Node;
-		friend class SLIB_DLL SArray;
-		friend class SLIB_DLL SData;
+		friend class SOBJ_DLL SArray;
+		friend class SOBJ_DLL SData;
 
     public:
         typedef std::random_access_iterator_tag iterator_category;

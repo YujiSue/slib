@@ -24,7 +24,7 @@ namespace slib {
         };
         
         
-        class SLIB_DLL SNGSData {
+        class SBIOINFO_DLL SNGSData {
         public:
             typedef Array<vararray> vararray2d;
             

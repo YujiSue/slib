@@ -6,10 +6,10 @@
 #include "sobj/sobject.h"
 
 namespace slib {
-    class SLIB_DLL SString;
-    class SLIB_DLL SDictionary;
+    class SOBJ_DLL SString;
+    class SOBJ_DLL SDictionary;
     
-    class SLIB_DLL SPair : public SObject, public kvpair<String, slib::SObjPtr> {
+    class SOBJ_DLL SPair : public SObject, public kvpair<String, slib::SObjPtr> {
     public:
         SPair();
         SPair(const kvpair<String, slib::SObjPtr> &p);
@@ -22,7 +22,7 @@ namespace slib {
         SObject *clone() const;
     };
     
-    class SLIB_DLL SDictionary : public SObject, public Map<String, slib::SObjPtr> {
+    class SOBJ_DLL SDictionary : public SObject, public Map<String, slib::SObjPtr> {
     public:
         SDictionary();
         SDictionary(size_t size);

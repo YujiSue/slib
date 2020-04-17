@@ -16,17 +16,17 @@ namespace slib {
 	class CArray;
 	template<class Key, class Val>
 	class Map;
-    class SLIB_DLL String;
-    class SLIB_DLL SNumber;
-    class SLIB_DLL SString;
-	class SLIB_DLL SText;
-    class SLIB_DLL SObject;
-    class SLIB_DLL SObjPtr;
+    class SOBJ_DLL String;
+    class SOBJ_DLL SNumber;
+    class SOBJ_DLL SString;
+	class SOBJ_DLL SText;
+    class SOBJ_DLL SObject;
+    class SOBJ_DLL SObjPtr;
 	namespace sio {
-		class SLIB_DLL SFile;
+		class SOBJ_DLL SFile;
 	}
 
-    class SLIB_DLL Regex {
+    class SOBJ_DLL Regex {
     private:
         std::regex _rgx;
         bool _global;
@@ -51,7 +51,7 @@ namespace slib {
 #define NEW_LINE String::LF   
 #endif
     
-    class SLIB_DLL String {
+    class SOBJ_DLL String {
         friend Char;
         
     public:
@@ -445,9 +445,9 @@ namespace slib {
         bool operator != (const String &s) const;
         bool operator != (const SString &s) const;
     };
-    extern SLIB_DLL String operator+(const char &c, const String &s);
-    extern SLIB_DLL String operator+(const char *s1, const String &s2);
-    extern SLIB_DLL String operator+(const std::string &s1, const String &s2);
+    extern SOBJ_DLL String operator+(const char &c, const String &s);
+    extern SOBJ_DLL String operator+(const char *s1, const String &s2);
+    extern SOBJ_DLL String operator+(const std::string &s1, const String &s2);
 }
 
 namespace std {

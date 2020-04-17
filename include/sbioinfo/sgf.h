@@ -9,7 +9,7 @@ namespace slib {
     
     namespace sbio {
         
-        struct SLIB_DLL sgff : public sbpos {
+        struct SBIOINFO_DLL sgff : public sbpos {
             String seqid, source, type, strand;
             sbyte phase;
             float score;
@@ -24,7 +24,7 @@ namespace slib {
             void set(const String &row);
         };
         
-        class SLIB_DLL SGFFFile {
+        class SBIOINFO_DLL SGFFFile {
         private:
             SFile _file;
             String _row;

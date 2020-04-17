@@ -6,7 +6,7 @@
 
 namespace slib {
 	namespace sbio {
-		class SFastq : public SBSeqList {
+		class SBIOINFO_DLL SFastq : public SBSeqList {
 		public:
 			SFastq();
 			~SFastq();

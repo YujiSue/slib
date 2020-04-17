@@ -9,10 +9,10 @@
 namespace slib {
     namespace sbio {
         
-        class SLIB_DLL SVariant;
-        class SLIB_DLL SVarList;
+        class SBIOINFO_DLL SVariant;
+        class SBIOINFO_DLL SVarList;
         
-        struct SLIB_DLL svar_data {
+        struct SBIOINFO_DLL svar_data {
             sushort type;
             sbpos pos[2]; // 0: Primary, 1: Secondary (for description of complex insertion or rearrangement)
             String alt;
@@ -52,7 +52,7 @@ namespace slib {
 
 		};
         
-        class SLIB_DLL SVariant : public svar_data {
+        class SBIOINFO_DLL SVariant : public svar_data {
 			friend SVarIO;
             friend SVarList;
 			friend SVarFilter;
@@ -90,7 +90,7 @@ namespace slib {
 		#define svar sptr<SVariant>
 		typedef Array<svar> svararray;
         
-        class SLIB_DLL SVarList : public Array<svar> {
+        class SBIOINFO_DLL SVarList : public Array<svar> {
 			friend SVarIO;
 			friend SVariant;
 			friend SVarFilter;

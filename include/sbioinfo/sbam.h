@@ -60,7 +60,7 @@ namespace slib {
             /*
              Virtual offset
              */
-            struct SLIB_DLL voffset {
+            struct SBIOINFO_DLL voffset {
                 sinteger file_offset;
                 sushort block_offset;
                 
@@ -79,7 +79,7 @@ namespace slib {
             /*
              BAM header
              */
-            struct SLIB_DLL header {
+            struct SBIOINFO_DLL header {
                 sint ref_num;
                 intarray ref_length;
                 stringarray ref_name;
@@ -95,7 +95,7 @@ namespace slib {
             /*
              BAM read info
              */
-            struct SLIB_DLL readinfo {
+            struct SBIOINFO_DLL readinfo {
                 sbam::voffset offset;
 				//ubytearray data;
 
@@ -131,7 +131,7 @@ namespace slib {
             typedef Array<Array<sbam::voffset, RMemory<sbam::voffset>>> voff_vec;
             typedef Array<Array<Region<sbam::voffset>>> voff_chunk_vec;
             
-            struct SLIB_DLL bai {
+            struct SBIOINFO_DLL bai {
                 friend SBamFile;
             private:
                 char _magic[4];
@@ -160,7 +160,7 @@ namespace slib {
             /*
              BAM data
              */
-            struct SLIB_DLL bgzf_dat {
+            struct SBIOINFO_DLL bgzf_dat {
             private:
                 char _magic[16];
                 
@@ -182,7 +182,7 @@ namespace slib {
                 void read(void *dest, size_t size, size_t off = 0);
             };
         }
-        class SLIB_DLL SBamFile : public sio::SFile {
+        class SBIOINFO_DLL SBamFile : public sio::SFile {
         public:
             
         private:

@@ -47,56 +47,56 @@ namespace slib {
     #define sobj SObjPtr
     #define scobj SClsPtr
     
-    class SLIB_DLL SObjPtr;
+    class SOBJ_DLL SObjPtr;
     template<class Cls, OBJ_TYPE T=NULL_OBJ>
-    class SLIB_DLL SClsPtr;
+    class SOBJ_DLL SClsPtr;
     
-    class SLIB_DLL SObject;
-    class SLIB_DLL SNumber;
+    class SOBJ_DLL SObject;
+    class SOBJ_DLL SNumber;
 	using snum = SClsPtr<SNumber, NUMBER_OBJ>;
-    class SLIB_DLL SChar;
+    class SOBJ_DLL SChar;
 	using schar = SClsPtr<SChar, CHAR_OBJ>;
-    class SLIB_DLL SString;
+    class SOBJ_DLL SString;
 	using ss = SClsPtr<SString, STRING_OBJ>;
-    class SLIB_DLL SText;
+    class SOBJ_DLL SText;
 	using stxt = SClsPtr<SText, TEXT_OBJ>;
-    class SLIB_DLL SDate;
+    class SOBJ_DLL SDate;
 	using sdt = SClsPtr<SDate, DATE_OBJ>;
-    class SLIB_DLL SData;
+    class SOBJ_DLL SData;
 	using sdat = SClsPtr<SData, DATA_OBJ>;
-    class SLIB_DLL SArray;
+    class SOBJ_DLL SArray;
 	using sarray = SClsPtr<SArray, ARRAY_OBJ>;
-    class SLIB_DLL SPair;
+    class SOBJ_DLL SPair;
 	using spair = SClsPtr<SPair, PAIR_OBJ>;
-    class SLIB_DLL SDictionary;
+    class SOBJ_DLL SDictionary;
 	using sdict = SClsPtr<SDictionary, DICT_OBJ>;
 	template<class Return, class... Args>
 	class SFunction;
 	template<class Return, class... Args>
 	using sfunc = SClsPtr<SFunction<Return, Args...>, FUNC_OBJ>;
-    class SLIB_DLL SColumn;
+    class SOBJ_DLL SColumn;
 	using scolumn = SClsPtr<SColumn, COLUMN_OBJ>;
-    class SLIB_DLL STable;
+    class SOBJ_DLL STable;
 	using stable = SClsPtr<STable, TABLE_OBJ>;
     namespace sio {
-        class SLIB_DLL SFile;
+        class SOBJ_DLL SFile;
 		using sfile = SClsPtr<SFile, FILE_OBJ>;
     }
     namespace smedia {
-		class SLIB_DLL SImage;
+		class SOBJ_DLL SImage;
 		using simg = SClsPtr<SImage, IMAGE_OBJ>;
-        class SLIB_DLL SFigure;
+        class SOBJ_DLL SFigure;
 		using sfig = SClsPtr<SFigure, FIGURE_OBJ>;
-        class SLIB_DLL SCanvas;
+        class SOBJ_DLL SCanvas;
 		using scnvs = SClsPtr<SCanvas, CANVAS_OBJ>;
-        //class SLIB_DLL SSound;
+        //class SOBJ_DLL SSound;
 		//using ssnd = SClsPtr<SSound, SOUND_OBJ>;
-        class SLIB_DLL SMovie;
+        class SOBJ_DLL SMovie;
 		using smov = SClsPtr<SMovie, MOVIE_OBJ>;
     };
     namespace sworld {
-        class SLIB_DLL SModel;
-        class SLIB_DLL SSpace;
+        class SOBJ_DLL SModel;
+        class SOBJ_DLL SSpace;
     };
     
     #define snull sobj()
@@ -108,7 +108,7 @@ namespace slib {
     
     extern sindex makeIndex(const stringarray &strarray, const intarray &iarray);
     
-    class SLIB_DLL SObject {
+    class SOBJ_DLL SObject {
     protected:
 #ifndef _MANAGED
         std::atomic<int> _scope;
@@ -128,10 +128,10 @@ namespace slib {
         virtual SObject *clone() const = 0;
     };
     
-    class SLIB_DLL SIterator;
-    class SLIB_DLL SCIterator;
+    class SOBJ_DLL SIterator;
+    class SOBJ_DLL SCIterator;
     
-    class SLIB_DLL SObjPtr {
+    class SOBJ_DLL SObjPtr {
     protected:
         OBJ_TYPE _type;
         SObject *_ptr;
@@ -556,7 +556,7 @@ namespace slib {
     
     
     template<class Cls, OBJ_TYPE T>
-    class SLIB_DLL SClsPtr : public SObjPtr {
+    class SOBJ_DLL SClsPtr : public SObjPtr {
     public:
         SClsPtr() : SObjPtr() { sobj::_type = T; }
         SClsPtr(Cls *cls) : SObjPtr(T, cls) {}
@@ -607,7 +607,7 @@ namespace slib {
     #define siter SIterator
     #define sciter SCIterator
     
-    class SLIB_DLL SIterator {
+    class SOBJ_DLL SIterator {
         friend sobj;
     public:
         typedef std::random_access_iterator_tag iterator_category;
@@ -660,7 +660,7 @@ namespace slib {
         bool operator >=(const SIterator &sit) const;
     };
     
-    class SLIB_DLL SCIterator {
+    class SOBJ_DLL SCIterator {
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef const sobj value_type;

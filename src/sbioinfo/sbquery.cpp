@@ -63,7 +63,7 @@ void SBQuery::setTotalLength(size_t len) {
     _total_length = len;
 }
 void SBQuery::makeTrie() {
-    if(!_par) throw SBioException(ERR_INFO, SLIB_NULL_ERROR, "_par");
+    if(!_par) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "_par");
     if (_seqs.empty()) return;
     _pmas.reserve(_total_length*_par->coded_seed_len);
     sforeach(_seqs) {
@@ -88,7 +88,7 @@ void SBQuery::makeTrie() {
 }
 
 void SBQuery::makeStrictTrie() {
-    if(!_par) throw SBioException(ERR_INFO, SLIB_NULL_ERROR, "_par");
+    if(!_par) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "_par");
     if (_seqs.empty()) return;
     _pmas.reserve(_total_length*_par->coded_seed_len);
     sforeach(_seqs) {

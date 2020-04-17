@@ -7,7 +7,7 @@
 
 namespace slib {
 
-    class SLIB_DLL Time {
+    class SOBJ_DLL Time {
     public:
         static const Map<subyte, stringarray> TIME_ZONE_NAME;
         static const Map<String, subyte> TIME_ZONE_IDX;

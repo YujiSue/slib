@@ -70,14 +70,14 @@ namespace slib {
         extern smat<SEQ_CONVERTER> AA_CONVERTER;
         extern CODON_TABLE DEFAULT_CODON;
 
-		struct SLIB_DLL seqannot {
+		struct SBIOINFO_DLL seqannot {
 			suint aid, type;
 			String name;
 			
 
 		};
 
-		class SLIB_DLL SBSeqAnnot {
+		class SBIOINFO_DLL SBSeqAnnot {
 
 
 

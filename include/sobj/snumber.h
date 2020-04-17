@@ -7,10 +7,10 @@
 #include "sobj/sobject.h"
 
 namespace slib {
-    class SLIB_DLL SString;
+    class SOBJ_DLL SString;
     using namespace smath;
     
-    class SLIB_DLL SNumber : public SObject {
+    class SOBJ_DLL SNumber : public SObject {
     public:
         static const subyte INTEGER = 1;
         static const subyte UINTEGER = 2;

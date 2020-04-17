@@ -9,8 +9,8 @@ namespace slib {
 	using namespace smath;
 	namespace sbio {
 
-		class SLIB_DLL SVariant;
-		class SLIB_DLL SVarList;
+		class SBIOINFO_DLL SVariant;
+		class SBIOINFO_DLL SVarList;
 
 #define DEFAULT_VC_DP 5
 #define DEFAULT_VC_VDP 3
@@ -112,7 +112,7 @@ namespace slib {
 			sobj toObj();
 		};
 
-		class SLIB_DLL SVarUtil {
+		class SBIOINFO_DLL SVarUtil {
 		public:
 			static float readBias(const sushort *r);
 			static float combBias(sushort *r1, sushort *r2);
@@ -124,7 +124,7 @@ namespace slib {
 			static subyte mtypeIdx(const char* s);
 		};
 		
-		class SLIB_DLL SVarIO {
+		class SBIOINFO_DLL SVarIO {
 		public:
 			static const stringarray VCF_TABLE_COLUMNS;
 			static const stringarray DEFAULT_TABLE_COLUMNS;
@@ -143,7 +143,7 @@ namespace slib {
 
 		};
 
-		class SLIB_DLL SVarFilter {
+		class SBIOINFO_DLL SVarFilter {
 		private:
 			SBSeqList* _ref;
 			SBAnnotDB* _db;

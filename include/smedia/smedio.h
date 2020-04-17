@@ -7,9 +7,9 @@
 
 namespace slib {
     namespace smedia {
-        class SLIB_DLL SImage;
+        class SOBJ_DLL SImage;
         
-        class SLIB_DLL SImageIO {
+        class SOBJ_DLL SImageIO {
         public:
 			static void load(const sio::SFile& file, SImage *image);
 			static void save(const sio::SFile& file, SImage *image);
@@ -23,7 +23,7 @@ namespace slib {
             static void exportPNG(const char *path, SImage *img);
         };
         
-        class SLIB_DLL SMovieIO {};
+        class SOBJ_DLL SMovieIO {};
     }
 }
 
