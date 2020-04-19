@@ -135,7 +135,7 @@ String String::narrow(const char *s) {
     String str;
     if (s) {
         size_t i = 0, len = strlen(s);
-        while (s != '\0') {
+        while (s[0] != '\0') {
             str += Char::narrowChar(s);
             s += Char::u8size(s);
         }
@@ -257,6 +257,9 @@ String::String(long long i) : String(std::to_string(i)) {}
 #ifdef MAC_OS
 String::String(unsigned long long ui) : String(std::to_string(ui)) {}
 #endif
+#ifdef LINUX_OS
+String::String(sinteger i) : String(std::to_string(i)) {}
+#endif
 String::String(float f) : String(std::to_string(f)) {}
 String::String(double d) : String(std::to_string(d)) {}
 String::String(sbyte i) : String(std::to_string(i)) {}
@@ -375,6 +378,9 @@ String &String::operator=(long long i) { *this = std::to_string(i); return *this
 #ifdef MAC_OS
 String &String::operator=(unsigned long long ui) { *this = std::to_string(ui); return *this; }
 #endif
+#ifdef LINUX_OS
+String &String::operator=(sinteger i) { *this = std::to_string(i); return *this; }
+#endif
 String &String::operator=(float f) { *this = std::to_string(f); return *this; }
 String &String::operator=(double d) { *this = std::to_string(d); return *this; }
 String &String::operator=(sbyte i) { *this = std::to_string(i); return *this; }
@@ -419,6 +425,9 @@ String &String::operator+=(long long i) { *this += std::to_string(i); return *th
 #ifdef MAC_OS
 String &String::operator+=(unsigned long long ui) { *this += std::to_string(ui); return *this; }
 #endif
+#ifdef LINUX_OS
+String &String::operator+=(sinteger i) { *this += std::to_string(i); return *this; }
+#endif
 String &String::operator+=(float f) { *this += std::to_string(f); return *this; }
 String &String::operator+=(double d) { *this += std::to_string(d); return *this; }
 String &String::operator+=(sbyte i) { *this += std::to_string(i); return *this; }
@@ -449,6 +458,9 @@ String String::operator+(long long i) const { return String(*this)+=i; }
 #ifdef MAC_OS
 String String::operator+(unsigned long long ui) const { return String(*this)+=ui; }
 #endif
+#ifdef LINUX_OS
+String String::operator+(sinteger i) const { return String(*this)+=i; }
+#endif
 String String::operator+(float f) const { return String(*this)+=f; }
 String String::operator+(double d) const { return String(*this)+=d; }
 String String::operator+(sbyte i) const { return String(*this)+=i; }
@@ -475,6 +487,9 @@ String &String::operator<<(unsigned long ui) { *this += std::to_string(ui); retu
 String &String::operator<<(long long i) { *this += std::to_string(i); return *this; }
 #ifdef MAC_OS
 String &String::operator<<(unsigned long long ui) { *this += std::to_string(ui); return *this; }
+#endif
+#ifdef LINUX_OS
+String &String::operator<<(sinteger i) { *this += std::to_string(i); return *this; }
 #endif
 String &String::operator<<(float f) { *this += std::to_string(f); return *this; }
 String &String::operator<<(double d) { *this += std::to_string(d); return *this; }
@@ -1151,6 +1166,9 @@ String::operator unsigned long() const { return ulongValue(); }
 String::operator long long() const { return llongValue(); }
 #ifdef MAC_OS
 String::operator unsigned long long() const { return ullongValue(); }
+#endif
+#ifdef LINUX_OS
+String::operator sinteger() const { return llongValue(); }
 #endif
 String::operator float() const { return floatValue(); }
 String::operator double() const { return doubleValue(); }

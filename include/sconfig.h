@@ -2,7 +2,6 @@
 #define SLIB_CONFIG_H
 
 #include <float.h>
-#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -31,6 +30,7 @@
 #include <vector>
 #ifndef _MANAGED
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #endif
@@ -45,6 +45,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <cmath>
 #endif
@@ -95,6 +96,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <cmath>
 #elif __unix__
@@ -105,17 +107,18 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <cmath>
 #endif
 
-#ifndef SLIB_DLL
-#ifdef _WINDLL
-#define SLIB_DLL __declspec(dllexport)
-#elif defined(SLIBDLL)
-#define SLIB_DLL __declspec(dllimport)
+#ifndef SOBJ_DLL
+#if defined(USE_SOBJ_DLL)
+#define SOBJ_DLL __declspec(dllimport)
+#elif defined(_WINDLL)
+#define SOBJ_DLL __declspec(dllexport)
 #else
-#define SLIB_DLL  
+#define SOBJ_DLL  
 #endif
 #endif
 

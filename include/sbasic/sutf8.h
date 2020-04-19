@@ -9,7 +9,7 @@ namespace slib {
     #define su8_iter SUtf8Iterator
     #define su8_citer SUtf8CIterator
     
-    class SLIB_DLL SUtf8Iterator {
+    class SOBJ_DLL SUtf8Iterator {
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef Char value_type;
@@ -48,7 +48,7 @@ namespace slib {
         bool operator >=(const SUtf8Iterator &uit) const;
     };
     
-    class SLIB_DLL SUtf8CIterator {
+    class SOBJ_DLL SUtf8CIterator {
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef const Char value_type;

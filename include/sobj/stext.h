@@ -32,7 +32,7 @@ namespace slib {
 
 
 
-    class SLIB_DLL SText;
+    class SOBJ_DLL SText;
     /*
     struct sfontdat {};
     
@@ -54,7 +54,7 @@ namespace slib {
         void load(const char *path);
     };
 	*/
-    struct SLIB_DLL STextStyle {
+    struct SOBJ_DLL STextStyle {
         sushort type;
         String font;
         float size;
@@ -69,7 +69,7 @@ namespace slib {
         STextStyle &operator=(const SDictionary &dict);
     };
 		/*
-	struct SLIB_DLL text_style {
+	struct SOBJ_DLL text_style {
 		sushort type;
 		String font;
 		float size, weight;
@@ -89,7 +89,7 @@ namespace slib {
 	*/
 	//SAnnotation<srange, text_style> _styles;
 
-    class SLIB_DLL SText : public SObject {
+    class SOBJ_DLL SText : public SObject {
         typedef std::pair<srange, STextStyle> text_attribute;
         
     private:

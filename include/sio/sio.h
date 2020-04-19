@@ -22,7 +22,7 @@ namespace slib {
 		constexpr suint FILE_OPEN_ERROR = 0x0012;
 		constexpr suint DIRECTORY_LOAD_ERROR = 0x0013;
 
-        class SLIB_DLL SIOException : public SException {
+        class SOBJ_DLL SIOException : public SException {
         public:
             SIOException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SIOException();
@@ -48,15 +48,16 @@ namespace slib {
 		//File type
 		constexpr sushort BINARY_FILE = 0x0000;
 
+		//Text 0x0010
 		constexpr sushort TEXT_FILE = 0x0010;
 		constexpr sushort RTF_FILE = 0x0011;
 		constexpr sushort CSV_FILE = 0x0012;
 		constexpr sushort TSV_FILE = 0x0013;
 
-		//Data 0x20
+		//Data 0x0020
 		constexpr sushort JSON_FILE = 0x0021;
 
-		//Image 0x40
+		//Image 0x0040
 		constexpr sushort RAW = 0x0041;
 		constexpr sushort PICT = 0x0042;
 		constexpr sushort BMP = 0x0043;
@@ -64,10 +65,10 @@ namespace slib {
 		constexpr sushort JPEG = 0x0045;
 		constexpr sushort PNG = 0x0046;
 
-		//Sound 0x80
+		//Sound 0x0080
 
 
-		//Movie 0xC0
+		//Movie 0x00C0
 
 
 		//3D 0x100
@@ -97,7 +98,7 @@ namespace slib {
 		constexpr sushort SVG_FILE = 0x1841;
 
 
-        class SLIB_DLL SFile;
+        class SOBJ_DLL SFile;
         #define filearray Array<slib::sio::SFile>
         
         constexpr subyte READ = 0x01;

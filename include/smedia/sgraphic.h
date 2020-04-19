@@ -67,7 +67,7 @@ namespace slib {
             }
         }
         
-        class SLIB_DLL STransform2D {
+        class SOBJ_DLL STransform2D {
         public:
             static void scaling(v2f v, v2f ori, v2fvec &points, Area<float> &boundary);
             static void shift(v2f v, v2fvec &points, Area<float> &boundary);
@@ -123,7 +123,7 @@ namespace slib {
         
 #define scolor sptr<SColor>
         
-        class SLIB_DLL SColor {
+        class SOBJ_DLL SColor {
         public:
             static const SColor CLEAR;
             static const SColor BLACK;
@@ -196,7 +196,7 @@ namespace slib {
             bool operator==(const SColor &col) const;
         };
         
-        class SLIB_DLL SGradient : public SColor {
+        class SOBJ_DLL SGradient : public SColor {
         protected:
             smath::sgeom::COORDINATE _mode;
             float _angle;

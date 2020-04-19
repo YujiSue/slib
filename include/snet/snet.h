@@ -9,9 +9,7 @@
 #include "sutil/scode.h"
 
 namespace slib {
-    namespace snet {
-        
-        #define SNET_ERROR 0x0090
+    #define SNET_ERROR 0x0090
         
         #define HTTP_CONNECTION 0x01
         #define FTP_CONNECTION  0x02
@@ -24,7 +22,7 @@ namespace slib {
         
 #define CURL_ERR_TEXT(N, T) (u8"libcurl error #"+std::to_string(N)+u8": "+std::string(T)).c_str()
 
-        class SLIB_DLL SNetException : public SException {
+        class SOBJ_DLL SNetException : public SException {
         public:
 			SNetException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SNetException();
@@ -32,7 +30,7 @@ namespace slib {
 
         extern size_t writeCallback(void *buf, size_t size, size_t nmemb, void *ptr);
     
-        class SLIB_DLL SNetWork {
+        class SOBJ_DLL SNetWork {
         private:
             CURL *_curl;
             CURLcode _res;
@@ -48,7 +46,6 @@ namespace slib {
             void ftp(const char *url, bool ssl = false, const char *info = nullptr);
             void connect(const SDictionary &dict);
         };
-    }
 }
 
 #endif

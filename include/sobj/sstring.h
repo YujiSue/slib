@@ -6,7 +6,7 @@
 
 namespace slib {
    
-	class SLIB_DLL SChar : public SObject, public Char {
+	class SOBJ_DLL SChar : public SObject, public Char {
     public:
         SChar();
         SChar(String *s, const char *c);
@@ -25,7 +25,7 @@ namespace slib {
         SObject *clone() const;
     };
 
-	class SLIB_DLL SString : public SObject, public String {
+	class SOBJ_DLL SString : public SObject, public String {
         friend SChar;
     protected:
 		SObjPtr _char;
@@ -45,6 +45,9 @@ namespace slib {
         SString(long long i);
 #ifdef MAC_OS
         SString(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString(sinteger i);
 #endif
         SString(float f);
         SString(double d);
@@ -78,6 +81,9 @@ namespace slib {
 #ifdef MAC_OS
         SString &operator=(unsigned long long ui);
 #endif
+#ifdef LINUX_OS
+        SString &operator=(sinteger i);
+#endif
         SString &operator=(float f);
         SString &operator=(double d);
         SString &operator=(sbyte i);
@@ -106,6 +112,9 @@ namespace slib {
         SString &operator+=(long long i);
 #ifdef MAC_OS
         SString &operator+=(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString &operator+=(sinteger i);
 #endif
         SString &operator+=(float f);
         SString &operator+=(double d);
@@ -138,6 +147,9 @@ namespace slib {
 #ifdef MAC_OS
         SString operator+(unsigned long long ui) const;
 #endif
+#ifdef LINUX_OS
+        SString operator+(sinteger i) const;
+#endif
         SString operator+(float f) const;
         SString operator+(double d) const;
         SString operator+(sbyte i) const;
@@ -168,6 +180,9 @@ namespace slib {
         SString &operator<<(long long i);
 #ifdef MAC_OS
         SString &operator<<(unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SString &operator<<(sinteger i);
 #endif
         SString &operator<<(float f);
         SString &operator<<(double d);

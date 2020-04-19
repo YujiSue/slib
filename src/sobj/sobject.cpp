@@ -71,7 +71,6 @@ SObjPtr::SObjPtr(unsigned long long ui) : _type(NUMBER_OBJ), _ptr(new SNumber(ui
 #endif
 #ifdef LINUX_OS
 SObjPtr::SObjPtr(sinteger i) : _type(NUMBER_OBJ), _ptr(new SNumber(i)) {}
-SObjPtr::SObjPtr(suinteger ui) : _type(NUMBER_OBJ), _ptr(new SNumber(ui)) {}
 #endif
 SObjPtr::SObjPtr(float f) : _type(NUMBER_OBJ), _ptr(new SNumber(f)) {}
 SObjPtr::SObjPtr(double d) :_type(NUMBER_OBJ), _ptr(new SNumber(d)) {}
@@ -1219,7 +1218,6 @@ SObjPtr::operator unsigned long long() const { return ullongValue(); }
 #endif
 #ifdef LINUX_OS
 SObjPtr::operator sinteger() const { return integer(); }
-SObjPtr::operator suinteger() const { return uinteger(); }
 #endif
 SObjPtr::operator float() const { return floatValue(); }
 SObjPtr::operator double() const { return doubleValue(); }

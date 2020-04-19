@@ -51,29 +51,6 @@ int main(int argc, const char** argv) {
 
 int main()
 {
-
-	//sio::SFile filei(u8"C:\\Users\\yujis\\OneDrive\\ドキュメント\\Develop\\slib\\include");
-	//std::cout << toString(filei.fileList({"h"}, true), String::LF) << std::endl;
-	sio::SFile files(u8"C:\\Users\\yujis\\OneDrive\\ドキュメント\\Develop\\slib\\src");
-	std::cout << toString(files.fileList({ "c" }, true), String::LF) << std::endl;
-	std::cout << toString(files.fileList({ "cpp" }, true), String::LF) << std::endl;
-
-	/*
-	sbio::SNGSData ndat, nctrl;
-	ndat.load(u8"\\\\160.24.63.99\\Public_P3\\個人フォルダ\\Suehiro\\IonXpress_048_rawlib.bam.bsm");
-	nctrl.load(u8"\\\\160.24.63.99\\Public_P3\\個人フォルダ\\Suehiro\\150304_N2");
-	auto p = 8977000;
-	sio::SFile output(u8"F:\\cp.xls", sio::CREATE);
-	while(p < 8987000) {
-		sbio::sbpos pos(3, p, p+100);
-		output << p << String::TAB << ndat.depthAt(pos) / ndat.average_depth << String::TAB <<
-			nctrl.depthAt(pos) / nctrl.average_depth << String::TAB << 
-			(ndat.depthAt(pos) / ndat.average_depth) / (nctrl.depthAt(pos) / nctrl.average_depth) <<
-			NEW_LINE;
-		output.flush();
-		p += 100;
-	}
-	*/
 #ifdef MATH_TEST
 	test::CalcTest();
 
@@ -109,7 +86,7 @@ int main()
 #endif
 
 #ifdef THREAD_TEST
-	test::ThreadTest();
+	//test::ThreadTest();
 #endif
 
 #ifdef PROCESS_TEST

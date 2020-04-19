@@ -8,7 +8,7 @@
 namespace slib {
     namespace smedia {
         
-        class SLIB_DLL SStroke {
+        class SOBJ_DLL SStroke {
         public:
             sushort type;
             float width;
@@ -28,7 +28,7 @@ namespace slib {
             SStroke &operator=(const SStroke &stroke);
         };
         
-        class SLIB_DLL SBrush {
+        class SOBJ_DLL SBrush {
         public:
 			sushort type;
             scolor color;
@@ -50,7 +50,7 @@ namespace slib {
 			const SGradient &gradient() const;
         };
         
-        class SLIB_DLL SFilter {
+        class SOBJ_DLL SFilter {
         protected:
             sdict _filter;
             
@@ -62,7 +62,7 @@ namespace slib {
         };
         
         #define spaint sptr<SPaint>
-        class SLIB_DLL SPaint {
+        class SOBJ_DLL SPaint {
         public:
             SStroke stroke;
             SBrush brush;

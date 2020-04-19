@@ -7,7 +7,7 @@
 
 namespace slib {
     namespace sio {
-        class SLIB_DLL SJson : public sobj {
+        class SOBJ_DLL SJson : public sobj {
             
         public:
             SJson();

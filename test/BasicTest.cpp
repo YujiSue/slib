@@ -305,10 +305,10 @@ void test::MapTest() {
 }
 
 void test::CharTest() {
-	std::cout << String(u8"Size of utf-8 char. あ = ").localize().cstr() << (int)Char::u8size(u8"あ") << std::endl;
-	std::cout << String(u8"'あ' is wide?").localize().cstr() << (Char::isWide(u8"あ")?"true":"false") << std::endl;
-	std::cout << String(u8"'あ' is narrow?").localize().cstr() << (Char::isNarrow(u8"あ")?"true":"false") << std::endl;
-	std::cout << String(u8"'-123.4' is numeric?").localize().cstr() << (Char::isNumeric(u8"-123.4") ? "true" : "false") << std::endl;
+	std::cout << String(u8"Size of utf-8 char. あ = ") << (int)Char::u8size(u8"あ") << std::endl;
+	std::cout << String(u8"'あ' is wide?") << (Char::isWide(u8"あ")?"true":"false") << std::endl;
+	std::cout << String(u8"'あ' is narrow?") << (Char::isNarrow(u8"あ")?"true":"false") << std::endl;
+	std::cout << String(u8"'-123.4' is numeric?") << (Char::isNumeric(u8"-123.4") ? "true" : "false") << std::endl;
 	
 	
 	/*

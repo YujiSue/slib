@@ -65,7 +65,6 @@ SString::SString(unsigned long long ui) : SObject(), String(std::to_string(ui)),
 #endif
 #ifdef LINUX_OS
 SString::SString(sinteger i) : SObject(), String(std::to_string(i)), _char(SChar(this, cstr())) {}
-SString::SString(suinteger ui) : SObject(), String(std::to_string(ui)), _char(SChar(this, cstr())) {}
 #endif
 SString::SString(float f) : SObject(), String(std::to_string(f)), _char(SChar(this, cstr())) {}
 SString::SString(double d) : SObject(), String(std::to_string(d)), _char(SChar(this, cstr())) {}
@@ -115,8 +114,7 @@ SString &SString::operator=(long long i) { *this = std::to_string(i); return *th
 SString &SString::operator=(unsigned long long ui) { *this = std::to_string(ui); return *this; }
 #endif
 #ifdef LINUX_OS
-SString&& SString::operator=(sinteger i) { *this = std::to_string(i); return *this; }
-SString&& SString::operator=(suinteger ui) { *this = std::to_string(ui); return *this; }
+SString& SString::operator=(sinteger i) { *this = std::to_string(i); return *this; }
 #endif
 SString &SString::operator=(float f) { *this = std::to_string(f); return *this; }
 SString &SString::operator=(double d) { *this = std::to_string(d); return *this; }
@@ -159,7 +157,6 @@ SString &SString::operator+=(unsigned long long ui) { *this += std::to_string(ui
 #endif
 #ifdef LINUX_OS
 SString& SString::operator+=(sinteger i) { *this += std::to_string(i); return *this; }
-SString& SString::operator+=(suinteger ui) { *this += std::to_string(ui); return *this; }
 #endif
 SString &SString::operator+=(float f) { *this += std::to_string(f); return *this; }
 SString &SString::operator+=(double d) { *this += std::to_string(d); return *this; }
@@ -196,7 +193,6 @@ SString SString::operator+(unsigned long long ui) const { return SString(*this)+
 #endif
 #ifdef LINUX_OS
 SString SString::operator+(sinteger i) const { return SString(*this) += std::to_string(i); }
-SString SString::operator+(suinteger ui) const { return SString(*this) += std::to_string(ui); }
 #endif
 SString SString::operator+(float f) const { return SString(*this)+=std::to_string(f); }
 SString SString::operator+(double d) const { return SString(*this)+=std::to_string(d); }
@@ -233,7 +229,6 @@ SString &SString::operator<<(unsigned long long ui) { *this += std::to_string(ui
 #endif
 #ifdef LINUX_OS
 SString& SString::operator<<(sinteger i) { *this += std::to_string(i); return *this; }
-SString& SString::operator<<(suinteger ui) { *this += std::to_string(ui); return *this; }
 #endif
 SString &SString::operator<<(float f) { *this += std::to_string(f); return *this; }
 SString &SString::operator<<(double d) { *this += std::to_string(d); return *this; }

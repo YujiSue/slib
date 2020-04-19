@@ -7,7 +7,7 @@
 #include "sbasic/exception.h"
 
 namespace slib {
-	class SLIB_DLL String;
+	class SOBJ_DLL String;
     
 #define boolarray CArray<bool>
 #define bytearray CArray<sbyte>

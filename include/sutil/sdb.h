@@ -8,7 +8,7 @@ extern "C" {
 }
 
 namespace slib {
-	class SLIB_DLL SDBException : public SException {
+	class SOBJ_DLL SDBException : public SException {
 	public:
 		SDBException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
 		~SDBException();
@@ -80,9 +80,9 @@ namespace slib {
 			const char* condition = nullptr, const char* order = nullptr,
 			const char* limit = nullptr, bool distinct = false);
 	}
-	class SLIB_DLL SDataBase;
+	class SOBJ_DLL SDataBase;
 	using sdb = SClsPtr<SDataBase, DB_OBJ>;
-	class SLIB_DLL SDBTable {
+	class SOBJ_DLL SDBTable {
 	private:
 		SDataBase* _db;
 		String _table;
@@ -188,7 +188,7 @@ namespace slib {
 		SArray& getJoinedRecords(const SDictionary& info, SArray* result = nullptr);
 	};
 
-	class SLIB_DLL SDataBase {
+	class SOBJ_DLL SDataBase {
 		friend SDBTable;
 
 	private:

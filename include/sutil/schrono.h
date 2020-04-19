@@ -5,7 +5,7 @@
 #include "sutil/sthread.h"
 
 namespace slib {
-    class SLIB_DLL SClock {
+    class SOBJ_DLL SClock {
     private:
         clock_t _start, _end, _total;
         
