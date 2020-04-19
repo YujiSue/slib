@@ -29,8 +29,8 @@ namespace slib {
             String _name;
             sregion _mask;
 			sdict _attribute;
-
-            annot_vec _annotation;
+			SAnnotation<sbseq_annot> _annotation;
+            //annot_vec _annotation;
             SEQ_CONVERTER _dec, _enc;
             
         private:

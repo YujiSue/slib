@@ -70,34 +70,26 @@ namespace slib {
         extern smat<SEQ_CONVERTER> AA_CONVERTER;
         extern CODON_TABLE DEFAULT_CODON;
 
-		struct SBIOINFO_DLL seqannot {
-			suint aid, type;
-			String name;
-			
-
-		};
-
-		class SBIOINFO_DLL SBSeqAnnot {
-
-
-
-		};
-
-		struct sbseq_annot {
+		struct SBIOINFO_DLL sbseq_annot {
 			suint type;
 			String name;
-			srange pos;
-			bool dir;
-			sbseq_annot* next;
-			sobj attribute;
+			sbpos pos;
+			sbseq_annot* prev, *next;
+			sdict attribute;
 
 			sbseq_annot();
-			sbseq_annot(uint32_t t, const char* n, const srange& r,
-				bool d = false, const sdict& attr = snull);
+			sbseq_annot(suint i, suint t, const char* n, const sbpos& p);
 			sbseq_annot(const sbseq_annot& a);
 			~sbseq_annot();
 
 			sbseq_annot& operator=(const sbseq_annot& a);
+			sbseq_annot& operator+=(const sbseq_annot& a);
+			sbseq_annot& operator-=(const sbseq_annot& a);
+			sbseq_annot& operator/=(const sbseq_annot& a);
+
+			void join(sbseq_annot *annot)
+
+			String toString(const char *format) const;
 
 			bool operator<(const sbseq_annot& a) const;
 			bool operator==(const sbseq_annot& a) const;
