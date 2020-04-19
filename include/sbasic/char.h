@@ -44,8 +44,8 @@ namespace slib {
         Char &operator=(const Char &c);
         Char &operator=(const SChar &c);
         Char &operator=(const SObjPtr &obj);
-        Char &operator+=(const size_t &s);
-        Char &operator-=(const size_t &s);
+        Char &operator+=(int p);
+        Char &operator-=(int p);
         Char &operator ++();
         Char &operator --();
         
@@ -58,7 +58,6 @@ namespace slib {
         std::string toStr() const;
         String toString() const;
         
-        bool operator<(const char *s) const;
         bool operator<(const Char &c) const;
         bool operator==(const char &c) const;
         bool operator==(const char *s) const;

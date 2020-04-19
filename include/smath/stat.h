@@ -196,17 +196,33 @@ namespace slib {
 			template<typename T, class M>
 			extern inline T maverage(const SVector<T, M>& vec, SVector<T, M>& ma, size_t bin, bool imputation = false) {
 				if (imputation) {
-
-
-
+					auto init = vec.begin(), last = init, end = vec.end();
+					auto sum = initVal<T>();
+					sforin(i, 0, bin-1) {
+						sum += (*last);
+						ma.add(sum / (i + 1));
+						++last;
+					}
+					while (last < end) {
+						sum += (*last);
+						ma.add(sum / bin);
+						sum -= (*init);
+						++init; ++last;
+					}
+					srforin(i, bin - 1, 0) {
+						sum -= (*init);
+						ma.add(sum / (i + 1));
+						++init;
+					}
 				}
 				else {
-					auto init = vec.begin(), last = init + bin;
-					auto ave = average(init, last);
-					sforin(it, vec.begin(), vec.end() - bin) {
-
-
-
+					auto init = vec.begin(), last = init + bin, end = vec.end();
+					auto sum = sum(init, last-1);
+					while (last < end) {
+						sum += (*last);
+						ma.add(sum / bin);
+						sum -= (*init);
+						++init; ++last;
 					}
 				}
 				return ma;

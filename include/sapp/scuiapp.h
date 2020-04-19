@@ -10,7 +10,7 @@ namespace slib {
 #define SCUI_MULTI_COMMAND 0x01
 //#define SCUI_RESIDUAL 0x02
 
-		class SLIB_DLL SCuiApp : public SApp {
+		class SAPP_DLL SCuiApp : public SApp {
 
         public:
             SCuiApp();

@@ -28,17 +28,17 @@ namespace slib {
 		SAnnotation();
 		~SAnnotation();
 
-		void insert(const srange &site, const Data& dat);
-		void append(const srange& site, const Data& dat);
-		void overwrite(const srange& site, const Data& dat);
-		void cancel(const srange& site, const Data& dat);
-
-		void expand(srange site, sint len);
+		void insert(srange site, const Data& dat);
+		void append(srange site, const Data& dat);
+		void overwrite(srange site, const Data& dat);
+		void cancel(srange site, const Data& dat);
+		void merge(SAnnotation& annot);
+		void expand(sint site, sint len);
 		void erase(srange site);
-		Range<sarr_iter<annot_dat<Data>>> operator[](const int& site);
-		Range<sarr_iter<annot_dat<Data>>> operator[](const srange& site);
-		Range<sarr_iter<annot_dat<Data>>> at(const int& site);
-		Range<sarr_iter<annot_dat<Data>>> at(const srange& site);
+		Array<annot_dat<Data> *> operator[](sint site);
+		Array<annot_dat<Data>*> operator[](srange site);
+		Array<annot_dat<Data>*> at(sint site);
+		Array<annot_dat<Data>*> at(srange site);
 		bool isAnnotated(const int& site) const;
 		bool isAnnotated(const srange& site) const;
 	};
@@ -52,7 +52,6 @@ namespace slib {
 	annot_dat<Data>::annot_dat(const annot_dat<Data>& annot) : site(annot.site), data(annot.data) {}
 	template<class Data>
 	annot_dat<Data>::~annot_dat() {}
-
 	template<class Data>
 	annot_dat<Data>& annot_dat<Data>::operator=(const annot_dat<Data>& annot) {
 		site = annot.site; data = annot.data; return *this;
@@ -66,76 +65,127 @@ namespace slib {
 	template<class Data>
 	SAnnotation<Data>::~SAnnotation() {}
 	template<class Data>
-	void SAnnotation<Data>::insert(const srange& site, const Data& dat) {
-		if (_annotation.empty()) _annotation.add(annot_dat<Data>(site, dat));
-		else {
-			auto it = _annotation.begin(), end = _annotation.end();
-			if (site < it->site) _annotation.insert(0, annot_dat<Data>(site, dat));
-			else {
-				++it;
-				while (it < end) {
-					if ((it - 1)->site < site && site < it->site) {
-						_annotation.insert(it, annot_dat<Data>(site, dat)); return;
-					}
-					++it;
-				}
-				if ((end - 1)->site < site) _annotation.add(annot_dat<Data>(site, dat));
-			}	
-		}
+	void SAnnotation<Data>::insert(srange site, const Data& dat) {
+		_annotation.add(annot_dat<Data>(site, dat));
+		_annotation.sort();
 	}
 	template<class Data>
-	void SAnnotation<Data>::append(const srange& site, const Data& dat) {
-		if (_annotation.empty()) _annotation.add(annot_dat<Data>(site, dat));
-		else {
-			auto it = _annotation.begin(), end = _annotation.end();
-			if (site.end < it->site.begin) _annotation.insert(0, annot_dat<Data>(site, dat));
-			else {
-				while (it < end) {
-					if (E_.site.overlap(site)) {
-
-					}
-					else if (it < end - 1 && 
-						it->site.end < site.begin && site.end < (it + 1)->site.begin) 
-						_annotation.insert(it + 1, annot_dat<Data>(site, dat));
-					++it;
-				}
+	void SAnnotation<Data>::append(srange site, const Data& dat) {
+		bool over = false;
+		SAnnotation<Data> tmp;
+		sforeach(_annotation) {
+			if (E_.site.include(site)) {
+				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
+				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
+				E_.site = site; E_.data += dat; over = true;
+				break;
+			}
+			else if (E_.site.include(site.begin)) {
+				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
+				E_.site.begin = site.begin; E_.data += dat; over = true;
+				site.begin = E_.site.end + 1;
+			}
+			else if (E_.site.include(site.end)) {
+				if (site.begin < E_.site.begin) tmp.add(srange(site.begin, E_.site.begin - 1), dat);
+				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
+				E_.data += dat; E_.site.end = site.end; over = true;
+				break;
 			}
 		}
-	}
-	template<class Data>
-	void SAnnotation<Data>::overwrite(const srange& site, const Data& dat) {
-
-	}
-	template<class Data>
-	void SAnnotation<Data>::cancel(const srange& site, const Data& dat) {
-
-	}
-	template<class Data>
-	Range<sarr_iter<annot_dat<Data>>> SAnnotation<Data>::operator[](const int& site) { return at(site); }
-	template<class Data>
-	Range<sarr_iter<annot_dat<Data>>> SAnnotation<Data>::operator[](const srange& site) { return at(site); }
-	template<class Data>
-	Range<sarr_iter<annot_dat<Data>>> SAnnotation<Data>::at(const int& site) {
-
-
-		auto it = _annotation.begin(), end = _annotation.end();
-
-
-		if (site < E_.site) return Range<sarr_iter<annot_dat<Data>>>(it, it);
-		if ((end - 1)->site < site) {
-			if ((end - 1)->site.overlap(site)) return Range<sarr_iter<annot_dat<Data>>>(end-1, end-1);
-			else return Range<sarr_iter<annot_dat<Data>>>(end, end);
+		if (over) {
+			if (!tmp.empty()) this->merge(tmp);
 		}
-
-
-
-		
-
-
+		else this->insert(site, dat);
 	}
 	template<class Data>
-	Range<sarr_iter<annot_dat<Data>>> SAnnotation<Data>::at(const srange& site) {
-
+	void SAnnotation<Data>::overwrite(srange site, const Data& dat) {
+		bool over = false;
+		SAnnotation<Data> tmp;
+		sforeach(_annotation) {
+			if (E_.site.include(site)) {
+				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
+				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
+				E_.site = site; E_.data /= dat; over = true;
+				break;
+			}
+			else if (E_.site.include(site.begin)) {
+				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
+				E_.site.begin = site.begin; E_.data /= dat; over = true;
+				site.begin = E_.site.end + 1;
+			}
+			else if (E_.site.include(site.end)) {
+				if (site.begin < E_.site.begin) tmp.add(srange(site.begin, E_.site.begin - 1), dat);
+				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
+				E_.data /= dat; E_.site.end = site.end; over = true;
+				break;
+			}
+		}
+		if (over) {
+			if (!tmp.empty()) this->merge(tmp);
+		}
+		else this->insert(site, dat);
+	}
+	template<class Data>
+	void SAnnotation<Data>::cancel(srange site, const Data& dat) {
+		bool over = false;
+		SAnnotation<Data> tmp;
+		sforeach(_annotation) {
+			if (E_.site.include(site)) {
+				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
+				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
+				E_.site = site; E_.data -= dat; over = true;
+				break;
+			}
+			else if (E_.site.include(site.begin)) {
+				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
+				E_.site.begin = site.begin; E_.data -= dat; over = true;
+				site.begin = E_.site.end + 1;
+			}
+			else if (E_.site.include(site.end)) {
+				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
+				E_.data -= dat; E_.site.end = site.end; over = true;
+				break;
+			}
+		}
+		if (over) {
+			if (!tmp.empty()) this->merge(tmp);
+		}
+	}
+	template<class Data>
+	void SAnnotation<Data>::merge(SAnnotation<Data>& annot) {
+		_annotaion.append(annot._annotation);
+		_annotation.sort();
+	}
+	template<class Data>
+	void SAnnotation<Data>::expand(sint site, sint len) {
+		sforeach(_annotation) {
+			if (E_.site.include(site)) E_.expand(len);
+			else if (site < E_.site) E_.shift(len);
+		}
+	}
+	template<class Data>
+	void SAnnotation<Data>::erase(srange site) {
+		auto len = -site.length(true);
+		sforeach(_annotation) {
+			if (E_.site.include(site)) E_.expand(len);
+			else if (site < E_.site) E_.shift(len);
+		}
+	}
+	template<class Data>
+	Array<annot_dat<Data>*> SAnnotation<Data>::operator[](sint site) { return this->at(site); }
+	template<class Data>
+	Array<annot_dat<Data>*> SAnnotation<Data>::operator[](srange site) { return this->at(site); }
+	template<class Data>
+	Array<annot_dat<Data>*> SAnnotation<Data>::at(sint site) { 
+		Array<annot_dat<Data>*> tmp;
+		sforeach(_annotation) { if (E_.site.overlap(site)) tmp.add(&E_); }
+		return tmp;
+	}
+	template<class Data>
+	Array<annot_dat<Data>*> SAnnotation<Data>::at(srange site) {
+		Array<annot_dat<Data>*> tmp;
+		sforeach(_annotation) { if (E_.site.overlap(site)) tmp.add(&E_); }
+		return tmp;
 	}
 	template<class Data>
 	bool SAnnotation<Data>::isAnnotated(const int& site) const {

@@ -7,6 +7,16 @@
 #include <dlfcn.h>
 #endif
 
+#ifndef SAPP_DLL
+#if defined(USE_SAPP_DLL)
+#define SAPP_DLL __declspec(dllimport)
+#elif defined(_WINDLL)
+#define SAPP_DLL __declspec(dllexport)
+#else
+#define SAPP_DLL
+#endif
+#endif
+
 namespace slib {
     namespace sapp {
 
@@ -31,13 +41,13 @@ namespace slib {
         #define SAPP_EXECTED 0x0AFF
         
         
-        class SLIB_DLL SAppException : public SException {
+        class SAPP_DLL SAppException : public SException {
         public:
             SAppException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SAppException();
         };
         
-        class SLIB_DLL SApp {
+        class SAPP_DLL SApp {
         public:
             SDictionary profile, preference;
             

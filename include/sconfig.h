@@ -118,7 +118,7 @@
 #elif defined(_WINDLL)
 #define SOBJ_DLL __declspec(dllexport)
 #else
-#define SOBJ_DLL  
+#define SOBJ_DLL
 #endif
 #endif
 

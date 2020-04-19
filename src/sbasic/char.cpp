@@ -114,6 +114,12 @@ Char &Char::operator=(const SObjPtr &obj) {
     }
     return *this;
 }
+Char& Char::operator+=(int p) {
+	sforin(i, 0, p) ++(*this);
+}
+Char& Char::operator-=(int p) {
+	sforin(i, 0, p) --(*this);
+}
 Char &Char::operator ++() {
     if (_str) _ptr += u8size(_ptr); return *this;
 }
