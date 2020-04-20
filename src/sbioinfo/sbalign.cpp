@@ -43,7 +43,6 @@ inline void aascore(matb &table, const SString &name) {
 		*/
     }
 }
-
 inline void dnacompare(matb &table) {
     table = matb(16, 16, {
         /////N A C M G R S V T W Y H K D B N
@@ -65,12 +64,9 @@ inline void dnacompare(matb &table) {
         /*N*/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
     });
 }
-
 salign_param::salign_param(subyte t, const char* method) {
     seq_type = t;
 	align_length = DEFAULT_ALIGN_LENGTH;
-	if (String(method))
-
     pm_score = DEFAULT_PM_SCORE;
     am_score = DEFAULT_AM_SCORE;
     mm_score = DEFAULT_MM_SCORE;
@@ -80,7 +76,6 @@ salign_param::salign_param(subyte t, const char* method) {
     makeTable();
 }
 salign_param::~salign_param() {}
-
 salign_param &salign_param::operator=(const salign_param &par) {
     seq_type = par.seq_type;
     align_length = par.align_length;
@@ -142,7 +137,6 @@ salign::salign(const salign &align) {
     cigars = align.cigars;
 }
 salign::~salign() {}
-
 salign &salign::operator = (const salign &align) {
     ref = align.ref;
     aligned = align.aligned;
@@ -150,7 +144,6 @@ salign &salign::operator = (const salign &align) {
     cigars = align.cigars;
     return (*this);
 }
-
 bool salign::operator < (const salign &align) const {
     if (ref != align.ref) return ref < align.ref;
     if (aligned != align.aligned) return aligned < align.aligned;
@@ -162,10 +155,10 @@ bool salign::operator == (const salign &align) const {
 void salign::scoring(salign_param *par) {
     score = 0;
     sforeach(cigars) {
-        if(it->option == scigar::PMATCH) score += it->length*par->pm_score;
-        else if(it->option == scigar::MATCH) score += it->length*par->am_score;
-        else if(it->option == scigar::MMATCH) score += it->length*par->mm_score;
-        else score += par->gap_score+(it->length-1)*par->gap2_score;
+		if (E_.option == scigar::PMATCH) score += E_.length * par->pm_score;
+		else if (E_.option == scigar::MATCH) score += E_.length * par->am_score;
+		else if (E_.option == scigar::MMATCH) score += E_.length * par->mm_score;
+        else score += par->gap_score+(E_.length-1)*par->gap2_score;
     }
 }
 void salign::init() {
@@ -174,58 +167,50 @@ void salign::init() {
     score = 0;
     cigars.clear();
 }
-             
-String slib::sbio::salign::alref(const String &ref) {
-    String str = "";
+String salign::alref(const String &ref) {
+    String str;
     int offset = 0;
     sforeach(cigars) {
-        if(it->option == scigar::INSERTION) { sforin(i, 0, it->length) str += "-"; }
+        if(E_.option == scigar::INSERTION) { sforin(i, 0, E_.length) str += "-"; }
         else {
-            str += ref.substring(offset, it->length);
-            offset += it->length;
+            str += ref.substring(offset, E_.length);
+            offset += E_.length;
         }
     }
     return str;
 }
-
-String slib::sbio::salign::match() {
+String salign::match() {
     String str = "";
     sforeach(cigars) {
-        if(it->option == scigar::PMATCH) { sforin(i, 0, it->length) str += "*"; }
-        else if(it->option == scigar::MATCH) { sforin(i, 0, it->length) str += "+"; }
-        else if(it->option == scigar::MMATCH) { sforin(i, 0, it->length) str += "."; }
-        else { sforin(i, 0, it->length) str += " "; }
+        if(E_.option == scigar::PMATCH) { sforin(i, 0, E_.length) str += "*"; }
+        else if(E_.option == scigar::MATCH) { sforin(i, 0, E_.length) str += "+"; }
+        else if(E_.option == scigar::MMATCH) { sforin(i, 0, E_.length) str += "."; }
+        else { sforin(i, 0, E_.length) str += " "; }
     }
     return str;
 }
-
 String consensus(const String &ref, const String &que);
 
 String slib::sbio::salign::alque(const String &que) {
     String str = "";
     int offset = 0;
     sforeach(cigars) {
-        if(it->option == scigar::DELETION) { sforin(i, 0, it->length) str += "-"; }
+        if(E_.option == scigar::DELETION) { sforin(i, 0, E_.length) str += "-"; }
         else {
-            str += que.substring(offset, it->length);
-            offset += it->length;
+            str += que.substring(offset, E_.length);
+            offset += E_.length;
         }
     }
     return str;
 }
-
 inline int aldir(sint *score) {
     int idx = 0;
     sforin(i, 1, 4) { if(score[idx] < score[i]) idx = i; }
     return idx;
 }
-
-SAlignment::SAlignment() {
-    _par = nullptr;
-}
+SAlignment::SAlignment() : _par(nullptr) {}
 SAlignment::SAlignment(salign_param *p) : SAlignment() { set(p); }
 SAlignment::~SAlignment() {}
-
 void SAlignment::align(subyte *ref, size_t rlen, subyte *que, size_t qlen) {
     reset(); if (!rlen || !qlen) return;
     auto r_ = ref, q_ = que;

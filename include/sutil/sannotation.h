@@ -20,25 +20,22 @@ namespace slib {
     };
 
 	template<class Data>
-	class SAnnotation {
-	protected:
-		Array<Pointer<annot_dat<Data>>> _annotation;
-
+	class SAnnotation : public Array<Pointer<annot_dat<Data>>> {
 	public:
 		SAnnotation();
 		~SAnnotation();
 
 		void insert(srange site, const Data& dat);
-		void append(srange site, const Data& dat);
+		void apply(srange site, const Data& dat);
 		void overwrite(srange site, const Data& dat);
 		void cancel(srange site, const Data& dat);
 		void merge(SAnnotation& annot);
 		void expand(sint site, sint len);
 		void erase(srange site);
-		Array<annot_dat<Data> *> operator[](sint site);
-		Array<annot_dat<Data>*> operator[](srange site);
-		Array<annot_dat<Data>*> at(sint site);
-		Array<annot_dat<Data>*> at(srange site);
+		Array<Pointer<annot_dat<Data>>> operator[](sint site);
+		Array<Pointer<annot_dat<Data>>> operator[](srange site);
+		Array<Pointer<annot_dat<Data>>> at(sint site);
+		Array<Pointer<annot_dat<Data>>> at(srange site);
 		bool isAnnotated(const int& site) const;
 		bool isAnnotated(const srange& site) const;
 	};
@@ -60,6 +57,7 @@ namespace slib {
 	bool annot_dat<Data>::operator<(const annot_dat<Data>& annot) const { return site < annot.site; }
 	template<class Data>
 	bool annot_dat<Data>::operator==(const annot_dat<Data>& annot) const { return site == annot.site && data == annot.data; }
+	
 	template<class Data>
 	SAnnotation<Data>::SAnnotation() {}
 	template<class Data>
@@ -70,25 +68,25 @@ namespace slib {
 		_annotation.sort();
 	}
 	template<class Data>
-	void SAnnotation<Data>::append(srange site, const Data& dat) {
+	void SAnnotation<Data>::apply(srange site, const Data& dat) {
 		bool over = false;
 		SAnnotation<Data> tmp;
-		sforeach(_annotation) {
-			if (E_.site.include(site)) {
-				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
-				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
-				E_.site = site; E_.data += dat; over = true;
+		sforeach(*this) {
+			if (E_->site.include(site)) {
+				if (E_->site.begin < site.begin) tmp.add(annot_dat<Data>(srange(E_->site.begin, site.begin - 1), E_.data));
+				if (site.end < E_->site.end) tmp.add(annot_dat<Data>(srange(site.end + 1, E_->site.end), E_->data));
+				E_->site = site; E_->data += dat; over = true;
 				break;
 			}
-			else if (E_.site.include(site.begin)) {
-				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
-				E_.site.begin = site.begin; E_.data += dat; over = true;
-				site.begin = E_.site.end + 1;
+			else if (E_->site.include(site.begin)) {
+				if (E_->site.begin < site.begin) tmp.add(annot_dat<Data>(srange(E_->site.begin, site.begin - 1), E_->data));
+				E_->site.begin = site.begin; E_->data += dat; over = true;
+				site.begin = E_->site.end + 1;
 			}
-			else if (E_.site.include(site.end)) {
-				if (site.begin < E_.site.begin) tmp.add(srange(site.begin, E_.site.begin - 1), dat);
-				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);
-				E_.data += dat; E_.site.end = site.end; over = true;
+			else if (E_->site.include(site.end)) {
+				if (site.begin < E_->site.begin) tmp.add(annot_dat<Data>(srange(site.begin, E_->site.begin - 1), dat));
+				if (site.end < E_->site.end) tmp.add(annot_dat<Data>(srange(site.end + 1, E_->site.end), E_->data));
+				E_.data += dat; E_->site.end = site.end; over = true;
 				break;
 			}
 		}
@@ -101,7 +99,7 @@ namespace slib {
 	void SAnnotation<Data>::overwrite(srange site, const Data& dat) {
 		bool over = false;
 		SAnnotation<Data> tmp;
-		sforeach(_annotation) {
+		sforeach(*this) {
 			if (E_.site.include(site)) {
 				if (E_.site.begin < site.begin) tmp.add(srange(E_.site.begin, site.begin - 1), E_.data);
 				if (site.end < E_.site.end) tmp.add(srange(site.end + 1, E_.site.end), E_.data);

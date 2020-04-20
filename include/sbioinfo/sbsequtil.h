@@ -70,25 +70,11 @@ namespace slib {
         extern smat<SEQ_CONVERTER> AA_CONVERTER;
         extern CODON_TABLE DEFAULT_CODON;
 
-		struct SBIOINFO_DLL seqannot {
-			suint aid, type;
-			String name;
-			
-
-		};
-
-		class SBIOINFO_DLL SBSeqAnnot {
-
-
-
-		};
-
-		struct sbseq_annot {
+		struct SBIOINFO_DLL sbseq_annot {
 			suint type;
 			String name;
-			srange pos;
-			bool dir;
-			sbseq_annot* next;
+			sbpos pos;
+			sbseq_annot* prev, * next;
 			sobj attribute;
 
 			sbseq_annot();

@@ -33,7 +33,6 @@ bool abidir::operator==(const abidir& dir) const { return number == dir.number; 
 
 SBSeqIO::SBSeqIO() {}
 SBSeqIO::~SBSeqIO() {}
-
 inline void findMaskedRegion(SBioSeq *seq, String str) {
 	srange mask;
 	size_t pos = 0, len = str.length();

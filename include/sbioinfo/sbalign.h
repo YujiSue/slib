@@ -85,7 +85,7 @@ namespace slib {
             size_t countQue(size_t beg = 0, size_t len = -1) const;
             size_t countCigar(subyte op);
             
-            std::string toString() const;
+			String toString() const;
             
             bool operator==(const SCigarArray &array) const;
         };

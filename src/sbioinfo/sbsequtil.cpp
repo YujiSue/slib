@@ -5,7 +5,6 @@ using namespace slib;
 using namespace slib::sbio;
 using namespace slib::smath;
 
-
 sbseq_annot::sbseq_annot() : type(0), dir(false) {}
 sbseq_annot::sbseq_annot(suint t, const char* n, const srange& r, bool d, const sdict& attr) :
 	type(t), name(n), pos(r), dir(d), next(nullptr), attribute(attr) {}

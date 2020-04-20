@@ -14,7 +14,6 @@ sgff::sgff(const sgff &g) : sbpos(g) {
     attribute = g.attribute;
 }
 sgff::~sgff() {}
-
 void sgff::init() {
     sbpos::init();
     seqid = ""; source = ""; type = ""; phase = 0;
@@ -41,7 +40,6 @@ SGFFFile::SGFFFile(const char *path, bool l) : SGFFFile() {
     else load(path);
 }
 SGFFFile::~SGFFFile() {}
-
 void SGFFFile::open(const char *path) {
     _file.open(path);
 }
@@ -49,10 +47,8 @@ void SGFFFile::load(const char *path) {
     open(path);
     while (next()) { gff_datas.add(gff_data); }
 }
-
 const sgff &SGFFFile::data() const { return gff_data; }
 const Array<sgff> &SGFFFile::list() const { return gff_datas; }
-
 bool SGFFFile::next() {
     if(!_file.isOpened() || _file.eof()) return false;
     else {

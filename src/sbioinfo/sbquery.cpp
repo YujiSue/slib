@@ -12,7 +12,6 @@ spma::spma(const spma &p) {
     child = p.child; match = p.match;
 }
 spma::~spma() {}
-
 spma &spma::operator=(const spma &p) {
     child = p.child; match = p.match; return *this;
 }
@@ -26,14 +25,11 @@ void spma::init() {
 SBQuery::SBQuery() : _par(nullptr), _pma_size(0), _total_length(0) {}
 SBQuery::SBQuery(sbsearch_param *p) : SBQuery() { setParam(p); }
 SBQuery::~SBQuery() {}
-
 spma *SBQuery::root() { return &_pmas[0]; }
-
 ubytearray &SBQuery::query(int idx) { return _seqs[idx]; }
 const ubytearray &SBQuery::query(int idx) const { return _seqs[idx]; }
 size_t SBQuery::count() const { return _seqs.size(); }
 void SBQuery::setSize(size_t s) { _seqs.resize(s); }
-
 void SBQuery::addQuery(const char *seq) {
     auto size = strlen(seq);
     _total_length += size;
@@ -45,23 +41,8 @@ void SBQuery::addDSQuery(const char *seq) {
     addQuery(seq); addQuery(seq);
     if(_par->ref_type&DNA_SEQ) sseq::dcompi(_seqs.last());
     else if(_par->ref_type&RNA_SEQ) sseq::rcompi(_seqs.last());
-    //_dstrand = true;
 }
-/*
-void SBQuery::addQuery(const ubytearray &seq) {
-    _total_length += seq.size();
-    _seqs.add(seq);
-}
-void SBQuery::addDSQuery(const ubytearray &seq) {
-    addQuery(seq); addQuery(seq);
-    if(_par->ref_type&DNA_SEQ) sseq::dcompi(_seqs.last());
-    else if(_par->ref_type&RNA_SEQ) sseq::rcompi(_seqs.last());
-    _dstrand = true;
-}
-*/
-void SBQuery::setTotalLength(size_t len) {
-    _total_length = len;
-}
+void SBQuery::setTotalLength(size_t len) { _total_length = len; }
 void SBQuery::makeTrie() {
     if(!_par) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "_par");
     if (_seqs.empty()) return;
@@ -84,9 +65,8 @@ void SBQuery::makeTrie() {
             ++p;
         }
     }
-    complete();
+    this->complete();
 }
-
 void SBQuery::makeStrictTrie() {
     if(!_par) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "_par");
     if (_seqs.empty()) return;
@@ -111,9 +91,8 @@ void SBQuery::makeStrictTrie() {
             ++p;
         }
     }
-    complete();
+    this->complete();
 }
-
 void SBQuery::setParam(sbsearch_param *p) {
     _par = p;
     switch (p->ref_type) {
@@ -210,7 +189,6 @@ void SBQuery::reset() {
     _seqs.clear();
     _total_length = 0;
 }
-
 void SBQuery::complete() {
     auto size = root()->child.size();
     std::queue<spma *> stack;
