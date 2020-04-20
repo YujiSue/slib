@@ -46,7 +46,7 @@ SDictionary &SDictionary::operator=(const SDictionary &dic) {
     clear(); reserve(dic.capacity());
     if (dic.size()) sforeach(dic) set(it->key, it->value); return *this;
 }
-SDictionary& SDictionary::operator=(SDictionary&& dic) { swap(dict); return *this; }
+SDictionary& SDictionary::operator=(SDictionary&& dic) { swap(dic); return *this; }
 SDictionary &SDictionary::operator=(const sobj &obj) {
     clear();
     if (obj.isDict()) *this = obj.dict();

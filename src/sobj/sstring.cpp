@@ -341,7 +341,7 @@ SString slib::operator+(const int &i, const SString &s) { return SString(i)+=s; 
 SString slib::operator+(const sinteger &i, const SString &s) { return SString(i)+=s; }
 SString slib::operator+(const size_t &u, const SString &s) { return SString(u)+=s; }
 SString slib::operator+(const float &f, const SString &s) { return SString(f)+=s; }
-SString slib::operator+(const sreal &r, const SString &s) { return SString(r)+=s; }
+SString slib::operator+(const double &r, const SString &s) { return SString(r)+=s; }
 SString slib::operator+(const bool &b, const SString &s) { return SString(b)+=s; }
 //SString slib::operator+(const char *s, const SNumber &num) { return SString(s) += num.toString(); }
 String slib::operator+(const char *s, const sobj &obj) {
