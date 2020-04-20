@@ -39,12 +39,14 @@ SDictionary::SDictionary(const SDictionary &dict) : SDictionary() {
     reserve(dict.capacity());
     if (dict.size()) sforeach(dict) set(it->key, it->value);
 }
+SDictionary::SDictionary(SDictionary&& dict) : SDictionary() { swap(dict); }
 SDictionary::~SDictionary() {}
 
 SDictionary &SDictionary::operator=(const SDictionary &dic) {
     clear(); reserve(dic.capacity());
     if (dic.size()) sforeach(dic) set(it->key, it->value); return *this;
 }
+SDictionary& SDictionary::operator=(SDictionary&& dic) { swap(dict); return *this; }
 SDictionary &SDictionary::operator=(const sobj &obj) {
     clear();
     if (obj.isDict()) *this = obj.dict();

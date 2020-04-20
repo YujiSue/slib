@@ -9,16 +9,21 @@ namespace slib {
     namespace sapp {
         
         class SGLApp : public SApp {
-            
+		protected:
+			GLFWwindow* _window;
+			sint _res;
+
+		private:
+			_init();
+
         public:
             SGLApp();
             SGLApp(const char *path);
             SGLApp(SDictionary &&prof);
             ~SGLApp();
             
-            int run(int argc, const char **argv);
-            int init(int argc, const char **argv);
-            int exec();
+            int run();
+			GLFWwindow* mainWindow();
         };
     }
 }

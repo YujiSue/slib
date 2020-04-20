@@ -1,42 +1,62 @@
-/*
 #include "sapp/sglapp.h"
 
 using namespace slib;
 using namespace slib::sapp;
 
 SGLApp::SGLApp() : SApp() {}
-SGLApp::SGLApp(const char *path) : SApp() {}
-SGLApp::SGLApp(SDictionary &&prof) : SApp() {}
+SGLApp::SGLApp(const char* path) : SApp(path) {}
+SGLApp::SGLApp(SDictionary&& prof) : SApp(std::forward(prof)) {}
 SGLApp::~SGLApp() {}
+SGLApp::_init() {
+	_res = glfwInit();
+	if (_res != GL_TRUE) {
+		//throw SAppException();
+	}
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	
+	_window = glfwCreateWindow(profile["main"]["width"], profile["main"]["height"], profile["app"]["name"], NULL, NULL);
+	if (!window) {
+		//throw SAppException();
+	}
+	glfwMakeContextCurrent(_window);
+	glfwSwapInterval(profile["main"]["interval"]);
+	glewExperimental = GL_TRUE;
+	if ((auto code = glewInit()) != GLEW_OK) {
+		//throw SAppException(glewGetErrorString(code));
+	}
+}
+int SGLApp::run() {
+	try {
+		_init();
+		auto& bgcol = smedia::SColor(profile["main"]["background"].uintValue());
+		while (glfwWindowShouldClose(_window) == GL_FALSE) {
+			
+			glClearColor(bgcol[0], 1.0f, 1.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-int SGLApp::run(int argc, const char **argv) {
-    init(argc, argv);
+
+
+
+			glfwSwapBuffers(_window);
+			glfwPollEvents();
+		}
+		glfwTerminate();
+		return 0;
+	}
+	catch (SAppException ae) {
+		if (_res == GL_TRUE) glfwTerminate();
+		return 1;
+	}
+
+
+	/*
     GLuint program;
     GLuint vbo, vao;
-    auto res= glfwInit();
-    if (!res) {
-        //throw SAppException();
-    }
-#if defined(MAC_OS)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-    
-    
-    GLFWwindow *window = glfwCreateWindow(profile["UI"]["main"]["width"], profile["UI"]["main"]["height"], profile["app"]["name"], NULL, NULL);
-    
-    
-    if (!window) {
-        //throw SAppException();
-        glfwTerminate();
-        return 1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
-    glewExperimental = GL_TRUE;
-    res = glewInit();
+	
+	
     
     glEnable(GL_DEPTH_TEST);
     
@@ -86,36 +106,9 @@ int SGLApp::run(int argc, const char **argv) {
     
     //program = initShader(mdl);
     
+    */
     
-    while (glfwWindowShouldClose(window) == GL_FALSE) {
-        
-        
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        
-        
-        glUseProgram(shader_programme);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
-        //glDrawArrays(GL_TRIANGLES, 3, 3);
-        
-        
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-    glfwTerminate();
-    return 0;
 }
-int SGLApp::init(int argc, const char **argv) {
-    
-    return 0;
-}
-int SGLApp::exec() {
-    
-    return 0;
-}
-*/
 /*
 int main(int argc, const char * argv[]) {
     GLuint program;

@@ -41,7 +41,7 @@ SAppException::~SAppException() {}
 SApp::SApp() {}
 SApp::SApp(const char *path) : SApp() {
     try { profile.load(path); }
-    catch (sio::SIOException ie) {}
+	catch (sio::SIOException ie) { ie.print(); }
 }
 SApp::SApp(SDictionary &&prof) : SApp() {
     profile.swap(prof);
