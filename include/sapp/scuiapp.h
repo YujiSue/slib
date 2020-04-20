@@ -6,9 +6,9 @@
 namespace slib {
     namespace sapp {
 
-#define SCUI_NO_COMMAND 0x00
-#define SCUI_MULTI_COMMAND 0x01
-//#define SCUI_RESIDUAL 0x02
+#define SCUI_SCMD_APP 0x0000
+#define SCUI_MCMD_APP 0x0001
+#define SCUI_LOOP_APP 0x8001
 
 		class SAPP_DLL SCuiApp : public SApp {
 

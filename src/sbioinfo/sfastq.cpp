@@ -6,7 +6,6 @@ using namespace slib::sbio;
 
 SFastq::SFastq() : SBSeqList() {}
 SFastq::~SFastq() {}
-
 void SFastq::importFq(const char *p) {
     try {
         SFile file(p, sio::READ);

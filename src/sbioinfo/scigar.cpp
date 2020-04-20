@@ -10,7 +10,6 @@ const Map<char, subyte> scigar::CIGAR_INDEX = {
     cub('N', 3), cub('S', 4), cub('H', 5),
     cub('P', 6), cub('=', 7), cub('X', 8)
 };
-
 scigar::scigar() : option(-1), length(0) {}
 scigar::scigar(subyte o, sint l) : option(o), length(l) {}
 scigar::scigar(suint i) : option(i&0x0F), length((i>>4)&0x0FFFFFFF) {}
@@ -39,15 +38,8 @@ SCigarArray::SCigarArray(const char *s) : SCigarArray() {
 SCigarArray::SCigarArray(const scigar &c) : SCigarArray() { add(c); }
 SCigarArray::SCigarArray(sint n, suint *cigars) : cigarray(n) { set(n, cigars); }
 SCigarArray::SCigarArray(std::initializer_list<scigar> li) : cigarray(li) {}
-SCigarArray::SCigarArray(const SCigarArray &array) : cigarray() {
-    if (!array.empty()) {
-        resize(array.size());
-        auto it_ = array.begin();
-        sforeach(*this) { E_ = *it_; ++it_; }
-    }
-}
+SCigarArray::SCigarArray(const SCigarArray &array) : cigarray(array) {}
 SCigarArray::~SCigarArray() {}
-
 SCigarArray &SCigarArray::operator=(const SCigarArray &array) {
     clear();
     if (!array.empty()) {
@@ -57,7 +49,6 @@ SCigarArray &SCigarArray::operator=(const SCigarArray &array) {
     }
     return *this;
 }
-
 void SCigarArray::add(const scigar &c) {
     if (cigarray::size() && last().option == c.option) last().length += c.length;
     else cigarray::add(c);
@@ -88,56 +79,52 @@ void SCigarArray::set(int n, suint *c) {
     sforin(i, 0, n) { *p = *c; ++p; ++c; }
 }
 void SCigarArray::reverse() {
-    size_t idx = 0, len = size();
     auto p = &at(0), p_ = &at(-1);
-    while (idx < len-idx-1) {
+    while (p < p_) {
         auto tmp = *p;
         *p = *p_;
         *p_ = tmp;
-        ++idx; ++p; --p_;
+		++p; --p_;
     }
 }
-
 size_t SCigarArray::countRef(size_t beg , size_t len) const {
     if (len == -1) len = cigarray::size();
     size_t length = 0;
-    auto cit = begin()+beg, end = cit+len;
-    while (cit < end) {
-        if (cit->option == scigar::MATCH ||
-            cit->option == scigar::DELETION ||
-            cit->option == scigar::PMATCH ||
-            cit->option == scigar::MMATCH) length += cit->length;
-        ++cit;
+    auto it = begin()+beg, end = it+len;
+    while (it < end) {
+        if (E_.option == scigar::MATCH ||
+			E_.option == scigar::DELETION ||
+			E_.option == scigar::PMATCH ||
+			E_.option == scigar::MMATCH) length += E_.length;
+        NEXT_;
     }
     return length;
 }
 size_t SCigarArray::countQue(size_t beg, size_t len) const {
     if (len == -1) len = cigarray::size();
     size_t length = 0;
-    auto cit = begin()+beg, end = cit+len;
-    while (cit < end) {
-        if (cit->option == scigar::MATCH ||
-            cit->option == scigar::INSERTION ||
-            cit->option == scigar::SCLIP ||
-            cit->option == scigar::HCLIP ||
-            cit->option == scigar::PMATCH ||
-            cit->option == scigar::MMATCH) length += cit->length;
-        ++cit;
+    auto it = begin()+beg, end = it+len;
+    while (it < end) {
+        if (E_.option == scigar::MATCH ||
+			E_.option == scigar::INSERTION ||
+			E_.option == scigar::SCLIP ||
+			E_.option == scigar::HCLIP ||
+			E_.option == scigar::PMATCH ||
+			E_.option == scigar::MMATCH) length += cit->length;
+		NEXT_;
     }
     return length;
 }
 size_t SCigarArray::countCigar(subyte op) {
     size_t count = 0;
-    sforeach(*this) { if(it->option == op) count += it->length; }
+    sforeach(*this) { if(E_.option == op) count += E_.length; }
     return count;
 }
-
-std::string SCigarArray::toString() const {
-    std::string str;
-    sforeach(*this) { str += std::to_string(it->length)+scigar::CIGAR_STRING[it->option]; }
+String SCigarArray::toString() const {
+	String str;
+	sforeach(*this) { str << E_.length << scigar::CIGAR_STRING[E_.option]; }
     return str;
 }
-
 bool SCigarArray::operator==(const SCigarArray &array) const {
     if (size() != array.size()) return false;
     auto it = begin(), it_ = array.begin();

@@ -43,7 +43,6 @@ void SBIUtil::getBins(sizearray &bins, srange range) {
     last = (range.end>>17)+1; sforin(i, range.begin>>17, last) bins.add(585+i);
     last = (range.end>>14)+1; sforin(i, range.begin>>14, last) bins.add(4681+i);
 }
-
 void SBIUtil::getBins(sizearray &bins, const sregion &region) {
     sforeach(region) getBins(bins, E_);
     bins.sort();
@@ -58,24 +57,20 @@ void SBIUtil::getBins(sizearray &bins, const sregion &region) {
     bins.sort();
     bins.resize(size);
 }
-
 double SBIUtil::scoreVal(double v) {
     return exp(v*logf(10.0)/-10.0);
 }
 double SBIUtil::phredVal(double v) {
     return -10.0*(log(v)/log(10.0));
 }
-
 sbpos::sbpos() : idx(-1), srange(), dir(false) {}
 sbpos::sbpos(sint i, sint b, sint e, bool d) : idx(i), srange(b, e), dir(d) {}
 sbpos::sbpos(const char *s, const sindex *namei) { set(s, namei); }
 sbpos::sbpos(const sbpos &p) : idx(p.idx), srange(p), dir(p.dir) {}
 sbpos::~sbpos() {}
-
 sbpos &sbpos::operator = (const sbpos &p) {
     idx = p.idx; begin = p.begin; end = p.end; dir = p.dir; return *this;
 }
-
 void sbpos::set(const char *s, const sindex *namei) {
     String str(s), sep;
     if (str.contain(":")) {
@@ -137,11 +132,9 @@ double sbpos::absolute(const intarray* length) {
 	}
 	return (double)tmp / total;
 }
-
 String sbpos::toString(stringarray *names) const {
 	return names ? names->at(idx) : String(idx) << "," << begin << "," << end << "," << (dir ? "-" : "+");
 }
-
 void sbpos::init() { idx = -1; begin = 0; end = 0; dir = false; }
 bool sbpos::operator < (const sbpos &p) const {
     if (idx != p.idx) return idx < p.idx;

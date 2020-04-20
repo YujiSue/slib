@@ -13,7 +13,7 @@
 #elif defined(_WINDLL)
 #define SAPP_DLL __declspec(dllexport)
 #else
-#define SAPP_DLL
+#define SAPP_DLL  
 #endif
 #endif
 

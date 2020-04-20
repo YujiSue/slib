@@ -4,13 +4,13 @@ using namespace slib;
 using namespace slib::sbio;
 
 sbsearch_param::sbsearch_param(sushort t) {
-    ref_type = t&0x0F;
-    code_size = (t>>4)&0x0F;
+	ref_type = t & 0x0F;
+	code_size = (t >> 4) & 0x0F;
     ds_search = true;
     multi_thread = true;
     min_match = DEFAULT_MIN_SIZE;
-    seed_len = ref_type&AA_SEQ?DEFAULT_AASEED:DEFAULT_SEED;
-    coded_seed_len = seed_len/(code_size==0?1:code_size);
+	seed_len = ref_type & AA_SEQ ? DEFAULT_AASEED : DEFAULT_SEED;
+	coded_seed_len = seed_len / (code_size == 0 ? 1 : code_size);
     max_gap = DEFAULT_MAX_GAP;
     max_miss = DEFAULT_MAX_MISS;
     thread_count = DEFAULT_THREAD;
@@ -18,7 +18,6 @@ sbsearch_param::sbsearch_param(sushort t) {
     aln_par = salign_param(ref_type);
 }
 sbsearch_param::~sbsearch_param() {}
-
 sbsearch_param &sbsearch_param::operator=(const sbsearch_param &par) {
     ref_type = par.ref_type;
     code_size = par.code_size;
@@ -34,18 +33,16 @@ sbsearch_param &sbsearch_param::operator=(const sbsearch_param &par) {
     aln_par = par.aln_par;
     return *this;
 }
-
 void sbsearch_param::setType(int t) {
-    ref_type = t&0x0F;
-    code_size = (t>>4)&0x0F;
-    coded_seed_len = seed_len/(code_size==0?1:code_size);
-    aln_par = salign_param(ref_type);
+	ref_type = t & 0x0F;
+	code_size = (t >> 4) & 0x0F;
+	coded_seed_len = seed_len / (code_size == 0 ? 1 : code_size);
+	aln_par = salign_param(ref_type);
 }
 void sbsearch_param::setSeed(int s) {
     seed_len = s;
-    coded_seed_len = seed_len/(code_size==0?1:code_size);
+	coded_seed_len = seed_len / (code_size == 0 ? 1 : code_size);
 }
-
 void sbsearch_param::set(const sobj &obj) {
     if (obj["ref"]) ref_type = obj["ref"];
     if (obj["code"]) code_size = obj["code"];
@@ -80,14 +77,12 @@ sobj sbsearch_param::toObj() {
 SBSearch::SBSearch() : _par(nullptr), _qnum(0), _rnum(0) {}
 SBSearch::SBSearch(sbsearch_param *lp) { setParam(lp); }
 SBSearch::~SBSearch() {}
-
 void SBSearch::_resize(size_t rn, size_t qn) {
     if (_matched.size() < rn*qn) { _matched.resize(rn*qn); aligns.resize(rn*qn); }
     _rnum = rn; _qnum = qn;
 }
 inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, srange *range,
                      ubytearray *ref, ubytearray *que, bool dir, sbsearch_param *par) {
-
 	if (match->empty()) return;
     size_t len;
     sforeach(*match) {
@@ -151,10 +146,8 @@ inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, sr
     }
     match->clear();
 }
-
 inline void seq_search(int r, ubytearray *ref, SBQuery *que, sregion *region, sbsearch_param *par,
                        SBSearch::match_array *matches, Array<salign> *vec) {
-
     srange range;
     subyte *refseq = ref->ptr();
     spma *root = que->root();
@@ -182,7 +175,6 @@ inline void seq_search(int r, ubytearray *ref, SBQuery *que, sregion *region, sb
                                             (par->ds_search&&(q%2)), par);
     }
 }
-
 inline void search_i(int i, SBioSeq *ref, SBQuery *que, sbsearch_param *par,
                      SBSearch::match_array *matches, Array<salign> *vec) {
     sregion region;
@@ -190,12 +182,10 @@ inline void search_i(int i, SBioSeq *ref, SBQuery *que, sbsearch_param *par,
     else region.add(srange(0, ref->length()-1));
     seq_search(i, ref, que, &region, par, matches, vec);
 }
-
 void SBSearch::search(SBioSeq *ref, SBQuery *que) {
     _resize(1, que->count()); _que = que;
     search_i(0, ref, que, _par, &_matched[0], &aligns[0]);
 }
-
 void SBSearch::search(SBSeqList *ref, SBQuery *que) {
     _resize(ref->size(), que->count()); _que = que;
     if (_par->multi_thread) {
@@ -204,7 +194,6 @@ void SBSearch::search(SBSeqList *ref, SBQuery *que) {
     }
     else sforin(i, 0, _rnum) search_i(i, ref->at(i), que, _par, &_matched[i*_qnum], &aligns[i*_qnum]);
 }
-
 inline void _align(salign *al, sbsearch_param *par, SBQuery *que) {
     al->cigars.add(scigar(scigar::PMATCH, al->aligned.length()+1));
     if (par->ref_type&DNA_SEQ) al->score = par->aln_par.pm_score*(al->aligned.length()+1);
@@ -226,7 +215,6 @@ void SBSearch::makeAlign() {
     }
     else { sforin(q, 0, _qnum) align_q(q, _rnum, _qnum, &aligns, _par, _que); }
 }
-
 void SBSearch::setParam(sbsearch_param *p) {
     _par = p;
     if (p->multi_thread) _threads.setSize(p->thread_count);
@@ -234,7 +222,6 @@ void SBSearch::setParam(sbsearch_param *p) {
     _qnum = 0;
     _que = nullptr;
 }
-
 void SBSearch::reset() {
     _rnum = 0;
     _qnum = 0;

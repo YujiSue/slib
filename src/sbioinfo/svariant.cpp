@@ -70,14 +70,11 @@ scn_data::scn_data(const scn_data& cn) {
 	memcpy(ratio, cn.ratio, sizeof(float) * 2); frequency = cn.frequency;
 }
 scn_data::~scn_data() {}
-
 scn_data& scn_data::operator=(const scn_data& cn) {
 	memcpy(depth, cn.depth, sizeof(float) * 2); memcpy(ndepth, cn.ndepth, sizeof(float) * 2);
 	memcpy(bgdepth, cn.bgdepth, sizeof(float) * 2); memcpy(bgndepth, cn.bgndepth, sizeof(float) * 2);
 	memcpy(ratio, cn.ratio, sizeof(float) * 2); frequency = cn.frequency; return *this;
 }
-
-
 SVariant::SVariant() : flag(0), homo(false), svar_data() {}
 SVariant::SVariant(sushort f, const svar_data &v) : flag(f), homo(false), svar_data(v) {}
 SVariant::SVariant(const SVariant &var) : svar_data(var) {
@@ -112,16 +109,12 @@ bool SVariant::lt(const SVariant *var, size_t dist) const {
     if (flag == SMALL_VARIANT) return svar_data::lt(*var, 0);
     return svar_data::lt(*var, dist);
 }
-
 bool SVariant::equal(const SVariant *var, size_t dist) const {
 	if (flag & SMALL_VARIANT) return *this == *var;
     return svar_data::equal(*var, dist);
 }
-
 void SVariant::set(sobj& obj) {}
 sobj SVariant::toObj() { return snull; }
-
-
 bool SVariant::operator <(const SVariant &var) const {
     return *((const svar_data *)this) < *((const svar_data *)&var);
 }
