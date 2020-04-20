@@ -264,19 +264,3 @@ bool primer_t::operator<(const primer_t &p) const {
 bool primer_t::operator==(const primer_t &p) const {
     return pos == p.pos && sequence == p.sequence;
 }
-
-primer_pair_t::primer_pair_t(primer_t *p1, primer_t *p2) : primer1(p1), primer2(p2) {
-    amp_size = primer1->pos.dir?primer1->pos.pos-primer2->pos.pos+1:primer2->pos.pos-primer1->pos.pos+1;
-    cross_comp = crossComplement(p1->sequence, p2->sequence);
-    dif_temp = smath::abs(p1->melttemp()-p2->melttemp());
-}
-primer_pair_t::primer_pair_t(const primer_pair_t &pp) : primer1(pp.primer1), primer2(pp.primer2), amp_size(pp.amp_size), cross_comp(pp.cross_comp), dif_temp(pp.dif_temp) {}
-primer_pair_t::~primer_pair_t() {}
-
-void primer_pair_t::calcScore(primer_param_t *par) {
-    /*
-     */
-}
-
-bool primer_pair_t::operator<(const primer_pair_t &pp) const { return primer2 < pp.primer2; }
-bool primer_pair_t::operator==(const primer_pair_t &pp) const { return primer1 == pp.primer1 && primer2 == pp.primer2; }

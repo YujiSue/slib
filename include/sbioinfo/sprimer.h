@@ -1,9 +1,7 @@
-#ifndef __SPRIMER_H__
-#define __SPRIMER_H__
+#ifndef SBIO_SPRIMER_H
+#define SBIO_SPRIMER_H
 
-#include "sobj/sobject.h"
 #include "sbioinfo/sbioseq.h"
-#include "sbioinfo/sbsearch.h"
 
 namespace slib {
     namespace sbio {
@@ -62,20 +60,16 @@ namespace slib {
             sobj toObj();
         };
         
-        struct primer_t {
-            sbpos_t pos;
-            sbioseq sequence;
-            double tm_value[3], score;
-            sfraction gc_ratio;
-            int self_comp, bias;
-            slist<sbpos_t> match[3];
-            bool three_g, three_t;
+        struct sprimer {
+            sbpos pos;
+            sbseq sequence;
+            double score;
             
-            primer_t();
-            primer_t(const char *s);
-            primer_t(const sbpos_t &p, const char *s);
-            primer_t(const primer_t &p);
-            ~primer_t();
+			sprimer();
+			sprimer(const char *s);
+			sprimer(const sbpos&p, const char *s);
+			sprimer(const sprimer&p);
+            ~sprimer();
             
             void setSeq(const char *s);
             double melttemp();
@@ -87,22 +81,6 @@ namespace slib {
             
             bool operator < (const primer_t &p) const;
             bool operator == (const primer_t &p) const;
-        };
-        
-        struct primer_pair_t {
-            primer_t *primer1, *primer2;
-            int amp_size, cross_comp;
-            double dif_temp, cross_score;
-            slist<std::pair<salign_t *, salign_t *>> false_positive;
-            
-            primer_pair_t(primer_t *p1, primer_t *p2);
-            primer_pair_t(const primer_pair_t &pp);
-            ~primer_pair_t();
-            
-            void calcScore(primer_param_t *par);
-            
-            bool operator<(const primer_pair_t &pp) const;
-            bool operator==(const primer_pair_t &pp) const;
         };
     }
 }

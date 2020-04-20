@@ -163,7 +163,7 @@ namespace slib {
 	}
 	template<class Data>
 	void SAnnotation<Data>::merge(SAnnotation<Data>& annot) {
-		_annotaion.append(annot._annotation);
+		_annotation.append(annot._annotation);
 		_annotation.sort();
 	}
 	template<class Data>

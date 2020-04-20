@@ -1,30 +1,38 @@
-#include "sutil/sutil.h"
 #include "sbioinfo/sbsequtil.h"
 
 using namespace slib;
 using namespace slib::sbio;
 using namespace slib::smath;
 
-
-sbseq_annot::sbseq_annot() : type(0), dir(false) {}
-sbseq_annot::sbseq_annot(suint t, const char* n, const srange& r, bool d, const sdict& attr) :
-	type(t), name(n), pos(r), dir(d), next(nullptr), attribute(attr) {}
+sbseq_annot::sbseq_annot() : type(0), prev(nullptr), next(nullptr) {}
+sbseq_annot::sbseq_annot(suint t, const char* n, const sbpos& p) : type(0), name(n), pos(p), prev(nullptr), next(nullptr) {}
 sbseq_annot::sbseq_annot(const sbseq_annot& a) {
-	type = a.type; name = a.name; pos = a.pos; dir = a.dir; next = a.next; attribute = a.attribute;
+	type = a.type; name = a.name; pos = a.pos;
+	prev = a.prev; next = a.next; attribute = a.attribute;
 }
 sbseq_annot::~sbseq_annot() {}
-sbseq_annot& sbseq_annot::operator=(const sbseq_annot& a) {
-	type = a.type; name = a.name; pos = a.pos; dir = a.dir; next = a.next; attribute = a.attribute;
-	return *this;
-}
 
+sbseq_annot& sbseq_annot::operator=(const sbseq_annot& a) { 
+	type = a.type; name = a.name; pos = a.pos;
+	prev = a.prev; next = a.next; attribute = a.attribute;
+	return *this; 
+}
+sbseq_annot& sbseq_annot::operator+=(const sbseq_annot& a) { return *this; } //
+sbseq_annot& sbseq_annot::operator-=(const sbseq_annot& a) { return *this; } //
+sbseq_annot& sbseq_annot::operator/=(const sbseq_annot& a) { return *this; } //
+void sbseq_annot::join(sbseq_annot* annot) {
+	next = annot; annot->prev = this;
+}
+String sbseq_annot::toString(const char* format) const {
+	String str, f(format);
+	if (f == "gbk") {
+
+	}
+}
 bool sbseq_annot::operator<(const sbseq_annot& a) const { return pos < a.pos; }
 bool sbseq_annot::operator==(const sbseq_annot& a) const {
-	return type == a.type && name == a.name &&
-		pos == a.pos && dir == a.dir &&
-		next == a.next && attribute == a.attribute;
+	return type == a.type && name == a.name && pos == a.pos;
 }
-
 
 void sbio::seqform(String& str) {
 	str.replace(REG(/[^a-zA-Z]+/g), "");

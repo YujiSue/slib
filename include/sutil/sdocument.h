@@ -1,15 +1,18 @@
+#ifndef SLIB_SDOC_H
+#define SLIB_SDOC_H
+
 #include "sobj/sobject.h"
 #include "sio/sio.h"
 
 namespace slib {
-	template<typename E>
-	class SDocument : public SObject {
+	template<class ROOT>
+	class SOBJ_DLL SDocument : public SObject {
 	protected:
 		suint _type;
 		String _title, _author;
 		SDate _created, _revised;
 		SDictionary _attribute;
-		E _root;
+		ROOT _root;
 
 	public:
 		SDocument();
@@ -25,30 +28,30 @@ namespace slib {
 		SDate& created();
 		SDate& revised();
 		SDictionary& attribute();
-		E &root();
+		ROOT& root();
 		
 		void setTitle(const char* s);
 		void setAuthor(const char* s);
-		void setRoot(E&& elem);
-		void setRoot(const E& elem);
+		void setRoot(ROOT&& elem);
+		void setRoot(const ROOT& elem);
 
 		virtual String getClass() const;
 		virtual String toString() const;
 		virtual SObject* clone() const;
 	};
 
-	template<typename E>
-	SDocument<E>::SDocument() : SObject() {
+	template<class ROOT>
+	SDocument<ROOT>::SDocument() : SObject() {
 		_created = SDate(); _revised = _created;
 	}
-	template<typename E>
-	SDocument<E>::SDocument(suint t, const char* ti, const char* a) : SDocument() {
+	template<class ROOT>
+	SDocument<ROOT>::SDocument(suint t, const char* ti, const char* a) : SDocument() {
 		_type = t;
 		if (ti) _title = ti;
 		if (a) _author = a;
 	}
-	template<typename E>
-	SDocument<E>::SDocument(const SDocument<E>& doc) : SObject() {
+	template<class ROOT>
+	SDocument<ROOT>::SDocument(const SDocument<ROOT>& doc) : SObject() {
 		_type = doc._type;
 		_title = doc._title;
 		_author = doc._author;
@@ -57,36 +60,36 @@ namespace slib {
 		_attribute = doc._attribute;
 		_root = doc._root;
 	}
-	template<typename E>
-	SDocument<E>::~SDocument() {}
-	template<typename E>
-	void SDocument<E>::load(const char *path) {}
-	template<typename E>
-	void SDocument<E>::save(const char* path) {}
-	template<typename E>
-	suinteger SDocument<E>::type() const { return _type; }
-	template<typename E>
-	String& SDocument<E>::title() { return _title; }
-	template<typename E>
-	String& SDocument<E>::author() { return _author; }
-	template<typename E>
-	SDate& SDocument<E>::created() { return _created; }
-	template<typename E>
-	SDate& SDocument<E>::revised() { return _revised; }
-	template<typename E>
-	SDictionary& SDocument<E>::attribute() { return _attribute; }
-	template<typename E>
-	E& SDocument<E>::root() { return _root; }
-	template<typename E>
-	void SDocument<E>::setTitle(const char* s) { _title = s; }
-	template<typename E>
-	void SDocument<E>::setAuthor(const char* s) { _author = s; }
-	template<typename E>
-	String SDocument<E>::getClass() const { return "doc"; }
-	template<typename E>
-	String SDocument<E>::toString() const { return  "";  }
-	template<typename E>
-	SObject* SDocument<E>::clone() const { return new SDocument(*this); }
+	template<class ROOT>
+	SDocument<ROOT>::~SDocument() {}
+	template<class ROOT>
+	void SDocument<ROOT>::load(const char *path) {}
+	template<class ROOT>
+	void SDocument<ROOT>::save(const char* path) {}
+	template<class ROOT>
+	suinteger SDocument<ROOT>::type() const { return _type; }
+	template<class ROOT>
+	String& SDocument<ROOT>::title() { return _title; }
+	template<class ROOT>
+	String& SDocument<ROOT>::author() { return _author; }
+	template<class ROOT>
+	SDate& SDocument<ROOT>::created() { return _created; }
+	template<class ROOT>
+	SDate& SDocument<ROOT>::revised() { return _revised; }
+	template<class ROOT>
+	SDictionary& SDocument<ROOT>::attribute() { return _attribute; }
+	template<class ROOT>
+	ROOT& SDocument<ROOT>::root() { return _root; }
+	template<class ROOT>
+	void SDocument<ROOT>::setTitle(const char* s) { _title = s; }
+	template<class ROOT>
+	void SDocument<ROOT>::setAuthor(const char* s) { _author = s; }
+	template<class ROOT>
+	String SDocument<ROOT>::getClass() const { return "doc"; }
+	template<class ROOT>
+	String SDocument<ROOT>::toString() const { return  "";  }
+	template<class ROOT>
+	SObject* SDocument<ROOT>::clone() const { return new SDocument(*this); }
 }
 
-
+#endif

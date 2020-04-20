@@ -78,7 +78,7 @@ namespace slib {
 			sdict attribute;
 
 			sbseq_annot();
-			sbseq_annot(suint i, suint t, const char* n, const sbpos& p);
+			sbseq_annot(suint t, const char* n, const sbpos& p);
 			sbseq_annot(const sbseq_annot& a);
 			~sbseq_annot();
 
@@ -87,7 +87,7 @@ namespace slib {
 			sbseq_annot& operator-=(const sbseq_annot& a);
 			sbseq_annot& operator/=(const sbseq_annot& a);
 
-			void join(sbseq_annot *annot)
+			void join(sbseq_annot* annot);
 
 			String toString(const char *format) const;
 
