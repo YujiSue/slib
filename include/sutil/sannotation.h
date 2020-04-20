@@ -22,7 +22,7 @@ namespace slib {
 	template<class Data>
 	class SAnnotation {
 	protected:
-		Array<annot_dat<Data>> _annotation;
+		Array<Pointer<annot_dat<Data>>> _annotation;
 
 	public:
 		SAnnotation();

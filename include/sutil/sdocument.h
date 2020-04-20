@@ -1,3 +1,6 @@
+#ifndef SLIB_SDOC_H
+#define SLIB_SDOC_H
+
 #include "sobj/sobject.h"
 #include "sio/sio.h"
 
@@ -89,4 +92,4 @@ namespace slib {
 	SObject* SDocument<E>::clone() const { return new SDocument(*this); }
 }
 
-
+#endif
