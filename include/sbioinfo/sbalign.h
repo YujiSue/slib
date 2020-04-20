@@ -21,11 +21,9 @@ namespace slib {
             matb score_table;
             matb compare_table;
             
-            salign_param(subyte t = MISC_SEQ, const char *method = "default");
+            salign_param(subyte t = MISC_SEQ);
             ~salign_param();
-            
             salign_param &operator=(const salign_param &par);
-            
             void set(const sobj &obj);
             sobj toObj();
             void makeTable();
@@ -71,22 +69,18 @@ namespace slib {
             SCigarArray(std::initializer_list<scigar> li);
             SCigarArray(const SCigarArray &c);
             ~SCigarArray();
-            
+
             SCigarArray &operator = (const SCigarArray &c);
-            
             void add(const scigar &c);
             void append(const SCigarArray &c);
             void put(const scigar &c);
             void pile(const SCigarArray &c);
             void set(int n, suint *c);
             void reverse();
-            
             size_t countRef(size_t beg = 0, size_t len = -1) const;
             size_t countQue(size_t beg = 0, size_t len = -1) const;
             size_t countCigar(subyte op);
-            
 			String toString() const;
-            
             bool operator==(const SCigarArray &array) const;
         };
         
@@ -140,8 +134,6 @@ namespace slib {
             void init();
             void reset();
         };
-        
-        extern void calcScore(salign *al, matb *comparer, bytearray *score_list);
     }
 }
 

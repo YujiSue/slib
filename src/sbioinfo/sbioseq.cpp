@@ -263,7 +263,6 @@ String SBioSeq::raw(size_t off, size_t len, bool dir) const {
     }
     return seq;
 }
-
 void SBioSeq::circulate() { _type |= CIRCULAR; }
 void SBioSeq::complement() {
     switch (seqtype()) {
@@ -335,7 +334,6 @@ void SBioSeq::translate(const CODON_TABLE &code) {
     }
     else throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "sequence", "RNA");
 }
-
 SBioSeq SBioSeq::transcript() {
     if (_type & DNA_SEQ) {
         SBioSeq seq = *this;

@@ -16,10 +16,9 @@ const String START_ASC_QUE = sql::orderQue({ std::pair<String, ORDER>("START", A
 const String POS_ASC_QUE = sql::orderQue({ std::pair<String, ORDER>("CHROMOSOME", ASC), std::pair<String, ORDER>("START", ASC) });
 
 annot_info::annot_info() : sbpos(), _id(0), type(0) {}
-annot_info::annot_info(const int32_t &t, const String &n, const sbpos &p) : type(t), name(n), sbpos(p) {}
+annot_info::annot_info(const suint&t, const String &n, const sbpos &p) : type(t), name(n), sbpos(p) {}
 annot_info::annot_info(const annot_info &info) : _id(info._id), type(info.type), name(info.name), sbpos(info) {}
 annot_info::~annot_info() {}
-
 chr_info::chr_info() : annot_info() {}
 chr_info::chr_info(const char *s, const sbpos &pos) : annot_info() {}
 chr_info::chr_info(const chr_info &c) : annot_info(c) {}
@@ -28,7 +27,6 @@ chr_info &chr_info::operator=(const chr_info &c) {
     idx = c.idx; begin = c.begin; end = c.end; dir = c.dir;
     _id = c._id; type = c.type; name = c.name; return *this;
 }
-
 contig_info::contig_info() : annot_info() {}
 contig_info::contig_info(const contig_info &c) : annot_info(c) {}
 contig_info::~contig_info() {}
@@ -36,31 +34,25 @@ contig_info &contig_info::operator=(const contig_info &c) {
     idx = c.idx; begin = c.begin; end = c.end; dir = c.dir;
     _id = c._id; type = c.type; name = c.name; return *this;
 }
-
 struct_info::struct_info() : annot_info() {}
 struct_info::struct_info(const struct_info &s) : annot_info(s) {}
 struct_info::~struct_info() {}
-
 struct_info &struct_info::operator=(const struct_info &s) {
     idx = s.idx; begin = s.begin; end = s.end; dir = s.dir;
     _id = s._id; type = s.type; name = s.name; return *this;
 }
-
 transcript_info::transcript_info() : annot_info(), gene(nullptr) {}
 transcript_info::transcript_info(const transcript_info &t) : annot_info(t) {
     structures = t.structures;
     gene = t.gene;
 }
 transcript_info::~transcript_info() {}
-
 transcript_info &transcript_info::operator=(const transcript_info &t) {
     idx = t.idx; begin = t.begin; end = t.end; dir = t.dir;
     _id = t._id; type = t.type; name = t.name; structures = t.structures; gene = t.gene; return *this;
 }
-
 void transcript_info::addStructure(struct_info &&s) { structures.add(s); }
 void transcript_info::setGene(gene_info *g) { gene = g; }
-
 sregion transcript_info::exonRegion() {
     sregion region;
     sforeach(structures) { if(E_.type==EXON) region.add(E_); }
@@ -76,7 +68,6 @@ Array<struct_info> transcript_info::messenger() {
     sforeach(structures) { if(E_.type==CDS || E_.type&UTR) region.add(E_); }
     return region;
 }
-
 gene_info::gene_info() : annot_info() {}
 gene_info::gene_info(const gene_info &g) : annot_info(g) {
     gene_id = g.gene_id;
@@ -86,17 +77,14 @@ gene_info::gene_info(const gene_info &g) : annot_info(g) {
     attribute = g.attribute;
 }
 gene_info::~gene_info() {}
-
 gene_info &gene_info::operator=(const gene_info &g) {
     idx = g.idx; begin = g.begin; end = g.end; dir = g.dir;
     _id = g._id; type = g.type; name = g.name; gene_id = g.gene_id; description = g.description;
     other_names = g.other_names; transcripts = g.transcripts; attribute = g.attribute;
     return *this;
 }
-
 void gene_info::setDescription(String *str) { description = *str; }
 void gene_info::addTranscript(transcript_info *t) { transcripts.add(t); }
-
 mut_info::mut_info() : annot_info() {}
 mut_info::mut_info(const mut_info &v) : annot_info(v) {
     mut_id = v.mut_id;
@@ -104,22 +92,18 @@ mut_info::mut_info(const mut_info &v) : annot_info(v) {
     attribute = v.attribute;
 }
 mut_info::~mut_info() {}
-
 mut_info &mut_info::operator=(const mut_info &v) {
     idx = v.idx; begin = v.begin; end = v.end; dir = v.dir;
     _id = v._id; type = v.type; name = v.name; mut_id = v.mut_id; strain = v.strain;
     attribute = v.attribute; return *this;
 }
-
 feature_info::feature_info() : annot_info() {}
 feature_info::feature_info(const feature_info &f) : annot_info(f) {}
 feature_info::~feature_info() {}
-
 feature_info &feature_info::operator=(const feature_info &f) {
     idx = f.idx; begin = f.begin; end = f.end; dir = f.dir;
     _id = f._id; type = f.type; name = f.name; return *this;
 }
-
 
 transcript_site::transcript_site() : type(0), site(0), pos(0) {}
 transcript_site::transcript_site(transcript_info* ti) : transcript_site() {
@@ -130,7 +114,6 @@ transcript_site::transcript_site(const transcript_site& trs) {
 	ori = trs.ori; alt = trs.alt; pos = trs.pos;
 }
 transcript_site::~transcript_site() {}
-
 transcript_site& transcript_site::operator=(const transcript_site& trs) {
 	type = trs.type; site = trs.site; name = trs.name;
 	ori = trs.ori; 	alt = trs.alt; pos = trs.pos; return *this;
@@ -386,7 +369,6 @@ SBAnnotDB::SBAnnotDB(const char *path, int m) : SDataBase() {
     open(path); load(m);
 }
 SBAnnotDB::~SBAnnotDB() {}
-
 void SBAnnotDB::open(const char *path) {
     SDataBase::open(path);
     _loadChrInfo();
@@ -453,7 +435,6 @@ void SBAnnotDB::setMode(int m) {
     }
     _mode = m;
 }
-
 String SBAnnotDB::species() {
     auto &res = (*this)["INFO"].getRecord({"VALUE"}, sql::condition("NAME='species'"));
     return res.empty()?"":res.begin()->value;
@@ -462,12 +443,10 @@ String SBAnnotDB::version() {
     auto &res = (*this)["INFO"].getRecord({"VALUE"}, sql::condition("NAME='version'"));
     return res.empty()?"":res.begin()->value;
 }
-
 size_t SBAnnotDB::chrNum() const { return chromosomes.size(); }
 chr_info SBAnnotDB::chrInfo(int idx) const { return chromosomes[idx]; }
 size_t SBAnnotDB::chrIndex(const char *name) const { return _chr_index[name]; }
 const sindex &SBAnnotDB::nameIdx() const { return _chr_index; }
-
 template<class InfoVec>
 inline void searchNameIndex(srange &range, const String &que, intarray &index, InfoVec &array) {
     if (range.end-range.begin < 2) return;
@@ -484,8 +463,7 @@ inline void searchNameIndex(srange &range, const String &que, intarray &index, I
         searchNameIndex<InfoVec>(range, que, index, array);
     }
 }
-inline void searchGeneNameIndex(srange &range, const String &que,
-                                Array<SBAnnotDB::name_pair> &index) {
+inline void searchGeneNameIndex(srange &range, const String &que, Array<SBAnnotDB::name_pair> &index) {
     if (range.end-range.begin < 2) return;
     if (range.length() < 20) {
         auto namep = &index[range.begin];
@@ -514,7 +492,6 @@ inline void searchPos(const sbpos &pos, Array<Array<CArray<Info *>>> &index, sor
         }
     }
 }
-
 void SBAnnotDB::ctgInfo(ctgparray &array, const sbpos &pos, bool append) {
     if (!append) array.clear();
     if (_mode&LOAD_CTG) searchPos(pos, _ctg_index, bin_order[pos.idx], array);
@@ -567,7 +544,6 @@ void SBAnnotDB::ctgInfo(ctgparray &array, const char *name, sql::MATCH_TYPE matc
         }
     }
 }
-
 void SBAnnotDB::geneInfo(geneparray &array, const sbpos &pos, bool trans, bool append) {
 	if (!append) array.clear();
     if (_mode&LOAD_GENE) {
@@ -682,10 +658,6 @@ void SBAnnotDB::geneInfo(geneparray &array, const char *name, bool trans, sql::M
 			de.print();
         }
     }
-}
-void SBAnnotDB::nearestGeneInfo(geneparray &array, const sbpos &pos, bool trans, bool append) {
-	/*
- 	 */
 }
 void SBAnnotDB::transcriptInfo(trsparray &array, const sbpos &pos, bool gene, bool append) {
 	if (!append) array.clear();

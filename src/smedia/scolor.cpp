@@ -3,20 +3,20 @@
 using namespace slib;
 using namespace slib::smedia;
 
-inline float b2fcolor(subyte i) { return (float)i/smath::MAX_UBYTE; }
-inline float s2fcolor(sushort i) { return (float)i/smath::MAX_USHORT; }
+inline float b2fcolor(subyte i) { return (float)i / smath::MAX_UBYTE; }
+inline float s2fcolor(sushort i) { return (float)i / smath::MAX_USHORT; }
 inline void i2fcolor(float *f, suint i) {
-    f[3] = b2fcolor(i&0xFF);
-    f[2] = b2fcolor((i>>8)&0xFF);
-    f[1] = b2fcolor((i>>16)&0xFF);
-    f[0] = b2fcolor((i>>24)&0xFF);
+	f[3] = b2fcolor(i & 0xFF);
+	f[2] = b2fcolor((i >> 8) & 0xFF);
+	f[1] = b2fcolor((i >> 16) & 0xFF);
+	f[0] = b2fcolor((i >> 24) & 0xFF);
 }
-inline subyte f2bcolor(float f) { return f*smath::MAX_UBYTE; }
-inline sushort f2scolor(float f) { return f*smath::MAX_USHORT; }
+inline subyte f2bcolor(float f) { return f * smath::MAX_UBYTE; }
+inline sushort f2scolor(float f) { return f * smath::MAX_USHORT; }
 inline suint f2icolor(float *f) {
-    suint i = f2bcolor(f[0]); i<<=8;
-    i += f2bcolor(f[1]); i<<=8;
-    i += f2bcolor(f[2]); i<<=8;
+	suint i = f2bcolor(f[0]); i <<= 8;
+	i += f2bcolor(f[1]); i <<= 8;
+	i += f2bcolor(f[2]); i <<= 8;
     i += f2bcolor(f[3]);
     return i;
 }
@@ -48,7 +48,6 @@ const SColor SColor::INDIGO = (suint)0x4B0082FF;
 const SColor SColor::NAVY = (suint)0x000080FF;
 const SColor SColor::VIOLET = (suint)0xEE82EEFF;
 const SColor SColor::PURPLE = (suint)0x800080FF;
-
 Map<String, suint> slib::smedia::SColorMap =
 {
     kui("clear", 0x00000000), kui("black", 0x000000FF), kui("white", 0xFFFFFFFF),

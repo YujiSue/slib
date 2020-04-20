@@ -24,8 +24,6 @@ suinteger SBSeqList::total() const {
 }
 sdict& SBSeqList::attribute() { return _attribute; }
 const sdict& SBSeqList::attribute() const { return _attribute; }
-
-
 void SBSeqList::load(const char *path) {
     char magic[4];
     sint tmp;

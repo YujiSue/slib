@@ -8,7 +8,6 @@ sbam::voffset::voffset(int64_t fo, sushort bo) : file_offset(fo), block_offset(b
 sbam::voffset::voffset(suinteger offset) : file_offset(offset>>16), block_offset(offset&0xFFFF) {}
 sbam::voffset::voffset(const sbam::voffset &v) : file_offset(v.file_offset), block_offset(v.block_offset) {}
 sbam::voffset::~voffset() {}
-
 sbam::voffset & sbam::voffset::operator = (const sbam::voffset &v) {
     file_offset = v.file_offset; block_offset = v.block_offset;
     return (*this);
@@ -51,7 +50,6 @@ sbam::readinfo::readinfo(const sbam::readinfo &ri) {
     auxiliary = ri.auxiliary;
 }
 sbam::readinfo::~readinfo() {}
-
 bool sbam::readinfo::headclip(int len) {
     return (cigars.first().option == scigar::SCLIP) &&
     len < cigars.first().length;
@@ -79,19 +77,16 @@ void sbam::readinfo::init() {
 srange sbam::readinfo::readRange() {
     return srange(pos.begin, pos.begin+cigars.countRef()-1);
 }
-
 String sbam::readinfo::toString() {
-    String str, seq(seq_length, '\0'), qstr(seq_length, '\0');
-    sseq::ddecode2(sequence.ptr(), 0, seq_length, (subyte *)&seq[0]);
-    sforin(i, 0, qual.size()) qstr[i] = qual[i]+33;
-    str<<name<<String::TAB<<(int)flag<<String::TAB<<pos.idx<<String::TAB<<pos.begin+1<<String::TAB<<
-    (int)mapq<<String::TAB<<cigars.toString()<<String::TAB<<(int)next_refid<<String::TAB<<(int)next_pos<<String::TAB<<
-    seq_length<<String::TAB<<seq<<String::TAB<<qstr;
+	String str, seq(seq_length, '\0'), qstr(seq_length, '\0');
+	sseq::ddecode2(sequence.ptr(), 0, seq_length, (subyte*)&seq[0]);
+	sforin(i, 0, qual.size()) qstr[i] = qual[i] + 33;
+	str << name << String::TAB << (int)flag << String::TAB << pos.idx << String::TAB << pos.begin + 1 << String::TAB <<
+		(int)mapq << String::TAB << cigars.toString() << String::TAB << (int)next_refid << String::TAB << (int)next_pos << String::TAB <<
+		seq_length << String::TAB << seq << String::TAB << qstr;
     return str;
 }
-bool sbam::readinfo::operator<(const sbam::readinfo &ri) const {
-    return pos < ri.pos;
-}
+bool sbam::readinfo::operator<(const sbam::readinfo &ri) const { return pos < ri.pos; }
 bool sbam::readinfo::operator==(const sbam::readinfo &ri) const {
     return pos == ri.pos && sequence == ri.sequence;
 }
@@ -99,7 +94,6 @@ bool sbam::readinfo::operator==(const sbam::readinfo &ri) const {
 sbam::bai::bai() : ref_num(0) {}
 sbam::bai::bai(const char *path) : sbam::bai() { load(path); }
 sbam::bai::~bai() {};
-
 void sbam::bai::setNum(int n) {
     ref_num = n;
     chunks.resize(ref_num);
@@ -107,7 +101,6 @@ void sbam::bai::setNum(int n) {
     _bin_map.resize(ref_num);
     sforeach(chunks) E_.resize(MAX_BIN);
 }
-
 void sbam::bai::load(const char *path) {
     try {
         sio::SFile file(path, sio::READ);
@@ -144,7 +137,6 @@ void sbam::bai::load(const char *path) {
     }
 }
 //void SBamFile_index::save(const char *path){}
-
 void sbam::bai::init() {
     sforin(i, 0, ref_num) {
         sforeach(chunks[i]) E_.clear();
@@ -166,16 +158,11 @@ inline int bgzf_uncompress(void *dest, void *ori, sushort &length) {
     inflateEnd(&zstrm);
     return res;
 }
-
-sbam::bgzf_dat::bgzf_dat() {
-    init();
-}
-
+sbam::bgzf_dat::bgzf_dat() { init(); }
 sbam::bgzf_dat::~bgzf_dat() {
     free(ori_data);
     free(bam_data);
 }
-
 void sbam::bgzf_dat::init() {
     memset(_magic, 0, 16);
     result = 0;
@@ -211,7 +198,6 @@ void sbam::bgzf_dat::read(void *dest, size_t size, size_t off) {
     current += size;
     offset.block_offset += size;
 }
-
 
 SBamFile::SBamFile() : sio::SFile() {
     _data = new sbam::bgzf_dat();
@@ -283,7 +269,6 @@ void SBamFile::loadIndex(const char *path) {
     if (sio::SFile(path).exist()) index.load(path);
 }
 bool SBamFile::hasIndex() const { return 0 < index.ref_num; }
-
 sbam::voffset SBamFile::voff() const {
     return _data->offset;
 }
@@ -301,11 +286,10 @@ void SBamFile::setVOff(const sbam::voffset &off) {
     }
     _data->setOffset(off.block_offset);
 }
-
 //void SBamFile::sort() {}
-//void SBamFile::CREATEIndex() {}
+//void SBamFile::createIndex() {}
 inline void lenCheck(sint &len) {
-    if (len < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(len).c_str(), READ_SIZE_ERR_MSG);
+    if (len < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, String(len), READ_SIZE_ERR_MSG);
 }
 bool SBamFile::next(sbam::readinfo *ri) {
     if (!ri) ri = &read;

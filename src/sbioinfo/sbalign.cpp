@@ -64,7 +64,7 @@ inline void dnacompare(matb &table) {
         /*N*/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7
     });
 }
-salign_param::salign_param(subyte t, const char* method) {
+salign_param::salign_param(subyte t) {
     seq_type = t;
 	align_length = DEFAULT_ALIGN_LENGTH;
     pm_score = DEFAULT_PM_SCORE;
@@ -73,6 +73,7 @@ salign_param::salign_param(subyte t, const char* method) {
     gap_score = DEFAULT_GAP_SCORE;
     gap2_score = DEFAULT_GAP2_SCORE;
     score_name = "";
+	method = "";
     makeTable();
 }
 salign_param::~salign_param() {}
@@ -189,9 +190,32 @@ String salign::match() {
     }
     return str;
 }
-String consensus(const String &ref, const String &que);
+String consensus(const String& ref, const String& que) {
+	String str;
+	int roff = 0, qoff = 0;
+	sforeach(cigars) {
+		if (E_.option == scigar::INSERTION) { 
+			str += que.substring(qoff, E_.length);
+			qoff += E_.length;
 
-String slib::sbio::salign::alque(const String &que) {
+		}
+		else if (E_.option == scigar::DELETION) { 
+			str += ref.substring(roff, E_.length);
+			roff += E_.length;
+		}
+		else {
+			if (E_.option == scigar::PMATCH) {
+
+			}
+			else {
+
+			}
+			roff += E_.length; qoff += E_.length;
+		}
+	}
+	return str;
+}
+String salign::alque(const String &que) {
     String str = "";
     int offset = 0;
     sforeach(cigars) {

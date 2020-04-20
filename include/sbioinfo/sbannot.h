@@ -10,15 +10,15 @@ namespace slib {
     namespace sbio {
 
 		struct SBIOINFO_DLL annot_info : public sbpos {
-			sint _id, type;
+			sint _id;
+			suint type;
 			String name;
 
 			annot_info();
-			annot_info(const sint& t, const String& n, const sbpos& p);
+			annot_info(const suint& t, const String& n, const sbpos& p);
 			annot_info(const annot_info& info);
 			~annot_info();
 		};
-
 		struct SBIOINFO_DLL chr_info : public annot_info {
 			chr_info();
 			chr_info(const char* s, const sbpos& pos);
@@ -26,19 +26,16 @@ namespace slib {
 			~chr_info();
 			chr_info& operator=(const chr_info& c);
 		};
-
 		struct SBIOINFO_DLL contig_info : public annot_info {
 			contig_info();
 			contig_info(const contig_info& c);
 			~contig_info();
 			contig_info& operator=(const contig_info& c);
 		};
-
 		struct SBIOINFO_DLL struct_info : public annot_info {
 			struct_info();
 			struct_info(const struct_info& s);
 			~struct_info();
-
 			struct_info& operator=(const struct_info& s);
 		};
 		struct SBIOINFO_DLL gene_info;
@@ -49,17 +46,13 @@ namespace slib {
 			transcript_info();
 			transcript_info(const transcript_info& t);
 			~transcript_info();
-
 			transcript_info& operator=(const transcript_info& t);
-
 			void addStructure(struct_info&& s);
 			void setGene(gene_info* g);
-
 			sregion exonRegion();
 			sregion codingRegion();
 			Array<struct_info> messenger();
 		};
-
 		struct SBIOINFO_DLL gene_info : public annot_info {
 			String gene_id, description;
 			stringarray other_names;
@@ -69,13 +62,10 @@ namespace slib {
 			gene_info();
 			gene_info(const gene_info& g);
 			~gene_info();
-
 			gene_info& operator=(const gene_info& g);
-
 			void setDescription(String* str);
 			void addTranscript(transcript_info* t);
 		};
-
 		struct SBIOINFO_DLL mut_info : public annot_info {
 			String mut_id, strain;
 			sattribute attribute;
@@ -83,15 +73,12 @@ namespace slib {
 			mut_info();
 			mut_info(const mut_info& m);
 			~mut_info();
-
 			mut_info& operator=(const mut_info& m);
 		};
-
 		struct SBIOINFO_DLL feature_info : public annot_info {
 			feature_info();
 			feature_info(const feature_info& f);
 			~feature_info();
-
 			feature_info& operator=(const feature_info& f);
 		};
 
@@ -124,9 +111,7 @@ namespace slib {
 		};
 
         class SBIOINFO_DLL SBAnnotDB : public SDataBase {
-			
-
-            /*
+			/*
              SQLite Table:
                 INFO:
                     ID(KEY)
@@ -290,7 +275,6 @@ namespace slib {
             
             void geneInfo(geneparray & array, const sbpos &pos, bool trans = true, bool append = false);
             void geneInfo(geneparray& array, const char *name, bool trans = true, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
-            void nearestGeneInfo(geneparray& array, const sbpos &pos, bool trans = true, bool append = false);
             
             void transcriptInfo(trsparray & array, const sbpos &pos, bool gene = false, bool append = false);
             void transcriptInfo(trsparray& array, const char *name, bool gene = false, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
