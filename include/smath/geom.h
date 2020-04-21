@@ -208,6 +208,52 @@ namespace slib {
 				sforin(it, v.begin() + 1, v.end()) len += length((*it) - (*(it - 1)));
 				return len;
 			}
+
+			extern inline double bsp_base(int i, int d, double t, smath::vecNd<int>& k) {
+				double b1 = 0.0, b2 = 0.0;
+				if (d == 0) {
+					int t_ = t;
+					if (k[i] <= t_ && (t_ == k[k.size() - 1] ? (t_ <= k[i + 1]) : (t_ < k[i + 1]))) return 1.0;
+					else return 0.0;
+				}
+				else {
+					if (k[i + d] != k[i])
+						b1 = (t - k[i]) / (k[i + d] - k[i]) * bsp_base(i, d - 1, t, k);
+					if (k[i + d + 1] != k[i + 1])
+						b2 = (k[i + d + 1] - t) / (k[i + d + 1] - k[i + 1]) * bsp_base(i + 1, d - 1, t, k);
+				}
+				return b1 + b2;
+			}
+
+			template<typename N>
+			extern inline smath::vecNd<smath::vec2d<N>> bspline2d(smath::vecNd<smath::vec2d<N>>& vec, int dim, smath::vecNd<int>& k, double dt) {
+				smath::vecNd<smath::vec2d<N>> line;
+				double t = k[0];
+				int t_ = t;
+				while (t_ <= k[k.size() - 1]) {
+					smath::vec2d<N> p;
+					for (int i = 0; i < vec.size(); ++i)
+						p += vec[i] * bsp_base(i, dim, t, k);
+					line.add(p);
+					if (t_ == k[k.size() - 1]) break;
+					t += dt;
+					t_ = (int)t;
+				}
+				return line;
+			}
+			template<typename N>
+			extern inline smath::vecNd<smath::vec2d<N>> bspline2d(smath::vecNd<smath::vec2d<N>>& vec, int dim, bool open, double dt) {
+				smath::vecNd<int> knot(vec.size() + dim + 1);
+				if (open) {
+					for (int d = 0; d < dim; ++d) knot[d] = 0;
+					for (int k = 0; k < knot.size() - 2 * dim; ++k) knot[k + dim] = k;
+					for (int d = 1; d <= dim; ++d) knot[vec.size() + d] = knot[vec.size()];
+				}
+				else {
+					for (int k = 0; k < knot.size(); ++k) knot[k] = k;
+				}
+				return bspline2d(vec, dim, knot, dt);
+			}
         };
     }
 }
