@@ -113,26 +113,26 @@ namespace slib {
         
 		template<typename Quant>
 		extern inline void euler(Quant* cur, Quant* nxt,
-			std::function<Quant(float, Quant*)>* func,
-			float* t, float* dt) {
-			*nxt = (*cur) + (*func)(*t, cur) * dt;
+			std::function<Quant(double, Quant*)>* func,
+			double* t, double* dt) {
+			*nxt = (*cur) + (*func)(*t, cur) * (*dt);
 			*t += *dt;
 		}
 		template<typename Quant>
 		extern inline void euler2(Quant* cur, Quant* nxt,
-			std::function<Quant(float, Quant*)>* func,
-			float* t, float* dt) {
+			std::function<Quant(double, Quant*)>* func,
+			double* t, double* dt) {
 			Quant tmp = (*func)(*t, cur) * (*dt) * 0.5f + (*cur);
-			*nxt = (*cur) + (*func)((*t) + (*dt) * 0.5f, cur) * dt;
+			*nxt = (*cur) + (*func)((*t) + (*dt) * 0.5f, cur) * (*dt);
 			*t += *dt;
 		}
 		template<typename Quant>
 		extern inline void heun(Quant* cur, Quant* nxt,
-			std::function<Quant(float, Quant*)>* func,
-			float* t, float* dt) {
+			std::function<Quant(double, Quant*)>* func,
+			double* t, double* dt) {
 			Quant predic;
-			euler(cur, &predic, func, t, dt);
-			*nxt = (*cur) + ((*func)(*t, cur) + (*func)((*t) + (*dt), &predic)) * (*dt) * 0.5f;
+			euler(cur, &predic, func, t, dt); *t -= *dt;
+			*nxt = (*cur) + ((*func)(*t, cur) + (*func)((*t) + (*dt), &predic)) * (*dt) * 0.5;
 			*t += *dt;
 		}
 		template<typename Quant, typename Diff>
@@ -161,7 +161,6 @@ namespace slib {
 			*buf[3] = (*func)((*t) + (*dt), &tmp);
 			*nxt = (*cur) + ((*buf[0]) + 2.f * (*buf[1]) + 2.f * (*buf[2]) + (*buf[3])) * (*dt) / 6.f;
 			*t += *dt;
-		}
         
         
         

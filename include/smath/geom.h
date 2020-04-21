@@ -209,7 +209,7 @@ namespace slib {
 				return len;
 			}
 
-			extern inline double bsp_base(int i, int d, double t, smath::vecNd<int>& k) {
+			extern inline double bsp_base(int i, int d, double t, sveci& k) {
 				double b1 = 0.0, b2 = 0.0;
 				if (d == 0) {
 					int t_ = t;
@@ -225,25 +225,21 @@ namespace slib {
 				return b1 + b2;
 			}
 
-			template<typename N>
-			extern inline smath::vecNd<smath::vec2d<N>> bspline2d(smath::vecNd<smath::vec2d<N>>& vec, int dim, smath::vecNd<int>& k, double dt) {
-				smath::vecNd<smath::vec2d<N>> line;
+			extern inline void bspline2d(v2dvec& vec, v2dvec& result, int dim, sveci& k, double dt) {
 				double t = k[0];
 				int t_ = t;
 				while (t_ <= k[k.size() - 1]) {
-					smath::vec2d<N> p;
+					v2d p;
 					for (int i = 0; i < vec.size(); ++i)
 						p += vec[i] * bsp_base(i, dim, t, k);
-					line.add(p);
+					result.add(p);
 					if (t_ == k[k.size() - 1]) break;
 					t += dt;
 					t_ = (int)t;
 				}
-				return line;
 			}
-			template<typename N>
-			extern inline smath::vecNd<smath::vec2d<N>> bspline2d(smath::vecNd<smath::vec2d<N>>& vec, int dim, bool open, double dt) {
-				smath::vecNd<int> knot(vec.size() + dim + 1);
+			extern inline void bspline2d(v2dvec& vec, v2dvec& result, int dim, bool open, double dt) {
+				sveci knot(vec.size() + dim + 1);
 				if (open) {
 					for (int d = 0; d < dim; ++d) knot[d] = 0;
 					for (int k = 0; k < knot.size() - 2 * dim; ++k) knot[k + dim] = k;
@@ -252,7 +248,7 @@ namespace slib {
 				else {
 					for (int k = 0; k < knot.size(); ++k) knot[k] = k;
 				}
-				return bspline2d(vec, dim, knot, dt);
+				bspline2d(vec, result, dim, knot, dt);
 			}
         };
     }
