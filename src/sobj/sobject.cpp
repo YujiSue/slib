@@ -1022,7 +1022,7 @@ sreal SObjPtr::real() const {
         if (empty()) return 0.0;
         else if (isNumeric()) return string().real();
     }
-    return true;
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 
 String SObjPtr::str() const {
