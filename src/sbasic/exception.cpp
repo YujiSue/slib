@@ -89,7 +89,7 @@ SException::~SException() {}
 
 sint SException::error() { return err; }
 String SException::toString() const {
-    String err_str =  String(prefix) << " error! [#" << err << "]: " <<
+	String err_str = String(prefix) << " error! [#" << err << "]: " <<
 		message << NEW_LINE << "> "<< description;
 #ifdef _DEBUG
 	err_str << NEW_LINE << " in {" << function << "}" << NEW_LINE << "@" << file << " (l." << line << ")";

@@ -111,7 +111,7 @@ namespace slib {
     class SOBJ_DLL SObject {
     protected:
 #ifndef _MANAGED
-        std::atomic<int> _scope;
+        ::std::atomic<int> _scope;
 #else 
         int _scope;
 #endif
@@ -164,12 +164,12 @@ namespace slib {
 		SObjPtr(const smath::Fraction<sint>& frac);
 		SObjPtr(const smath::Complex<float>& comp);
         SObjPtr(const char *s);
-        SObjPtr(const std::string &str);
+        SObjPtr(const ::std::string &str);
         SObjPtr(String &&str);
         SObjPtr(const String &str);
-        SObjPtr(std::initializer_list<SObjPtr> li);
-        SObjPtr(std::initializer_list<std::pair<String, SObjPtr>> li);
-        SObjPtr(std::initializer_list<kvpair<String, SObjPtr>> li);
+        SObjPtr(::std::initializer_list<SObjPtr> li);
+        SObjPtr(::std::initializer_list<::std::pair<String, SObjPtr>> li);
+        SObjPtr(::std::initializer_list<kvpair<String, SObjPtr>> li);
         SObjPtr(const SNumber &num);
         SObjPtr(const SChar &ch);
         SObjPtr(const SString &str);
@@ -208,7 +208,7 @@ namespace slib {
         SObjPtr &operator = (const SClsPtr<Cls, T> &obj);
         
         SObjPtr &operator += (const char *s);
-        SObjPtr &operator += (const std::string &s);
+        SObjPtr &operator += (const ::std::string &s);
         SObjPtr &operator += (const String &s);
         SObjPtr &operator += (const SString &s);
         SObjPtr &operator += (const SObjPtr &obj);
@@ -248,7 +248,7 @@ namespace slib {
         SObjPtr operator-() const;
         
         SObjPtr operator+(const char *s) const;
-        SObjPtr operator+(const std::string &s) const;
+        SObjPtr operator+(const ::std::string &s) const;
         SObjPtr operator+(const String &s) const;
         SObjPtr operator+(const SString &s) const;
         SObjPtr operator+(const SObjPtr &obj) const;
@@ -302,8 +302,8 @@ namespace slib {
         const SObjPtr &operator[](int idx) const;
         SObjPtr &operator[](const char *key);
         const SObjPtr &operator[](const char *key) const;
-        SObjPtr &operator[](const std::string &key);
-        const SObjPtr &operator[](const std::string &key) const;
+        SObjPtr &operator[](const ::std::string &key);
+        const SObjPtr &operator[](const ::std::string &key) const;
         SObjPtr &operator[](const String &key);
         const SObjPtr &operator[](const String &key) const;
         SObjPtr &operator[](const SString &key);
@@ -346,7 +346,7 @@ namespace slib {
         void add(const SObjPtr &ptr);
         void insert(int idx, const SObjPtr &ptr);
 		void insert(const SObjPtr& ptr);
-        void insert(const slib::kvpair<String, SObjPtr> &pair);
+        void insert(const kvpair<String, SObjPtr> &pair);
         void set(int idx, const SObjPtr &ptr);
         void set(const char *key, const SObjPtr &ptr);
 		void set(const SObjPtr &obj, const SObjPtr& ptr);
@@ -550,7 +550,7 @@ namespace slib {
         }
     };
     extern String operator+(const char *s, const SObjPtr &obj);
-    extern String operator+(const std::string &s, const SObjPtr &obj);
+    extern String operator+(const ::std::string &s, const SObjPtr &obj);
     
     extern bool operator<(const int &i, const SObjPtr &obj);
     
@@ -610,9 +610,9 @@ namespace slib {
     class SOBJ_DLL SIterator {
         friend sobj;
     public:
-        typedef std::random_access_iterator_tag iterator_category;
+        typedef ::std::random_access_iterator_tag iterator_category;
         typedef sobj value_type;
-        typedef std::ptrdiff_t difference_type;
+        typedef ::std::ptrdiff_t difference_type;
         typedef sobj* pointer;
         typedef sobj& reference;
         
@@ -641,15 +641,15 @@ namespace slib {
         SIterator& operator=(const SIterator &it);
         reference operator *();
         pointer operator ->();
-        reference operator [](std::ptrdiff_t diff);
+        reference operator [](::std::ptrdiff_t diff);
         SIterator &operator ++();
         SIterator operator ++(int);
         SIterator &operator --();
         SIterator operator --(int);
-        SIterator &operator +=(std::ptrdiff_t diff);
-        SIterator &operator -=(std::ptrdiff_t diff);
-        SIterator operator +(std::ptrdiff_t diff);
-        SIterator operator -(std::ptrdiff_t diff);
+        SIterator &operator +=(::std::ptrdiff_t diff);
+        SIterator &operator -=(::std::ptrdiff_t diff);
+        SIterator operator +(::std::ptrdiff_t diff);
+        SIterator operator -(::std::ptrdiff_t diff);
         int operator -(SIterator it);
         void swap(SIterator sit1, SIterator sit2);
         bool operator ==(const SIterator &sit) const;
@@ -662,9 +662,9 @@ namespace slib {
     
     class SOBJ_DLL SCIterator {
     public:
-        typedef std::random_access_iterator_tag iterator_category;
+        typedef ::std::random_access_iterator_tag iterator_category;
         typedef const sobj value_type;
-        typedef std::ptrdiff_t difference_type;
+        typedef ::std::ptrdiff_t difference_type;
         typedef const sobj* pointer;
         typedef const sobj& reference;
         
@@ -692,15 +692,15 @@ namespace slib {
         SCIterator& operator=(const SCIterator &it);
         reference operator *();
         pointer operator ->();
-        reference operator [](std::ptrdiff_t diff);
+        reference operator [](::std::ptrdiff_t diff);
         SCIterator &operator ++();
         SCIterator operator ++(int);
         SCIterator &operator --();
         SCIterator operator --(int);
-        SCIterator &operator +=(std::ptrdiff_t diff);
-        SCIterator &operator -=(std::ptrdiff_t diff);
-        SCIterator operator +(std::ptrdiff_t diff);
-        SCIterator operator -(std::ptrdiff_t diff);
+        SCIterator &operator +=(::std::ptrdiff_t diff);
+        SCIterator &operator -=(::std::ptrdiff_t diff);
+        SCIterator operator +(::std::ptrdiff_t diff);
+        SCIterator operator -(::std::ptrdiff_t diff);
         int operator -(SCIterator it);
         void swap(SCIterator sit1, SCIterator sit2);
         bool operator ==(const SCIterator &sit) const;
