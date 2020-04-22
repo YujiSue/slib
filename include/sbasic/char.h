@@ -4,6 +4,7 @@
 #include "sconfig.h"
 
 namespace slib {
+
     class SOBJ_DLL String;
     class SOBJ_DLL SChar;
     class SOBJ_DLL SString;

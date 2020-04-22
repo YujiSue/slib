@@ -6,7 +6,6 @@
 #include "sbasic/map.h"
 
 namespace slib {
-
     class SOBJ_DLL Time {
     public:
         static const Map<subyte, stringarray> TIME_ZONE_NAME;

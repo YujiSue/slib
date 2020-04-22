@@ -114,13 +114,13 @@
 
 #ifndef SOBJ_DLL
 #ifdef LOAD_STATIC_LIB
-#define SOBJ_DLL
+#define SOBJ_DLL  
 #elif defined(USE_SOBJ_DLL)
 #define SOBJ_DLL __declspec(dllimport)
 #elif defined(_WINDLL)
 #define SOBJ_DLL __declspec(dllexport)
 #else
-#define SOBJ_DLL
+#define SOBJ_DLL  
 #endif
 #endif
 
