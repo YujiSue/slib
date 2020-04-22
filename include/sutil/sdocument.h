@@ -6,7 +6,7 @@
 
 namespace slib {
 	template<class ROOT>
-	class SOBJ_DLL SDocument : public SObject {
+	class SDocument : public SObject {
 	protected:
 		suint _type;
 		String _title, _author;

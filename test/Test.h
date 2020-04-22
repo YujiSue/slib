@@ -37,8 +37,9 @@
 #define THREAD_TEST
 #define PROCESS_TEST
 
-
 //#define APP_TEST 1
+#define CV_TEST
+
 
 namespace test {
 	extern void CalcTest();

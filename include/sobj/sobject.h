@@ -55,7 +55,7 @@ namespace slib {
     class SOBJ_DLL SNumber;
 	using snum = SClsPtr<SNumber, NUMBER_OBJ>;
     class SOBJ_DLL SChar;
-	using schar = SClsPtr<SChar, CHAR_OBJ>;
+	using sch = SClsPtr<SChar, CHAR_OBJ>;
     class SOBJ_DLL SString;
 	using ss = SClsPtr<SString, STRING_OBJ>;
     class SOBJ_DLL SText;

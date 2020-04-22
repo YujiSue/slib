@@ -42,8 +42,38 @@ int main(int argc, const char** argv) {
 	return app.run(argc, argv);
 }
 
-
 #endif
+#elif defined(CV_TEST)
+#include "opencv/cv.h"
+#include "opencv2/highgui.hpp"
+
+int main(int argc, const char** argv) {
+	bool rec = false;
+	cv::VideoCapture cap(0);
+	cv::Mat frame;
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+	cap.read(frame);
+	auto fourcc = cv::VideoWriter::fourcc('W', 'M', 'V', '1');
+	auto writer = cv::VideoWriter("F:\\output.wmv", fourcc, 30.0, frame.size());
+	if (!cap.isOpened()) return -1;
+	cv::Mat disp(cv::Size(1, 1), CV_8UC1);
+	while (cap.read(frame))
+	{
+		cv::imshow("win", disp);
+		const int key = cv::waitKey(1);
+		if (key == 'q') break;
+		else if (key == 's') {
+			cv::imwrite("F:\\img.png", frame);
+		}
+		else if (key == 'r') rec = !rec;
+		if (rec) {
+			writer << frame;
+		}
+	}
+	cv::destroyAllWindows();
+	return 0;
+}
 #else
 
 
