@@ -1,7 +1,6 @@
 #ifndef SLIB_SSTRING_H
 #define SLIB_SSTRING_H
 
-#include "sbasic/sbasic.h"
 #include "sobj/sobject.h"
 
 namespace slib {

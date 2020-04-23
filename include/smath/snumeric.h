@@ -6,6 +6,7 @@
 
 namespace slib {
     namespace smath {
+		/*
         extern inline double legendre(double d, size_t n) {
 			if (!n) return 1.0;
 			if (n == 1) return d;
@@ -26,7 +27,6 @@ namespace slib {
 			}
 			return val.z;
 		}
-
 		extern const Array<svecd> GLGD_QUADR_WX = {
 			{ 1.0, -0.57735026918962576451, 1.0, 0.57735026918962576451 },
 			{ 0.55555555555555555552, -0.77459666924148337704, 0.88888888888888888889, 0, 0.55555555555555555552, 0.77459666924148337704 },
@@ -51,7 +51,7 @@ namespace slib {
 			{ 0.40931895170127390207, 0.19304367656036241384, 0.42183127786171978021, 1.0266648953391919503, 0.1471263486575052784, 2.5678767449507462069, 0.020633514468716939866, 4.9003530845264845681,
 			  0.0010740101432807455221, 8.1821534445628607911, 0.000015865464348564201269, 12.734180291797813758, 0.000000031703154789955805616, 19.395727862262540312 }
 		};
-        extern inline double gaussIntegral(std::function<double(double)> &func, const svecd &vec) {
+		extern inline double gaussIntegral(std::function<double(double)> &func, const svecd &vec) {
 			double val = 0.0;
 			sforeach(vec) { val += E_ * func(E_NXT); NEXT_; }
 			return val;
@@ -110,6 +110,7 @@ namespace slib {
 			}
 			return (double)count / repeat * (range.end - range.begin) * (border.end - border.begin);
 		}
+        */
         
 		template<typename Quant>
 		extern inline void euler(Quant* cur, Quant* nxt,
