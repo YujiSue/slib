@@ -6,7 +6,7 @@
 
 namespace slib {
     namespace smath {
-        extern double legendre(double d, size_t n) {
+        extern inline double legendre(double d, size_t n) {
 			if (!n) return 1.0;
 			if (n == 1) return d;
 			v3d val = { 1.0, d, (3.0 * d * d - 1.0) / 2.0 };
@@ -16,7 +16,7 @@ namespace slib {
 			}
 			return val.z;
 		}
-        extern double laguerre(double d, size_t n) {
+        extern inline double laguerre(double d, size_t n) {
 			if (!n) return 1.0;
 			if (n == 1) return 1.0 - d;
 			v3d val = { 1.0, 1.0 - d, (3.0 - d) * (1 - d) - 1 };
@@ -51,12 +51,12 @@ namespace slib {
 			{ 0.40931895170127390207, 0.19304367656036241384, 0.42183127786171978021, 1.0266648953391919503, 0.1471263486575052784, 2.5678767449507462069, 0.020633514468716939866, 4.9003530845264845681,
 			  0.0010740101432807455221, 8.1821534445628607911, 0.000015865464348564201269, 12.734180291797813758, 0.000000031703154789955805616, 19.395727862262540312 }
 		};
-        extern double gaussIntegral(std::function<double(double)> &func, const svecd &vec) {
+        extern inline double gaussIntegral(std::function<double(double)> &func, const svecd &vec) {
 			double val = 0.0;
 			sforeach(vec) { val += E_ * func(E_NXT); NEXT_; }
 			return val;
 		}
-        extern double glgdIntegral(std::function<double(double)> &func,
+        extern inline double glgdIntegral(std::function<double(double)> &func,
                                    int n = 7, const sranged &range = sranged(-1.0, 1.0)) {
 			if (n == 1) return 0.0;
 			if (2 <= n && n <= 7) {
@@ -80,7 +80,7 @@ namespace slib {
 				return (range.end - range.begin) / 2.0 * gaussIntegral(func, vec);
 			}
 		}
-        extern double glgrIntegral(std::function<double(double)> &func, int n = 7) {
+        extern inline double glgrIntegral(std::function<double(double)> &func, int n = 7) {
 			if (n == 1) return 0.0;
 			if (2 <= n && n <= 7)
 				return gaussIntegral(func, GLGR_QUADR_WX[n - 2]);
@@ -94,7 +94,7 @@ namespace slib {
 				return gaussIntegral(func, vec);
 			}
 		}
-        extern double mcIntegral(std::function<double(double)> &func,
+        extern inline double mcIntegral(std::function<double(double)> &func,
                                  const sranged &border, const sranged &range, int repeat) {
 			SRandom rand1, rand2;
 			int count = 0;
