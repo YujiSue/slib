@@ -1,0 +1,66 @@
+{
+  "targets": [
+    {
+      "target_name": "$CLASS_NAME",
+      "sources": [ "$CLASS_NAME/main.cpp", "$CLASS_NAME/$CLASS_NAME.cpp" ],
+      "conditions": [        
+        ['OS=="mac"',{
+			'include_dirs': [ 
+				'/usr/local/include/slib', 
+				'$CLASS_NAME',
+				$INCLUDE_PATHS
+			],
+			'libraries': [ 
+				'/usr/local/lib/libsobj.so',
+				$LIBRARY_PATHS
+			],
+			'xcode_settings':{
+				'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+				'CLANG_CXX_LIBRARY': 'libc++',
+				'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
+			}
+		}],
+		['OS=="win"', {
+			'include_dirs': [
+				'C:\\Users\\yujis\\source\\repos\\YujiSue\\slib\\include',
+				'$CLASS_NAME',
+				$INCLUDE_PATHS
+			],
+			'libraries': [ 
+				'$HOME\\AppData\\Local\\slib\\lib\\static\\sobj.lib',
+				$LIBRARY_PATHS
+			],
+			'defines': [
+				'LOAD_STATIC_LIB',
+			],
+			'msvs_settings': { 
+			  'VCCLCompilerTool': {
+			    'AdditionalOptions': [
+			      '/utf-8',
+                ],
+              },
+			},
+        }],
+		['OS=="linux"',{
+			'include_dirs': [ 
+				'/usr/local/include/slib',
+				'$CLASS_NAME',
+				$INCLUDE_PATHS
+			],
+			'libraries': [ 
+				'/usr/local/lib/libsobj.so',
+				$LIBRARY_PATHS
+			],
+			'cflags_cc': [
+				'-std=c++11',
+				'-fexceptions'
+			],
+			'cflags_cc!': [
+				'-fno-rtti',
+				'-fno-exception'
+			],
+		}]
+      ]
+	}
+  ]
+}
