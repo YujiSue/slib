@@ -161,9 +161,7 @@ namespace slib {
 			*buf[3] = (*func)((*t) + (*dt), &tmp);
 			*nxt = (*cur) + ((*buf[0]) + 2.f * (*buf[1]) + 2.f * (*buf[2]) + (*buf[3])) * (*dt) / 6.f;
 			*t += *dt;
-        
-        
-        
+		}
     }
 }
 
