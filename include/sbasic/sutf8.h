@@ -4,7 +4,7 @@
 #include "sbasic/char.h"
 
 namespace slib {
-    class String;
+    class SOBJ_DLL String;
     
     #define su8_iter SUtf8Iterator
     #define su8_citer SUtf8CIterator
