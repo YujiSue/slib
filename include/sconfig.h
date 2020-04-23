@@ -1,6 +1,6 @@
 #ifndef SLIB_CONFIG_H
 #define SLIB_CONFIG_H
-
+extern "C" {
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
+}
 
 #include <algorithm>
 #include <chrono>
@@ -39,7 +40,6 @@
 #include <TargetConditionals.h>
 #if TARGET_OS_MAC
 #include <dirent.h>
-#include <fts.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
@@ -90,7 +90,6 @@
 #elif __linux__
 #define OS_TYPE LINUX_OS
 #include <dirent.h>
-#include <fts.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
@@ -101,7 +100,6 @@
 #include <cmath>
 #elif __unix__
 #include <dirent.h>
-#include <fts.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
