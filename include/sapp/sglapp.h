@@ -14,7 +14,7 @@ namespace slib {
 			sint _res;
 
 		private:
-			_init();
+			void _init();
 
         public:
             SGLApp();

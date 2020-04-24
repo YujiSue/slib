@@ -190,7 +190,7 @@ String salign::match() {
     }
     return str;
 }
-String consensus(const String& ref, const String& que) {
+String salign::consensus(const String& ref, const String& que) {
 	String str;
 	int roff = 0, qoff = 0;
 	sforeach(cigars) {
@@ -204,11 +204,15 @@ String consensus(const String& ref, const String& que) {
 			roff += E_.length;
 		}
 		else {
-			if (E_.option == scigar::PMATCH) {
-
-			}
+			if (E_.option == scigar::PMATCH) str += ref.substring(roff, E_.length);
 			else {
-
+				auto r_ = ref.substring(roff, E_.length);
+				auto q_ = que.substring(qoff, E_.length);
+				String tmp(E_.length, '\0');
+				sforin(l, 0, E_.length) {
+					tmp[l] = sbio::DNA_BASE16[(sbio::DNA_BASE16_INDEX[r_[l]] | sbio::DNA_BASE16_INDEX[q_[l]])];
+				}
+				str += tmp;
 			}
 			roff += E_.length; qoff += E_.length;
 		}

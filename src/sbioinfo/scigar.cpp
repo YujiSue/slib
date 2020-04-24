@@ -110,7 +110,7 @@ size_t SCigarArray::countQue(size_t beg, size_t len) const {
 			E_.option == scigar::SCLIP ||
 			E_.option == scigar::HCLIP ||
 			E_.option == scigar::PMATCH ||
-			E_.option == scigar::MMATCH) length += cit->length;
+			E_.option == scigar::MMATCH) length += E_.length;
 		NEXT_;
     }
     return length;

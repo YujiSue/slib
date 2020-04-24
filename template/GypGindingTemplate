@@ -12,6 +12,7 @@
 			],
 			'libraries': [ 
 				'/usr/local/lib/libsobj.so',
+				'/usr/local/lib/libsapp.so',
 				$LIBRARY_PATHS
 			],
 			'xcode_settings':{
@@ -22,12 +23,13 @@
 		}],
 		['OS=="win"', {
 			'include_dirs': [
-				'C:\\Users\\yujis\\source\\repos\\YujiSue\\slib\\include',
+				'$HOME\\AppData\\Local\\slib\\include',
 				'$CLASS_NAME',
 				$INCLUDE_PATHS
 			],
 			'libraries': [ 
 				'$HOME\\AppData\\Local\\slib\\lib\\static\\sobj.lib',
+				'$HOME\\AppData\\Local\\slib\\lib\\static\\sapp.lib',
 				$LIBRARY_PATHS
 			],
 			'defines': [
@@ -49,6 +51,7 @@
 			],
 			'libraries': [ 
 				'/usr/local/lib/libsobj.so',
+				'/usr/local/lib/libsapp.so',
 				$LIBRARY_PATHS
 			],
 			'cflags_cc': [

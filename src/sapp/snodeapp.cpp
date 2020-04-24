@@ -1,4 +1,4 @@
-#include "snodeapp.h"
+#include "sapp/snodeapp.h"
 
 using namespace slib;
 using namespace slib::sapp;

@@ -20,6 +20,24 @@
 namespace slib {
     namespace sapp {
 
+		constexpr suint SCUI_APP = 0x0000;
+		constexpr suint SGUI_APP = 0x0001;
+		constexpr suint SWEB_APP = 0x0002;
+
+		constexpr suint SINGLE_PROCESS = 0x0010;
+		constexpr suint MULTI_COMMAND = 0x0020;
+		constexpr suint INTERACTIVE = 0x0040;
+		constexpr suint BACKGROUND_PROCESS = 0x0080;
+
+		constexpr suint SINGLE_VIEW_UI = 0x0010;
+		constexpr suint MULTI_VIEW_UI = 0x0020;
+
+		constexpr suint USE_CV = 0x0100;
+		constexpr suint USE_GL = 0x0200;
+		constexpr suint USE_NODE = 0x0400;
+		constexpr suint USE_CEF = 0x0800;
+
+
         #define SAPP_ERROR 0x0A00
         #define SAPP_ERROR_EXIT 0x0A01
         #define SAPP_INIT_ERROR 0x0A02

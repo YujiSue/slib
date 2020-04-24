@@ -102,7 +102,6 @@ inline void readABIDir(sio::SFile& file, Map<String, slib::Array<abidir>>& map) 
 void SBSeqIO::loadABI(sio::SFile &file, SBioSeq *seq) {
 	seq->clearAll();
 	if (!file.isOpened()) file.open();
-	seq->_annotation.add(sbseq_annot(0, "_attr", srange(0, 0)));
 	const char* magic = "ABIF"; char tmp[4];
 	Map<String, slib::Array<abidir>> map;
 	if (!seq->type()) {
@@ -131,9 +130,6 @@ void SBSeqIO::loadABI(sio::SFile &file, SBioSeq *seq) {
 }
 void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 	seq->clearAll();
-	sbseq_annot basic_info(0, "_attr", srange(0, 0));
-	
-	
 	seq->addAttribute("format", "GenBank");
 	if (!file.isOpened()) file.open();
 	String row;
@@ -174,7 +170,6 @@ void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 
 		}
 	}
-	seq->_annotation.add(basic_info);
 }
 void SBSeqIO::loadFASTA(sushort type, sio::SFile& file, SBioSeq* seq) {
 	seq->clearAll();

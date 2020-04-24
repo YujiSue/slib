@@ -215,6 +215,8 @@ namespace slib {
 
 		int tableCount();
 		stringarray tables();
+		void createTable(const char* name, const stringarray& colnames, const intarray& coltypes);
+		void createTable(const SDictionary &dic);
 		void createTable(const STable* table);
 		void clearTables();
 

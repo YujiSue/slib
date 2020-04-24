@@ -5,9 +5,9 @@ using namespace slib::sapp;
 
 SGLApp::SGLApp() : SApp() {}
 SGLApp::SGLApp(const char* path) : SApp(path) {}
-SGLApp::SGLApp(SDictionary&& prof) : SApp(std::forward(prof)) {}
+SGLApp::SGLApp(SDictionary&& prof) : SApp(std::forward<SDictionary &&>(prof)) {}
 SGLApp::~SGLApp() {}
-SGLApp::_init() {
+void SGLApp::_init() {
 	_res = glfwInit();
 	if (_res != GL_TRUE) {
 		//throw SAppException();
@@ -18,23 +18,24 @@ SGLApp::_init() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	
 	_window = glfwCreateWindow(profile["main"]["width"], profile["main"]["height"], profile["app"]["name"], NULL, NULL);
-	if (!window) {
+	if (!_window) {
 		//throw SAppException();
 	}
 	glfwMakeContextCurrent(_window);
 	glfwSwapInterval(profile["main"]["interval"]);
 	glewExperimental = GL_TRUE;
-	if ((auto code = glewInit()) != GLEW_OK) {
+	int code = 0;
+	if ((code = glewInit()) != GLEW_OK) {
 		//throw SAppException(glewGetErrorString(code));
 	}
 }
 int SGLApp::run() {
 	try {
 		_init();
-		auto& bgcol = smedia::SColor(profile["main"]["background"].uintValue());
+		//auto& bgcol = smedia::SColor(profile["main"]["background"].uintValue());
 		while (glfwWindowShouldClose(_window) == GL_FALSE) {
 			
-			glClearColor(bgcol[0], 1.0f, 1.0f, 1.0f);
+			//glClearColor(bgcol[0], 1.0f, 1.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 

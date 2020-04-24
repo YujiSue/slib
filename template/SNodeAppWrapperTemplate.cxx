@@ -10,10 +10,10 @@ Array<napi_property_descriptor> $CLASS_NAME::descriptor() {
 }
 
 napi_value $CLASS_NAME::$JS_METHOD(napi_env env, napi_callback_info info) {
-	size_t argc = $JS_METHOD_ARG_COUNT;
-	napi_value args[$JS_METHOD_ARG_COUNT];
+	size_t argc = $JS_ARG_COUNT;
+	napi_value args[$JS_ARG_COUNT];
 	$CLASS_NAME* instance = sapp::SNodeUtil::toClass<$CLASS_NAME>(env, info, &argc, args);
-	return $JS_METHOD_RETURN;
+	return $JS_RETURN;
 }
 void $CLASS_NAME::init() {
 	$CPP_INITIALIZER	

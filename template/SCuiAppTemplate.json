@@ -1,0 +1,30 @@
+{
+	"app": 
+	{
+		"type": $APP_TYPE,
+		"name": $APP_NAME,
+		"version": $APP_VER,
+		"creator": $CREATOR,
+		"develop": $DEVELOP_DATE,
+		"license": $APP_LICENSE,
+	},
+	"command": 
+	{
+		$COMMAND: 
+		{
+			"require": [$REQUIRED_OPTION_LIST]
+		},
+		$COMMANDS_IF_MULTI_COMMAND_APP
+	},
+	"option": 
+	{
+		$OPTION: 
+		{
+			"short": $OPT_SHORT,
+			"type", $OPT_TYPE,
+			"caption": $OPT_CAPTION,
+			"description": $OPT_DESCRIPTION
+		},
+		$OPTION_LIST_IF_NEEDED
+	}
+}
