@@ -1,5 +1,5 @@
 #include "Test.h"
-#include "smath/smath.h"
+#include "sobj.h"
 
 using namespace slib;
 
@@ -7,16 +7,16 @@ using namespace slib;
 using namespace slib::smath;
 
 void test::CalcTest() {
-	std::cout << "1.0f==1?" << (smath::isInteger(1.0f) ? "true" : "false") << std::endl;
-	std::cout << "1.5==1 or 2?" << (smath::isInteger(1.5) ? "true" : "false") << std::endl;
-	std::cout << "3//2=" << smath::quot(3, 2) << std::endl;
-	std::cout << "-5//2=" << smath::quot(-5, 2) << std::endl;
-	std::cout << "4.5//2=" << smath::quot(4.5, 2) << std::endl;
-	std::cout << "2^3=" << smath::power(2, 3) << std::endl;
-	std::cout << "1.2f^2=" << smath::power(1.2f, 2) << std::endl;
+	std::cout << "1.0f==1?" << (smath::isInteger(1.0f) ? "true" : "false") << std::endl; //true
+	std::cout << "1.5==1 or 2?" << (smath::isInteger(1.5) ? "true" : "false") << std::endl; //false
+	std::cout << "3//2=" << smath::quot(3, 2) << std::endl; //1
+	std::cout << "-5//2=" << smath::quot(-5, 2) << std::endl; //-2
+	std::cout << "4.5//2=" << smath::quot(4.5, 2) << std::endl; //2
+	std::cout << "2^3=" << smath::power(2, 3) << std::endl; //8
+	std::cout << "1.2f^2=" << smath::power(1.2f, 2) << std::endl; //1.44
 	std::cout << "2.5^4=" << smath::power(2.5, 4) << std::endl;
-	std::cout << "2.56^(1/2)=" << smath::rootN(2.56, 2) << std::endl;
-	std::cout << "8^(1/3)=" << smath::rootN(8, 3) << std::endl;
+	std::cout << "2.56^(1/2)=" << smath::rootN(2.56, 2) << std::endl; //1.6
+	std::cout << "8^(1/3)=" << smath::rootN(8, 3) << std::endl; //2.0
 	std::cout << "digit of 1234567=" << smath::digit(1234567) << std::endl;
 	std::cout << "decim of 123.4567=" << smath::decim(123.4567) << std::endl;
 	std::cout << "G.C.D.(16, 36)=" << smath::gcd(16, 36) << std::endl;
@@ -48,8 +48,36 @@ void test::CalcTest() {
 	std::cout << "Vonmises. =" << rand.rvonmises(0.0, 1.0) << std::endl;
 }
 void test::FracTest() {
+	sfrac f1(2, 3);
+	sfrac f2(v2i(3, 4));
+	sfrac f3(7.0/13.0);
+	sfrac f4("123/456");
+	sfrac f5;
+	f1 = f1.reciprocal();
+	std::cout << f1 << std::endl;
+	f5 = f1 - 1;
+	std::cout << f5 << std::endl;
+	f2 += f1;
+	std::cout << f2 << ":" << f2.quotient() << "," << f2.remainder() << std::endl;
+	std::cout << f3 << std::endl;
+	std::cout << f4 << std::endl;
+	std::cout << f3 * f4 << std::endl;
+	std::cout << f3 / f5 << std::endl;
+	std::cout << f2 << std::endl;
+	std::cout << (f1+f2+f3+f4+f5).precised(2) << std::endl;
 }
 void test::ComplexTest() {
+	scomp c1(1.f, 1.f);
+	scomp c2(v2f(-1.f, 1.f));
+	scomp c3("1.2345-6.789i");
+	scomp c4 = c1 - c2;
+	std::cout << c1 + c2 << std::endl;
+	std::cout << c2 * c3 << std::endl;
+	std::cout << c3 / c4 << std::endl;
+	std::cout << c3.conjugated() << std::endl;
+	std::cout << c1.distance() << std::endl;
+	std::cout << c1.argument() << std::endl;
+	std::cout << (c3 / c4).precised(2) << std::endl;
 }
 void test::LinearAlgebraTest() {
 	v2i v1(1, 1);

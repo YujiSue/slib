@@ -154,6 +154,10 @@ namespace slib {
 #endif
 		return is;
 	}
+	template<typename T>
+	extern inline std::ostream& operator<<(std::ostream& os, const Fraction<T>& f) { return os << f.toString(); }
+	template<typename T>
+	extern inline std::ostream& operator<<(std::ostream& os, const Complex<T>& c) { return os << c.toString(); }
 
     extern inline std::ostream &operator<<(std::ostream &os, const SNumber &num) { return os << num.toString(); }
 	extern inline std::ostream &operator<<(std::ostream &os, const SChar& c) { return os << c.toString(); }

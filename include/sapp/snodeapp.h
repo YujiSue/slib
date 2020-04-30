@@ -21,12 +21,8 @@ namespace slib {
 
 			static bool nodeInstalled();
 			static bool gypInstalled();
-
-			//static void makeMain(const char *path, const char *cname);
-			//static void makeGypBind(const char *path, sobj profile);
 			
 			static JS_OBJ_TYPE jsType(napi_env env, napi_value val);
-			
 			static size_t jsStrlen(napi_env env, napi_value val);
 			static napi_value jsnull(napi_env env);
 			static napi_value jsbool(napi_env env, bool b);
@@ -37,6 +33,8 @@ namespace slib {
 			static napi_value jsnum(napi_env env, SNumber& n);
 			static napi_value jsstr(napi_env env, const char* s);
 			static napi_value jsarray(napi_env env, SArray& array);
+			static napi_value jsarray(napi_env env, intarray& array);
+			static napi_value jsarray(napi_env env, stringarray& array);
 			static napi_value jsdict(napi_env env, SDictionary& dict);
 			static napi_value jsobj(napi_env env, sobj obj);
 			static bool toBool(napi_env env, napi_value val);
@@ -47,6 +45,8 @@ namespace slib {
 			static SNumber toNum(napi_env env, napi_value val);
 			static String toStr(napi_env env, napi_value val);
 			static SArray toArray(napi_env env, napi_value val);
+			static intarray toIArray(napi_env env, napi_value val);
+			static stringarray toStrArray(napi_env env, napi_value val);
 			static SDictionary toDict(napi_env env, napi_value val);
 			static sobj toObj(napi_env env, napi_value val);
 			template<class Cls>
@@ -127,7 +127,7 @@ namespace slib {
                            jsthis,
                            reinterpret_cast<void*>(instance),
                            Wrapper::Destructor,
-                           nullptr,  // finalize_hint
+                           nullptr,
                            &instance->_wrapper
 				);
 				return jsthis;

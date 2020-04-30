@@ -5,6 +5,12 @@
 
 using namespace slib;
 
+String SNumber::toBinary(subyte b) {
+	return String::HEX_STR[(b >> 7)] + String::HEX_STR[((b >> 6) & 0x01)] + String::HEX_STR[((b >> 5) & 0x01)] + String::HEX_STR[((b >> 4) & 0x01)] +
+		String::HEX_STR[((b >> 3) & 0x01)] + String::HEX_STR[((b >> 2) & 0x01)] + String::HEX_STR[((b >> 1) & 0x01)] + String::HEX_STR[(b & 0x01)];
+}
+String SNumber::toOct(subyte b) { return String::HEX_STR[(b >> 6)] + String::HEX_STR[((b >> 3) & 0x07)] + String::HEX_STR[(b & 0x07)]; }
+String SNumber::toHex(subyte b) { return String::HEX_STR[(b >> 4)] + String::HEX_STR[(b & 0x0F)]; }
 SNumber SNumber::toNumber(const char *s) { return String(s).number(); }
 SNumber::SNumber() : _type(SNumber::INTEGER) { _value._i = 0; }
 SNumber::SNumber(char c) : _type(SNumber::INTEGER) { _value._i = (sbyte)c; }
@@ -997,7 +1003,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 			case SNumber::INTEGER:
 			{
 				sfrac tmp = fraction();
-				tmp -= q * num._value._i;
+				tmp -= sfrac(q * num._value._i, 1);
 				_value._f[0] = tmp.numerator;
 				_value._f[1] = tmp.denominator;
 				break;
@@ -1005,7 +1011,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 			case SNumber::UINTEGER:
 			{
 				sfrac tmp = fraction();
-				tmp -= q * (sint)num._value._ui;
+				tmp -= sfrac(q * (sint)num._value._ui, 1);
 				_value._f[0] = tmp.numerator;
 				_value._f[1] = tmp.denominator;
 				break;
@@ -1728,10 +1734,6 @@ String SNumber::precised(size_t size, smath::ROUND round) const {
     else if (_type == SNumber::COMPLEX) return complex().precised(size, round);
     else return toString();
 }
-
-String SNumber::toBinary() const { return ""; }
-String SNumber::toOct() const { return ""; }
-String SNumber::toHex() const { return ""; }
 String SNumber::toWideString() const {
     auto str = toString();
     String str_;
@@ -1958,7 +1960,7 @@ bool SNumber::operator<(const SNumber &sn) const {
                 case SNumber::BOOL:
                     return tmp < sn.integer();
                 case SNumber::FRAC:
-                    return tmp < (double)sn.fraction();
+                    return tmp < sn.fraction().doubleValue();
                 case SNumber::COMPLEX:
                     return (float)tmp < sn.complex();
                 default:
@@ -1996,13 +1998,13 @@ bool SNumber::operator<(const SNumber &sn) const {
                 case SNumber::UINTEGER:
                     return tmp < sn.intValue();
                 case SNumber::REAL:
-                    return (double)tmp < sn.real();
+                    return tmp.doubleValue() < sn.real();
                 case SNumber::BOOL:
                     return tmp < sn.intValue();
                 case SNumber::FRAC:
                     return tmp < sn.fraction();
                 case SNumber::COMPLEX:
-                    return (float)tmp < sn.complex();
+                    return tmp.floatValue() < sn.complex();
                 default:
                     break;
             }
@@ -2093,11 +2095,11 @@ bool SNumber::operator==(const SNumber &sn) const {
                     case SNumber::UINTEGER:
                         return tmp == sn.fraction();
                     case SNumber::REAL:
-                        return (double)tmp == sn.real();
+                        return tmp.doubleValue() == sn.real();
                     case SNumber::BOOL:
                         return tmp == sn.intValue();
                     case SNumber::COMPLEX:
-                        return scomp((float)tmp, 0.f) == sn.complex();
+                        return scomp(tmp.floatValue(), 0.f) == sn.complex();
                     default:
                         break;
                 }

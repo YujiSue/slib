@@ -120,3 +120,8 @@ void SDictTest() {
 	std::cout << "id:" << dict2["id"] << NEW_LINE << "name:" << dict2["name"] << NEW_LINE << "value:" << dict2["value"] << std::endl;
 }
 #endif
+
+void test::SFuncTest() {}
+void test::STableTest() {
+
+}

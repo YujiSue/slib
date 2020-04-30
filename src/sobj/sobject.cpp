@@ -94,7 +94,9 @@ SObjPtr::SObjPtr(const SArray &array) : _type(ARRAY_OBJ), _ptr(new SArray(array)
 SObjPtr::SObjPtr(const SPair &pair) : _type(PAIR_OBJ), _ptr(new SPair(pair)) {}
 SObjPtr::SObjPtr(const SDictionary &dict) : _type(DICT_OBJ), _ptr(new SDictionary(dict)) {}
 SObjPtr::SObjPtr(const STable &tbl) : _type(TABLE_OBJ), _ptr(new STable(tbl)) {}
+SObjPtr::SObjPtr(const SDataBase& db) : _type(DB_OBJ), _ptr(new SDataBase(db.path())) {}
 SObjPtr::SObjPtr(const sio::SFile &file) : _type(FILE_OBJ), _ptr(new SFile(file)) {}
+SObjPtr::SObjPtr(const smedia::SColor& col) : _type(COLOR_OBJ), _ptr(new smedia::SColor(col)) {}
 SObjPtr::SObjPtr(const smedia::SImage &img) : _type(IMAGE_OBJ), _ptr(new smedia::SImage(img)) {}
 SObjPtr::SObjPtr(const smedia::SFigure &fig)
     : _type(FIGURE_OBJ), _ptr(new smedia::SFigure(fig)) {}
@@ -566,8 +568,9 @@ SCIterator SObjPtr::end() const {
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 sobj SObjPtr::import(const SDictionary& info) {
-
-	return snull;
+	sobj obj;
+	obj.load(info);
+	return obj;
 }
 void SObjPtr::load(const SDictionary& info) {
 	if (isArray()) {
@@ -589,7 +592,7 @@ void SObjPtr::save(const SDictionary& info) {
 		dict().save(info["path"].file().path());
 	}
 }
-int SObjPtr::type() const {
+suint SObjPtr::type() const {
     if (_ptr) {
         if (isNum()) return number().type();
         else if (isColumn()) return column().type();
@@ -863,7 +866,9 @@ bool SObjPtr::isFile() const { return _type == FILE_OBJ; }
 bool SObjPtr::isFunc() const { return _type == FUNC_OBJ; }
 bool SObjPtr::isColumn() const { return _type == COLUMN_OBJ; }
 bool SObjPtr::isTable() const { return _type == TABLE_OBJ; }
+bool SObjPtr::isDB() const { return _type == DB_OBJ; }
 bool SObjPtr::isNode() const { return _type == NODE_OBJ; }
+bool SObjPtr::isColor() const { return _type == COLOR_OBJ; }
 bool SObjPtr::isImg() const { return _type == IMAGE_OBJ; }
 bool SObjPtr::isFig() const { return _type == FIGURE_OBJ; }
 bool SObjPtr::isCnvs() const { return _type == CANVAS_OBJ; }
@@ -1152,6 +1157,26 @@ const STable &SObjPtr::table() const {
     if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
     if (isTable()) return *dynamic_cast<STable *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
+SDataBase& SObjPtr::db() {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isDB()) return *dynamic_cast<SDataBase*>(_ptr);
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
+const SDataBase& SObjPtr::db() const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isDB()) return *dynamic_cast<SDataBase*>(_ptr);
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
+smedia::SColor& SObjPtr::color() {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isColor()) return *dynamic_cast<smedia::SColor*>(_ptr);
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
+const smedia::SColor& SObjPtr::color() const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isColor()) return *dynamic_cast<smedia::SColor*>(_ptr);
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 smedia::SImage &SObjPtr::image() {
     if (isNull()) _ptr = new smedia::SImage();

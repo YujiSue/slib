@@ -46,6 +46,7 @@ namespace slib {
 			HORIZONTAL = 1,
 			VERTICAL = 2,
 			DEPTH = 3,
+			TEMPORAL = 4,
 		} DIRECTION;
 
 		typedef enum {

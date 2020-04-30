@@ -4,18 +4,15 @@
 #include "sconfig.h"
 
 namespace slib {
-
     class SOBJ_DLL String;
     class SOBJ_DLL SChar;
     class SOBJ_DLL SString;
     class SOBJ_DLL SObjPtr;
-    
-    //Char
-    class SOBJ_DLL Char {
+
+	class SOBJ_DLL Char {
         friend String;
         
-    //protected:
-	public:
+    public:
         const char *_ptr;
         String *_str;
         

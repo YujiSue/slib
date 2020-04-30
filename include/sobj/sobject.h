@@ -27,6 +27,7 @@ namespace slib {
 		
 		DB_OBJ = 0x0013,
 
+		COLOR_OBJ = 0x0020,
 		PIXEL_OBJ = 0x0021,
 		IMAGE_OBJ = 0x0022,
 		FIGURE_OBJ = 0x0023,
@@ -78,11 +79,17 @@ namespace slib {
 	using scolumn = SClsPtr<SColumn, COLUMN_OBJ>;
     class SOBJ_DLL STable;
 	using stable = SClsPtr<STable, TABLE_OBJ>;
+	class SOBJ_DLL SDataBase;
+	using sdb = SClsPtr<SDataBase, DB_OBJ>;
+
     namespace sio {
         class SOBJ_DLL SFile;
 		using sfile = SClsPtr<SFile, FILE_OBJ>;
     }
     namespace smedia {
+		class SOBJ_DLL SColor;
+		using scolor = SClsPtr<SColor, COLOR_OBJ>;
+
 		class SOBJ_DLL SImage;
 		using simg = SClsPtr<SImage, IMAGE_OBJ>;
         class SOBJ_DLL SFigure;
@@ -181,9 +188,10 @@ namespace slib {
 		template<class Return, class... Args>
         SObjPtr(const SFunction<Return, Args...>&func) : _type(FUNC_OBJ), _ptr(new SFunction<Return, Args... >(func)) {}
         SObjPtr(const STable &tbl);
-
+		SObjPtr(const SDataBase& db);
 
         SObjPtr(const sio::SFile &file);
+		SObjPtr(const smedia::SColor& col);
         SObjPtr(const smedia::SImage &img);
         SObjPtr(const smedia::SFigure &fig);
         SObjPtr(const smedia::SCanvas &cnvs);
@@ -320,7 +328,7 @@ namespace slib {
         void load(const SDictionary &dict);
         void save(const SDictionary &dict);
         
-        int type() const;
+        suint type() const;
         size_t size() const;
         size_t length() const;
         bool empty() const;
@@ -384,8 +392,10 @@ namespace slib {
         bool isFunc() const;
         bool isColumn() const;
         bool isTable() const;
+		bool isDB() const;
         bool isNode() const;
-        bool isImg() const;
+		bool isColor() const;
+		bool isImg() const;
         bool isFig() const;
         bool isCnvs() const;
         //bool isSound() const;
@@ -469,6 +479,10 @@ namespace slib {
         const SColumn &column() const;
         STable &table();
         const STable &table() const;
+		SDataBase& db();
+		const SDataBase& db() const;
+		smedia::SColor& color();
+		const smedia::SColor& color() const;
         smedia::SImage &image();
         const smedia::SImage &image() const;
         smedia::SFigure &figure();

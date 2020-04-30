@@ -50,8 +50,11 @@ namespace slib {
 		constexpr int AUTO_INCREMENT_COLUMN = 0x4000;
 
 		extern String colTypeName(int type);
-		extern String colInfo(const scolumn& col);
+		extern String colInfo(const sobj& col);
+		extern String colInfos(const SArray& cols);
+		extern String colNames(const SArray& cols);
 		extern String escaped(const char* que);
+
 		extern String textQue(const char* val, MATCH_TYPE match = EXACT, OPERATOR op = LIKE);
 
 		inline void addConditionQuery(String& que) {}
@@ -66,12 +69,17 @@ namespace slib {
 			addConditionQuery(query, args...);
 			return query;
 		}
+		extern String condQue(const sobj& conds);
 		extern String caseQue(const char* name, const sattribute& attr, const char* exception, const char* as);
+		extern String caseQue(const sobj& obj);
 		extern String orderQue(const Array<std::pair<String, ORDER>>& orders);
+		extern String orderQue(const sobj& orders);
 		extern String limitQue(int l, int o = -1);
+		extern String limitQue(const sobj& obj);
 		extern String listQue(const stringarray& list);
 		extern String listQue(const intarray& list);
-		extern String listQue(const SArray* array);
+		extern String listQue(const sobj& obj);
+		extern String selectQue(const sobj& obj);
 		extern String selectQuery(const char* name, const stringarray& cols = { "*" },
 			const char* condition = nullptr, const char* order = nullptr,
 			const char* limit = nullptr, bool distinct = false);
@@ -81,7 +89,6 @@ namespace slib {
 			const char* limit = nullptr, bool distinct = false);
 	}
 	class SOBJ_DLL SDataBase;
-	using sdb = SClsPtr<SDataBase, DB_OBJ>;
 	class SOBJ_DLL SDBTable {
 	private:
 		SDataBase* _db;
@@ -92,30 +99,31 @@ namespace slib {
 		~SDBTable();
 
 		bool exist();
-		void create(const Array<scolumn>& columns = {});
+		void create(const SArray& columns = {});
 		void rename(const char* name);
+		void copy(const char* src, const stringarray& cols = { "*" }, const SDictionary& conditions = {});
 		void remove();
-
-		sindex columnInfo();
-
+		stringarray columns();
+		SArray& columnInfo();
 		void addColumn(int type, const char* name);
-
+		void addColumn(const SDictionary& dict);
+		void addColumn(const sobj& obj);
+		void removeColumn(const char* name);
 		void addRecord(const SArray& row);
 		void addRecord(const SDictionary& row);
+		void addRecord(const sobj &obj);
 		void addRecordPrepare(size_t num);
 		void addRecordPrepare(const stringarray& cols);
-
 		void removeRecord(const char* condition);
-		void removeRecordAt(size_t idx);
-
+		void removeRecord(const SDictionary &condition);
+		void removeRecord(const sobj& obj);
+		void removeRecordAt(size_t idx, const char *key = "ID");
+		void setRecord(const sobj& obj);
 		void setRecord(const SDictionary& row, const char* condition);
-		void setRecordAt(size_t idx, const SDictionary& row);
+		void setRecordAt(size_t idx, const SDictionary& row, const char* key = "ID");
 		void setRecordPrepare(const stringarray& cols, const char* condition);
-
 		int count(const char* condition = nullptr);
 		SArray& countGroup(const stringarray& cols);
-
-		void initTable(STable* table);
 		void getRecordPrepare(const stringarray& cols = { "*" },
 			const char* condition = nullptr,
 			const char* order = nullptr,
@@ -128,11 +136,10 @@ namespace slib {
 			bool distinct = false,
 			STable* result = nullptr);
 		STable& getTable(const SDictionary& info, STable* result = nullptr);
-
 		SDictionary& getRecord(const stringarray& cols = { "*" }, const char* condition = nullptr,
 			const char* order = nullptr, SDictionary* result = nullptr);
 		SDictionary& getRecord(const SDictionary& info, SDictionary* result = nullptr);
-		SDictionary& getRecordAt(size_t idx, const stringarray& cols = { "*" }, SDictionary* result = nullptr);
+		SDictionary& getRecordAt(size_t idx, const stringarray& cols = { "*" }, const char* key = "ID", SDictionary* result = nullptr);
 
 		SArray& getRecords(const stringarray& cols = { "*" },
 			const char* condition = nullptr,
@@ -188,19 +195,21 @@ namespace slib {
 		SArray& getJoinedRecords(const SDictionary& info, SArray* result = nullptr);
 	};
 
-	class SOBJ_DLL SDataBase {
+	class SOBJ_DLL SDataBase : public SObject {
 		friend SDBTable;
 
 	private:
 		sqlite3* _db;
 		sqlite3_stmt* _stmt;
-		sio::SFile _file;
+		String _path;
 		STable _result;
 		SDictionary _row;
 		SArray _rows;
 		char* _err;
 		bool _open, _transaction;
 		int _res;
+
+
 
 	public:
 		SDataBase();
@@ -209,22 +218,27 @@ namespace slib {
 
 		void open(const char* path);
 		void close();
-		bool isOpened();
-		bool isTransacting();
+		bool isOpened() const;
+		bool isTransacting() const;
 		const char* path() const;
 
 		int tableCount();
-		stringarray tables();
-		void createTable(const char* name, const stringarray& colnames, const intarray& coltypes);
-		void createTable(const SDictionary &dic);
-		void createTable(const STable* table);
-		void clearTables();
+		sobj tables();
 
+	protected:
+		void _createTable(const SDictionary& dic);
+		void _createTable(const STable& table);
+
+	public:
+		void createTable(const char* name, const SArray& columns = {}, const SArray& rows = {});
+		void createTable(const sobj& obj);
+		void removeTable(const char* name);
+		void clearTables();
 		SDBTable table(const char* name);
 		SDBTable operator[](const char* name);
 
-		void bindi(int32_t val, int i);
-		void bindl(int64_t val, int i);
+		void bindi(sint val, int i);
+		void bindl(sinteger val, int i);
 		void bindd(double val, int i);
 		void bindt(const char* val, int i);
 		void bindtt(const char* val, int i);
@@ -232,8 +246,7 @@ namespace slib {
 		void bindbt(void* val, int size, int i);
 		void bindNull(int i);
 		void bind(const sobj& obj, int i);
-		void bind(const SArray& array);
-
+		void bindRow(const sobj& obj);
 		void sqlexec(const char* sql);
 		void sqlprepare(const char* sql);
 		void reset();
@@ -245,6 +258,10 @@ namespace slib {
 		STable& getResult(STable* table = nullptr);
 		SDictionary& getRow(SDictionary* dict = nullptr);
 		SArray& getRows(SArray* array = nullptr);
+
+		String getClass() const;
+		String toString() const;
+		SObject* clone() const;
 	};
 }
 

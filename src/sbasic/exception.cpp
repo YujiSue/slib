@@ -1,5 +1,4 @@
 #include "sbasic/exception.h"
-#include "sbasic/map.h"
 #include "sobj/stext.h"
 #include "sio/sio.h"
 

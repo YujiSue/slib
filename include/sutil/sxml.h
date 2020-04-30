@@ -33,9 +33,9 @@ namespace slib {
 		static void encodeXML(String &str);
 		static void decodeXML(String& str);
 		static sxnode plistNode(const sobj& obj);
-		static void fillSVG(sattribute& attribute, const smedia::SBrush& brush, intarray* path);
-		static void strokeSVG(sattribute& attribute, const smedia::SStroke& stroke);
-		static void txtstyleSVG(sattribute& attribute, const STextStyle& tattr);
+		static void fillSVG(sattribute& attribute, smedia::SBrush& brush, intarray* path);
+		static void strokeSVG(sattribute& attribute, smedia::SStroke& stroke);
+		static void txtstyleSVG(sattribute& attribute, STextStyle& tattr);
 		static sxnode svgNode(smedia::SCanvas* cnvs);
 		static sxnode svgNode(smedia::SFigure* fig);
 		static sobj toPlistObj(const sxnode& node);

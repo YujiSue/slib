@@ -55,7 +55,9 @@ const String &SFigure::name() const { return _id; }
 strans2d SFigure::transformer() const { return _trans; }
 SPaint &SFigure::painter() { return _paint; }
 const SPaint &SFigure::painter() const { return _paint; }
-const SStroke &SFigure::stroke() const { return _paint.stroke; }
+SStroke& SFigure::stroke() { return _paint.stroke; }
+const SStroke& SFigure::stroke() const { return _paint.stroke; }
+SBrush& SFigure::brush() { return _paint.brush; }
 const SBrush &SFigure::brush() const { return _paint.brush; }
 sareaf SFigure::boundary() const { return _boundary; }
 size_t SFigure::vnum() const { return _vertex.size(); }
@@ -106,8 +108,8 @@ void SFigure::setFillColor(const SColor &c) {
     _paint.brush.color = c;
 }
 void SFigure::setFillColor(const SGradient &g) {
-    if (g.mode()&sgeom::XYZ) _paint.brush.type = sstyle::LINEAR_GRAD;
-    else if (g.mode()&sgeom::POLAR) _paint.brush.type = sstyle::RADIAL_GRAD;
+    if (g.coordinate()&sgeom::XYZ) _paint.brush.type = sstyle::LINEAR_GRAD;
+    else if (g.coordinate()&sgeom::POLAR) _paint.brush.type = sstyle::RADIAL_GRAD;
     _paint.brush.color = g;
 }
 void SFigure::setBrush(const SBrush &b) { _paint.brush = b; }

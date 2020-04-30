@@ -119,7 +119,6 @@ Time::Time(const char *s) : Time() {
 Time::Time(const Time &time) : year(time.year), month(time.month), day(time.day),
 hour(time.hour), minute(time.minute), sec(time.sec), msec(time.msec) {}
 Time::~Time() {}
-
 Time &Time::operator=(const Time &time) {
     year = time.year; month = time.month; day = time.day; hour = time.hour;
 	minute = time.minute; sec = time.sec; msec = time.msec; return *this;
@@ -157,7 +156,6 @@ String Time::toJString() const  {
     if (msec) str<<SNumber(msec).toWideString()<<u8"㍉秒";
     return str;
 }
-
 bool Time::operator<(const Time &time) const {
     if (year != time.year) return year < time.year;
     if (month != time.month) return month < time.month;

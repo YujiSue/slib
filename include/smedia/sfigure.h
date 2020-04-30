@@ -69,7 +69,9 @@ namespace slib {
             strans2d transformer() const;
             SPaint &painter();
             const SPaint &painter() const;
+			SBrush& brush();
             const SBrush &brush() const;
+			SStroke& stroke();
             const SStroke &stroke() const;
             sareaf boundary() const;
             size_t vnum() const;
@@ -154,7 +156,7 @@ namespace slib {
             
         public:
             SCanvas();
-            SCanvas(size_t w, size_t h, const char *name = "", SColor col = "white");
+            SCanvas(size_t w, size_t h, const char *name = "", const SColor & col = "white");
             SCanvas(const SCanvas &canvas);
             ~SCanvas();
             
@@ -416,6 +418,7 @@ namespace slib {
             ~SCalligraphy();
             
             const char *text() const;
+			STextStyle& style();
             const STextStyle &style() const;
             
             void setText(const char *s);

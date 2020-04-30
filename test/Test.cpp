@@ -83,6 +83,11 @@ int main()
 {
 #ifdef MATH_TEST
 	test::CalcTest();
+	test::FracTest();
+	test::ComplexTest();
+	test::LinearAlgebraTest();
+	test::GeometryTest();
+	test::StatisticTest();
 
 #endif
 #ifdef MEM_TEST
@@ -113,6 +118,10 @@ int main()
 
 #ifdef SOBJECT_TEST
 	test::SObjTest();
+#endif
+
+#ifdef DB_TEST
+	test::SDBTest();
 #endif
 
 #ifdef THREAD_TEST

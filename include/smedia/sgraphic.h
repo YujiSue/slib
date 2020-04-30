@@ -98,32 +98,42 @@ namespace slib {
 		#define kui kvpair<String, suint>
         extern Map<String, suint> SColorMap;
         
-        constexpr subyte RGB_SPACE = 0x01;
-        constexpr subyte CMYK_SPACE = 0x02;
-		constexpr subyte HSV_SPACE = 0x03;
+        constexpr subyte RGB_SPACE = 0x10;
+        constexpr subyte CMYK_SPACE = 0x20;
+		//constexpr subyte HSV_SPACE = 0x40;
         
-        constexpr sushort GRAY8 = 0x0111;
-        constexpr sushort GRAY16 = 0x0112;
-        constexpr sushort GRAY32 = 0x0114;
-        constexpr sushort RGB8 = 0x0131;
-        constexpr sushort RGB16 = 0x0132;
-        constexpr sushort RGB24 = 0x0133;
-        constexpr sushort RGB32 = 0x0134;
-        constexpr sushort RGBA = 0x0144;
-        constexpr sushort CMYK = 0x0244;
-        constexpr sushort CMYKA = 0x0255;
+        constexpr sushort GRAY8 = 0x1101;
+        constexpr sushort GRAY16 = 0x1102;
+		constexpr sushort GRAYF = 0x1104;
+        //constexpr sushort RGB8 = 0x1301;
+        //constexpr sushort RGB16 = 0x1302;
+        constexpr sushort RGB24 = 0x1303;
+        constexpr sushort RGB32 = 0x1304;
+		constexpr sushort RGBF = 0x130C;
+        constexpr sushort RGBA = 0x1404;
+		constexpr sushort RGBAF = 0x1410;
+        constexpr sushort CMYK = 0x2404;
+		constexpr sushort CMYKF = 0x2410;
 
-		extern inline subyte colorSpace(sushort type) { return (type >> 8); }
-		extern inline subyte colorChannel(sushort type) { return ((type&0xF0) >> 4); }
-		extern inline subyte bytePerPixel(sushort type) { return (type & 0x0F); }
+		extern inline subyte colorSpace(sushort type) { return ((type & 0xF000) >> 8); }
+		extern inline subyte colorChannel(sushort type) { return ((type & 0x0F00) >> 8); }
+		extern inline subyte bytePerPixel(sushort type) { return (type & 0x00FF); }
 		extern inline subyte colorDepth(sushort type) { return bytePerPixel(type)/colorChannel(type); }
-		extern inline sushort imageType(subyte depth, subyte channel, subyte space) {
-			return (depth * channel) | (channel << 4) | (space << 8);
+		extern inline sushort colorType(subyte depth, subyte channel, subyte space) {
+			return (depth * channel) | ((channel | space) << 8);
+		}
+		extern inline sushort b2scolor(subyte i) { return ((float)i / smath::MAX_UBYTE) * smath::MAX_USHORT; }
+		extern inline subyte s2bcolor(sushort i) { return ((float)i / smath::MAX_USHORT) * smath::MAX_UBYTE; }
+		extern inline float b2fcolor(subyte i) { return (float)i / smath::MAX_UBYTE; }
+		extern inline float s2fcolor(sushort i) { return (float)i / smath::MAX_USHORT; }
+		extern inline subyte f2bcolor(float f) { return f * smath::MAX_UBYTE; }
+		extern inline sushort f2scolor(float f) { return f * smath::MAX_USHORT; }
+		extern inline suint f2icolor(float f) { return f * smath::MAX_UBYTE; }
+		extern inline suint f2icolor(float* f) {
+			return f2icolor(f[3]) | (f2icolor(f[2]) << 8) | (f2icolor(f[1]) << 16) | (f2icolor(f[0]) << 24);
 		}
         
-#define scolor sptr<SColor>
-        
-        class SOBJ_DLL SColor {
+        class SOBJ_DLL SColor : public SObject {
         public:
             static const SColor CLEAR;
             static const SColor BLACK;
@@ -151,46 +161,86 @@ namespace slib {
             static const SColor NAVY;
             static const SColor VIOLET;
             static const SColor PURPLE;
+
+			typedef enum {
+				DEFAULT_NUMERIC = 1,
+				DEFAULT_HEX = 2,
+				HTML_CODE = 3,
+				HTML_HEX = 4,
+				CSS_NUMERIC = 5,
+
+			} COLOR_TEXT_MODE;
             
         protected:
             sushort _type;
-            floatarray _data;
+            ubytearray _data;
+			COLOR_TEXT_MODE _mode;
             
         public:
             SColor(sushort t = GRAY8);
+			SColor(sushort t, void *bytes);
             SColor(subyte col);
             SColor(suint col);
-            SColor(int r, int g, int b);
+			SColor(const col3i& col);
+			SColor(const col4i& col);
+			SColor(const col3f& col);
+			SColor(const col4f& col);
+            SColor(int r, int g, int b, int a = 255);
             SColor(const char *s);
-            SColor(const SColor &col);
+            SColor(const SColor&col);
+			SColor(const sobj& obj);
             virtual ~SColor();
             
-            SColor &operator=(suint col);
+            SColor &operator=(SColor &&col);
             SColor &operator=(const SColor &col);
             
             sushort type() const;
             sbyte channel() const;
 			sbyte bpp() const;
+			const subyte* bytes() const;
+			const float* floats() const;
+
             subyte gray8() const;
             sushort gray16() const;
-            col3i rgb() const;
-            col4i rgba() const;
-            suint intColor() const;
-            subyte byteColor(sbyte ch) const;
-            float floatColor(sbyte ch) const;
-            float *ptr() const;
-            
+			float grayf() const;
+			suint rgb() const;
+			suint rgba() const;
+			col3i toVec3i() const;
+			col4i toVec4i() const;
+			col3f toVec3f() const;
+            col4f toVec4f() const;
+			subyte red() const;
+			subyte green() const;
+			subyte blue() const;
+			subyte alpha() const;
+			float redf() const;
+			float greenf() const;
+			float bluef() const;
+			float alphaf() const;
+			/*
+			subyte cyan() const;
+			subyte magenta() const;
+			subyte yellow() const;
+			subyte keyplate() const;
+			float cyanf() const;
+			float magentaf() const;
+			float yellowf() const;
+			float keyplatef() const;
+			*/
+			bool isInt() const;
+			bool isFloat() const;
             bool isClear() const;
             bool isMono() const;
             bool hasAlpha() const;
-            
             bool isRGB() const;
             bool isCMYK() const;
-            
-            String toHex(const char *prefix = "0x") const;
-            String toString() const;
-            
-            void convert(sushort t);
+
+			void convert(sushort t/*, COLOR_SPACE_CONVERTER conv */); 
+			void setMode(COLOR_TEXT_MODE m);
+
+			virtual String getClass() const;
+			virtual String toString() const;
+			virtual SObject* clone() const;
             
             bool operator<(const SColor &col) const;
             bool operator==(const SColor &col) const;
@@ -198,17 +248,16 @@ namespace slib {
         
         class SOBJ_DLL SGradient : public SColor {
         protected:
-            smath::sgeom::COORDINATE _mode;
+            smath::sgeom::COORDINATE _coord;
             float _angle;
-            floatarray _point;
+            floatarray _points;
             
         public:
             SGradient();
-            SGradient(const SColor &col);
             SGradient(const SGradient &grad);
             ~SGradient();
             
-            smath::sgeom::COORDINATE mode() const;
+            smath::sgeom::COORDINATE coordinate() const;
             size_t count() const;
             float angle() const;
             SColor operator[](size_t idx) const;
@@ -216,7 +265,7 @@ namespace slib {
             floatarray &points();
             const floatarray &points() const;
             
-            void setMode(smath::sgeom::COORDINATE m);
+            void setCoordinate(smath::sgeom::COORDINATE coord);
             void setAngle(float f);
             void setPosition(size_t idx, float f);
             
@@ -225,7 +274,9 @@ namespace slib {
             void removeColor(size_t idx);
             void clear();
             
-            
+			String getClass() const;
+			String toString() const;
+			SObject* clone() const;
         };
     }
     

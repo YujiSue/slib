@@ -88,15 +88,16 @@ sxnode SXmlNode::plistNode(const sobj &obj) {
     return node;
 }
 
-void SXmlNode::fillSVG(sattribute &attribute, const smedia::SBrush &brush, intarray *path) {
+void SXmlNode::fillSVG(sattribute &attribute, smedia::SBrush &brush, intarray *path) {
     switch (brush.type) {
         case sstyle::FILL_NONE:
             attribute["fill"] = "none";
             break;
         case sstyle::FILL_UNIFORM:
-            attribute["fill"] = brush.color->toHex("#");
+			brush.color->setMode(SColor::HTML_HEX);
+            attribute["fill"] = brush.color->toString();
             if (brush.color->hasAlpha())
-                attribute["fill-opacity"] = brush.color->ptr()[3];
+                attribute["fill-opacity"] = brush.color->alphaf();
             break;
         case sstyle::LINEAR_GRAD:
             attribute["fill"] = "url(#lgrad-"+slib::toString(*path, "-")+")";
@@ -109,14 +110,15 @@ void SXmlNode::fillSVG(sattribute &attribute, const smedia::SBrush &brush, intar
     }
 }
 
-void SXmlNode::strokeSVG(sattribute &attribute, const smedia::SStroke &stroke) {
+void SXmlNode::strokeSVG(sattribute &attribute, smedia::SStroke &stroke) {
     if (stroke.type == sstyle::STROKE_NONE) {
         attribute["stroke-width"] = 0; return;
     }
-    attribute["stroke"] = stroke.color->toHex("#");
+	stroke.color->setMode(SColor::HTML_HEX);
+    attribute["stroke"] = stroke.color->toString();
     attribute["stroke-width"] = stroke.width;
     if (stroke.color->hasAlpha())
-        attribute["stroke-opacity"] = stroke.color->ptr()[3];
+        attribute["stroke-opacity"] = stroke.color->alphaf();
     auto edge = stroke.type&0x0F00;
     switch (edge) {
         case sstyle::BUTT_CAP:
@@ -149,7 +151,7 @@ void SXmlNode::strokeSVG(sattribute &attribute, const smedia::SStroke &stroke) {
         attribute["stroke-dasharray"] = slib::toString(stroke.interval, ",");
 }
 
-void SXmlNode::txtstyleSVG(sattribute &attribute, const STextStyle &tattr) {
+void SXmlNode::txtstyleSVG(sattribute &attribute, STextStyle &tattr) {
     String style = "";
     if(tattr.type&sstyle::BOLD) style<<"font-weight: bold; ";
     if(tattr.type&sstyle::ITALIC) style<<"font-style: italic; ";
@@ -160,7 +162,8 @@ void SXmlNode::txtstyleSVG(sattribute &attribute, const STextStyle &tattr) {
     style<<"font-family: "<<tattr.font<<"; ";
     style<<"font-size: "<<tattr.size<<"px; ";
     style<<"stroke: "<<"none; ";
-    style<<"fill: "<<tattr.color.toHex("#")<<"; ";
+	tattr.color.setMode(SColor::HTML_HEX);
+    style<<"fill: "<<tattr.color.toString()<<"; ";
     attribute["style"] = style;
 }
 
@@ -182,16 +185,18 @@ sxnode SXmlNode::svgNode(SCanvas *cnvs) {
         if (E_->brush().type == sstyle::LINEAR_GRAD || E_->brush().type == sstyle::RADIAL_GRAD) {
             auto brush = E_->brush();
             auto &gcolor = brush.gradient();
+			
             auto defs = sxnode(xml::START_TAG, "defs", nullptr);
             if (brush.type == sstyle::LINEAR_GRAD) {
                 auto lgrad = sxnode(xml::START_TAG, "linearGradient", nullptr);
                 lgrad->attribute = { ks("id", "lgrad-"+slib::toString(E_->address(), "-")) };
                 for (int f = 0; f < gcolor.count(); ++f) {
                     auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
+					gcolor[f].setMode(SColor::HTML_HEX);
                     stop->attribute =
                     {
                         ks("offset", gcolor.points()[f]),
-                        ks("stop-color", gcolor[f].toHex("#"))
+                        ks("stop-color", gcolor[f].toString())
                     };
                     lgrad->add(stop);
                 }
@@ -202,10 +207,11 @@ sxnode SXmlNode::svgNode(SCanvas *cnvs) {
                 rgrad->attribute = { ks("id", "rgrad-"+slib::toString(E_->address(), "-")) };
                 for (int f = 0; f < gcolor.count(); ++f) {
                     auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
+					gcolor[f].setMode(SColor::HTML_HEX);
                     stop->attribute =
                     {
                         ks("offset", gcolor.points()[f]),
-                        ks("stop-color", gcolor[f].toHex("#"))
+                        ks("stop-color", gcolor[f].toString())
                     };
                     rgrad->add(stop);
                 }
@@ -403,7 +409,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         }
         case sshape::TEXT:
         {
-            auto txt = static_cast<const SCalligraphy *>(fig);
+            auto txt = static_cast<SCalligraphy *>(fig);
             node->type = xml::START_TAG;
             node->tag = "text";
             node->attribute["x"] = fig->vertex()[0].x;
@@ -428,10 +434,11 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
                         lgrad->attribute = { ks("id", "lgrad-"+slib::toString(E_->address(), "-")) };
                         for (int f = 0; f < gcolor.count(); ++f) {
                             auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
-                            stop->attribute =
-                            {
-                                ks("offset", gcolor.points()[f]),
-                                ks("stop-color", gcolor[f].toHex("#"))
+							gcolor[f].setMode(SColor::HTML_HEX);
+							stop->attribute =
+							{
+								ks("offset", gcolor.points()[f]),
+								ks("stop-color", gcolor[f].toString())
                             };
                             lgrad->add(stop);
                         }
@@ -442,9 +449,10 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
                         rgrad->attribute = { ks("id", "rgrad-"+slib::toString(E_->address(), "-")) };
                         for (int f = 0; f < gcolor.count(); ++f) {
                             auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
+							gcolor[f].setMode(SColor::HTML_HEX);
                             stop->attribute = {
                                 ks("offset", gcolor.points()[f]),
-                                ks("stop-color", gcolor[f].toHex("#"))
+                                ks("stop-color", gcolor[f].toString())
                             };
                             rgrad->add(stop);
                         }

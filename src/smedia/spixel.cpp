@@ -47,7 +47,7 @@ SPixel& SPixel::operator=(const SColor& col) {
 	}
 	case RGB24:
 	{
-		auto rgb = col.rgb();
+		auto rgb = col.toVec3i();
 		_data[0] = rgb[0];
 		_data[1] = rgb[1];
 		_data[2] = rgb[2];
@@ -56,7 +56,7 @@ SPixel& SPixel::operator=(const SColor& col) {
 	}
 	case RGBA:
 	{
-		auto rgba = col.rgba();
+		auto rgba = col.toVec4i();
 		_data[0] = rgba[0];
 		_data[1] = rgba[1];
 		_data[2] = rgba[2];
@@ -79,50 +79,23 @@ subyte SPixel::depth() const { return colorDepth(_type); }
 subyte SPixel::bpp() const { return _bpp; }
 
 SColor SPixel::color() const {
-    SColor col;
 	switch (_type)
 	{
 	case GRAY8:
-		col = *_data;
-		break;
+		return SColor(*_data);
 	case GRAY16:
-	{
-		sushort c; 
-		memcpy(&c, _data, 2); 
-		col = c;
-		break;
-	}
+		return SColor(GRAY16, _data);
 	case RGB24:
-	{
-		suint c;
-		memcpy(&c, _data, 3);
-		col = c;
-		break;
-	}
+		return SColor(RGB24, _data);
 	case RGBA:
-	{
-		suint c;
-		memcpy(&c, _data, 4);
-		col = c;
-		break;
+		return SColor(RGBA, _data);
 	}
-	default:
-		col = *_data;
-		break;
-	}
-    return col;
 }
 void SPixel::swap(SPixel px) {
     auto p = ptr(); _data = px.ptr(); px._data = p;
 }
 String SPixel::getClass() const { return "pixel"; }
-String SPixel::toString() const {
-    /*
-     *
-     */
-    
-    return "pixel:";
-}
+String SPixel::toString() const { return color().toString(); }
 SObject *SPixel::clone() const { return new SPixel(*this); }
 bool SPixel::operator<(const SPixel &px) const { return _data < px._data; }
 bool SPixel::operator==(const SPixel &px) const { return _data == px._data; }

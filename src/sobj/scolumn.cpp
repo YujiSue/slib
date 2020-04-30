@@ -64,10 +64,10 @@ String SColumn::colTypeStr(int t) {
 }
 sushort SColumn::colTypeIndex(const char *t) {
     auto type = SString::lower(t);
-    if (type == "number") return NUMBER_COLUMN;
-    else if (type == "integer") return INTEGER_COLUMN;
+    if (type.beginWith("num")) return NUMBER_COLUMN;
+	else if (type.beginWith("int")) return INTEGER_COLUMN;
     else if (type == "real") return REAL_COLUMN;
-    else if (type == "boolean") return BOOL_COLUMN;
+    else if (type.beginWith("bool")) return BOOL_COLUMN;
     else if (type == "string") return STRING_COLUMN;
     else if (type == "text") return TEXT_COLUMN;
     else if (type == "date") return DATE_COLUMN;
@@ -76,10 +76,8 @@ sushort SColumn::colTypeIndex(const char *t) {
     else if (type == "dict") return DICT_COLUMN;
     else return 0;
 }
-
 sushort SColumn::type() const { return _type; }
 const String &SColumn::name() const { return _name; }
-
 void SColumn::setType(sushort t) {
     if (_type == t || empty()) return;
     if (_table) {

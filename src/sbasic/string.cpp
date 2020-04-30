@@ -1,4 +1,9 @@
-#include "sobj.h"
+#include "sbasic/array.h"
+#include "sbasic/exception.h"
+#include "sbasic/string.h"
+#include "sobj/sstring.h"
+#include "sobj/stext.h"
+#include "sio/sfile.h"
 
 using namespace slib;
 
@@ -774,20 +779,20 @@ void String::trimming() {
 void String::transform(subyte trans) {
     auto ins = _instance();
     auto beg = ins.first, end = &ins.first[ins.second];
-    if (trans&SString::DELETE_QUOTE) { ++beg; --end; }
+    if (trans&String::DELETE_QUOTE) { ++beg; --end; }
     if (ins.first < beg) remove(0, beg-ins.first);
     resize(end-beg);
-    if (trans&SString::SINGLE_QUOTE) { insert(0, "\'"); append("\'"); }
-    if (trans&SString::DOUBLE_QUOTE) { insert(0, "\""); append("\""); }
-    if (trans&SString::TO_UPPER)
+    if (trans&String::SINGLE_QUOTE) { insert(0, "\'"); append("\'"); }
+    if (trans&String::DOUBLE_QUOTE) { insert(0, "\""); append("\""); }
+    if (trans&String::TO_UPPER)
         std::transform(this->begin(), this->end(), begin(), toupper);
-    else if (trans&SString::TO_LOWER)
+    else if (trans&String::TO_LOWER)
         std::transform(this->begin(), this->end(), begin(), tolower);
-    if (trans&SString::TO_WIDE) {
+    if (trans&String::TO_WIDE) {
 		String tmp = String::wide(cstr());
 		this->swap(tmp);
     }
-    else if (trans&SString::TO_NARROW) {
+    else if (trans&String::TO_NARROW) {
 		String tmp = String::narrow(cstr());
 		this->swap(tmp);
     }

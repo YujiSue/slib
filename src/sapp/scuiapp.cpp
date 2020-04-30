@@ -96,7 +96,7 @@ inline int showHelp(SDictionary &profile, const sobj& cmd) {
 		if (E_.value()["type"] == "exec") opt_.add(E_.key());
 	}
 
-    if (profile["app"]["type"] == SCUI_MCMD_APP) {
+    if (profile["app"]["type"] == SCUI_APP|MULTI_COMMAND) {
 		if (!cmd) {
 			std::cout << "[Command]" << std::endl;
 			auto cmds = app_command.keyset();
@@ -227,7 +227,7 @@ int SCuiApp::init(int argc, const char** argv) {
 		sforeach(opts) {
 			if (app_option[E_].hasKey("short")) app_option["_abbr"].set(app_option[E_]["short"],  E_);
 		}
-		if (profile["app"]["type"].intValue() == SCUI_SCMD_APP) {
+		if (profile["app"]["type"].intValue() == SCUI_APP|SINGLE_PROCESS) {
 			auto command = profile["command"]["_exec"];
 			auto require = command["require"];
 			sforeach(opts) {

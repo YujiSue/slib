@@ -1,7 +1,26 @@
 #include "Test.h"
-#include "sutil/sutil.h"
+#include "sobj.h"
 
 using namespace slib;
+
+void test::SDBTest() {
+	sio::SFile f(sio::currentPath() + PATH_SEPARATOR + "test.db");
+	if (f.exist()) f.remove();
+	SDataBase db1(sio::currentPath() + PATH_SEPARATOR + "test.db");
+	db1.createTable("Test1",
+		{
+			scolumn(SColumn::INTEGER_COLUMN | sql::KEY_COLUMN, "ID"),
+			scolumn(SColumn::TEXT_COLUMN, "NAME"),
+			scolumn(SColumn::TEXT_COLUMN, "VALUE")
+		});
+	db1.createTable({
+		kv("name", "Test2"),
+		kv("name", "Test2"),
+		kv("name", "Test2")
+		});
+	
+
+}
 
 #ifdef THREAD_TEST
 inline void thread_test(int i, SThread *thread) {

@@ -336,6 +336,7 @@ bool SString::operator!=(const sobj &obj) const { return !((*this) == obj); }
 bool SString::operator!=(const String &s) const { return !(*this == s); }
 bool SString::operator!=(const SString &s) const { return !(*this == s); }
 SString slib::operator+(const char &c, const SString &s) { return SString(c)+=s; }
+SString slib::operator+(const SChar& c, const SString& s) { return c.toString() += s; }
 SString slib::operator+(const char *s1, const SString &s2) { return SString(s1)+=s2; }
 SString slib::operator+(const int &i, const SString &s) { return SString(i)+=s; }
 SString slib::operator+(const sinteger &i, const SString &s) { return SString(i)+=s; }

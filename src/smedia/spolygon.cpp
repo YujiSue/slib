@@ -83,6 +83,7 @@ SCalligraphy::SCalligraphy(const SCalligraphy &c) : SFigure(c) {
 SCalligraphy::~SCalligraphy() {}
 
 const char *SCalligraphy::text() const { return _text.cstr(); }
+STextStyle& SCalligraphy::style() { return _attribute; }
 const STextStyle &SCalligraphy::style() const { return _attribute; }
 void SCalligraphy::setText(const char *s) {
     _text = s;

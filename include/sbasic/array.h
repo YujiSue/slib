@@ -114,6 +114,7 @@ namespace slib {
 		sarr_iter<T> insert(sarr_iter<T> iter, const T& val);
 		sarr_iter<T> insert(size_t idx, T *val, size_t s);
 		sarr_iter<T> insert(size_t idx, const Array &array);
+		sarr_iter<T> erase(const T &val);
         sarr_iter<T> remove(sarr_iter<T> beg, sarr_iter<T> end);
         sarr_iter<T> remove(srange range);
         sarr_iter<T> remove(size_t off, size_t len);
@@ -392,6 +393,10 @@ namespace slib {
 	sarr_iter<T> Array<T, M>::insert(size_t idx, const Array<T, M> &array) {
 		return insert(idx, array._begin, array.size());
     }
+	template <typename T, class M>
+	sarr_iter<T> Array<T, M>::erase(const T& val) {
+		return removeAt(find(val));
+	}
     template <typename T, class M>
     SArrayIterator<T> Array<T, M>::remove(sarr_iter<T> beg, sarr_iter<T> end) {
         auto b = beg._ptr, e = end._ptr;

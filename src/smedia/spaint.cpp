@@ -49,25 +49,26 @@ uint16_t slib::smedia::SBrush::toBrushStyle(const String &style) {
 
 SBrush::SBrush() : type(sstyle::FILL_NONE) {}
 SBrush::SBrush(uint16_t t, const SColor &col) : type(t), color(col) {}
-SBrush::SBrush(sobj obj) {
-    
+SBrush::SBrush(const SColor & col) {
+	type = sstyle::FILL_UNIFORM;
+	color = col;
 }
 SBrush::SBrush(const SBrush &brush) {
     type = brush.type;
     color = brush.color;
 }
+SBrush::SBrush(const sobj& obj) {
+	*this = obj.color();
+}
 SBrush::~SBrush() {}
 
-SBrush &SBrush::operator=(const SColor &col) {
-    type = sstyle::FILL_UNIFORM;
-    color = col; return *this;
-}
 SBrush &SBrush::operator=(const SBrush &brush) {
     type = brush.type;
     color = brush.color;
     return *this;
 }
 bool SBrush::isGradient() const { return type&sstyle::FILL_GRADIENT; }
+SGradient& SBrush::gradient() { return *dynamic_cast<SGradient*>(color.ptr()); }
 const SGradient & SBrush::gradient() const { return *dynamic_cast<const SGradient *>(color.ptr()); }
 
 

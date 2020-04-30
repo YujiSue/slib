@@ -19,8 +19,26 @@ String sql::colTypeName(int type) {
     if(type & AUTO_INCREMENT_COLUMN) name += " AUTOINCREMENT";
     return name;
 }
-String sql::colInfo(const scolumn &col) {
-    return col->name()+" "+sql::colTypeName(col->type());
+String sql::colInfo(const sobj &col) {
+	if (col.isColumn()) return col.name() + " " + sql::colTypeName(col.type());
+	else if (col.isDict()) return col["name"] + " " + col["type"];
+}
+String sql::colInfos(const SArray& cols) {
+	String str;
+	if (cols.empty()) return str;
+	sforeach(cols) str << colInfo(E_) << ",";
+	if (str.length()) str.resize(str.length() - 1);
+	return str;
+}
+String sql::colNames(const SArray& cols) {
+	String str;
+	if (cols.empty()) return str;
+	sforeach(cols) {
+		if (E_.isDict()) str << E_["name"] << ",";
+		else if (E_.isColumn()) str << E_.name() << ",";
+	}
+	if (str.length()) str.resize(str.length() - 1);
+	return str;
 }
 String sql::escaped(const char *que) { String str(que); str.replace("\'", "\'\'"); return str; }
 String sql::textQue(const char* val, sql::MATCH_TYPE match, sql::OPERATOR op) {
@@ -46,7 +64,12 @@ String sql::textQue(const char* val, sql::MATCH_TYPE match, sql::OPERATOR op) {
 	}
 	return String::squot(str);
 }
+String sql::condQue(const sobj& conds) {
+	String que = " WHERE ";
 
+
+	return que;
+}
 String sql::caseQue(const char* name, const sattribute& attr, const char* exception, const char* as) {
 	String que;
 	que << " CASE " << name;
@@ -57,10 +80,37 @@ String sql::caseQue(const char* name, const sattribute& attr, const char* except
 	if (as) que << " AS " << as;
 	return que;
 }
+extern inline void addCaseQue(String& str, const sobj& obj) {
+	str << " WHEN ";
+	if (obj.hasKey("col")) str << obj["col"] << obj["op"] << obj["val"] << " THEN " << obj["res"];
+	else str << obj["val"] << " THEN " << obj["res"];
+}
+String sql::caseQue(const sobj& obj) {
+	String que;
+	auto& cases = obj.dict();
+	que << " CASE";
+	if (cases.hasKey("case")) que << " " << cases["case"];
+	if (cases.hasKey("if")) addCaseQue(que, cases["if"]);
+	else if (cases.hasKey("ifs")) {
+		sforeach(cases["ifs"]) addCaseQue(que, E_);
+	}
+	if (cases.hasKey("else")) que << " ELSE " << cases["else"];
+	que << "END";
+	if (cases.hasKey("as")) que << " AS " << cases["as"];
+	return que;
+}
 String sql::orderQue(const Array<std::pair<String, ORDER>>& orders) {
 	if (orders.empty()) return "";
 	String oque;
 	sforeach(orders) oque << E_.first << " " << (E_.second == ASC ? "ASC" : "DESC") << ",";
+	oque.resize(oque.length() - 1);
+	return String(" ORDER BY ") << oque;
+}
+String sql::orderQue(const sobj& obj) {
+	auto& orders = obj.array();
+	if (orders.empty()) return "";
+	String oque;
+	sforeach(orders) oque << E_["name"] << " " << E_["order"] << ",";
 	oque.resize(oque.length() - 1);
 	return String(" ORDER BY ") << oque;
 }
@@ -72,6 +122,15 @@ String sql::limitQue(int l, int o) {
 	else if (-1 < o) return String(" OFFSET ") << o;
 	else return "";
 }
+String sql::limitQue(const sobj& obj) {
+	auto& lim = obj.dict();
+	if (lim.hasKey("limit")) {
+		if (lim.hasKey("offset")) return String(" LIMIT ") << lim["offset"] << "," << lim["limit"];
+		else return String(" LIMIT ") << lim["limit"];
+	}
+	else if (lim.hasKey("offset")) return String(" OFFSET ") << lim["offset"];
+	else return "";
+}
 String sql::listQue(const stringarray& list) {
 	String str;
 	sforeach(list) str += String::squot(sql::escaped(E_)) + ",";
@@ -79,15 +138,23 @@ String sql::listQue(const stringarray& list) {
 	return str;
 }
 String sql::listQue(const intarray& list) { return toString(list, ","); }
-String sql::listQue(const SArray* array) {
+String sql::listQue(const sobj& obj) {
 	String str;
-	for (auto it = array->begin(); it < array->end(); ++it) {
-		if (it->isNull()) str += "null,";
-		else if (it->isNum()) str += it->toString() + ",";
-		else str += String::squot(escaped(it->toString())) + ",";
+	auto& list = obj.array();
+	sforeach(list) {
+		if (E_.isNull()) str += "null,";
+		else if (E_.isNum()) str += E_.toString() + ",";
+		else str += String::squot(escaped(E_.toString())) + ",";
 	}
 	str.resize(str.length() - 1);
 	return str;
+}
+String sql::selectQue(const sobj& obj) {
+	String que;
+	auto& sel = obj.dict();
+
+
+	return que;
 }
 String sql::selectQuery(const char* name, const stringarray& cols, const char* condition,
 	const char* order, const char* limit, bool distinct) {
@@ -117,12 +184,12 @@ String sql::joinedSelectQuery(sql::JOIN_TYPE type,
 	return String(distinct ? "SELECT DISTINCT " : "SELECT ") << toString(cols, ",") << " FROM " <<
 		joinque << (condition ? condition : "") << (order ? order : "") << (limit ? limit : "");
 }
+
 SDBTable::SDBTable(const char* t, SDataBase* d) {
-	if (t) _table = sql::escaped(t);
+	if (t) _table = t;
 	if (d) _db = d;
 }
 SDBTable::~SDBTable() {}
-
 bool SDBTable::exist() {
 	if (_table.empty()) return false;
 	_db->begin();
@@ -131,11 +198,11 @@ bool SDBTable::exist() {
 	_db->commit();
 	return row.begin()->value == 1;
 }
-void SDBTable::create(const Array<scolumn>& columns) {
+void SDBTable::create(const SArray& columns) {
 	String colque = "(";
 	if (columns.empty()) colque += ")";
 	else {
-		sforeach(columns) colque += sql::escaped(E_->name()) + " " + sql::colTypeName(E_->type()) + ",";
+		sforeach(columns) colque += sql::colInfo(E_) + ",";
 		colque.last() = ')';
 	}
 	_db->begin();
@@ -148,39 +215,83 @@ void SDBTable::rename(const char* name) {
 	_db->commit();
 	_table = name;
 }
+void SDBTable::copy(const char* src, const stringarray& cols, const SDictionary& conditions) {
+	auto src_tbl = _db->table(src);
+	auto src_cols = src_tbl.columnInfo();
+	SArray newcol;
+	if (cols[0] == "*") newcol = src_cols;
+	else {
+		sforeach(src_cols) {
+			if (cols.contain(E_["name"])) newcol.add(E_);
+		}
+	}
+	_db->begin();
+	_db->createTable(_table, newcol);
+	_db->sqlexec(String("INSERT INTO ") << _table << "(" << sql::colNames(newcol) << ") SELECT " << sql::colNames(newcol) << " FROM " << src << sql::condQue(conditions));
+	_db->commit();
+}
 void SDBTable::remove() {
 	_db->begin();
 	_db->sqlexec(String("DROP TABLE ") << _table);
 	_db->commit();
 }
-sindex SDBTable::columnInfo() {
-	sindex info;
+stringarray SDBTable::columns() {
+	stringarray cols;
 	_db->begin();
 	_db->sqlprepare("PRAGMA table_info('" + _table + "')");
-	auto rows = _db->getRows();
-	sforeach(rows) info[E_["name"]] = SColumn::colTypeIndex(E_["type"]);
+	auto& rows = _db->getRows();
+	sforeach(rows) cols.add(E_["name"]);
 	_db->commit();
-	return info;
+	return cols;
+}
+SArray& SDBTable::columnInfo() {
+	_db->begin();
+	_db->sqlprepare("PRAGMA table_info('" + _table + "')");
+	auto& rows = _db->getRows();
+	_db->commit();
+	return rows;
 }
 void SDBTable::addColumn(int type, const char* name) {
 	_db->begin();
 	_db->sqlexec(String("ALTER TABLE ") << _table << " ADD COLUMN " << name << " " << sql::colTypeName(type));
 	_db->commit();
 }
-
-void SDBTable::addRecord(const SArray& row) {
-	String inque = "(";
-	if (row.empty()) inque += ")";
-	else {
-		sforeach(row) {
-			if (E_.isNull()) inque += "null,";
-			else if (E_.isNum()) inque += E_ + ",";
-			else inque += String::squot(sql::escaped(E_)) + ",";
-		}
-		inque.last() = ')';
+void SDBTable::addColumn(const SDictionary& dict) {
+	_db->begin();
+	_db->sqlexec(String("ALTER TABLE ") << _table << " ADD COLUMN " << dict["name"] << " " << dict["type"]);
+	_db->commit();
+}
+void SDBTable::addColumn(const sobj& obj) {
+	if (obj.isDict()) addColumn(obj.dict());
+	else if (obj.isColumn()) addColumn(obj.type(), obj.name());
+}
+void SDBTable::removeColumn(const char* name) {
+	rename(_table + "_tmp");
+	auto &cols = columnInfo();
+	SArray newcol;
+	sforeach(cols) {
+		if (E_["name"] != name) newcol.add(E_);
 	}
 	_db->begin();
-	_db->sqlexec(String("INSERT INTO ") << _table << " VALUES" << inque);
+	_db->createTable(_table, newcol);
+	_db->sqlexec(String("INSERT INTO ") << _table << "(" << sql::colNames(newcol) << ") SELECT " << sql::colNames(newcol) << " FROM " << _table << "_tmp");
+	_db->removeTable(_table + "_tmp");
+	_db->release();
+	_db->commit();
+}
+void SDBTable::addRecord(const SArray& row) {
+	String que = "(";
+	if (row.empty()) que += ")";
+	else {
+		sforeach(row) {
+			if (E_.isNull()) que += "null,";
+			else if (E_.isNum()) que += E_ + ",";
+			else que += String::squot(sql::escaped(E_)) + ",";
+		}
+		que.last() = ')';
+	}
+	_db->begin();
+	_db->sqlexec(String("INSERT INTO ") << _table << " VALUES" << que);
 	_db->commit();
 }
 void SDBTable::addRecord(const SDictionary& row) {
@@ -199,6 +310,10 @@ void SDBTable::addRecord(const SDictionary& row) {
 	_db->begin();
 	_db->sqlexec(String("INSERT INTO ") << _table << colque << valque);
 	_db->commit();
+}
+void SDBTable::addRecord(const sobj& obj) {
+	if (obj.isArray()) addRecord(obj.array());
+	else if (obj.isDict()) addRecord(obj.dict());
 }
 void SDBTable::addRecordPrepare(size_t num) {
 	String valque = "(";
@@ -223,43 +338,44 @@ void SDBTable::removeRecord(const char* condition) {
 	_db->sqlexec(String("DELETE FROM ") << _table << (condition ? condition : ""));
 	_db->commit();
 }
-void SDBTable::removeRecordAt(size_t idx) {
+void SDBTable::removeRecord(const SDictionary& condition) { removeRecord(sql::condQue(condition).cstr()); }
+void SDBTable::removeRecordAt(size_t idx, const char* key) {
 	_db->begin();
-	_db->sqlexec(String("DELETE FROM ") << _table << String("WHERE ID=") << idx);
+	_db->sqlexec(String("DELETE FROM ") << _table << "WHERE "<< key << "=" << idx);
 	_db->commit();
 }
 void SDBTable::setRecord(const SDictionary& row, const char* condition) {
-	String upque;
+	String que;
 	sforeach(row) {
-		upque += E_.key + "=";
-		if (E_.value.isNull()) upque += "NULL,";
-		else if (E_.value.isNum()) upque += E_.value + ",";
-		else upque += String::squot(sql:: escaped(E_.value)) + ",";
+		que += E_.key + "=";
+		if (E_.value.isNull()) que += "NULL,";
+		else if (E_.value.isNum()) que += E_.value + ",";
+		else que += String::squot(sql:: escaped(E_.value)) + ",";
 	}
-	if (!upque.empty()) upque.resize(upque.length() - 1);
+	if (!que.empty()) que.resize(que.length() - 1);
 	_db->begin();
-	_db->sqlexec(String("UPDATE ") << _table << " SET " << upque << (condition ? condition : ""));
+	_db->sqlexec(String("UPDATE ") << _table << " SET " << que << (condition ? condition : ""));
 	_db->commit();
 }
-void SDBTable::setRecordAt(size_t idx, const SDictionary& row) {
-	String upque;
+void SDBTable::setRecordAt(size_t idx, const SDictionary& row, const char* key) {
+	String que;
 	sforeach(row) {
-		upque += E_.key + "=";
-		if (E_.value.isNull()) upque += "NULL,";
-		else if (E_.value.isNum()) upque += E_.value + ",";
-		else upque += String::squot(sql::escaped(E_.value)) + ",";
+		que += E_.key + "=";
+		if (E_.value.isNull()) que += "NULL,";
+		else if (E_.value.isNum()) que += E_.value + ",";
+		else que += String::squot(sql::escaped(E_.value)) + ",";
 	}
-	if (!upque.empty()) upque.resize(upque.length() - 1);
+	if (!que.empty()) que.resize(que.length() - 1);
 	_db->begin();
-	_db->sqlexec(String("UPDATE ") << _table << " SET " << upque << String("WHERE ID=") << idx);
+	_db->sqlexec(String("UPDATE ") << _table << " SET " << que << "WHERE "<< key << "=" << idx);
 	_db->commit();
 }
 void SDBTable::setRecordPrepare(const stringarray& cols, const char* condition) {
-	String upque;
-	sforeach(cols) upque += E_ + "=?,";
-	upque.resize(upque.length() - 1);
+	String que;
+	sforeach(cols) que += E_ + "=?,";
+	que.resize(que.length() - 1);
 	_db->begin();
-	_db->sqlprepare(String("UPDATE ") << _table << " SET " << upque << (condition ? condition : ""));
+	_db->sqlprepare(String("UPDATE ") << _table << " SET " << que << (condition ? condition : ""));
 }
 int SDBTable::count(const char* condition) {
 	_db->begin();
@@ -275,12 +391,6 @@ SArray& SDBTable::countGroup(const stringarray& cols) {
 	_db->commit();
 	return rows;
 }
-void SDBTable::initTable(STable* table) {
-	if (!table) table = &_db->_result;
-	table->clear();
-	auto info = columnInfo();
-	sforeach(info) table->addColumn(scolumn(E_.value, E_.key));
-}
 void SDBTable::getRecordPrepare(const stringarray& cols,
 	const char* condition,
 	const char* order,
@@ -294,7 +404,7 @@ STable& SDBTable::getTable(const stringarray& cols, const char* condition,
 	STable* result) {
 	if (!result) {
 		result = &_db->_result;
-		initTable(result);
+		result->clear();
 	}
 	_db->begin();
 	_db->sqlprepare(sql::selectQuery(_table, cols, condition, order, limit, distinct));
@@ -306,7 +416,7 @@ STable& SDBTable::getTable(const stringarray& cols, const char* condition,
 STable& SDBTable::getTable(const SDictionary& info, STable* result) {
 	if (!result) {
 		result = &_db->_result;
-		initTable(result);
+		result->clear();
 	}
 	_db->begin();
 	_db->sqlprepare(sql::selectQuery(_table,
@@ -341,7 +451,7 @@ SDictionary& SDBTable::getRecord(const SDictionary& info,
 	_db->commit();
 	return dict;
 }
-SDictionary& SDBTable::getRecordAt(size_t idx, const stringarray& cols, SDictionary* result) {
+SDictionary& SDBTable::getRecordAt(size_t idx, const stringarray& cols, const char* key, SDictionary* result) {
 	_db->begin();
 	_db->sqlprepare(sql::selectQuery(_table, cols, String(" WHERE ID=") << idx, nullptr, sql::limitQue(1)));
 	auto& dict = _db->getRow(result);
@@ -396,7 +506,7 @@ STable& SDBTable::getJoinedTable(sql::JOIN_TYPE type,
 	STable* result) {
 	if (!result) {
 		result = &_db->_result;
-		initTable(result);
+		result->clear();
 	}
 	_db->begin();
 	_db->sqlprepare(sql::joinedSelectQuery(type, _table, sql::escaped(table2), join, cols, condition, order, limit, distinct));
@@ -407,7 +517,7 @@ STable& SDBTable::getJoinedTable(sql::JOIN_TYPE type,
 STable& SDBTable::getJoinedTable(const SDictionary& info, STable* result) {
 	if (!result) {
 		result = &_db->_result;
-		initTable(result);
+		result->clear();
 	}
 	sql::JOIN_TYPE type;
 	if (info["mode"] == "inner") type = sql::INNER_JOIN;
@@ -517,58 +627,113 @@ SDataBase::~SDataBase() {
 	if (isTransacting()) commit();
 	if (isOpened()) close();
 }
-
 void SDataBase::open(const char* path) {
 	if (_open) close();
 	_res = sqlite3_open_v2(path, &_db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, 0);
 	if (_res != SQLITE_OK) throw SDBException(ERR_INFO, sio::FILE_OPEN_ERROR, path);
-	_file = path;
+	_path = path;
 	_open = true;
 }
-
 void SDataBase::close() {
 	if (_stmt) sqlite3_finalize(_stmt);
 	if (_db) sqlite3_close(_db);
 	_open = false;
 }
-bool SDataBase::isOpened() { return _open; }
-bool SDataBase::isTransacting() { return _transaction; }
-const char* SDataBase::path() const { return _file.path(); }
-
+bool SDataBase::isOpened() const { return _open; }
+bool SDataBase::isTransacting() const { return _transaction; }
+const char* SDataBase::path() const { return _path; }
 int SDataBase::tableCount() {
 	sqlprepare("SELECT COUNT(*) FROM sqlite_master WHERE type=\'table\'");
 	auto& row = getRow();
 	return row.begin()->value;
 }
-stringarray SDataBase::tables() {
-	stringarray list;
+sobj SDataBase::tables() {
+	sarray tbls;
 	auto& array = table("sqlite_master").getRecords({ "tbl_name" }, sql::condition("type=\'table\'"));
 	if (!array.empty()) {
-		sforeach(array) list.add(E_["tbl_name"]);
+		sforeach(array) tbls.add(E_["tbl_name"]);
 	}
-	return list;
+	return tbls;
 }
-void SDataBase::createTable(const STable* tbl) {
-	if (tbl->name().empty()) return;
-	String colque = "(";
-	if (tbl->columns().empty()) colque += ")";
-	else {
-		sforeach(tbl->columns()) colque += sql::escaped(E_.name()) + " " + sql::colTypeName(E_.type()) + ",";
-		colque.last() = ')';
-	}
-	sqlexec(String("CREATE TABLE IF NOT EXISTS ") << tbl->name() << colque);
-	if (tbl->rowCount()) {
-		begin();
-		auto sqltbl = table(tbl->name());
-		sqltbl.addRecordPrepare(tbl->columnCount());
-		sforeach(tbl->rows()) {
-			bind(E_);
-			step();
-			reset();
+void SDataBase::createTable(const char* name, const SArray& columns, const SArray& rows) {
+	String que = "CREATE TABLE IF NOT EXISTS " + String(name ? name : "table");
+	if (columns.size()) {
+		que << "(" << sql::colInfos(columns) << ")";
+		sqlexec(que);
+		if (rows.size()) {
+			auto sqltbl = table(name ? name : "table");
+			sqltbl.addRecordPrepare(columns.size());
+			sforeach(rows) {
+				bindRow(E_);
+				step();
+				reset();
+			}
+			commit();
 		}
-		commit();
+	}
+	else {
+		que << "()";
+		sqlexec(que);
+	}
+	
+	String tblname = name == nullptr ? "table" : name, colque = "(";
+	if (!columns.empty()) {
+		sforeach(columns) {
+			if (E_.isColumn()) colque += sql::escaped(E_.name()) + " " + sql::colTypeName(E_.type()) + ",";
+			else if (E_.isDict()) colque += sql::escaped(E_["name"]) + " " + E_["type"] + ",";
+		}
+	}
+	sqlexec(String("CREATE TABLE IF NOT EXISTS ") << tblname << colque);
+}
+inline void SDataBase::_createTable(const SDictionary& dic) {
+	sint colnum = 0;
+	String que = "CREATE TABLE IF NOT EXISTS " + (dic.hasKey("name") ? dic["name"] : "table");
+	if (dic.hasKey("columns") && (colnum = dic["columns"].size())) {
+		que << "(" << sql::colInfos(dic["columns"].array()) << ")";
+		sqlexec(que);
+		if (dic.hasKey("rows") && dic["rows"].size()) {
+			auto sqltbl = table(dic.hasKey("name") ? dic["name"] : "table");
+			sqltbl.addRecordPrepare(colnum);
+			sforeach(dic["rows"]) {
+				bindRow(E_);
+				step();
+				reset();
+			}
+			commit();
+		}
+	}
+	else {
+		que << "()";
+		sqlexec(que);
 	}
 }
+inline void SDataBase::_createTable(const STable& tbl) {
+	String que = "CREATE TABLE IF NOT EXISTS " + tbl.name();
+	if (tbl.columnCount()) {
+		que << "(" << sql::colInfos(tbl.columns()) << ")";
+		sqlexec(que);
+		if (tbl.rowCount()) {
+			auto sqltbl = table(tbl.name());
+			sqltbl.addRecordPrepare(tbl.columnCount());
+			sforeach(tbl.rows()) {
+				bindRow(E_);
+				step();
+				reset();
+			}
+			commit();
+		}
+	}
+	else {
+		que << "()";
+		sqlexec(que);
+	}
+}
+void SDataBase::createTable(const sobj& obj) {
+	if (obj.isDict()) createTable(obj.dict());
+	else if (obj.isTable()) createTable(obj.table());
+	else sqlexec(obj);
+}
+void SDataBase::removeTable(const char* name) { table(name).remove(); }
 void SDataBase::clearTables() {
 	if (tableCount()) {
 		auto list = tables();
@@ -576,14 +741,12 @@ void SDataBase::clearTables() {
 		release();
 	}
 }
-
 SDBTable SDataBase::table(const char* name) {
 	return SDBTable(name, this);
 }
 SDBTable SDataBase::operator[](const char* name) {
 	return SDBTable(name, this);
 }
-
 void SDataBase::bindi(sint val, int i) {
 	_res = sqlite3_bind_int(_stmt, i, val);
 	if (_res != SQLITE_OK)
@@ -636,12 +799,11 @@ void SDataBase::bind(const sobj& obj, int i) {
 	else if (obj.isDat()) bindb(obj.data().ptr(), obj.size(), i);
 	else bindtt(obj->toString(), i);
 }
-
-void SDataBase::bind(const SArray& array) {
+void SDataBase::bindRow(const sobj& obj) {
 	int i = 1;
+	auto& array = obj.array();
 	sforeach(array) { bind(E_, i); ++i; }
 }
-
 void SDataBase::sqlexec(const char* sql) {
 	_res = sqlite3_exec(_db, sql, NULL, NULL, &_err);
 	if (_res != SQLITE_OK) {
@@ -660,7 +822,6 @@ void SDataBase::sqlprepare(const char* sql) {
 	if (_res != SQLITE_OK)
 		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_prepare_v2", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
 }
-
 void SDataBase::reset() {
 	if (_stmt) _res = sqlite3_reset(_stmt);
 	if (_res != SQLITE_OK)
@@ -679,7 +840,6 @@ void SDataBase::release() {
 	sqlexec("VACUUM");
 	commit();
 }
-
 void SDataBase::step() {
 	if ((_res = sqlite3_step(_stmt)) != SQLITE_DONE)
 		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_step", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
@@ -707,8 +867,8 @@ STable& SDataBase::getResult(STable* table) {
 				break;
 			case SQLITE_BLOB:
 			{
-				String tmp(sqlite3_column_bytes(_stmt, i), '\0');
-				memcpy(&tmp[0], sqlite3_column_blob(_stmt, i), tmp.length());
+				SData tmp(sqlite3_column_bytes(_stmt, i), '\0');
+				memcpy(&tmp[0], sqlite3_column_blob(_stmt, i), tmp.size());
 				table->setValue(r, c, tmp);
 				break;
 			}
@@ -745,8 +905,8 @@ SDictionary& SDataBase::getRow(SDictionary* dict) {
 			case SQLITE_BLOB:
 			{
 				int size = sqlite3_column_bytes(_stmt, i);
-				String tmp(size, '\0');
-				memcpy(&tmp[0], sqlite3_column_blob(_stmt, i), tmp.length());
+				SData tmp(size, '\0');
+				memcpy(&tmp[0], sqlite3_column_blob(_stmt, i), tmp.size());
 				dict->set(name, tmp);
 				break;
 			}
@@ -771,4 +931,11 @@ SArray& SDataBase::getRows(SArray* array) {
 	if (_res != SQLITE_DONE)
 		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_step", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
 	return *array;
+}
+String SDataBase::getClass() const { return "database"; }
+String SDataBase::toString() const { return String("db://") + path(); }
+SObject* SDataBase::clone() const { 
+	SDataBase* db = new SDataBase();
+	if (isOpened()) db->open(path());
+	return db;
 }

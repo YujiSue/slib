@@ -39,15 +39,16 @@ namespace slib {
         public:
             SBrush();
             SBrush(sushort t, const SColor &col = SColor::WHITE);
-            SBrush(sobj obj);
+            SBrush(const SColor& col);
             SBrush(const SBrush &brush);
-            ~SBrush();
+			SBrush(const sobj& obj);
+			~SBrush();
             
-            SBrush &operator=(const SColor &col);
             SBrush &operator=(const SBrush &brush);
             
             bool isGradient() const;
-			const SGradient &gradient() const;
+			SGradient& gradient();
+			const SGradient& gradient() const;
         };
         
         class SOBJ_DLL SFilter {

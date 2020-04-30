@@ -32,6 +32,9 @@ namespace slib {
         _num _value;
 
     public:
+		static String toBinary(subyte b);
+		static String toOct(subyte b);
+		static String toHex(subyte b);
         static SNumber toNumber(const char *s);
         
     public:
@@ -223,11 +226,6 @@ namespace slib {
         //Round
         String precised(size_t s, smath::ROUND round = DEFAULT) const;
         
-        //Output
-        String toBinary() const;
-        String toOct() const;
-        String toHex() const;
-        
         //override
         String getClass() const;
         String toString() const;
@@ -333,8 +331,8 @@ namespace slib {
 #endif
 	extern inline SNumber operator+(float& num1, const SNumber& num2) { return SNumber(num1) += num2; };
 	extern inline SNumber operator+(double& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(sfrac& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(scomp& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	//extern inline SNumber operator+(sfrac& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	//extern inline SNumber operator+(scomp& num1, const SNumber& num2) { return SNumber(num1) += num2; };
 	extern inline SNumber operator-(sbyte& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator-(subyte& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator-(sshort& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
@@ -357,8 +355,8 @@ namespace slib {
 #endif
 	extern inline SNumber operator-(float& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator-(double& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(sfrac& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(scomp& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	//extern inline SNumber operator-(sfrac& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	//extern inline SNumber operator-(scomp& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator*(sbyte& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(subyte& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(sshort& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
@@ -381,8 +379,8 @@ namespace slib {
 #endif
 	extern inline SNumber operator*(float& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(double& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
-	extern inline SNumber operator*(sfrac& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
-	extern inline SNumber operator*(scomp& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
+	//extern inline SNumber operator*(sfrac& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
+	//extern inline SNumber operator*(scomp& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator/(sbyte& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(subyte& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(sshort& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
@@ -405,8 +403,8 @@ namespace slib {
 #endif
 	extern inline SNumber operator/(float& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(double& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
-	extern inline SNumber operator/(sfrac& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
-	extern inline SNumber operator/(scomp& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
+	//extern inline SNumber operator/(sfrac& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
+	//extern inline SNumber operator/(scomp& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator%(sbyte& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(subyte& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(sshort& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
@@ -429,8 +427,8 @@ namespace slib {
 #endif
 	extern inline SNumber operator%(float& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(double& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
-	extern inline SNumber operator%(sfrac& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
-	extern inline SNumber operator%(scomp& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
+	//extern inline SNumber operator%(sfrac& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
+	//extern inline SNumber operator%(scomp& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 
 
 	extern String operator+(const char *s, const SNumber &num);

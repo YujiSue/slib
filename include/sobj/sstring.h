@@ -163,7 +163,7 @@ namespace slib {
         SString operator+(const String &s) const;
         SString operator+(const SString &s) const;
         SString operator+(const SNumber &n) const;
-	SString operator+(const sio::SFile& n);
+		SString operator+(const sio::SFile& n);
         SString operator+(const sobj &obj) const;
         
         SString &operator<<(bool b);
@@ -197,7 +197,7 @@ namespace slib {
         SString &operator<<(const String &s);
         SString &operator<<(const SString &s);
         SString &operator<<(const SNumber &n);
-	SString& operator<<(const sio::SFile& n);
+		SString& operator<<(const sio::SFile& n);
         SString &operator<<(const sobj &obj);
         
         SString &operator*=(const int & num);

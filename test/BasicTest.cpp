@@ -120,6 +120,10 @@ void test::ArrayTest() {
 		std::cout << ia1[20] << std::endl;
 	}
 	catch (SException ex) { ex.print(); }
+	stringarray sa1 = { u8"色は", u8"匂へど", u8"散りぬるを" };
+	sa1.erase(u8"匂へど");
+	std::cout << sa1 << std::endl; 
+
 
 	slib::BiArray<sint> ba1 = { 1, 2, 3, 4, 5 };
 	slib::BiArray<sint> ba2;
@@ -308,18 +312,13 @@ void test::CharTest() {
 	std::cout << String(u8"Size of utf-8 char. あ = ") << (int)Char::u8size(u8"あ") << std::endl;
 	std::cout << String(u8"'あ' is wide?") << (Char::isWide(u8"あ")?"true":"false") << std::endl;
 	std::cout << String(u8"'あ' is narrow?") << (Char::isNarrow(u8"あ")?"true":"false") << std::endl;
-	std::cout << String(u8"'-123.4' is numeric?") << (Char::isNumeric(u8"-123.4") ? "true" : "false") << std::endl;
+	std::cout << String(u8"'５' is numeric?") << (Char::isNumeric(u8"５") ? "true" : "false") << std::endl;
 	
-	
-	/*
-	static bool isNumChar(char c);
-	static bool isWideNum(const char* s);
-	static bool isWSChar(char c);
-	static sbyte toNum(char c);
-	static sbyte toNum(const char* s);
-	static String wideChar(char c);
-	static char narrowChar(const char* s);
-	*/
+	String s1 = u8"爾天神之命以布斗麻邇爾ト相而詔之";
+	auto c = s1.charAt(3);
+	std::cout << c << std::endl;
+	std::cout << c+3 << std::endl;
+	std::cout << c.index() << std::endl;
 }
 
 void test::StringTest() {

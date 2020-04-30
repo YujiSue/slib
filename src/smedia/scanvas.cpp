@@ -8,10 +8,10 @@ using namespace slib::smedia;
 SCanvas::SCanvas() : SFigure() {
     _type = sshape::GROUP;
 }
-SCanvas::SCanvas(size_t w, size_t h, const char *name, SColor col) : SFigure() {
+SCanvas::SCanvas(size_t w, size_t h, const char *name, const SColor &col) : SFigure() {
     _type = sshape::GROUP;
     _id = name;
-    _paint = SPaint({ kv("brush", V({ kv("type", sstyle::FILL_UNIFORM), kv("color", col.intColor()) }))});
+    _paint = SPaint({ kv("brush", V({ kv("type", sstyle::FILL_UNIFORM), kv("color", col) }))});
     _boundary.width = w; _boundary.height = h;
 }
 SCanvas::SCanvas(const SCanvas &canvas) {

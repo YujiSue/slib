@@ -5,10 +5,8 @@
 #include "sio/sio.h"
 
 namespace slib {
-    
     namespace sio {
 		#define SDirectory(X) SFile((X), DIRECTORY)
-
         class SOBJ_DLL SFile : public SObject {
 		public:
 			enum SEEK_ORI {
@@ -48,6 +46,7 @@ namespace slib {
             static SFile home();
             static SFile createFile(const char *path);
             static SFile makeDir(const char *path);
+			static String absolute(const char* path);
             
             //variable access
             String path() const;

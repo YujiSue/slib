@@ -4,21 +4,14 @@
 
 #define MEM_TEST
 #define RANGE_TEST
+#define AREA_TEST
 #define PTR_TEST
 #define ARRAY_TEST
 #define LIST_TEST
 #define MAP_TEST
 #define CHAR_TEST
 #define STRING_TEST
-/*
-
-
-
-
-#define MAP_TEST
 #define TIME_TEST
-*/
-
 
 #define SOBJECT_TEST
 /*
@@ -31,14 +24,16 @@
 #define TEXT_TEST
 #define FUNC_TEST
 #define IO_TEST
-#define TABLE_TEST
 
 */
+#define TABLE_TEST
+#define DB_TEST
+
 #define THREAD_TEST
 #define PROCESS_TEST
 
 //#define APP_TEST 1
-#define CV_TEST
+//#define CV_TEST
 
 
 namespace test {
@@ -73,9 +68,11 @@ namespace test {
 	extern void SFuncTest();
 
 	extern void STableTest();
+	
 
 }
 namespace test {
+	extern void SDBTest();
 	extern void ThreadTest();
 }
 

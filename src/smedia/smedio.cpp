@@ -49,7 +49,7 @@ void SImageIO::importTIFF(const char *path, SImage *img) {
     TIFFGetField(tiff, TIFFTAG_BITSPERSAMPLE, &bit);
     TIFFGetField(tiff, TIFFTAG_SAMPLESPERPIXEL, &channel);
     auto depth = bit/8;
-	img->_type = smedia::imageType(depth, channel, RGB_SPACE);
+	img->_type = smedia::colorType(depth, channel, RGB_SPACE);
 	img->resize(img->_width, img->_height);
     tmsize_t size = TIFFScanlineSize(tiff);
     auto rowptr = img->ptr(0, 0);
