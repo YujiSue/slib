@@ -89,6 +89,8 @@ SColor SPixel::color() const {
 		return SColor(RGB24, _data);
 	case RGBA:
 		return SColor(RGBA, _data);
+	default:
+		return SColor(*_data);
 	}
 }
 void SPixel::swap(SPixel px) {

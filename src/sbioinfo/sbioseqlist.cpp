@@ -6,15 +6,13 @@ using namespace slib::sbio;
 constexpr const char *SLIB_SBIOSEQ_MAGIC = "SLIB";
 
 SBSeqList::SBSeqList() : _loaded(false), Array<sbseq>() {}
-SBSeqList::SBSeqList(const char *s, bool l) : SBSeqList() { if (l) load(s); else index(s); }
+SBSeqList::SBSeqList(const char *s, bool l) : SBSeqList() { if (l) load(s); else makeIndex(s); }
 SBSeqList::~SBSeqList() {}
 bool SBSeqList::isLoaded() const { return _loaded; }
-sindex& SBSeqList::nameIdx() { return _index; }
-const sindex &SBSeqList::nameIdx() const { return _index; }
 intarray& SBSeqList::lengthList() { return _length; }
 const intarray& SBSeqList::lengthList() const { return _length; }
 size_t SBSeqList::seqIdx(const char *name) {
-    if (_index.hasKey(name)) return _index[name];
+    if (index.hasKey(name)) return index[name];
     return NOT_FOUND;
 }
 suinteger SBSeqList::total() const {
@@ -22,8 +20,6 @@ suinteger SBSeqList::total() const {
     sforeach(*this) total += E_->length();
     return total;
 }
-sdict& SBSeqList::attribute() { return _attribute; }
-const sdict& SBSeqList::attribute() const { return _attribute; }
 void SBSeqList::load(const char *path) {
     char magic[4];
     sint tmp;
@@ -35,7 +31,7 @@ void SBSeqList::load(const char *path) {
 		file.readBytes(magic, 4);
 		if (memcmp(magic, SLIB_SBIOSEQ_MAGIC, 4)) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, magic, "SBIO_SEQ");
 		//Read header
-		file.readSObject(_attribute);
+		file.readSObject(attribute);
 		//Read sequence count
 		file.readInt(tmp);
         if (tmp < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(tmp).c_str(), ">0");
@@ -46,33 +42,50 @@ void SBSeqList::load(const char *path) {
             if (!scored && type&SCORED) scored = true;
             //Sequence init
             at(i) = sbseq(type);
+			auto& seq = at(i);
             //Read sequence length
 			file.readInt(tmp);
-            at(i)->setLength(tmp);
+			seq->setLength(tmp);
 			_length.add(tmp);
             //Read sequence name
 			file.readInt(tmp);
-            at(i)->_name.resize(tmp);
-			file.readChars(&at(i)->_name[0], tmp);
-            _index.set(at(i)->name(), i);
+			seq->name.resize(tmp);
+			file.readChars(&seq->name[0], tmp);
+            index.set(seq->name, i);
             if (type&MASKED) {
                 //Read sequence mask
 				file.readInt(tmp);
-                at(i)->_mask.resize(tmp);
-                sforeachi_(j, at(i)->mask()) {
+				seq->_mask.resize(tmp);
+                sforeachi_(j, seq->mask()) {
 					file.readInt(tmp);
-                    at(i)->_mask[j].begin = tmp;
+					seq->_mask[j].begin = tmp;
 					file.readInt(tmp);
-                    at(i)->_mask[j].end = tmp;
+					seq->_mask[j].end = tmp;
                 }
             }
 			//Read sequence attribute
 			if (type & ATTRIBUTED) 
-				file.readSObject(at(i)->_attribute);
+				file.readSObject(seq->attribute);
             if (type&ANNOTATED) {
                 //Read sequence annotation
-                /*
-				 */
+				file.readInt(tmp);
+				seq->annotation.reserve(tmp);
+				sforeach(seq->annotation) {
+					sbseq_annotation annot;
+					file.readUInt(annot.type);
+					suint ui;
+					file.readUInt(ui);
+					if (ui & 0x80000000) {
+						annot.dir = true; ui -= 0x80000000;
+					}
+					annot.pos.resize(ui);
+					sforeach_(pit, annot.pos) {
+						file.readInt(pit->begin);
+						file.readInt(pit->end);
+					}
+					file.readSObject(annot.attribute);
+					seq->annotation.add(annot);
+				}
             }
         }
         //Read sequence bytes
@@ -97,19 +110,19 @@ void SBSeqList::save(const char *path) {
 	sfile src;
 	sarray off;
 	if (!isLoaded()) {
-		src = _attribute["_file"];
-		srctype = _attribute["_file_type"];
-		off = _attribute["_offset"];
+		src = attribute["_file"];
+		srctype = attribute["_file_type"];
+		off = attribute["_offset"];
 	}
-	_attribute.remove("_offset");
-	_attribute.remove("_file");
-	_attribute.remove("_file_type");
+	attribute.remove("_offset");
+	attribute.remove("_file");
+	attribute.remove("_file_type");
     try {
 		sio::SFile file(path, sio::CREATE);
 		 //Write magic
 		file.writeBytes(SLIB_SBIOSEQ_MAGIC, 4);
 		//Write header
-		file.writeSObject(_attribute);
+		file.writeSObject(attribute);
         //Write sequence count
 		file.writeInt((sint)size());
 		file.flush();
@@ -120,8 +133,8 @@ void SBSeqList::save(const char *path) {
 			//Write sequence length
 			file.writeInt(seq->length());
             //Write sequence name
-			file.writeInt((sint)seq->name().length());
-			file.writeBytes(seq->name().cstr(), seq->name().length());
+			file.writeInt((sint)seq->name.length());
+			file.writeBytes(seq->name.cstr(), seq->name.length());
 			file.flush();
 			if (seq->isMasked()) {
                 //Write sequence mask
@@ -133,12 +146,22 @@ void SBSeqList::save(const char *path) {
 				file.flush();
             }
 			if (seq->isAttributed())
-				file.writeSObject(at(i)->_attribute);
+				file.writeSObject(at(i)->attribute);
 			file.flush();
             if (seq->isAnnotated()) {
                 //Write sequence annotation
-                /*
-				 */
+				file.writeInt(seq->annotation.size());
+				sforeach(seq->annotation) {
+					file.writeUInt(E_->type);
+					suint ui = E_->pos.size();
+					if (E_->dir) ui |= 0x80000000;
+					file.writeUInt(ui);
+					sforeach_(pit, E_->pos) {
+						file.writeInt(pit->begin);
+						file.writeInt(pit->end);
+					}
+					file.writeSObject(E_->attribute);
+				}
 				file.flush();
             }
         }
@@ -197,26 +220,26 @@ void SBSeqList::save(const char *path) {
 		ie.print();
 	}
 }
-void SBSeqList::index(const char *path) {
+void SBSeqList::makeIndex(const char *path) {
     char magic[4];
     sint tmp;
     sushort type;
     try {
-		_attribute["_file"] = sio::SFile(path, sio::READ);
-		_attribute["_file_type"] = "slib";
-		auto& file = _attribute["_file"].file();
+		attribute["_file"] = sio::SFile(path, sio::READ);
+		attribute["_file_type"] = "slib";
+		auto& file = attribute["_file"].file();
         //Read magic
 		file.readBytes(magic, 4);
         if (memcmp(magic, SLIB_SBIOSEQ_MAGIC, 4)) {
             std::cout<<magic<<std::endl;
         }
 		//Read header
-		file.readSObject(_attribute);
+		file.readSObject(attribute);
         //Read sequence count
 		file.readInt(tmp);
         if (tmp < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(tmp).c_str(), ">0");
         resize(tmp);
-		_attribute["_offset"] = SArray(tmp);
+		attribute["_offset"] = SArray(tmp);
         
         sforin(i, 0, size()) {
             auto &seq = Array<sbseq>::at(i);
@@ -230,9 +253,9 @@ void SBSeqList::index(const char *path) {
 			_length.add(tmp);
             //Read sequence name
 			file.readInt(tmp);
-            seq->_name.resize(tmp);
-			file.readBytes(&seq->_name[0], tmp);
-            _index.set(seq->name(), i);
+            seq->name.resize(tmp);
+			file.readBytes(&seq->name[0], tmp);
+            index.set(seq->name, i);
             if (type&MASKED) {
                 //Read sequence mask
 				file.readInt(tmp);
@@ -246,7 +269,7 @@ void SBSeqList::index(const char *path) {
             }
 			//Read sequence attribute
 			if (type & ATTRIBUTED) 
-				file.readSObject(at(i)->_attribute);
+				file.readSObject(at(i)->attribute);
             if (type&ANNOTATED) {
                 //Read sequence annotation
 				/*
@@ -255,7 +278,7 @@ void SBSeqList::index(const char *path) {
         }
         suinteger off = file.offset();
         sforin(i, 0, size()) {
-			_attribute["_offset"][i] = off;
+			attribute["_offset"][i] = off;
             auto &seq = Array<sbseq>::at(i);
             off += (seq->length()-1)/(0<seq->compress()?seq->compress():1)+1;
         }
@@ -264,18 +287,16 @@ void SBSeqList::index(const char *path) {
 		ie.print();
     }
 }
-void SBSeqList::addAttribute(const char* key, sobj val) { _attribute.set(key, val); }
-void SBSeqList::removeAttribute(const char* key) { _attribute.remove(key); }
 SBioSeq SBSeqList::getSeq(sushort type, const sbpos &pos) {
-    return SBioSeq(type, at(pos.idx)->name()+"_sub",
+    return SBioSeq(type, at(pos.idx)->name+"_sub",
                    at(pos.idx)->raw(pos.begin, pos.length()+1, pos.dir));
 }
 SBioSeq SBSeqList::getSeq(sushort type, int idx, size_t pos, size_t len, bool dir) {
-    return SBioSeq(type, at(idx)->name()+"_sub", at(idx)->raw(pos, len, dir));
+    return SBioSeq(type, at(idx)->name+"_sub", at(idx)->raw(pos, len, dir));
 }
 void SBSeqList::clearAll() {
-	_index.clear();
 	_length.clear();
-	_attribute.clear();
+	index.clear();
+	attribute.clear();
 	Array<sbseq>::clear();
 }

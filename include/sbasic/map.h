@@ -73,6 +73,16 @@ namespace slib {
         bool operator < (const Map &map) const;
         bool operator==(const Map &map) const;
     };
+	extern inline sindex makeIndex(const stringarray& strarray, const intarray& iarray) {
+		sindex map;
+		auto kit = strarray.begin();
+		auto vit = iarray.begin();
+		while (kit < strarray.end()) {
+			map.set(*kit, *vit);
+			++kit; ++vit;
+		}
+		return map;
+	}
 
     /*============================================================*/
     template<class Key>

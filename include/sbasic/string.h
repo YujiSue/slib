@@ -26,6 +26,24 @@ namespace slib {
 		class SOBJ_DLL SFile;
 	}
 
+	constexpr subyte TRIMMING = 0x01;
+	constexpr subyte SINGLE_QUOTE = 0x02;
+	constexpr subyte DOUBLE_QUOTE = 0x04;
+	constexpr subyte DELETE_QUOTE = 0x08;
+	constexpr subyte TO_UPPER = 0x10;
+	constexpr subyte TO_LOWER = 0x20;
+	constexpr subyte TO_WIDE = 0x40;
+	constexpr subyte TO_NARROW = 0x80;
+
+	constexpr subyte EXACT_MATCH = 0x00;
+	constexpr subyte BAGIN_MATCH = 0x01;
+	constexpr subyte END_MATCH = 0x02;
+	constexpr subyte CONTAIN_QUE = 0x03;
+
+	constexpr char BASIC_LALPHABET[27] = "abcdefghijklmnopqrstuvwxyz";
+	constexpr char BASIC_UALPHABET[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	constexpr char HEX_STR[17] = "0123456789ABCDEF";
+
     class SOBJ_DLL Regex {
     private:
         std::regex _rgx;
@@ -55,15 +73,6 @@ namespace slib {
         friend Char;
         
     public:
-        static constexpr subyte TRIMMING = 0x01;
-        static constexpr subyte SINGLE_QUOTE = 0x02;
-        static constexpr subyte DOUBLE_QUOTE = 0x04;
-        static constexpr subyte DELETE_QUOTE = 0x08;
-        static constexpr subyte TO_UPPER = 0x10;
-        static constexpr subyte TO_LOWER = 0x20;
-        static constexpr subyte TO_WIDE = 0x40;
-        static constexpr subyte TO_NARROW = 0x80;
-        
         static const String SPACE;
         static const String TAB;
         static const String LF;
@@ -87,7 +96,6 @@ namespace slib {
 		static String toUTF8(const wchar_t* ws);
 		static String toUTF8(const char* s);
 #endif
-        static const char *HEX_STR;
         
     private:
         struct short_string {

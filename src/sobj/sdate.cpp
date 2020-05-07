@@ -129,13 +129,13 @@ void SDate::_parse(const String &date) {
             readTo(tmp, dit, E_);
             if (jp){
                 if (tmp == "元") Time::year += 1;
-                else Time::year += tmp.transformed(String::TO_NARROW).intValue();
+                else Time::year += tmp.transformed(TO_NARROW).intValue();
             }
-            else year = tmp.transformed(String::TO_NARROW);
+            else year = tmp.transformed(TO_NARROW);
         }
         else if (E_ == u8"月") {
             readTo(tmp, dit, E_);
-            Time::month = tmp.transformed(String::TO_NARROW);
+            Time::month = tmp.transformed(TO_NARROW);
         }
         else if (E_ == u8"曜")  {
             readTo(tmp, dit, E_);
@@ -143,19 +143,19 @@ void SDate::_parse(const String &date) {
         }
         else if (E_ == u8"日") {
             readTo(tmp, dit, E_);
-            Time::day = tmp.transformed(String::TO_NARROW);
+            Time::day = tmp.transformed(TO_NARROW);
         }
         else if (E_ == u8"時") {
             readTo(tmp, dit, E_);
-            Time::hour = tmp.transformed(String::TO_NARROW);
+            Time::hour = tmp.transformed(TO_NARROW);
         }
         else if (E_ == u8"分")  {
             readTo(tmp, dit, E_);
-            Time::minute = tmp.transformed(String::TO_NARROW);
+            Time::minute = tmp.transformed(TO_NARROW);
         }
         else if (E_ == u8"秒")  {
             readTo(tmp, dit, E_);
-            Time::sec = tmp.transformed(String::TO_NARROW);
+            Time::sec = tmp.transformed(TO_NARROW);
         }
         ++dit;
     }

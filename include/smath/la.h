@@ -43,14 +43,14 @@ namespace slib {
         struct SVector2D {
             T x, y;
             
-            SVector2D(const T &val = initVal<T>());
-            SVector2D(const T &x_, const T &y_);
+			SVector2D(const T &val = initVal<T>());
+			SVector2D(const T &x_, const T &y_);
             template<typename S>
-            SVector2D(const SVector2D<S> &v) : SVector2D((T)v.x, (T)v.y) {}
-            SVector2D(const SVector2D<T> &v);
+			SVector2D(const SVector2D<S> &v) : SVector2D((T)v.x, (T)v.y) {}
+			SVector2D(const SVector2D<T> &v);
             ~SVector2D();
             
-            SVector2D<T> &operator = (const SVector2D<T> &v);
+			SVector2D<T> &operator = (const SVector2D<T> &v);
             SVector2D<T> &operator += (const SVector2D<T> &v);
             SVector2D<T> &operator += (const T &val);
             SVector2D<T> &operator -= (const SVector2D<T> &v);
@@ -407,15 +407,15 @@ namespace slib {
         
         /*============================================================*/
         template <typename T>
-        SVector2D<T>::SVector2D(const T &val) : x(val), y(val) {}
+		SVector2D<T>::SVector2D(const T &val) : x(val), y(val) {}
         template <typename T>
-        SVector2D<T>::SVector2D(const T &x_, const T &y_) : x(x_), y(y_) {}
+		SVector2D<T>::SVector2D(const T &x_, const T &y_) : x(x_), y(y_) {}
         template <typename T>
-        SVector2D<T>::SVector2D(const SVector2D<T> &v) : SVector2D(v.x, v.y) {}
+		SVector2D<T>::SVector2D(const SVector2D<T> &v) : SVector2D(v.x, v.y) {}
         template <typename T>
         SVector2D<T>::~SVector2D() {}
         template <typename T>
-        SVector2D<T> &SVector2D<T>::operator = (const SVector2D<T> &v) { x = v.x; y = v.y; return *this; }
+		SVector2D<T> &SVector2D<T>::operator = (const SVector2D<T> &v) { x = v.x; y = v.y; return *this; }
         template <typename T>
         SVector2D<T> &SVector2D<T>::operator += (const SVector2D<T> &v) { x += v.x; y += v.y; return *this; }
         template <typename T>

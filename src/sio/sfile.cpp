@@ -6,7 +6,7 @@ using namespace slib;
 using namespace slib::sio;
 
 inline void _decode(String &str) {
-	if (str.isQuoted()) str.transform(String::DELETE_QUOTE);
+	if (str.isQuoted()) str.transform(DELETE_QUOTE);
 #if defined(WIN32_OS) || defined(WIN64_OS)
 	if (str.empty()) str = "C:" + PATH_SEPARATOR;
 	if (str.match(R(/ ^ [A - Z][:] / ))) return;
@@ -35,6 +35,7 @@ void SFile::_setPath(const char *path) {
     _path = path;
     _decode(_path);
     if (_mode&sio::DIRECTORY) return;
+	if (!fileExist(path)) return;
 #if defined(WIN64_OS)
 	struct _stat64 buf;
 	int res = _stat64(_path.localize(), &buf);
@@ -96,22 +97,18 @@ SFile::SFile(const char *path, int m) : SFile() {
 }
 SFile::SFile(const SFile &file) : SFile(file._path, file._mode) {}
 SFile::~SFile() { close(); }
-
 SFile &SFile::operator=(const char *path) {
     close(); _size = 0; _mode = 0; _setPath(path); return *this;
 }
 SFile &SFile::operator=(const SFile &file) {
     close(); _path = file._path; _size = file._size; _mode = file._mode; return *this;
 }
-
 SFile &SFile::operator+=(const char *s) { _setPath(_path + s); return *this; }
 SFile SFile::operator+(const char *s) const { SFile file(*this); return file += s; }
-
 SFile SFile::current() { return SDirectory(CURRENT_PATH); }
 SFile SFile::home() { return SDirectory(HOME_PATH); }
 SFile SFile::createFile(const char *path) { return SFile(path, sio::CREATE); }
 SFile SFile::makeDir(const char *path) { return SFile(path, sio::CREATE|sio::DIRECTORY); }
-
 String SFile::path() const { return _path; }
 suinteger SFile::size() const { return _size; }
 int SFile::mode() const { return _mode; }
@@ -163,7 +160,6 @@ String SFile::extension(bool low) const {
     if (pos == NOT_FOUND) return "";
     return low?String::lower(_path.substring(pos+1)):_path.substring(pos+1);
 }
-
 bool SFile::isOpened() const { return _stream.is_open(); }
 bool SFile::exist() const {
     int res;
@@ -188,7 +184,6 @@ bool SFile::isDriveRoot(const char *s) const { return _path == ROOT_DRIVE("c"); 
 #endif
 bool SFile::empty() const { return _path.empty(); }
 bool SFile::eof() { return _stream.eof(); }
-
 void SFile::open(const char *path, int m) { _mode |= m; if(path) _setPath(path); _open(); }
 void SFile::make(const char *path, int m) { _mode |= m; if(path) _setPath(path); _make(); }
 void SFile::edit(const char *path, int m) { _mode |= m; if(path) _setPath(path); _open(); }
@@ -469,11 +464,9 @@ filearray SFile::find(const char *que, bool recur) {
 }
 void SFile::archive(const char *path) { SZip::archive(*this, path); }
 void SFile::expand(const char *path) { SZip::expand(*this, path); }
-
 String SFile::getClass() const { return "file"; }
 String SFile::toString() const { return "file://"+_path; }
 SObject *SFile::clone() const { return new SFile(*this); }
-
 void SFile::readChars(char *str, size_t size) {
 	_stream.read(str, size);
     str[size] = '\0';
@@ -828,8 +821,6 @@ SFile &SFile::operator<<(const String &s) { writeString(s); return *this; }
 SFile &SFile::operator<<(const SString &s) { writeString(s); return *this; }
 SFile &SFile::operator<<(const SDate &d) { writeString(d.toString()); return *this; }
 SFile &SFile::operator<<(const sobj &obj) { writeString(obj.toString()); return *this; }
-
 SFile::operator const char *() const { return _path.cstr(); }
-
 bool SFile::operator<(const SFile &file) const { return _path < file._path; }
 bool SFile::operator==(const SFile &file) const { return _path == file._path; }

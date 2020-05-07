@@ -271,22 +271,22 @@ namespace slib {
             const sindex &nameIdx() const;
             
             void ctgInfo(ctgparray &array, const sbpos &pos, bool append = false);
-            void ctgInfo(ctgparray& array, const char *name, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
+            void ctgInfo(ctgparray& array, const char *name, subyte match = EXACT_MATCH, bool append = false);
             
             void geneInfo(geneparray & array, const sbpos &pos, bool trans = true, bool append = false);
-            void geneInfo(geneparray& array, const char *name, bool trans = true, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
+            void geneInfo(geneparray& array, const char *name, bool trans = true, subyte match = EXACT_MATCH, bool append = false);
             
             void transcriptInfo(trsparray & array, const sbpos &pos, bool gene = false, bool append = false);
-            void transcriptInfo(trsparray& array, const char *name, bool gene = false, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
+            void transcriptInfo(trsparray& array, const char *name, bool gene = false, subyte match = EXACT_MATCH, bool append = false);
             
 			void mutantInfo(mutparray& array, const sbpos& pos, bool append = false);
-            void mutantInfo(mutparray& array, const char *name, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
+            void mutantInfo(mutparray& array, const char *name, subyte match = EXACT_MATCH, bool append = false);
             
             void variationInfo(mutparray& array, const sbpos &pos, bool append = false);
-            void variationInfo(mutparray& array, const char *name, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
+            void variationInfo(mutparray& array, const char *name, subyte match = EXACT_MATCH, bool append = false);
             
             void featureInfo(ftrparray & array, const sbpos &pos, bool append = false);
-            void featureInfo(ftrparray& array, const char *name, sql::MATCH_TYPE match = sql::EXACT, bool append = false);
+            void featureInfo(ftrparray& array, const char *name, subyte match = EXACT_MATCH, bool append = false);
         };
     }
 }

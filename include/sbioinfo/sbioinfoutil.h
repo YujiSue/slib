@@ -217,7 +217,7 @@ namespace slib {
 		constexpr sushort GENE_FUSION = 0x8000;
 
 
-		class SBIOINFO_DLL SBIUtil {
+		class SBIOINFO_DLL sbiutil {
 		public:
 			static double scoreVal(double v);
 			static double phredVal(double v);

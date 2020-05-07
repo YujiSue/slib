@@ -177,6 +177,17 @@ namespace slib {
 		UArray(size_t s);
 		~UArray();
 	};
+	extern inline intarray iarray(int num, bool zero = false) {
+		intarray iarray(num);
+		sforin(i, 0, num) iarray[i] = (zero ? i : i + 1);
+		return iarray;
+	}
+	extern inline intarray iarray(const String& str, const char* sep) {
+		intarray iarray;
+		auto arr = str.split(sep);
+		sforeach(arr) iarray.add(it->integer());
+		return iarray;
+	}
     /*============================================================*/
     template <typename T, class M>
     void Array<T, M>::_expand(size_t s) {
@@ -353,15 +364,15 @@ namespace slib {
     template <typename T, class M>
 	sarr_iter<T> Array<T, M>::insert(size_t idx, const T &val) {
 		auto p = _begin + idx;
-        if (p < _end) {
+		if (p < _end) {
 			size_t s = _end - _begin + 1;
 			if (_capacity <= s) { _expand(s); p = _begin + idx; }
 			M::shift(p + 1, p, _end - p);
-			M::assign(p, val); 
+			M::assign(p, val);
 			++_end;
 			return sarr_iter<T>(p);
-        }
-		else { add(val); return end() - 1; }
+		}
+		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     }
 	template <typename T, class M>
 	sarr_iter<T> Array<T, M>::insert(sarr_iter<T> iter, const T& val) {
@@ -375,7 +386,7 @@ namespace slib {
 			++_end;
 			return sarr_iter<T>(p);
 		}
-		else { add(val); return end() - 1; }
+		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 	}
     template <typename T, class M>
 	sarr_iter<T> Array<T, M>::insert(size_t idx, T *val, size_t s) {

@@ -5,45 +5,41 @@
 using namespace slib;
 using namespace slib::sio;
 
-STextStyle::STextStyle(int t, const char *f, float s, smedia::SColor c, smedia::SColor b) :
+text_style::text_style(int t, const char *f, float s, smedia::SColor c, smedia::SColor b) :
                                         type(t), font(f), size(s), color(c), background(b) {}
-STextStyle::STextStyle(const sobj &obj) : STextStyle() {
-	if(obj["type"]) type = obj["type"];
-	if(obj["font"]) font = obj["font"];
-	if(obj["size"]) size = obj["size"];
-	if(obj["color"]) color = smedia::SColor((const char *)obj["color"]);
-	if(obj["bg"]) background = smedia::SColor((const char*)obj["color"]);
+text_style::text_style(const sobj &obj) : text_style() {
+	if (obj["type"]) type = obj["type"];
+	if (obj["font"]) font = obj["font"];
+	if (obj["size"]) size = obj["size"];
+	if (obj["weight"]) size = obj["weight"];
+	if (obj["color"]) color = smedia::SColor((const char*)obj["color"]);
+	if (obj["bg"]) background = smedia::SColor((const char*)obj["bg"]);
 }
-STextStyle::STextStyle(const STextStyle &style) {
+text_style::text_style(const text_style &style) {
     type = style.type;
     font = style.font;
     size = style.size;
+	weight = style.weight;
     color = style.color;
     background = style.background;
 }
-STextStyle::~STextStyle() {}
-
-STextStyle &STextStyle::operator=(const STextStyle &style) {
-    type = style.type;
-    font = style.font;
-    size = style.size;
-    color = style.color;
-    background = style.background;
-    return *this;
+text_style::~text_style() {}
+text_style& text_style::operator=(const text_style& style) {
+	type = style.type;
+	font = style.font;
+	size = style.size;
+	weight = style.weight;
+	color = style.color;
+	background = style.background;
+	return *this;
 }
-STextStyle &STextStyle::operator=(const SDictionary &dict) {
-    type = dict["type"];
-    font = dict["font"];
-    size = dict["size"];
-    color = dict["color"];
-    background = dict["background"];
-    return *this;
+sobj text_style::toObj() const {
+	return { kv("type", type), kv("font", font), kv("size", size), kv("weight", weight), kv("color", color), kv("bg", background) };
 }
 
 SText::SText() {}
-SText::SText(const String &s) : _string(s) {}
-SText::SText(const String &s, const SDictionary &a) : _string(s) { 
-	auto attr = STextStyle(a);
+SText::SText(const String &s, const sobj &a) : _string(s) { 
+	auto attr = text_style(a);
 	auto range = srange(0, s.length());
 	auto atp = std::make_pair(range, attr);
 	_attribute.add(atp);
@@ -172,21 +168,19 @@ void SText::resize(size_t size) {
 void SText::load(const char *path) {/**/}
 void SText::save(const char *path) {/**/}
 
-const slib::Array<SText::text_attribute> &SText::attributes() const { return _attribute; }
+const slib::Array<text_attribute> &SText::attributes() const { return _attribute; }
 
-slib::Array<SText::text_attribute> SText::attribute(srange range) const {
-    Array<SText::text_attribute> list;
+slib::Array<text_attribute> SText::attribute(srange range) const {
+    Array<text_attribute> list;
     if (_attribute.size()) {
         sforeach(_attribute) { if (E_.first.overlap(range)) list.add(E_); }
     }
     return list;
 }
 
-const char *SText::cstr() const { return _string.cstr(); }
-const String &SText::string() const { return _string; }
 
 
-void SText::setStyle(srange range, const STextStyle &style) {
+void SText::setStyle(srange range, const text_style &style) {
     _attribute.add(std::make_pair(range, style));
 }
 void SText::setType(srange range, uint16_t type) {
@@ -219,12 +213,16 @@ void SText::setBGColor(srange range, const smedia::SColor &col) {
     ta.second.background = col;
     _attribute.add(ta);
 }
-void SText::setAttribute(srange range, const SDictionary &dic) {
+void SText::setAttribute(srange range, const sobj &attr) {
     text_attribute ta;
     ta.first = range;
-    ta.second = dic;
+    ta.second = attr;
     _attribute.add(ta);
 }
+
+const char* SText::cstr() const { return _string.cstr(); }
+String& SText::string() { return _string; }
+const String& SText::string() const { return _string; }
 
 String SText::getClass() const { return "text"; }
 String SText::toString() const {

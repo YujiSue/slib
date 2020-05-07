@@ -4,7 +4,7 @@ using namespace slib;
 using namespace slib::smath;
 using namespace slib::smedia;
 
-SFigure::SFigure() : SNode<SFigure, FIGURE_OBJ>() { _type = 0; }
+SFigure::SFigure() : SNode<SFigure, FIGURE_OBJ>() {}
 SFigure::SFigure(int t) : SFigure() { _type = t; }
 SFigure::SFigure(int t, const SDictionary &dic) : SFigure() {
     _type = t;
@@ -13,14 +13,7 @@ SFigure::SFigure(int t, const SDictionary &dic) : SFigure() {
     if (dic["brush"]) _paint.brush = dic["brush"];
     if (dic["filter"]) _paint.filter = dic["filter"];
 }
-SFigure::SFigure(const SFigure &fig) : SFigure() {
-    _type = fig._type;
-    _id = fig._id;
-    _trans = fig._trans;
-    _paint = fig._paint;
-    _boundary  =fig._boundary;
-    _vertex = fig._vertex;
-}
+SFigure::SFigure(const SFigure &fig) : SNode<SFigure, FIGURE_OBJ>(fig) {}
 SFigure::~SFigure() {}
 
 void SFigure::_makeBoundary(v2f &point) {
@@ -165,19 +158,19 @@ void SFigure::clearVertex() { _vertex.clear(); _boundary = sareaf(); _updateBoun
 void SFigure::addFigure(SFigure *fig) {
     if (_children.empty()) _boundary = fig->boundary();
     else _boundary.merge(fig->boundary());
-    add(fig);
+    addChild(fig);
     _updateBoundary();
 }
 void SFigure::addFigure(sfig &&fig) {
     if (_children.empty()) _boundary = fig->boundary();
     else _boundary.merge(fig->boundary());
-    SNode<SFigure, FIGURE_OBJ>::add(fig);
+    SNode<SFigure, FIGURE_OBJ>::addChild(fig);
     fig.discard(); _updateBoundary();
 }
 void SFigure::addFigure(sfig &fig) {
     if (_children.empty()) _boundary = fig->boundary();
     else _boundary.merge(fig->boundary());
-    SNode<SFigure, FIGURE_OBJ>::add(fig);
+    SNode<SFigure, FIGURE_OBJ>::addChild(fig);
     fig.share(); _updateBoundary();
 }
 
@@ -195,7 +188,7 @@ bool SFigure::cross(sfig fig) const { return _boundary.overlap(fig->_boundary); 
 String SFigure::getClass() const { return "figure"; }
 String SFigure::toString() const {
     String str = getClass()+":{";
-    if (count()) {
+    if (childCount()) {
         sforeach(_children) str<<E_.toString()<<NEW_LINE;
     }
     return str<<"}";

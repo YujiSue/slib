@@ -6,14 +6,11 @@
 using namespace slib;
 using namespace slib::sio;
 
-SChar::SChar() : Char() {}
-SChar::SChar(String *s, const char *c) : Char(s, c) {}
-SChar::SChar(const Char &c) : Char(c) {}
-SChar::SChar(const SChar &c) : Char() {
-    _str = c._str; _ptr = c._ptr;
-}
+SChar::SChar() : Char(), SObject() {}
+SChar::SChar(String *s, const char *c) : Char(s, c), SObject() {}
+SChar::SChar(const Char &c) : Char(c), SObject() {}
+SChar::SChar(const SChar &c) : Char(c._str, c._ptr), SObject() {}
 SChar::~SChar() {}
-
 SChar& SChar::operator=(const char* s) {
 	if (_str) {
 		if (s) _str->replace(index(), u8size(_ptr), s);
@@ -43,7 +40,6 @@ SChar& SChar::operator=(const SChar& c) {
     _str = c._str; _ptr = c._ptr;
     return *this;
 }
-
 String SChar::getClass() const { return "char"; }
 String SChar::toString() const { return Char::toString(); }
 SObject *SChar::clone() const { return new SChar(*this); }
@@ -124,7 +120,6 @@ SString &SString::operator=(sshort i) { *this = std::to_string(i); return *this;
 SString &SString::operator=(sushort ui) { *this = std::to_string(ui); return *this; }
 SString &SString::operator=(char c) { String::resize(1, c); return *this; }
 SString &SString::operator=(const char *s) { String::copy(s); return *this; }
-//SString &SString::operator=(const SChar &c);
 SString &SString::operator=(const std::string &s) {
 	String::copy(s.c_str(), s.length()); return *this;
 }
@@ -140,7 +135,6 @@ SString &SString::operator=(const SNumber &n) { *this = n.toString(); return *th
 SString &SString::operator=(const sobj &obj) {
     if (obj.isStr()) *this = obj.string(); else *this = obj->toString(); return *this;
 }
-
 SString &SString::operator+=(bool b) { *this += (b?"true":"false"); return *this; }
 SString &SString::operator+=(int i) { *this += std::to_string(i); return *this; }
 SString &SString::operator+=(unsigned int ui) { *this += std::to_string(ui); return *this; }
@@ -176,7 +170,6 @@ SString &SString::operator+=(const sobj &obj) {
     if (obj.isStr()) return *this += obj.string();
     else return  *this += obj->toString();
 }
-
 SString SString::operator+(bool b) const { return SString(*this)+=(b?"true":"false"); }
 SString SString::operator+(int i) const { return SString(*this)+=std::to_string(i); }
 SString SString::operator+(unsigned int ui) const { return SString(*this)+=std::to_string(ui); }
@@ -212,7 +205,6 @@ SString SString::operator+(const sobj &obj) const {
     if (obj.isStr()) return SString(*this) += obj.string();
     else return SString(*this) += obj.toString();
 }
-
 SString &SString::operator<<(bool b) { *this += (b?"true":"false"); return *this; }
 SString &SString::operator<<(int i) { *this += std::to_string(i); return *this; }
 SString &SString::operator<<(unsigned int ui) { *this += std::to_string(ui); return *this; }
@@ -285,7 +277,6 @@ SString SString::operator*(const size_t & num) const {
     }
     return str;
 }
-//void SString::setOffset(const char *p) { _offset = p; }
 void SString::load(const char *path) {
     clear();
     sio::SFile file(path, sio::READ);
@@ -295,7 +286,6 @@ void SString::save(const char *path) {
     sio::SFile file(path, sio::CREATE);
     file<<(*this);
 }
-
 sobj& SString::u8char(int idx) { 
 	_char.character() = charAt(idx);
 	return _char;
@@ -304,11 +294,9 @@ const sobj& SString::u8char(int idx) const {
 	const_cast<SChar &>(_char.character()) = charAt(idx);
 	return _char;
 }
-
 String SString::getClass() const { return "string"; }
 String SString::toString() const { return *this; }
 SObject *SString::clone() const { return new SString(*this); }
-
 bool SString::operator<(const char *s) const { return strcmp(cstr(), s) < 0; }
 bool SString::operator<(const std::string &s) const { return *this < s.c_str(); }
 bool SString::operator<(const sobj &obj) const {
@@ -344,7 +332,6 @@ SString slib::operator+(const size_t &u, const SString &s) { return SString(u)+=
 SString slib::operator+(const float &f, const SString &s) { return SString(f)+=s; }
 SString slib::operator+(const double &r, const SString &s) { return SString(r)+=s; }
 SString slib::operator+(const bool &b, const SString &s) { return SString(b)+=s; }
-//SString slib::operator+(const char *s, const SNumber &num) { return SString(s) += num.toString(); }
 String slib::operator+(const char *s, const sobj &obj) {
     if (obj.isStr()) return String(s) += obj.string();
     else return String(s) += obj->toString();

@@ -1,5 +1,5 @@
 #include "sconfig.h"
-
+/*
 #define MATH_TEST
 
 #define MEM_TEST
@@ -14,6 +14,7 @@
 #define TIME_TEST
 
 #define SOBJECT_TEST
+*/
 /*
 #define SNUMBER_TEST
 #define SSTRING_TEST
@@ -26,15 +27,19 @@
 #define IO_TEST
 
 */
+/*
 #define TABLE_TEST
 #define DB_TEST
 
 #define THREAD_TEST
 #define PROCESS_TEST
-
+*/
+#define XML_TEST
 //#define APP_TEST 1
 //#define CV_TEST
 
+
+#define SBIOINFO_TEST
 
 namespace test {
 	extern void CalcTest();
@@ -72,8 +77,13 @@ namespace test {
 
 }
 namespace test {
+	extern void SXmlTest();
 	extern void SDBTest();
 	extern void ThreadTest();
+}
+
+namespace test{
+	extern void SBSeqTest();
 }
 
 #ifdef NODE_TEST

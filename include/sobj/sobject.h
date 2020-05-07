@@ -107,14 +107,8 @@ namespace slib {
     };
     
     #define snull sobj()
-    
     #define kv(X,Y) kvpair<String, SObjPtr>((X), V(Y))
-    
-    extern intarray iarray(int num, bool zero = false);
-    extern intarray iarray(const String &str, const char *sep);
-    
-    extern sindex makeIndex(const stringarray &strarray, const intarray &iarray);
-    
+
     class SOBJ_DLL SObject {
     protected:
 #ifndef _MANAGED
@@ -145,6 +139,7 @@ namespace slib {
         
     public:
         SObjPtr();
+		SObjPtr(OBJ_TYPE ot);
         SObjPtr(bool b);
         SObjPtr(sbyte i);
         SObjPtr(subyte ui);
@@ -186,8 +181,9 @@ namespace slib {
         SObjPtr(const SPair &pair);
         SObjPtr(const SDictionary &dict);
 		template<class Return, class... Args>
-        SObjPtr(const SFunction<Return, Args...>&func) : _type(FUNC_OBJ), _ptr(new SFunction<Return, Args... >(func)) {}
-        SObjPtr(const STable &tbl);
+        SObjPtr(const SFunction<Return(Args...)>&func) : _type(FUNC_OBJ), _ptr(new SFunction<Return(Args...)>(func)) {}
+		SObjPtr(const SColumn& col);
+		SObjPtr(const STable &tbl);
 		SObjPtr(const SDataBase& db);
 
         SObjPtr(const sio::SFile &file);
@@ -324,9 +320,9 @@ namespace slib {
         SIterator end();
         SCIterator end() const;
         
-        static sobj import(const SDictionary &dict);
-        void load(const SDictionary &dict);
-        void save(const SDictionary &dict);
+        static sobj import(sobj info);
+        void load(sobj info);
+        void save(sobj info);
         
         suint type() const;
         size_t size() const;
@@ -585,7 +581,7 @@ namespace slib {
         SClsPtr(const SClsPtr &obj) : SObjPtr() { _type = obj._type; _ptr = obj._ptr; share(); }
         ~SClsPtr() {}
         
-        SClsPtr &operator=(const SClsPtr &obj) {
+        SClsPtr &operator=(const SClsPtr<Cls, T>&obj) {
             release();_type = obj._type; _ptr = obj._ptr; share(); return *this;
         }
         Cls &operator*() {

@@ -28,7 +28,7 @@ void svar_data::comp() {
 }
 sint svar_data::total() const { return read[0] + read[1]; }
 double svar_data::bias() const { return SVarUtil::readBias(read); }
-double svar_data::phred() const { return SBIUtil::phredVal(qual); }
+double svar_data::phred() const { return sbiutil::phredVal(qual); }
 bool svar_data::comparable(const svar_data& v) const {
 	return type == v.type && pos[0].idx == v.pos[0].idx && pos[1].idx == v.pos[1].idx &&
             pos[0].dir == v.pos[0].dir && pos[1].dir == v.pos[1].dir;
@@ -104,7 +104,6 @@ bool SVariant::comparable(const SVariant *var) const {
     return pos[0].idx == var->pos[0].idx && pos[0].dir == var->pos[0].dir &&
     pos[1].idx == var->pos[1].idx && pos[1].dir == var->pos[1].dir;
 }
-
 bool SVariant::lt(const SVariant *var, size_t dist) const {
     if (flag == SMALL_VARIANT) return svar_data::lt(*var, 0);
     return svar_data::lt(*var, dist);

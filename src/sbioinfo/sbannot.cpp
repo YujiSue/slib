@@ -11,9 +11,9 @@ inline String RANGE_CONDITION(const sbpos &pos) {
 inline String NAME_CONDITION(const String &s) {
     return sql::condition("NAME LIKE", s);
 }
-const String ID_ASC_QUE = sql::orderQue({ std::pair<String, ORDER>("ID", ASC) });
-const String START_ASC_QUE = sql::orderQue({ std::pair<String, ORDER>("START", ASC) });
-const String POS_ASC_QUE = sql::orderQue({ std::pair<String, ORDER>("CHROMOSOME", ASC), std::pair<String, ORDER>("START", ASC) });
+const String ID_ASC_QUE = sql::orderQue({ kv("ID", ASC) });
+const String START_ASC_QUE = sql::orderQue({ kv("START", ASC) });
+const String POS_ASC_QUE = sql::orderQue({ kv("CHROMOSOME", ASC), kv("START", ASC) });
 
 annot_info::annot_info() : sbpos(), _id(0), type(0) {}
 annot_info::annot_info(const suint&t, const String &n, const sbpos &p) : type(t), name(n), sbpos(p) {}
@@ -104,7 +104,6 @@ feature_info &feature_info::operator=(const feature_info &f) {
     idx = f.idx; begin = f.begin; end = f.end; dir = f.dir;
     _id = f._id; type = f.type; name = f.name; return *this;
 }
-
 transcript_site::transcript_site() : type(0), site(0), pos(0) {}
 transcript_site::transcript_site(transcript_info* ti) : transcript_site() {
 	name = ti->name;
@@ -118,7 +117,6 @@ transcript_site& transcript_site::operator=(const transcript_site& trs) {
 	type = trs.type; site = trs.site; name = trs.name;
 	ori = trs.ori; 	alt = trs.alt; pos = trs.pos; return *this;
 }
-
 gene_site::gene_site() : type(0), dir(false) {}
 gene_site::gene_site(const gene_info* gi) : gene_site() {
 	name = gi->name; dir = gi->dir;
@@ -146,7 +144,7 @@ void SBAnnotDB::_initIdx() {
     _var_index.resize(num);
     _ftr_index.resize(num);
     sforin(i, 0, num) {
-        auto count = SBIUtil::countBin(bin_order[i], srange(chrInfo(i).begin, chrInfo(i).end-1));
+        auto count = sbiutil::countBin(bin_order[i], srange(chrInfo(i).begin, chrInfo(i).end-1));
         _ctg_index[i].resize(count);
         _gene_index[i].resize(count);
         _trs_index[i].resize(count);
@@ -191,7 +189,7 @@ void SBAnnotDB::_loadContigInfo() {
         sforeach(contigs) {
             auto &row = getRow();
             toAnnotInfo(&E_, row);
-            _ctg_index[E_.idx][bin_order[E_.idx][SBIUtil::getBin(E_)]].add(&E_);
+            _ctg_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
             _ctg_name_index.add(r);
             ++r;
         }
@@ -232,7 +230,7 @@ void SBAnnotDB::_loadGeneInfo() {
                     trans.gene = &E_;
                 }
             }
-            _gene_index[E_.idx][bin_order[E_.idx][SBIUtil::getBin(E_)]].add(&E_);
+            _gene_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
             if (E_.gene_id.size()) _gene_name_index.add(name_pair(&E_.gene_id, r));
             if (E_.name.size()) _gene_name_index.add(name_pair(&E_.name, r));
             if (!E_.other_names.empty()) {
@@ -264,7 +262,7 @@ void SBAnnotDB::_loadTranscriptInfo() {
                 E_.gene = &gene;
                 gene.transcripts.add(&E_);
             }
-            _trs_index[E_.idx][bin_order[E_.idx][SBIUtil::getBin(E_)]].add(&E_);
+            _trs_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
             _trs_name_index.add(r);
             ++r;
         }
@@ -304,7 +302,7 @@ void SBAnnotDB::_loadMutantInfo() {
         sforeach(mutants) {
             auto &row = getRow();
 			toMutInfo(&E_, row);
-            _mut_index[E_.idx][bin_order[E_.idx][SBIUtil::getBin(E_)]].add(&E_);
+            _mut_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
             _mut_name_index.add(r);
             ++r;
         }
@@ -327,7 +325,7 @@ void SBAnnotDB::_loadVariationInfo() {
         sforeach(variations) {
             auto &row = getRow();
 			toMutInfo(&E_, row);
-            _var_index[E_.idx][bin_order[E_.idx][SBIUtil::getBin(E_)]].add(&E_);
+            _var_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
             _var_name_index.add(r);
             ++r;
         }
@@ -350,7 +348,7 @@ void SBAnnotDB::_loadFeatureInfo() {
         sforeach(features) {
             auto &row = getRow();
             toAnnotInfo(&E_, row);
-            _ftr_index[E_.idx][bin_order[E_.idx][SBIUtil::getBin(E_)]].add(&E_);
+            _ftr_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
             _ftr_name_index.add(r);
             ++r;
         }
@@ -483,7 +481,7 @@ inline void searchGeneNameIndex(srange &range, const String &que, Array<SBAnnotD
 template<class Info>
 inline void searchPos(const sbpos &pos, Array<Array<CArray<Info *>>> &index, sorder &order, CArray<Info *> &array) {
     sizearray bins;
-    SBIUtil::getBins(bins, pos);
+    sbiutil::getBins(bins, pos);
     sforeachi(bins) {
         if (index[pos.idx][order[bins[i]]].empty()) continue;
         sforeach(index[pos.idx][order[bins[i]]]) {
@@ -513,10 +511,10 @@ void SBAnnotDB::ctgInfo(ctgparray &array, const sbpos &pos, bool append) {
         }
     }
 }
-void SBAnnotDB::ctgInfo(ctgparray &array, const char *name, sql::MATCH_TYPE match, bool append) {
+void SBAnnotDB::ctgInfo(ctgparray &array, const char *name, subyte match, bool append) {
 	if (!append) array.clear();
     if (_mode&LOAD_CTG) {
-        if (match == sql::EXACT) {
+        if (match == EXACT_MATCH) {
             srange range(0, _ctg_name_index.size());
             searchNameIndex<ctgarray>(range, name, _ctg_name_index, contigs);
             if (range.end-range.begin) return array.add(&contigs[_ctg_name_index[range.begin]]);
@@ -529,7 +527,7 @@ void SBAnnotDB::ctgInfo(ctgparray &array, const char *name, sql::MATCH_TYPE matc
     else {
         contigs.clear();
         try {
-            auto que = sql::textQue(name, match), condition = NAME_CONDITION(que);
+            auto condition = NAME_CONDITION(sql::value(name, true, match));
             contigs.resize((*this)["CONTIG"].count(condition));
             if (contigs.empty()) return;
             (*this)["CONTIG"].getRecordPrepare({"*"}, condition, START_ASC_QUE);
@@ -595,11 +593,11 @@ void SBAnnotDB::geneInfo(geneparray &array, const sbpos &pos, bool trans, bool a
         }
     }
 }
-void SBAnnotDB::geneInfo(geneparray &array, const char *name, bool trans, sql::MATCH_TYPE match, bool append) {
+void SBAnnotDB::geneInfo(geneparray &array, const char *name, bool trans, subyte match, bool append) {
 	if (!append) array.clear();
     if (_mode&LOAD_GENE) {
         if (!(_mode&LOAD_TRANS) && trans) setMode(_mode|LOAD_TRANS);
-        if(match == sql::EXACT) {
+        if(match == EXACT_MATCH) {
             srange range(0, _gene_name_index.size());
             searchGeneNameIndex(range, name, _gene_name_index);
             if (range.end-range.begin) array.add(&genes[_gene_name_index[range.begin].second]);
@@ -614,7 +612,7 @@ void SBAnnotDB::geneInfo(geneparray &array, const char *name, bool trans, sql::M
     else {
         genes.clear();
         try {
-            auto que = sql::textQue(name, match),
+            auto que = sql::value(name, true, match),
             condition = sql::condition("GENE_ID LIKE", que,
                                 "OR NAME LIKE", que,
                                 "OR OTHER_NAME LIKE", que);
@@ -706,10 +704,10 @@ void SBAnnotDB::transcriptInfo(trsparray &array, const sbpos &pos, bool gene, bo
         }
     }
 }
-void SBAnnotDB::transcriptInfo(trsparray &array, const char *name, bool gene, sql::MATCH_TYPE match, bool append) {
+void SBAnnotDB::transcriptInfo(trsparray &array, const char *name, bool gene, subyte match, bool append) {
 	if (!append) array.clear();
     if (_mode&LOAD_TRANS) {
-        if (match == sql::EXACT) {
+        if (match == EXACT_MATCH) {
             srange range(0, _trs_name_index.size());
             searchNameIndex<trsarray>(range, name, _trs_name_index, transcripts);
             if (range.end-range.begin) return array.add(&transcripts[_trs_name_index[range.begin]]);
@@ -732,7 +730,7 @@ void SBAnnotDB::transcriptInfo(trsparray &array, const char *name, bool gene, sq
                 }
             }
             else {
-                auto que = sql::textQue(name, match), condition = NAME_CONDITION(que);
+				auto condition = NAME_CONDITION(sql::value(name, true, match));
                 transcripts.resize((*this)["TRANSCRIPT"].count(condition));
                 if (transcripts.empty()) return;
                 auto &tarray = (*this)["TRANSCRIPT"].getRecords({"*"}, condition, ID_ASC_QUE);
@@ -778,10 +776,10 @@ void SBAnnotDB::mutantInfo(mutparray &array, const sbpos &pos, bool append) {
         }
     }
 }
-void SBAnnotDB::mutantInfo(mutparray &array, const char *name, sql::MATCH_TYPE match, bool append) {
+void SBAnnotDB::mutantInfo(mutparray &array, const char *name, subyte match, bool append) {
 	if (!append) array.clear();
     if (_mode&LOAD_MUT) {
-        if (match == sql::EXACT) {
+        if (match == EXACT_MATCH) {
             srange range(0, _mut_name_index.size());
             searchNameIndex<mutarray>(range, name, _mut_name_index, mutants);
             if (range.end-range.begin) return array.add(&mutants[_mut_name_index[range.begin]]);
@@ -794,7 +792,7 @@ void SBAnnotDB::mutantInfo(mutparray &array, const char *name, sql::MATCH_TYPE m
     else {
         mutants.clear();
         try {
-            auto que = sql::textQue(name, match), condition = NAME_CONDITION(que);
+			auto condition = NAME_CONDITION(sql::value(name, true, match));
             mutants.resize((*this)["MUTATION"].count(condition));
             if (mutants.empty()) return;
             (*this)["MUTATION"].getRecordPrepare({"*"}, condition, START_ASC_QUE);
@@ -830,10 +828,10 @@ void SBAnnotDB::variationInfo(mutparray&array, const sbpos &pos, bool append) {
         }
     }
 }
-void SBAnnotDB::variationInfo(mutparray &array, const char *name, sql::MATCH_TYPE match, bool append) {
+void SBAnnotDB::variationInfo(mutparray &array, const char *name, subyte match, bool append) {
     array.clear();
     if (_mode&LOAD_VAR) {
-        if (match == sql::EXACT) {
+        if (match == EXACT_MATCH) {
             srange range(0, _var_name_index.size());
             searchNameIndex<mutarray>(range, name, _var_name_index, variations);
             if (range.end-range.begin) return array.add(&variations[_var_name_index[range.begin]]);
@@ -846,7 +844,7 @@ void SBAnnotDB::variationInfo(mutparray &array, const char *name, sql::MATCH_TYP
     else {
         variations.clear();
         try {
-            auto que = sql::textQue(name, match), condition = NAME_CONDITION(que);
+			auto condition = NAME_CONDITION(sql::value(name, true, match));
             variations.resize((*this)["VARIATION"].count(condition));
             if (variations.empty()) return;
             (*this)["VARIATION"].getRecordPrepare({"*"}, condition, START_ASC_QUE);
@@ -882,10 +880,10 @@ void SBAnnotDB::featureInfo(ftrparray &array, const sbpos &pos, bool append) {
         }
     }
 }
-void SBAnnotDB::featureInfo(ftrparray &array, const char *name, sql::MATCH_TYPE match, bool append) {
+void SBAnnotDB::featureInfo(ftrparray &array, const char *name, subyte match, bool append) {
 	if (!append) array.clear();
     if (_mode&LOAD_FTR) {
-		if (match == sql::EXACT) {
+		if (match == EXACT_MATCH) {
             srange range(0, _ftr_name_index.size());
             searchNameIndex<ftrarray>(range, name, _ftr_name_index, features);
             if (range.end-range.begin) return array.add(&features[_ftr_name_index[range.begin]]);
@@ -898,7 +896,7 @@ void SBAnnotDB::featureInfo(ftrparray &array, const char *name, sql::MATCH_TYPE 
     else {
         features.clear();
         try {
-            auto que = sql::textQue(name, match), condition = NAME_CONDITION(que);
+			auto condition = NAME_CONDITION(sql::value(name, true, match));
             features.resize((*this)["FEATURE"].count(condition));
             if (features.empty()) return;
             (*this)["FEATURE"].getRecordPrepare({"*"}, condition, START_ASC_QUE);

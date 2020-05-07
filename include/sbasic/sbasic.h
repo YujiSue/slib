@@ -11,7 +11,6 @@
 #include "sbasic/fixedarray.h"
 #include "sbasic/list.h"
 #include "sbasic/map.h"
-#include "sbasic/node.h"
 #include "sbasic/char.h"
 #include "sbasic/sutf8.h"
 #include "sbasic/string.h"

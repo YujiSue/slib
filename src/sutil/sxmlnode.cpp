@@ -21,25 +21,12 @@ void SXmlNode::decodeXML(String& str) {
 }
 
 SXmlNode::SXmlNode() : SNode<SXmlNode>() {}
-SXmlNode::SXmlNode(suint t, const char *s, const char *v) : SNode<SXmlNode>() {
+SXmlNode::SXmlNode(suint t, const char* s, const char* c) : SNode<SXmlNode>() {
     type = t;
     if (s) tag = s;
-    if (v) content = v;
+	if (c) content = c;
 }
 SXmlNode::~SXmlNode() {}
-
-void slib::SXmlNode::_parseTag(const char *s) {
-    String s_ = String::trim(s);
-    auto list = s_.split(" ");
-    tag = list[0];
-    if (1 < list.size()) {
-        sforin(i, 1, list.size()) {
-            auto dat = list[i].split("=");
-			decodeXML(dat[1]);
-            attribute[dat[0]] = String::dequot(dat[1]);
-        }
-    }
-}
 
 inline String _plistTag(const sobj &obj) {
     if (obj.isNum()) {
@@ -64,31 +51,54 @@ inline String _plistTag(const sobj &obj) {
     return "string";
 }
 sxnode SXmlNode::plistNode(const sobj &obj) {
-    sxnode node(xml::START_TAG, _plistTag(obj));
+    sxnode node(xml::PAIRED_TAG, _plistTag(obj));
     if(obj.isStr() || obj.isDat()) node->content = obj;
     else if(obj.isNum()) {
         node->content = obj;
-        if(obj.type() == SNumber::BOOL) node->type = xml::EMPTY_TAG;
+        if(obj.type() == SNumber::BOOL) node->type = xml::SINGLE_TAG;
     }
     else if(obj.isDate()) {
         node->content = obj.date().toString();
     }
     else if(obj.isArray()) {
-        if(obj.empty()) node->type = xml::EMPTY_TAG;
-        else sforeach(obj) node->add(SXmlNode::plistNode(E_));
+        if(obj.empty()) node->type = xml::SINGLE_TAG;
+        else sforeach(obj) node->addChild(SXmlNode::plistNode(E_));
     }
     else if(obj.isDict()) {
-        if(obj.empty()) node->type = xml::EMPTY_TAG;
+        if(obj.empty()) node->type = xml::SINGLE_TAG;
         auto keys = obj.hasKey("_key")?obj["_key"].split(","):obj.keyset();
         sforeach(keys) {
-            node->add(sxnode(xml::START_TAG, "key", E_));
-            node->add(SXmlNode::plistNode(obj[E_]));
+            node->addChild(sxnode(xml::PAIRED_TAG, "key", E_));
+            node->addChild(SXmlNode::plistNode(obj[E_]));
         }
     }
     return node;
 }
+sobj SXmlNode::toPlistObj(const sxnode& node) {
+	if (node->tag == "integer") return node->content.integer();
+	else if (node->tag == "real") return node->content.real();
+	else if (node->tag == "true") return true;
+	else if (node->tag == "false") return false;
+	else if (node->tag == "string") return node->content;
+	else if (node->tag == "date") return SDate(node->content, "auto");
+	else if (node->tag == "data") return SData(node->content);
+	else if (node->tag == "array") {
+		sarray array;
+		sforeach(node->children()) array.add(SXmlNode::toPlistObj(E_));
+		return array;
+	}
+	else if (node->tag == "dict") {
+		sdict dict;
+		sforeach(node->children()) {
+			auto key = E_->content; NEXT_;
+			dict[key] = SXmlNode::toPlistObj(E_);
+		}
+		return dict;
+	}
+	return snull;
+}
 
-void SXmlNode::fillSVG(sattribute &attribute, smedia::SBrush &brush, intarray *path) {
+void SXmlNode::fillSVG(sattribute &attribute, smedia::SBrush &brush, const char* fid) {
     switch (brush.type) {
         case sstyle::FILL_NONE:
             attribute["fill"] = "none";
@@ -100,88 +110,83 @@ void SXmlNode::fillSVG(sattribute &attribute, smedia::SBrush &brush, intarray *p
                 attribute["fill-opacity"] = brush.color->alphaf();
             break;
         case sstyle::LINEAR_GRAD:
-            attribute["fill"] = "url(#lgrad-"+slib::toString(*path, "-")+")";
+			attribute["fill"] = String("url(#lgrad-") << fid << ")";
             break;
         case sstyle::RADIAL_GRAD:
-            attribute["fill"] = "url(#rgrad-"+slib::toString(*path, "-")+")";
+            attribute["fill"] = String("url(#rgrad-") << fid << ")";
             break;
         default:
             break;
     }
 }
-
 void SXmlNode::strokeSVG(sattribute &attribute, smedia::SStroke &stroke) {
-    if (stroke.type == sstyle::STROKE_NONE) {
-        attribute["stroke-width"] = 0; return;
-    }
+	if (stroke.type == sstyle::STROKE_NONE) {
+		attribute["stroke-width"] = 0; return;
+	}
 	stroke.color->setMode(SColor::HTML_HEX);
-    attribute["stroke"] = stroke.color->toString();
-    attribute["stroke-width"] = stroke.width;
-    if (stroke.color->hasAlpha())
-        attribute["stroke-opacity"] = stroke.color->alphaf();
-    auto edge = stroke.type&0x0F00;
-    switch (edge) {
-        case sstyle::BUTT_CAP:
-            attribute["stroke-linecap"] = "butt";
-            break;
-        case sstyle::ROUND_CAP:
-            attribute["stroke-linecap"] = "round";
-            break;
-        case sstyle::SQUARE_CAP:
-            attribute["stroke-linecap"] = "square";
-            break;
-        default:
-            break;
-    }
-    auto joint = stroke.type&0xF000;
-    switch (joint) {
-        case sstyle::MITER_JOIN:
-            attribute["stroke-linejoin"] = "miter";
-            break;
-        case sstyle::ROUND_JOIN:
-            attribute["stroke-linejoin"] = "round";
-            break;
-        case sstyle::BEVEL_JOIN:
-            attribute["stroke-linejoin"] = "bevel";
-            break;
-        default:
-            break;
-    }
-    if (stroke.type&sstyle::BROKEN_LINE && !stroke.interval.empty())
-        attribute["stroke-dasharray"] = slib::toString(stroke.interval, ",");
+	attribute["stroke"] = stroke.color->toString();
+	attribute["stroke-width"] = stroke.width;
+	if (stroke.color->hasAlpha())
+		attribute["stroke-opacity"] = stroke.color->alphaf();
+	auto edge = stroke.type & 0x0F00;
+	switch (edge) {
+	case sstyle::BUTT_CAP:
+		attribute["stroke-linecap"] = "butt";
+		break;
+	case sstyle::ROUND_CAP:
+		attribute["stroke-linecap"] = "round";
+		break;
+	case sstyle::SQUARE_CAP:
+		attribute["stroke-linecap"] = "square";
+		break;
+	default:
+		break;
+	}
+	auto joint = stroke.type & 0xF000;
+	switch (joint) {
+	case sstyle::MITER_JOIN:
+		attribute["stroke-linejoin"] = "miter";
+		break;
+	case sstyle::ROUND_JOIN:
+		attribute["stroke-linejoin"] = "round";
+		break;
+	case sstyle::BEVEL_JOIN:
+		attribute["stroke-linejoin"] = "bevel";
+		break;
+	default:
+		break;
+	}
+	if (stroke.type & sstyle::BROKEN_LINE && !stroke.interval.empty())
+		attribute["stroke-dasharray"] = slib::toString(stroke.interval, ",");
 }
-
-void SXmlNode::txtstyleSVG(sattribute &attribute, STextStyle &tattr) {
-    String style = "";
-    if(tattr.type&sstyle::BOLD) style<<"font-weight: bold; ";
-    if(tattr.type&sstyle::ITALIC) style<<"font-style: italic; ";
-    if(tattr.type&sstyle::UNDERLINE) style<<"text-decoration: underline; ";
-    if(tattr.type&sstyle::DEPRECATE) style<<"text-decoration: line-through; ";
-    if(tattr.type&sstyle::OVERLINE) style<<"text-decoration: overline; ";
-    
-    style<<"font-family: "<<tattr.font<<"; ";
-    style<<"font-size: "<<tattr.size<<"px; ";
-    style<<"stroke: "<<"none; ";
+void SXmlNode::txtstyleSVG(sattribute &attribute, text_style &tattr) {
+	String style = "";
+	if (tattr.type & sstyle::BOLD) style << "font-weight: bold; ";
+	if (tattr.type & sstyle::ITALIC) style << "font-style: italic; ";
+	if (tattr.type & sstyle::UNDERLINE) style << "text-decoration: underline; ";
+	if (tattr.type & sstyle::DEPRECATE) style << "text-decoration: line-through; ";
+	if (tattr.type & sstyle::OVERLINE) style << "text-decoration: overline; ";
+	style << "font-family: " << tattr.font << "; ";
+	style << "font-size: " << tattr.size << "px; ";
+	style << "stroke: " << "none; ";
 	tattr.color.setMode(SColor::HTML_HEX);
-    style<<"fill: "<<tattr.color.toString()<<"; ";
-    attribute["style"] = style;
+	style << "fill: " << tattr.color.toString() << "; ";
+	attribute["style"] = style;
 }
 
 sxnode SXmlNode::svgNode(SCanvas *cnvs) {
-	sxnode node(xml::START_TAG);
-    node->tag = "svg";
+	sxnode node(xml::START_TAG, "svg");
     node->attribute["version"] = "1.1";
     node->attribute["id"] = "svg";
     node->attribute["xmlns"] = "http://www.w3.org/2000/svg";
     node->attribute["xmlns:xlink"] = "http://www.w3.org/1999/xlink";
     node->attribute["x"] = "0px";
     node->attribute["y"] = "0px";
-    node->attribute["width"] = String(cnvs->boundary().width)+"px";
-    node->attribute["height"] = String(cnvs->boundary().height)+"px";
-    node->attribute["viewBox"] = String("0 0 ")+String(cnvs->boundary().width)+
-    " "+String(cnvs->boundary().height);
+    node->attribute["width"] = String(cnvs->width())+"px";
+    node->attribute["height"] = String(cnvs->height())+"px";
+	node->attribute["viewBox"] = String("0 0 ") + String(cnvs->width()) + " " + String(cnvs->height());
     node->attribute["xml:space"] = "preserve";
-    sforeach(cnvs->children()) {
+    sforeach(cnvs->root().children()) {
         if (E_->brush().type == sstyle::LINEAR_GRAD || E_->brush().type == sstyle::RADIAL_GRAD) {
             auto brush = E_->brush();
             auto &gcolor = brush.gradient();
@@ -189,43 +194,43 @@ sxnode SXmlNode::svgNode(SCanvas *cnvs) {
             auto defs = sxnode(xml::START_TAG, "defs", nullptr);
             if (brush.type == sstyle::LINEAR_GRAD) {
                 auto lgrad = sxnode(xml::START_TAG, "linearGradient", nullptr);
-                lgrad->attribute = { ks("id", "lgrad-"+slib::toString(E_->address(), "-")) };
+				lgrad->attribute = { ks("id", "lgrad-" + E_->name()) };
                 for (int f = 0; f < gcolor.count(); ++f) {
-                    auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
+                    auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
 					gcolor[f].setMode(SColor::HTML_HEX);
                     stop->attribute =
                     {
                         ks("offset", gcolor.points()[f]),
                         ks("stop-color", gcolor[f].toString())
                     };
-                    lgrad->add(stop);
+                    lgrad->addChild(stop);
                 }
-                defs->add(lgrad);
+                defs->addChild(lgrad);
             }
             else {
                 auto rgrad = sxnode(xml::START_TAG, "radialGradient", nullptr);
-                rgrad->attribute = { ks("id", "rgrad-"+slib::toString(E_->address(), "-")) };
+				rgrad->attribute = { ks("id", "rgrad-" + E_->name()) };
                 for (int f = 0; f < gcolor.count(); ++f) {
-                    auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
+                    auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
 					gcolor[f].setMode(SColor::HTML_HEX);
                     stop->attribute =
                     {
                         ks("offset", gcolor.points()[f]),
                         ks("stop-color", gcolor[f].toString())
                     };
-                    rgrad->add(stop);
+                    rgrad->addChild(stop);
                 }
-                defs->add(rgrad);
+                defs->addChild(rgrad);
             }
-            node->add(defs);
+            node->addChild(defs);
         }
-        node->add(SXmlNode::svgNode(E_));
+        node->addChild(SXmlNode::svgNode(E_));
     }
     return node;
 }
 
 sxnode SXmlNode::svgNode(SFigure *fig) {
-	sxnode node(xml::EMPTY_TAG);
+	sxnode node(xml::SINGLE_TAG, "");
     String transform = "";
     if (fig->transformer()) {
         auto &trans = *fig->transformer();
@@ -276,8 +281,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -298,8 +302,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -317,8 +320,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             node->attribute["points"] = pts;
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD || fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -335,8 +337,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -353,8 +354,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -374,8 +374,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -399,8 +398,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -425,48 +423,47 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             if (fig->name().size()) node->attribute["ID"] = fig->name();
             sforeach(fig->children()) {
                 if (E_->brush().type == sstyle::LINEAR_GRAD ||
-                    E_->brush().type == sstyle::RADIAL_GRAD) {
+					E_->brush().type == sstyle::RADIAL_GRAD) {
                     auto brush = E_->brush();
                     auto &gcolor = brush.gradient();
                     auto defs = sxnode(xml::START_TAG, "defs", nullptr);
                     if (brush.type == sstyle::LINEAR_GRAD) {
                         auto lgrad = sxnode(xml::START_TAG, "linearGradient", nullptr);
-                        lgrad->attribute = { ks("id", "lgrad-"+slib::toString(E_->address(), "-")) };
+                        lgrad->attribute = { ks("id", "lgrad-"+ E_->name()) };
                         for (int f = 0; f < gcolor.count(); ++f) {
-                            auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
+                            auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
 							gcolor[f].setMode(SColor::HTML_HEX);
 							stop->attribute =
 							{
 								ks("offset", gcolor.points()[f]),
 								ks("stop-color", gcolor[f].toString())
                             };
-                            lgrad->add(stop);
+                            lgrad->addChild(stop);
                         }
-                        defs->add(lgrad);
+                        defs->addChild(lgrad);
                     }
                     else {
                         auto rgrad = sxnode(xml::START_TAG, "radialGradient", nullptr);
-                        rgrad->attribute = { ks("id", "rgrad-"+slib::toString(E_->address(), "-")) };
+                        rgrad->attribute = { ks("id", "rgrad-"+E_->name()) };
                         for (int f = 0; f < gcolor.count(); ++f) {
-                            auto stop = sxnode(xml::EMPTY_TAG, "stop", nullptr);
+                            auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
 							gcolor[f].setMode(SColor::HTML_HEX);
                             stop->attribute = {
                                 ks("offset", gcolor.points()[f]),
                                 ks("stop-color", gcolor[f].toString())
                             };
-                            rgrad->add(stop);
+                            rgrad->addChild(stop);
                         }
-                        defs->add(rgrad);
+                        defs->addChild(rgrad);
                     }
-                    node->add(defs);
+                    node->addChild(defs);
                 }
-                node->add(SXmlNode::svgNode(E_));
+                node->addChild(SXmlNode::svgNode(E_));
             }
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                auto node_path = fig->address();
-                SXmlNode::fillSVG(node->attribute, fig->brush(), &node_path);
+                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -479,48 +476,38 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
     }
     return node;
 }
-sobj SXmlNode::toPlistObj(const sxnode &node) {
-    if (node->tag == "integer") return node->content.integer();
-    else if(node->tag == "real") return node->content.real();
-    else if(node->tag == "true") return true;
-    else if(node->tag == "false") return false;
-    else if(node->tag == "string") return node->content;
-    else if(node->tag == "date") return SDate(node->content, "auto");
-    else if(node->tag == "data") return SData(node->content);
-    else if(node->tag == "array") {
-		sarray array;
-        sforeach(node->children()) array.add(SXmlNode::toPlistObj(E_));
-        return array;
-    }
-    else if(node->tag == "dict") {
-        sdict dict;
-        sforeach(node->children()) {
-            auto key = E_->content; NEXT_;
-            dict[key] = SXmlNode::toPlistObj(E_);
-        }
-        return dict;
-    }
-    return snull;
+
+void slib::SXmlNode::parseTag(const char* s) {
+	String s_ = String::trim(s);
+	auto list = s_.split(" ");
+	tag = list[0];
+	if (1 < list.size()) {
+		sforin(i, 1, list.size()) {
+			auto dat = list[i].split("=");
+			decodeXML(dat[1]);
+			attribute[dat[0]] = String::dequot(dat[1]);
+		}
+	}
 }
 void SXmlNode::parse(const char *s) {
     String str = String::dequot(s);
     if (str[0] == '?' && str.last() == '?') {
-        _parseTag(str.substring(1, str.length()-2));
+        parseTag(str.substring(1, str.length()-2));
         if (tag == "xml") type = xml::DEFINITION_NODE;
     }
     else if (str[0] == '!') {
         if(str.beginWith("![CDATA[") && str.endWith("]]")) {
-            type = xml::CDATA_NODE;
-            content = str.substring(8, str.length()-10);
+			type = xml::CDATA_NODE;
+			content = str.substring(8, str.length()-10);
         }
         else if(str.beginWith("!--") && str.endWith("--")) {
-            type = xml::COMMENT_NODE;
-            content = str.substring(3, str.length()-5);
+			type = xml::COMMENT_NODE;
+			content = str.substring(3, str.length()-5);
         }
         else if(str.beginWith("!DOCTYPE")) {
-            type = xml::DOCTYPE_NODE;
+			type = xml::DOCTYPE_NODE;
             auto array = str.split(" ");
-            tag = array[1];
+			tag = array[1];
 			if (array[2] == "PUBLIC") {
 				type = xml::DOCTYPE_PUB_NODE;
 				attribute["public"] = String::dequot(array[3]);
@@ -541,65 +528,64 @@ void SXmlNode::parse(const char *s) {
     else {
         if (str[0] == '/') type = xml::CLOSE_TAG;
         else if (str.last() == '/') {
-            type = xml::EMPTY_TAG;
-            _parseTag(str.substring(0, str.length()-1));
+			type = xml::SINGLE_TAG;
+            parseTag(str.substring(0, str.length()-1));
         }
         else {
-            type = xml::START_TAG;
-            _parseTag(str);
+			type = xml::START_TAG;
+            parseTag(str);
         }
     }
 }
-
 String SXmlNode::toString() const {
-    size_t l = layer();
-    if (type == xml::DEFINITION_NODE)
-        return String("<?xml")<<
-        (attribute["version"]?" version="+String::dquot(attribute["version"]):"")<<
-        (attribute["encoding"]?" encoding="+String::dquot(attribute["encoding"]):"")<<"?>"<<NEW_LINE;
-    else if (type == xml::CDATA_NODE)
-        return String::TAB*l<<"<![CDATA["<<content<<"]]>"<<NEW_LINE;
-    else if (type == xml::COMMENT_NODE)
-        return String::TAB*l<<"<!--"<<content<<"-->"<<NEW_LINE;
-    else if (type& xml::DOCTYPE_NODE) {
-        auto doc = String("<!DOCTYPE ")<<tag<<" ";
-        if (type == xml::DOCTYPE_PUB_NODE)
-            return doc<<"PUBLIC "<<String::dquot(attribute["public"])<<" "<<String::dquot(attribute["dtd"])<<">"<<NEW_LINE;
-        else if (type == xml::DOCTYPE_SYS_NODE)
-            return doc<<"SYSTEM "<<String::dquot(attribute["dtd"])<<">"<<NEW_LINE;
-        else {
-            doc+="["+NEW_LINE;
-            /*
-             */
-            return doc<<"]>"<<NEW_LINE;
-        }
-    }
-    else if (type != xml::HIDDEN_TAG) {
-        String xstr = String::TAB*l<<"<"<<tag;
-        if (!attribute.empty()) {
+	size_t l = layer();
+	if (type == xml::DEFINITION_NODE)
+		return String("<?xml") <<
+		(attribute["version"] ? " version=" + String::dquot(attribute["version"]) : "") <<
+		(attribute["encoding"] ? " encoding=" + String::dquot(attribute["encoding"]) : "") << "?>" << NEW_LINE;
+	else if (type == xml::CDATA_NODE)
+		return String::TAB * l << "<![CDATA[" << content << "]]>" << NEW_LINE;
+	else if (type == xml::COMMENT_NODE)
+		return String::TAB * l << "<!--" << content << "-->" << NEW_LINE;
+	else if (type & xml::DOCTYPE_NODE) {
+		auto doc = String("<!DOCTYPE ") << tag << " ";
+		if (type == xml::DOCTYPE_PUB_NODE)
+			return doc << "PUBLIC " << String::dquot(attribute["public"]) << " " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
+		else if (type == xml::DOCTYPE_SYS_NODE)
+			return doc << "SYSTEM " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
+		else {
+			doc += "[" + NEW_LINE;
+			/*
+			 */
+			return doc << "]>" << NEW_LINE;
+		}
+	}
+	else if (type != xml::HIDDEN_TAG) {
+		String xstr = String::TAB * l << "<" << tag;
+		if (!attribute.empty()) {
 			auto keys = attribute.hasKey("_key") ? attribute["_key"].split(",") : attribute.keyset();
 			sforeach(keys) {
 				String tmp = attribute[E_];
 				encodeXML(tmp);
 				xstr << " " << E_ << "=" << String::dquot(tmp);
 			}
-        }
-        if (type&xml::EMPTY_TAG) xstr<<"/>"<<NEW_LINE;
-        else {
-            xstr<<">";
-            if (hasChild()) {
-                xstr<<NEW_LINE;
-                sforeach(children()) xstr<<E_->toString();
-                xstr<<String::TAB*l;
-            }
+		}
+		if (type & xml::SINGLE_TAG) xstr << "/>" << NEW_LINE;
+		else {
+			xstr << ">";
+			if (childCount()) {
+				xstr << NEW_LINE;
+				sforeach(children()) xstr << E_->toString();
+				xstr << String::TAB * l;
+			}
 			else {
 				String tmp = content;
 				encodeXML(tmp);
 				xstr << tmp;
 			}
-            xstr<<"</"<<tag<<">"<<NEW_LINE;
-        }
-        return xstr;
-    }
-    return "";
+			xstr << "</" << tag << ">" << NEW_LINE;
+		}
+		return xstr;
+	}
+	return "";
 }

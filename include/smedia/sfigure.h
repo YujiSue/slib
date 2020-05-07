@@ -42,16 +42,15 @@ namespace slib {
         #define scalligraphy scobj<slib::smedia::SCalligraphy, FIGURE_OBJ>
         
         class SOBJ_DLL SFigure : public SNode<SFigure, FIGURE_OBJ> {
-        
-        protected:
-            sushort _type;
-            String _id;
-            strans2d _trans;
-            SPaint _paint;
-            sareaf _boundary;
-            v2f _origin;
-            v2fvec _vertex;
-            
+		protected:
+			sushort _type;
+			String _id;
+			strans2d _trans;
+			SPaint _paint;
+			sareaf _boundary;
+			v2f _origin;
+			v2fvec _vertex;
+
         protected:
             void _makeBoundary(v2f &point);
             void _resetBoundary();
@@ -118,14 +117,14 @@ namespace slib {
             void addFigure(scobj<Cls, FIGURE_OBJ> &&fig) {
                 if (_children.empty()) _boundary = fig->boundary();
                 else _boundary.merge(fig->boundary());
-                SNode<SFigure, FIGURE_OBJ>::add(dynamic_cast<SFigure *>(fig.ptr()));
+                SNode<SFigure, FIGURE_OBJ>::addChild(dynamic_cast<SFigure *>(fig.ptr()));
                 fig.discard(); _updateBoundary();
             }
             template<class Cls>
             void addFigure(scobj<Cls, FIGURE_OBJ> &fig) {
                 if (_children.empty()) _boundary = fig->boundary();
                 else _boundary.merge(fig->boundary());
-                fig.share(); SNode<SFigure, FIGURE_OBJ>::add(dynamic_cast<SFigure *>(fig.ptr()));
+                fig.share(); SNode<SFigure, FIGURE_OBJ>::addChild(dynamic_cast<SFigure *>(fig.ptr()));
                 _updateBoundary();
             }
             
@@ -143,7 +142,7 @@ namespace slib {
         
 #define scnvs scobj<slib::smedia::SCanvas, CANVAS_OBJ>
         
-        class SOBJ_DLL SCanvas : public SFigure {
+        class SOBJ_DLL SCanvas : public SDocument<SFigure> {
         protected:
             SColor _background;
             sarea _frame;
@@ -408,7 +407,7 @@ namespace slib {
         class SOBJ_DLL SCalligraphy : public SFigure {
         protected:
             String _text;
-            STextStyle _attribute;
+            text_style _attribute;
             //spath _path;
             
         public:
@@ -418,8 +417,8 @@ namespace slib {
             ~SCalligraphy();
             
             const char *text() const;
-			STextStyle& style();
-            const STextStyle &style() const;
+			text_style& style();
+            const text_style &style() const;
             
             void setText(const char *s);
             void setFont(const char *font, float size);

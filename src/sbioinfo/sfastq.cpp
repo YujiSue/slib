@@ -14,7 +14,7 @@ void SFastq::importFq(const char *p) {
             sforin(i, 0, 4) file.readLine(row[i]);
             if(row[0][0] == '@' && row[2][0] == '+') {
                 SBioSeq seq(sbio::DNA_SEQ);
-                seq.setName(row[0]+row[2]);
+                seq.name = row[0]+row[2];
                 seq.setSeq(row[1]);
                 seq.resize(2*seq.length());
                 memcpy(seq.ptr(seq.length()), row[3].cstr(), seq.length());
@@ -31,7 +31,7 @@ void SFastq::exportFq(const char *p) {
         stringarray names;
         SFile file(p, sio::CREATE);
         sforeach(*this) {
-            names = E_->name().split("+");
+            names = E_->name.split("+");
             qual.resize(E_->length(), '\0');
             file<<names[0]<<NEW_LINE;
             file<<E_->raw()<<NEW_LINE;

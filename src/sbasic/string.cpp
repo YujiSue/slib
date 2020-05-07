@@ -114,13 +114,13 @@ String String::dequot(const char *s) {
 String String::upper(const char *s) {
     if (!s) return "";
     String str(s);
-    str.transform(String::TO_UPPER);
+    str.transform(TO_UPPER);
     return str;
 }
 String String::lower(const char *s) {
     if (!s) return "";
     String str(s);
-    str.transform(String::TO_LOWER);
+    str.transform(TO_LOWER);
     return str;
 }
 String String::enclose(const char *s, const char *c1, const char *c2) {
@@ -169,7 +169,6 @@ String String::toUTF8(const char* s) {
 	return str;
 }
 #endif
-const char *String::HEX_STR = "0123456789ABCDEF";
 bool String::_isLong() const { return (*((uint8_t *)&_str))&0x01; }
 std::pair<char *, size_t> String::_instance() {
     if (_isLong()) return std::pair<char *, size_t>(_str._ls.str, _str._ls.size);
@@ -779,20 +778,20 @@ void String::trimming() {
 void String::transform(subyte trans) {
     auto ins = _instance();
     auto beg = ins.first, end = &ins.first[ins.second];
-    if (trans&String::DELETE_QUOTE) { ++beg; --end; }
+    if (trans&DELETE_QUOTE) { ++beg; --end; }
     if (ins.first < beg) remove(0, beg-ins.first);
     resize(end-beg);
-    if (trans&String::SINGLE_QUOTE) { insert(0, "\'"); append("\'"); }
-    if (trans&String::DOUBLE_QUOTE) { insert(0, "\""); append("\""); }
-    if (trans&String::TO_UPPER)
+    if (trans&SINGLE_QUOTE) { insert(0, "\'"); append("\'"); }
+    if (trans&DOUBLE_QUOTE) { insert(0, "\""); append("\""); }
+    if (trans&TO_UPPER)
         std::transform(this->begin(), this->end(), begin(), toupper);
-    else if (trans&String::TO_LOWER)
+    else if (trans&TO_LOWER)
         std::transform(this->begin(), this->end(), begin(), tolower);
-    if (trans&String::TO_WIDE) {
+    if (trans&TO_WIDE) {
 		String tmp = String::wide(cstr());
 		this->swap(tmp);
     }
-    else if (trans&String::TO_NARROW) {
+    else if (trans&TO_NARROW) {
 		String tmp = String::narrow(cstr());
 		this->swap(tmp);
     }

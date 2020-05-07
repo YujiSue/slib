@@ -400,10 +400,10 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 		sforeachi(col) {
 			SVariant *var = new SVariant();
 			if (col[i] == "Chr" || col[i] == "Chr1") {
-				var->ref[0] = dat[i]; var->pos[0].idx = ref->nameIdx()[dat[i]];
+				var->ref[0] = dat[i]; var->pos[0].idx = ref->index[dat[i]];
 			}
 			else if (col[i] == "Chr2") {
-				var->ref[1] = dat[i]; var->pos[1].idx = ref->nameIdx()[dat[i]];
+				var->ref[1] = dat[i]; var->pos[1].idx = ref->index[dat[i]];
 			}
 			else if (col[i] == "Pos" || col[i] == "Pos1") var->pos[0].begin = dat[i];
 			else if (col[i] == "Pos2") var->pos[1].begin = dat[i];
@@ -442,7 +442,7 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 		val = row.substring(pos + 1);
 	if (key == "INFO" || key == "FILTER" || key == "FORMAT" ||
 		key == "ALT" || key == "PEDIGREE") {
-		if (val.first() == '<' && val.last() == '>') val.transform(String::DELETE_QUOTE);
+		if (val.first() == '<' && val.last() == '>') val.transform(DELETE_QUOTE);
 		sattribute attr = val.parse(",", "=");
 		sdict content;
 		sforeach(attr) {
@@ -452,7 +452,7 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 		list->list_attribute[key][attr["ID"]] = content;
 	}
 	else if (key == "contig") {
-		val.transform(String::DELETE_QUOTE);
+		val.transform(DELETE_QUOTE);
 		sattribute attr = val.parse(",", "=");
 		sdict content;
 		sforeach(attr) {
@@ -462,7 +462,7 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 		}
 	}
 	else {
-		if (val.isQuoted()) val.transform(String::DELETE_QUOTE);
+		if (val.isQuoted()) val.transform(DELETE_QUOTE);
 		list->list_attribute[key] = val;
 	}
 }

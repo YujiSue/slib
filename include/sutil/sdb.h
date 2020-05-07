@@ -21,29 +21,9 @@ namespace slib {
 
 
 	namespace sql {
-		
-		typedef enum {
-			EQ = 0,
-			NEQ = 1,
-			LT = 2,
-			MT = 3,
-			ELT = 4,
-			EMT = 5,
-			LIKE = 6,
-			GLOB = 7,
-			IN_RANGE = 8,
-		} OPERATOR;
-		typedef enum {
-			EXACT = 0,
-			CONTAIN = 1,
-			BEGIN = 2,
-			END = 3,
-		} MATCH_TYPE;
-		typedef enum {
-			INNER_JOIN = 1,
-			OUTER_JOIN = 2,
-			CROSS_JOIN = 3,
-		} JOIN_TYPE;
+		constexpr subyte INNER_JOIN = 1;
+		constexpr subyte OUTER_JOIN = 2;
+		constexpr subyte CROSS_JOIN = 3;
 
 		constexpr int KEY_COLUMN = 0x1000;
 		constexpr int UNIQUE_COLUMN = 0x2000;
@@ -54,8 +34,7 @@ namespace slib {
 		extern String colInfos(const SArray& cols);
 		extern String colNames(const SArray& cols);
 		extern String escaped(const char* que);
-
-		extern String textQue(const char* val, MATCH_TYPE match = EXACT, OPERATOR op = LIKE);
+		extern String value(sobj obj, bool like = true, subyte match = 0);
 
 		inline void addConditionQuery(String& que) {}
 		template <class First, class... Args>
@@ -69,21 +48,22 @@ namespace slib {
 			addConditionQuery(query, args...);
 			return query;
 		}
-		extern String condQue(const sobj& conds);
+		extern String condQue(const sobj& conds, bool join = false);
 		extern String caseQue(const char* name, const sattribute& attr, const char* exception, const char* as);
 		extern String caseQue(const sobj& obj);
 		extern String orderQue(const Array<std::pair<String, ORDER>>& orders);
 		extern String orderQue(const sobj& orders);
 		extern String limitQue(int l, int o = -1);
 		extern String limitQue(const sobj& obj);
-		extern String listQue(const stringarray& list);
-		extern String listQue(const intarray& list);
+		extern String strListQue(const stringarray& list);
+		extern String intListQue(const intarray& list);
 		extern String listQue(const sobj& obj);
-		extern String selectQue(const sobj& obj);
+		extern String joinQue(const char* tbl, const sobj& obj);
+		extern String selectQue(const char* tbl, const SDictionary& obj);
 		extern String selectQuery(const char* name, const stringarray& cols = { "*" },
 			const char* condition = nullptr, const char* order = nullptr,
 			const char* limit = nullptr, bool distinct = false);
-		extern String joinedSelectQuery(sql::JOIN_TYPE type, const char* name1, const char* name2,
+		extern String joinedSelectQuery(subyte type, const char* name1, const char* name2,
 			const char* join, const stringarray& cols = { "*" },
 			const char* condition = nullptr, const char* order = nullptr,
 			const char* limit = nullptr, bool distinct = false);
@@ -99,48 +79,37 @@ namespace slib {
 		~SDBTable();
 
 		bool exist();
-		void create(const SArray& columns = {});
+		void create(sobj obj);
 		void rename(const char* name);
-		void copy(const char* src, const stringarray& cols = { "*" }, const SDictionary& conditions = {});
 		void remove();
 		stringarray columns();
 		SArray& columnInfo();
 		void addColumn(int type, const char* name);
-		void addColumn(const SDictionary& dict);
-		void addColumn(const sobj& obj);
+		void addColumn(const SDictionary& col);
 		void removeColumn(const char* name);
-		void addRecord(const SArray& row);
-		void addRecord(const SDictionary& row);
-		void addRecord(const sobj &obj);
+		void addRecordArray(const SArray& row);
+		void addRecordDict(const SDictionary& row);
+		void addRecord(const sobj& obj);
 		void addRecordPrepare(size_t num);
-		void addRecordPrepare(const stringarray& cols);
+		void addRecordPrepare(const SArray& cols);
 		void removeRecord(const char* condition);
-		void removeRecord(const SDictionary &condition);
-		void removeRecord(const sobj& obj);
 		void removeRecordAt(size_t idx, const char *key = "ID");
 		void setRecord(const sobj& obj);
 		void setRecord(const SDictionary& row, const char* condition);
 		void setRecordAt(size_t idx, const SDictionary& row, const char* key = "ID");
-		void setRecordPrepare(const stringarray& cols, const char* condition);
+		void setRecordPrepare(const SArray& cols, const char* key = "ID");
 		int count(const char* condition = nullptr);
-		SArray& countGroup(const stringarray& cols);
+		SArray& countGroup(const SArray& cols);
+		SDictionary& getRecord(const stringarray& cols = { "*" }, const char* condition = nullptr,
+			const char* order = nullptr, SDictionary* result = nullptr);
+		SDictionary& getRecord(const SDictionary& info, SDictionary* result = nullptr);
+		SDictionary& getRecordAt(size_t idx, const stringarray& cols = { "*" }, const char* key = "ID", SDictionary* result = nullptr);
 		void getRecordPrepare(const stringarray& cols = { "*" },
 			const char* condition = nullptr,
 			const char* order = nullptr,
 			const char* limit = nullptr,
 			bool distinct = false);
-		STable& getTable(const stringarray& cols = { "*" },
-			const char* condition = nullptr,
-			const char* order = nullptr,
-			const char* limit = nullptr,
-			bool distinct = false,
-			STable* result = nullptr);
-		STable& getTable(const SDictionary& info, STable* result = nullptr);
-		SDictionary& getRecord(const stringarray& cols = { "*" }, const char* condition = nullptr,
-			const char* order = nullptr, SDictionary* result = nullptr);
-		SDictionary& getRecord(const SDictionary& info, SDictionary* result = nullptr);
-		SDictionary& getRecordAt(size_t idx, const stringarray& cols = { "*" }, const char* key = "ID", SDictionary* result = nullptr);
-
+		void getRecordPrepare(const SDictionary& info);
 		SArray& getRecords(const stringarray& cols = { "*" },
 			const char* condition = nullptr,
 			const char* order = nullptr,
@@ -148,42 +117,14 @@ namespace slib {
 			bool distinct = false,
 			SArray* result = nullptr);
 		SArray& getRecords(const SDictionary& info, SArray* result = nullptr);
-
-		void getJoinedRecordPrepare(sql::JOIN_TYPE type,
-			const char* table2,
-			const char* join,
-			const stringarray& cols = { "*" },
-			const char* condition = nullptr,
-			const char* order = nullptr,
-			const char* limit = nullptr,
-			bool distinct = false);
-		STable& getJoinedTable(sql::JOIN_TYPE type,
-			const char* table2,
-			const char* join,
-			const stringarray& cols = { "*" },
+		STable& getTable(const stringarray& cols = { "*" },
 			const char* condition = nullptr,
 			const char* order = nullptr,
 			const char* limit = nullptr,
 			bool distinct = false,
 			STable* result = nullptr);
-		STable& getJoinedTable(const SDictionary& info, STable* result = nullptr);
-
-		SDictionary& getJoinedRecord(sql::JOIN_TYPE type,
-			const char* table2,
-			const char* join,
-			const stringarray& cols = { "*" },
-			const char* condition = nullptr,
-			const char* order = nullptr,
-			SDictionary* result = nullptr);
-		SDictionary& getJoinedRecord(const SDictionary& info, SDictionary* result = nullptr);
-		SDictionary& getJoinedRecordAt(size_t idx,
-			sql::JOIN_TYPE type,
-			const char* table2,
-			const char* join,
-			const stringarray& cols = { "*" },
-			SDictionary* result = nullptr);
-
-		SArray& getJoinedRecords(sql::JOIN_TYPE type,
+		STable& getTable(const SDictionary& info, STable* result = nullptr);
+		SArray& getJoinedRecords(subyte type,
 			const char* table2,
 			const char* join,
 			const stringarray& cols = { "*" },
@@ -193,6 +134,15 @@ namespace slib {
 			bool distinct = false,
 			SArray* result = nullptr);
 		SArray& getJoinedRecords(const SDictionary& info, SArray* result = nullptr);
+		void getJoinedRecordPrepare(subyte type,
+			const char* table2,
+			const char* join,
+			const stringarray& cols = { "*" },
+			const char* condition = nullptr,
+			const char* order = nullptr,
+			const char* limit = nullptr,
+			bool distinct = false);
+		void getJoinedRecordPrepare(const SDictionary& info);
 	};
 
 	class SOBJ_DLL SDataBase : public SObject {
@@ -209,8 +159,6 @@ namespace slib {
 		bool _open, _transaction;
 		int _res;
 
-
-
 	public:
 		SDataBase();
 		SDataBase(const char* path);
@@ -225,13 +173,10 @@ namespace slib {
 		int tableCount();
 		sobj tables();
 
-	protected:
-		void _createTable(const SDictionary& dic);
-		void _createTable(const STable& table);
-
 	public:
 		void createTable(const char* name, const SArray& columns = {}, const SArray& rows = {});
-		void createTable(const sobj& obj);
+		void createTable(const SDictionary& dic);
+		void createTable(const STable& table);
 		void removeTable(const char* name);
 		void clearTables();
 		SDBTable table(const char* name);

@@ -1,7 +1,6 @@
 #ifndef SLIB_STEXT_H
 #define SLIB_STEXT_H
 
-#include "sutil/sannotation.h"
 #include "sobj/sstring.h"
 #include "smedia/sgraphic.h"
 
@@ -30,67 +29,40 @@ namespace slib {
 	const String DEFAULT_COLOR_TXTBG_TAG = String::ESC + "[47m";
 	const String DEFAULT_TXT_TAG = String::ESC + "[0m" + String::ESC + "[39m" + String::ESC + "[49m";
 
-
-
     class SOBJ_DLL SText;
     /*
-    struct sfontdat {};
-    
     class SFont {
-        uint16_t _type;
+        sushort _type;
+		float _width;
         String _name;
-        Map<uint32_t, sfontdat> _dat;
+        sdict _dat;
         
         SFont();
-        SFont(const char *n);
-        SFont(const SFont &font);
         ~SFont();
         
-        SFont &operator=(const SFont &font);
-        
-        sfontdat operator[](uint32_t i) const;
-        sfontdat operator[](const char *s) const;
+        sobj operator[](uint32_t i) const;
+        sobj operator[](const char *s) const;
         
         void load(const char *path);
     };
 	*/
-    struct SOBJ_DLL STextStyle {
-        sushort type;
-        String font;
-        float size;
+    struct text_style {
+		suint type;
+        String font, ruby;
+        float size, weight;
         smedia::SColor color, background;
         
-        STextStyle(int t = sstyle::PLAIN, const char *f = "Arial", float s = 10.0, smedia::SColor c = "black", smedia::SColor b = "clear");
-        STextStyle(const sobj &obj);
-        STextStyle(const STextStyle &style);
-        ~STextStyle();
-        
-        STextStyle &operator=(const STextStyle &s);
-        STextStyle &operator=(const SDictionary &dict);
+		text_style(int t = sstyle::PLAIN, const char *f = "Arial", float s = 10.0, smedia::SColor c = "black", smedia::SColor b = "clear");
+		text_style(const sobj &obj);
+		text_style(const text_style&style);
+        ~text_style();
+		text_style& operator=(const text_style& s);
+
+		sobj toObj() const;
     };
-		/*
-	struct SOBJ_DLL text_style {
-		sushort type;
-		String font;
-		float size, weight;
-		smedia::SColor color, background;
-		
-
-		text_style(int t = sstyle::PLAIN, const char* f = "Arial", float s = 10.0, smedia::SColor c = "black", smedia::SColor b = "clear");
-		text_style(const sobj& obj);
-		text_style(const STextStyle& style);
-		~text_style();
-
-		text_style& operator=(const text_style &s);
-
-		void set(sobj o);
-		sobj toObj();
-	};
-	*/
-	//SAnnotation<srange, text_style> _styles;
+	using text_attribute = std::pair<srange, text_style>;
 
     class SOBJ_DLL SText : public SObject {
-        typedef std::pair<srange, STextStyle> text_attribute;
         
     private:
         String _string;
@@ -98,8 +70,7 @@ namespace slib {
         
     public:
         SText();
-        SText(const String &s);
-        SText(const String &s, const SDictionary &a);
+        SText(const String &s, const sobj& a = snull);
         SText(const SText &text);
         ~SText();
         
@@ -139,15 +110,16 @@ namespace slib {
         Array<text_attribute> attribute(srange range) const;
         bool isAttributed(srange range) const;
         
-        void setStyle(srange range, const STextStyle &style);
+        void setStyle(srange range, const text_style &style);
         void setType(srange range, uint16_t type);
         void setFont(srange range, const char *font);
         void setSize(srange range, const float &size);
         void setColor(srange range, const smedia::SColor &col);
         void setBGColor(srange range, const smedia::SColor &col);
-        void setAttribute(srange range, const SDictionary &dic);
+        void setAttribute(srange range, const sobj &attr);
         
         const char *cstr() const;
+		String& string();
         const String &string() const;
         
         String getClass() const;

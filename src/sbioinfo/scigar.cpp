@@ -14,7 +14,6 @@ scigar::scigar() : option(-1), length(0) {}
 scigar::scigar(subyte o, sint l) : option(o), length(l) {}
 scigar::scigar(suint i) : option(i&0x0F), length((i>>4)&0x0FFFFFFF) {}
 scigar::scigar(const scigar &c) : option(c.option), length(c.length) {}
-
 scigar & scigar::operator = (const scigar &c) { option = c.option; length = c.length; return *this; }
 bool scigar::operator < (const scigar &c) const { return option!=c.option?option<c.option:length < c.length; }
 bool scigar::operator == (const scigar &c) const { return option == c.option && length == c.length; }

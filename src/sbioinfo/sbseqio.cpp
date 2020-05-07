@@ -80,10 +80,10 @@ void SBSeqIO::loadTXT(sio::SFile& file, SBioSeq* seq) {
 	String str;
 	file >> str;
 	if (!seq->_type) {
-		seq->_type = COMPRESS1 | sbio::seqtype(str);
+		seq->_type = COMPRESS1 | sseq::seqType(str);
 		seq->_init();
 	}
-	seqform(str);
+	sseq::seqForm(str);
 	seq->setSeq(str);
 }
 inline void readABIDir(sio::SFile& file, Map<String, slib::Array<abidir>>& map) {
@@ -110,11 +110,11 @@ void SBSeqIO::loadABI(sio::SFile &file, SBioSeq *seq) {
 	}
 	file.readBytes(tmp, 4);
 	if (memcmp(magic, tmp, 4)) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, tmp, "ABIF");
-	seq->addAttribute("format", "ABIF");
+	seq->attribute["format"] = "ABIF";
 	sshort ver;
 	file.readShort(ver);
 	invertEndian<2>(&ver);
-	seq->addAttribute("version", ver);
+	seq->attribute["version"] = ver;
 	readABIDir(file, map);
 	auto& dir = map["tdir"][0];
 	file.setOffset(dir.data_offset);
@@ -126,11 +126,11 @@ void SBSeqIO::loadABI(sio::SFile &file, SBioSeq *seq) {
 		file.readBytes(&str[0], map["PBAS"][0].data_size);
 		seq->setSeq(str);
 	}
-	seq->setName(file.filename(false));
+	seq->name = file.filename(false);
 }
 void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 	seq->clearAll();
-	seq->addAttribute("format", "GenBank");
+	seq->attribute["format"] = "GenBank";
 	if (!file.isOpened()) file.open();
 	String row;
 	while (!file.eof()) {
@@ -193,15 +193,15 @@ void SBSeqIO::loadFASTA(sushort type, sio::SFile& file, SBSeqList* list) {
 	list->clearAll();
 	String row, seq, name;
 	try {
-		list->_attribute["_file_type"] = "fasta";
+		list->attribute["_file_type"] = "fasta";
 		if (!file.isOpened()) file.open();
 		file.readLine(row);
 		if (!row.beginWith(">")) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, row, "FASTA");
 		name = row.substring(1);
-		list->_index[name] = list->size();
+		list->index[name] = list->size();
 		if (!type) {
 			file.readLine(seq);
-			if (!type) type = seqtype(seq);
+			if (!type) type = sseq::seqType(seq);
 		}
 		list->add(SBioSeq(type, name));
 
@@ -214,7 +214,7 @@ void SBSeqIO::loadFASTA(sushort type, sio::SFile& file, SBSeqList* list) {
 				list->last()->setSeq(seq); 
 				seq.clear();
 				name = row.substring(1);
-				list->_index[name] = list->size();
+				list->index[name] = list->size();
 				list->add(SBioSeq(type, name));
 			}
 			else seq += row;
@@ -233,24 +233,11 @@ void SBSeqIO::saveTXT(sio::SFile& file, SBioSeq* seq) {
 }
 void SBSeqIO::saveGBK(sio::SFile& file, SBioSeq* seq) {
 	/*
-	String tag;
-	if (!file.isOpened()) file.make();
-	tag = "LOCUS";
-	file<<tag.filled(12, false)<<_name.filled(24, false)<<_length<<
-	(_type&DNA_SEQ?" bp DNA":(_type&RNA_SEQ?" bp RNA":" aa AA"))<<
-	seq_attribute["division"]?seq_attribute["division"]:"UNA"<<
-
-
-
-
-
-	file.close();
 	 */
-	
 }
 void SBSeqIO::saveFASTA(sio::SFile& file, SBioSeq* seq) {
 	if (!file.isOpened()) file.open(nullptr, sio::WRITE);
-	file << ">" << seq->_name << String::LF; file.flush();
+	file << ">" << seq->name << String::LF; file.flush();
 	size_t current = 0;
 	while (current + FASTA_ROW_CHAR < seq->_length) {
 		file << seq->raw(current, FASTA_ROW_CHAR) << String::LF;
@@ -264,7 +251,7 @@ void SBSeqIO::saveFASTA(sio::SFile& file, SBioSeq* seq) {
 void SBSeqIO::saveFASTA(sio::SFile& file, SBSeqList* list) {
 	if (!file.isOpened()) file.open(nullptr, sio::WRITE);
 	sforeach(*list) {
-		file << ">" << E_->_name << String::LF; file.flush();
+		file << ">" << E_->name << String::LF; file.flush();
 		size_t current = 0;
 		while (current + FASTA_ROW_CHAR < E_->_length) {
 			file << E_->raw(current, FASTA_ROW_CHAR) << String::LF;
@@ -280,17 +267,17 @@ void SBSeqIO::makeIndex(sushort type, sio::SFile& file, SBSeqList* list) {
 	list->clearAll();
 	String row, seq, name;
 	try {
-		list->_attribute["_file_type"] = "fasta";
-		list->_attribute["_file"] = sio::SFile(file.path(), sio::READ);
+		list->attribute["_file_type"] = "fasta";
+		list->attribute["_file"] = sio::SFile(file.path(), sio::READ);
 		if (!file.isOpened()) file.open();
 		file.readLine(row);
 		if (!row.beginWith(">")) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, row, "FASTA");
-		list->_attribute["_offset"].add(file.offset());
+		list->attribute["_offset"].add(file.offset());
 		name = row.substring(1);
-		list->_index[name] = list->size();
+		list->index[name] = list->size();
 		if (!type) {
 			file.readLine(seq);
-			if (!type) type = seqtype(seq);
+			if (!type) type = sseq::seqType(seq);
 		}
 		list->add(SBioSeq(type, name));
 
@@ -303,9 +290,9 @@ void SBSeqIO::makeIndex(sushort type, sio::SFile& file, SBSeqList* list) {
 				seq.clear();
 				list->_length.add(seq.length());
 				name = row.substring(1);
-				list->_index[name] = list->size();
+				list->index[name] = list->size();
 				list->add(SBioSeq(type, name));
-				list->_attribute["_offset"].add(file.offset());
+				list->attribute["_offset"].add(file.offset());
 			}
 			else seq += row;
 		}

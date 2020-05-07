@@ -53,6 +53,7 @@ bool SObject::scoped() const  {
 }
 
 SObjPtr::SObjPtr() : _type(NULL_OBJ), _ptr(nullptr) {}
+SObjPtr::SObjPtr(OBJ_TYPE ot) : _type(ot), _ptr(nullptr) {}
 SObjPtr::SObjPtr(bool b) : _type(NUMBER_OBJ), _ptr(new SNumber(b)) {}
 SObjPtr::SObjPtr(sbyte i) : _type(NUMBER_OBJ), _ptr(new SNumber(i)) {}
 SObjPtr::SObjPtr(subyte ui) : _type(NUMBER_OBJ), _ptr(new SNumber(ui)) {}
@@ -93,6 +94,7 @@ SObjPtr::SObjPtr(const SData &dat) : _type(DATA_OBJ), _ptr(new SData(dat)) {}
 SObjPtr::SObjPtr(const SArray &array) : _type(ARRAY_OBJ), _ptr(new SArray(array)) {}
 SObjPtr::SObjPtr(const SPair &pair) : _type(PAIR_OBJ), _ptr(new SPair(pair)) {}
 SObjPtr::SObjPtr(const SDictionary &dict) : _type(DICT_OBJ), _ptr(new SDictionary(dict)) {}
+SObjPtr::SObjPtr(const SColumn& col) : _type(COLUMN_OBJ), _ptr(new SColumn(col)) {}
 SObjPtr::SObjPtr(const STable &tbl) : _type(TABLE_OBJ), _ptr(new STable(tbl)) {}
 SObjPtr::SObjPtr(const SDataBase& db) : _type(DB_OBJ), _ptr(new SDataBase(db.path())) {}
 SObjPtr::SObjPtr(const sio::SFile &file) : _type(FILE_OBJ), _ptr(new SFile(file)) {}
@@ -147,67 +149,6 @@ SObjPtr &SObjPtr::operator = (SObjPtr &&obj) {
 		if (obj._type == CHAR_OBJ) character() = obj.character();
 		else character() = (const char*)obj;
 	}
-	else if (_type == obj._type) {
-		switch (_type) {
-		case NUMBER_OBJ:
-			number() = obj.number();
-			break;
-		case STRING_OBJ:
-			string() = obj.string();
-			break;
-		case DATE_OBJ:
-			date() = obj.date();
-			break;
-		case DATA_OBJ:
-			data() = obj.data();
-			break;
-		case ARRAY_OBJ:
-			array() = obj.array();
-			break;
-		case PAIR_OBJ:
-			pair() = obj.pair();
-			break;
-		case DICT_OBJ:
-			dict() = obj.dict();
-			break;
-		case TEXT_OBJ:
-			text() = obj.text();
-			break;
-		case COLUMN_OBJ:
-			column() = obj.column();
-			break;
-		case TABLE_OBJ:
-			table() = obj.table();
-			break;
-			/*
-		case NODE_OBJ:
-			node() = obj.node();
-			break;
-			*/
-		case FILE_OBJ:
-			file() = obj.file();
-			break;
-		case FUNC_OBJ:
-			number() = obj.number();
-			break;
-			/*
-		case FUNC_OBJ:
-			func() = obj.func();
-			break;
-			*/
-		case IMAGE_OBJ:
-			image() = obj.image();
-			break;
-		case FIGURE_OBJ:
-			//figure() = obj.figure();
-			break;
-
-
-
-		default:
-			break;
-		}
-	}
 	else { release(); obj.moveTo(*this); }
     return *this;
 }
@@ -219,17 +160,6 @@ SObjPtr &SObjPtr::operator = (const SObjPtr &obj) {
 		if (obj._type == CHAR_OBJ) character() = obj.character();
 		else character() = (const char*)obj;
 	}
-
-
-
-
-
-
-
-
-
-
-	//if (isEditable()) { clone(obj); _edit = false; }
     else { release(); obj.copyTo(*this); }
     return *this;
 }
@@ -567,13 +497,18 @@ SCIterator SObjPtr::end() const {
     else if (isDict()) return SCIterator(dict().end());
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-sobj SObjPtr::import(const SDictionary& info) {
+sobj SObjPtr::import(sobj info) {
 	sobj obj;
 	obj.load(info);
 	return obj;
 }
-void SObjPtr::load(const SDictionary& info) {
-	if (isArray()) {
+void SObjPtr::load(sobj info) {
+	if (isHollow()) {}
+	else if (isStr()) {
+		if (isNull()) _ptr = new SString();
+		string().load(info["path"]);
+	}
+	else if (isArray()) {
 		if (isNull()) _ptr = new SArray();
 		array().load(info["path"]);
 	}
@@ -582,8 +517,13 @@ void SObjPtr::load(const SDictionary& info) {
 		dict().load(info["path"]);
 	}
 }
-void SObjPtr::save(const SDictionary& info) {
-	if (isArray()) {
+void SObjPtr::save(sobj info) {
+	if (isHollow()) {}
+	else if (isStr()) {
+		if (isNull()) _ptr = new SString();
+		string().save(info["path"].file().path());
+	}
+	else if (isArray()) {
 		if (isNull()) _ptr = new SArray();
 		array().save(info["path"].file().path());
 	}
@@ -683,7 +623,7 @@ sattribute SObjPtr::parse(const char *sep, const char *part, bool trim) const {
 
 void SObjPtr::convert(int t) {
     if (isNum()) number().setType(t);
-    if (isColumn()) column().setType(t);
+    if (isColumn()) column().convert(t);
     //if (isImg()) image().convert(t);
 }
 void SObjPtr::transform(int t) {
@@ -852,8 +792,8 @@ bool SObjPtr::isNumeric() const {
     if (isStr()) return string().isNumeric();
     else return toString().isNumeric();
 }
-bool SObjPtr::isNum() const { return _type == NUMBER_OBJ; }
 bool SObjPtr::isHollow() const { return _type == NULL_OBJ; }
+bool SObjPtr::isNum() const { return _type == NUMBER_OBJ; }
 bool SObjPtr::isChar() const { return _type == CHAR_OBJ; }
 bool SObjPtr::isStr() const { return _type == STRING_OBJ; }
 bool SObjPtr::isDate() const { return _type == DATE_OBJ; }

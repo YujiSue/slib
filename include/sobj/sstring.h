@@ -90,7 +90,6 @@ namespace slib {
         SString &operator=(sshort i);
         SString &operator=(sushort i);
         SString &operator=(char c);
-        SString &operator=(const SChar &c);
         SString &operator=(const char *s);
         SString &operator=(const std::string &s);
         SString &operator=(const String &s);

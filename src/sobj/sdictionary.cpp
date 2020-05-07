@@ -8,9 +8,8 @@ using namespace slib::sio;
 
 SPair::SPair() : kvpair<String, sobj>(), SObject() {}
 SPair::SPair(const kvpair<String, sobj> &pair) : kvpair<String, sobj>(pair), SObject() {}
-SPair::SPair(const SPair &pair) {}
+SPair::SPair(const SPair &pair) : kvpair<String, sobj>(pair.key, pair.value), SObject() {}
 SPair::~SPair() {}
-
 SPair &SPair::operator=(const SPair &pair) {
     key = pair.key;
     value = pair.value;
@@ -35,25 +34,18 @@ SDictionary::SDictionary(const sattribute &attr) : SDictionary() {
     }
 }
 SDictionary::SDictionary(const sobj &obj) : SDictionary(obj.dict()) {}
-SDictionary::SDictionary(const SDictionary &dict) : SDictionary() {
-    reserve(dict.capacity());
-    if (dict.size()) sforeach(dict) set(it->key, it->value);
-}
-SDictionary::SDictionary(SDictionary&& dict) : SDictionary() { swap(dict); }
+SDictionary::SDictionary(const SDictionary &dict) : SObject(), Map<String, sobj>(dict) {}
+SDictionary::SDictionary(SDictionary&& dict) : SObject(), Map<String, sobj>(std::forward<Map<String, sobj> &&>(dict)) {}
 SDictionary::~SDictionary() {}
-
 SDictionary &SDictionary::operator=(const SDictionary &dic) {
-    clear(); reserve(dic.capacity());
-    if (dic.size()) sforeach(dic) set(it->key, it->value); return *this;
+    clear();
+	reserve(dic.capacity());
+	if (dic.size()) {
+		sforeach(dic) set(E_.key, E_.value);
+	}
+	return *this;
 }
 SDictionary& SDictionary::operator=(SDictionary&& dic) { swap(dic); return *this; }
-SDictionary &SDictionary::operator=(const sobj &obj) {
-    clear();
-    if (obj.isDict()) *this = obj.dict();
-    else throw SException(ERR_INFO, SLIB_CAST_ERROR, "obj", CAST_TEXT(obj->getClass(), "dictionary"));
-    return *this;
-}
-
 void SDictionary::load(const char *path) {
     if(!empty()) clear();
     auto ext = SFile(path).extension();
@@ -61,7 +53,7 @@ void SDictionary::load(const char *path) {
         SXmlDoc doc;
         doc.load(path);
         auto node = doc.entity()->children().first();
-        if (!(doc.type()&sio::PLIST_FILE) || node->tag != "dict")
+        if (!(doc.type()& xml::PLIST))
             throw SException(ERR_INFO, SLIB_FORMAT_ERROR, path);
         *this = SXmlNode::toPlistObj(node);
     }
@@ -71,11 +63,10 @@ void SDictionary::load(const char *path) {
         *this = js.dict();
     }
 }
-
 void SDictionary::save(const char *path) {
     auto ext = SFile(path).extension();
     if (ext == "plist") {
-        SXmlDoc doc(sio::PLIST_FILE);
+        SXmlDoc doc(xml::PLIST);
         doc.addToEntity(SXmlNode::plistNode(*this));
         doc.save(path);
     }
@@ -84,11 +75,10 @@ void SDictionary::save(const char *path) {
         js.save(path);
     }
 }
-
 SMapIterator<String, sobj> SDictionary::search(const char *que) {
     auto query = String::lower(que);
     sforeach(*this) {
-        if (String::lower(it->value->toString()).contain(query)) return it;
+        if (String::lower(E_.value->toString()).contain(query)) return it;
     }
     return end();
 }
@@ -97,7 +87,6 @@ SArray SDictionary::lump(const stringarray &keys) {
     sforeach(keys) array.add(at(E_));
     return array;
 }
-
 String SDictionary::getClass() const { return "dict"; }
 String SDictionary::toString() const {
     if(empty()) return "";
@@ -120,7 +109,6 @@ String SDictionary::toString() const {
 SObject * SDictionary::clone() const {
     return new SDictionary(*this);
 }
-
 bool SDictionary::operator < (const sobj &obj) const {
     if (obj.isNull()) return false;
     if (obj.isDict()) (*this) < obj.dict();

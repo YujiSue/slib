@@ -4,45 +4,32 @@ using namespace slib;
 using namespace slib::sbio;
 using namespace slib::smath;
 
-sbseq_annot::sbseq_annot() : type(0), prev(nullptr), next(nullptr) {}
-sbseq_annot::sbseq_annot(suint t, const char* n, const sbpos& p) : type(0), name(n), pos(p), prev(nullptr), next(nullptr) {}
-sbseq_annot::sbseq_annot(const sbseq_annot& a) {
-	type = a.type; name = a.name; pos = a.pos;
-	prev = a.prev; next = a.next; attribute = a.attribute;
+sbseq_annotation::sbseq_annotation() : type(0) {}
+sbseq_annotation::sbseq_annotation(suint t, const srange& p, bool d) : type(0), pos(p), dir(d) {}
+sbseq_annotation::sbseq_annotation(const sbseq_annotation& a) {
+	type = a.type; pos = a.pos;
+	dir = a.dir; attribute = a.attribute;
 }
-sbseq_annot::~sbseq_annot() {}
-
-sbseq_annot& sbseq_annot::operator=(const sbseq_annot& a) { 
-	type = a.type; name = a.name; pos = a.pos;
-	prev = a.prev; next = a.next; attribute = a.attribute;
+sbseq_annotation::~sbseq_annotation() {}
+sbseq_annotation& sbseq_annotation::operator=(const sbseq_annotation& a) { 
+	type = a.type; pos = a.pos;
+	dir = a.dir; attribute = a.attribute;
 	return *this; 
 }
-sbseq_annot& sbseq_annot::operator+=(const sbseq_annot& a) { return *this; } //
-sbseq_annot& sbseq_annot::operator-=(const sbseq_annot& a) { return *this; } //
-sbseq_annot& sbseq_annot::operator/=(const sbseq_annot& a) { return *this; } //
-void sbseq_annot::join(sbseq_annot* annot) {
-	next = annot; annot->prev = this;
-}
-String sbseq_annot::toString(const char* format) const {
-	String str, f(format);
-	if (f == "gbk") {
-
-	}
-}
-bool sbseq_annot::operator<(const sbseq_annot& a) const { return pos < a.pos; }
-bool sbseq_annot::operator==(const sbseq_annot& a) const {
-	return type == a.type && name == a.name && pos == a.pos;
+bool sbseq_annotation::operator<(const sbseq_annotation& a) const { return pos < a.pos; }
+bool sbseq_annotation::operator==(const sbseq_annotation& a) const {
+	return type == a.type && pos == a.pos;
 }
 
-void sbio::seqform(String& str) {
+void sseq::seqForm(String& str) {
 	str.replace(REG(/[^a-zA-Z]+/g), "");
 }
-uint8_t sbio::seqtype(String& str) {
+subyte sseq::seqType(String& str) {
 	if (str.match(REG(/[QEILFPJZX]+/i))) return AA_SEQ;
 	else if (str.match(REG(/U/i))) return RNA_SEQ;
 	else return DNA_SEQ;
 }
-uint8_t sbio::maskByte(sushort type) {
+subyte sseq::maskByte(sushort type) {
 	auto t = type & 0x0F;
 	if (t == DNA_SEQ) {
 		auto c = (type >> 4) & 0x0F;
@@ -53,14 +40,12 @@ uint8_t sbio::maskByte(sushort type) {
 	else if (t == AA_SEQ) return 23;
 	return 0;
 }
-char sbio::maskChar(sushort type) {
+char sseq::maskChar(sushort type) {
 	auto t = type & 0x0F;
 	if (t == DNA_SEQ || t == RNA_SEQ) return 'N';
 	else if (t == AA_SEQ) return 'X';
 	return '*';
 }
-
-
 bool sseq::isATGC(const char &s) {
     return s == 'a' || s == 'A' || s == 't' || s == 'T' ||
     s == 'g' || s == 'G' || s == 'c' || s == 'C';
@@ -89,11 +74,9 @@ bool sseq::containBase(const char &c, const char *s, size_t l) {
     sforin(i, 0, l) { if(*s == c) return true; else ++s; }
     return false;
 }
-
 void slib::sbio::rawcopy(const subyte *ori, size_t pos, size_t len, subyte *seq) {
     memcpy(seq, &ori[pos], len);
 }
-
 Map<char, subyte> slib::sbio::DNA_BASE16_INDEX = {
     cu('N',0), cu('A',1), cu('C',2), cu('M',3), cu('n',0), cu('a',1), cu('c',2), cu('m',3),
     cu('G',4), cu('R',5), cu('S',6), cu('V',7), cu('g',4), cu('r',5), cu('s',6), cu('v',7),
@@ -110,7 +93,6 @@ Map<char, char> slib::sbio::DNA_COMPLEMENT_CHAR = {
 };
 bytearray slib::sbio::DNA_COMPLEMENT_IDX =
 { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
-
 smat<SEQ_CONVERTER> slib::sbio::DNA_CONVERTER(5, 5,
 {
     rawcopy, sseq::dencode1, sseq::dencode2, rawcopy, sseq::dencode4,
@@ -119,7 +101,6 @@ smat<SEQ_CONVERTER> slib::sbio::DNA_CONVERTER(5, 5,
     rawcopy, rawcopy, rawcopy, rawcopy, rawcopy,
     sseq::ddecode4, sseq::dexpand4, sseq::drecode42, rawcopy, sseq::drecode44
 });
-
 void sseq::draw(const subyte &b, char *s) { s[0] = b; }
 void sseq::ddec10(const subyte &b, char *s) { s[0] = DNA_BASE16[b]; }
 void sseq::ddec20(const subyte &b, char *s) {
@@ -153,7 +134,6 @@ void sseq::denc12(subyte &b, const subyte *s) {
 void sseq::denc14(subyte &b, const subyte *s) {
     b = (sseq::b24(s[0])<<6)|(sseq::b24(s[1])<<4)|(sseq::b24(s[2])<<2)|sseq::b24(s[3]);
 }
-
 void sseq::ddecode1(const subyte *ori, size_t pos, size_t length, subyte *seq) {
     ori += pos;
     sforin(i, 0, length) { *seq = DNA_BASE16[*ori]; ++seq; ++ori; }
@@ -296,7 +276,6 @@ ubytearray sseq::dcompseqi(ubytearray &seq) {
     sseq::dcpycompi(seq, cseq);
     return cseq;
 }
-
 Map<char, subyte> slib::sbio::RNA_BASE_INDEX = {
     cu('A',0), cu('a',0), cu('C',1), cu('c',1),
     cu('G',2), cu('g',2), cu('T',3), cu('t',3),
@@ -312,7 +291,6 @@ smat<SEQ_CONVERTER>(2, 2, {
     rawcopy, sseq::rencode,
     sseq::rdecode, rawcopy
 });
-
 void sseq::rdecode(const subyte *ori, size_t pos, size_t length, subyte *seq) {
     if(!length) return;
     ori += pos;
@@ -398,7 +376,6 @@ void sseq::rtransi(const subyte *ori, size_t pos, size_t length, subyte *seq) {
     ori += pos;
     sforin(i, 0, length) { *seq = b42(*ori); ++seq; ++ori; }
 }
-
 Map<char, subyte> slib::sbio::AMINO_ACID_INDEX = {
     cu('A',0), cu('R',1), cu('N',2), cu('D',3), cu('a',0), cu('r', 1), cu('n',2), cu('d',3),
     cu('C',4), cu('Q',5), cu('E',6), cu('G',7), cu('c',4), cu('q',5), cu('e',6), cu('g',7),
@@ -419,7 +396,6 @@ CODON_TABLE(4, 4, {
     {  5, 8, 5, 8 }, { 14,14,14,14 }, {  1, 1, 1, 1 }, { 10,10,10,10 },
     {  6, 3, 6, 3 }, {  0, 0, 0, 0 }, {  7, 7, 7, 7 }, { 19,19,19,19 },
     { 24,18,24,18 }, { 15,15,15,15 }, { 24, 4,17, 4 }, { 10,13,10,13 } });
-
 void sseq::adecode(const subyte *ori, size_t pos, size_t length, subyte *seq) {
     if(!length) return;
     ori += pos;
@@ -436,4 +412,3 @@ void sseq::atrans(const subyte *ori, size_t pos, size_t length, subyte *seq, con
     ori += pos;
     sforin(i, 0, size) { *seq = codon[*ori][*(ori+1)][*(ori+2)]; ++seq; ori += 3; }
 }
-

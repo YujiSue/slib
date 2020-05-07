@@ -6,11 +6,11 @@
 using namespace slib;
 
 String SNumber::toBinary(subyte b) {
-	return String::HEX_STR[(b >> 7)] + String::HEX_STR[((b >> 6) & 0x01)] + String::HEX_STR[((b >> 5) & 0x01)] + String::HEX_STR[((b >> 4) & 0x01)] +
-		String::HEX_STR[((b >> 3) & 0x01)] + String::HEX_STR[((b >> 2) & 0x01)] + String::HEX_STR[((b >> 1) & 0x01)] + String::HEX_STR[(b & 0x01)];
+	return HEX_STR[(b >> 7)] + HEX_STR[((b >> 6) & 0x01)] + HEX_STR[((b >> 5) & 0x01)] + HEX_STR[((b >> 4) & 0x01)] +
+		HEX_STR[((b >> 3) & 0x01)] + HEX_STR[((b >> 2) & 0x01)] + HEX_STR[((b >> 1) & 0x01)] + HEX_STR[(b & 0x01)];
 }
-String SNumber::toOct(subyte b) { return String::HEX_STR[(b >> 6)] + String::HEX_STR[((b >> 3) & 0x07)] + String::HEX_STR[(b & 0x07)]; }
-String SNumber::toHex(subyte b) { return String::HEX_STR[(b >> 4)] + String::HEX_STR[(b & 0x0F)]; }
+String SNumber::toOct(subyte b) { return HEX_STR[(b >> 6)] + HEX_STR[((b >> 3) & 0x07)] + HEX_STR[(b & 0x07)]; }
+String SNumber::toHex(subyte b) { return HEX_STR[(b >> 4)] + HEX_STR[(b & 0x0F)]; }
 SNumber SNumber::toNumber(const char *s) { return String(s).number(); }
 SNumber::SNumber() : _type(SNumber::INTEGER) { _value._i = 0; }
 SNumber::SNumber(char c) : _type(SNumber::INTEGER) { _value._i = (sbyte)c; }

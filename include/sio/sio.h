@@ -44,7 +44,7 @@ namespace slib {
         #define HOME_PATH String(getenv("HOME"))
 		#endif
         #define CURRENT_PATH currentPath()
-        
+        /*
 		//File type
 		constexpr sushort BINARY_FILE = 0x0000;
 
@@ -96,7 +96,7 @@ namespace slib {
 		//constexpr sushort SOML_FILE = 0x180F;
 
 		constexpr sushort SVG_FILE = 0x1841;
-
+		*/
 
         class SOBJ_DLL SFile;
         #define filearray Array<slib::sio::SFile>

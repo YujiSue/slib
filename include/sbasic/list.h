@@ -343,14 +343,24 @@ namespace slib {
 			p->insertPrev(p_);
 			if (!(p_->prev)) _begin = p_;
 			++_size;
-			return it + 1;
+			return sli_iter<T>(p_);
         }
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 	}
 	template <typename T>
 	sli_iter<T> List<T>::insert(sli_iter<T> iter, const T& val) {
-		auto idx = _index(iter);
-		return insert(idx, val);
+		if (_capacity <= _size + 2) {
+			auto idx = _index(iter);
+			_expand(_size + 2);
+			return insert(idx, val);
+		}
+		else {
+			auto p_ = _fill(val);
+			iter._ptr->insertPrev(p_);
+			if (!(p_->prev)) _begin = p_;
+			++_size;
+			return sli_iter<T>(p_);
+		}
 	}
     template <typename T>
 	sli_iter<T> List<T>::remove(sli_iter<T> beg, sli_iter<T> end) {

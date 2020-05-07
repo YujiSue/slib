@@ -5,17 +5,6 @@
 using namespace slib;
 using namespace slib::sio;
 
-intarray slib::iarray(const String &str, const char *sep) {
-    intarray iarray;
-    auto arr = str.split(sep);
-    sforeach(arr) iarray.add(it->integer());
-    return iarray;
-}
-intarray slib::iarray(int num, bool zero) {
-    intarray iarray(num);
-    sforin(i, 0, num) iarray[i] = (zero?i:i+1);
-    return iarray;
-}
 SArray::SArray() : Array<sobj>() {}
 SArray::SArray(int size) : Array<sobj>(size) {}
 SArray::SArray(size_t size) : Array<sobj>(size) {}
@@ -44,11 +33,8 @@ SArray::SArray(const sobj &obj) : SArray() {
     if (obj.isArray()) *this = obj.array();
     else add(obj);
 }
-SArray::SArray(const SArray &array) : SArray(array.size()) {
-    auto it = begin(), e = end();
-    auto p = array.ptr();
-    while(it < e) { E_ = *p; NEXT_; ++p; }
-}
+SArray::SArray(SArray&& array) : Array(std::forward<Array &&>(array)) {}
+SArray::SArray(const SArray &array) : Array(array) {}
 SArray::~SArray() {}
 
 SArray &SArray::operator = (const SArray &array) {
@@ -66,8 +52,8 @@ void SArray::load(const char *path) {
         SXmlDoc doc;
         doc.load(path);
         auto node = doc.entity()->children().first();
-        if(doc.type() != sio::PLIST_FILE || node->tag != "array")
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, node->tag, "PLIST array");
+        if(doc.type() != xml::PLIST)
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
         *this = SXmlNode::toPlistObj(node);
     }
     else if(ext == "json") {
@@ -80,7 +66,7 @@ void SArray::load(const char *path) {
 void SArray::save(const char *path) {
     auto ext = SFile(path).extension();
     if (ext == "plist") {
-        SXmlDoc doc(sio::PLIST_FILE);
+        SXmlDoc doc(xml::PLIST);
         doc.addToEntity(SXmlNode::plistNode(*this));
         doc.save(path);
     }

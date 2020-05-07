@@ -83,8 +83,8 @@ SCalligraphy::SCalligraphy(const SCalligraphy &c) : SFigure(c) {
 SCalligraphy::~SCalligraphy() {}
 
 const char *SCalligraphy::text() const { return _text.cstr(); }
-STextStyle& SCalligraphy::style() { return _attribute; }
-const STextStyle &SCalligraphy::style() const { return _attribute; }
+text_style& SCalligraphy::style() { return _attribute; }
+const text_style &SCalligraphy::style() const { return _attribute; }
 void SCalligraphy::setText(const char *s) {
     _text = s;
     v2f init = _vertex[0];
@@ -97,7 +97,7 @@ void SCalligraphy::setText(const char *s) {
     addVertex(v2f(init.x+w, init.y));
 }
 void SCalligraphy::setFont(const char *font, float size) {
-    _attribute = STextStyle(sstyle::PLAIN, font, size, SColor::BLACK, SColor::CLEAR);
+    _attribute = text_style(sstyle::PLAIN, font, size, SColor::BLACK, SColor::CLEAR);
     v2f init = _vertex[0];
     _vertex.clear();
     auto w = _attribute.size*_text.length();
@@ -108,7 +108,7 @@ void SCalligraphy::setFont(const char *font, float size) {
     addVertex(v2f(init.x+w, init.y));
 }
 void SCalligraphy::setStyle(uint16_t type, const char *font, float size, SColor col, SColor bg) {
-    _attribute = STextStyle(type, font, size, col, bg);
+    _attribute = text_style(type, font, size, col, bg);
     v2f init = _vertex[0];
     _vertex.clear();
     auto w = _attribute.size*_text.length();

@@ -98,7 +98,7 @@ SColor::SColor(const char *s) : SColor() {
 		}
 		else if (code.beginWith("(") && code.endWith(")")) {
 			_mode = DEFAULT_NUMERIC;
-			code.transform(String::DELETE_QUOTE);
+			code.transform(DELETE_QUOTE);
 			auto list = code.split(",");
 			if (list.size() == 3) *this = col3i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue());
 			else if (list.size() == 4) *this = col4i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue(), list[3].ubyteValue());

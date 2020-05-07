@@ -119,11 +119,15 @@ int main()
 #ifdef SOBJECT_TEST
 	test::SObjTest();
 #endif
-
+#ifdef TABLE_TEST
+	test::STableTest();
+#endif
 #ifdef DB_TEST
 	test::SDBTest();
 #endif
-
+#ifdef XML_TEST
+	test::SXmlTest();
+#endif
 #ifdef THREAD_TEST
 	//test::ThreadTest();
 #endif
@@ -152,9 +156,9 @@ int main()
 	proc.wait();
 
 #endif
-
-
-
+#ifdef SBIOINFO_TEST
+	test::SBSeqTest();
+#endif
 
 	return 0;
 }

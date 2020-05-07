@@ -9,34 +9,31 @@
 namespace slib {
     using namespace smath;
     
+	constexpr sushort OBJECT_COLUMN = 0x0000;
+	constexpr sushort NUMBER_COLUMN = 0x0010;
+	constexpr sushort INTEGER_COLUMN = 0x0011;
+	constexpr sushort REAL_COLUMN = 0x0012;
+	constexpr sushort BOOL_COLUMN = 0x0014;
+	constexpr sushort STRING_COLUMN = 0x0020;
+	constexpr sushort TEXT_COLUMN = 0x0021;
+	constexpr sushort DATE_COLUMN = 0x0040;
+	constexpr sushort DATA_COLUMN = 0x0080;
+	constexpr sushort ARRAY_COLUMN = 0x0100;
+	constexpr sushort DICT_COLUMN = 0x0200;
+	constexpr sushort FUNC_COLUMN = 0x0400;
+	constexpr sushort IMG_COLUMN = 0x0800;
+
     class SOBJ_DLL STable;
     class SOBJ_DLL SColumn : public SArray {
         friend STable;
-    public:
-        static const sushort NUMBER_COLUMN = 0x0010;
-        static const sushort INTEGER_COLUMN = 0x0011;
-        static const sushort REAL_COLUMN = 0x0012;
-        static const sushort BOOL_COLUMN = 0x0014;
-        static const sushort STRING_COLUMN = 0x0020;
-        static const sushort TEXT_COLUMN = 0x0021;
-        static const sushort DATE_COLUMN = 0x0040;
-        static const sushort DATA_COLUMN = 0x0080;
-        static const sushort ARRAY_COLUMN = 0x0100;
-        static const sushort DICT_COLUMN = 0x0200;
-        static const sushort FUNC_COLUMN = 0x0400;
-        static const sushort IMG_COLUMN = 0x0800;
-        
     private:
         sushort _type;
         String _name;
         STable *_table;
         
     public:
-        SColumn();
-        SColumn(int type, const char *name = nullptr);
-        SColumn(int type, const char *name, const SArray &array);
-        SColumn(int type, const char *name, SArray &&array);
-        SColumn(SColumn *col, STable *table);
+        SColumn(int type = 0, const char *name = nullptr, const SArray& array = {});
+        SColumn(SArray &&array);
         SColumn(const SColumn &column);
         ~SColumn();
         
@@ -47,7 +44,7 @@ namespace slib {
 		sushort type() const;
         const String &name() const;
         
-        void setType(sushort t);
+        void convert(sushort t);
         void setName(const char *n);
         void setTable(STable *tbl);
         
@@ -63,14 +60,10 @@ namespace slib {
         String _name;
         SArray _columns, _rows;
         
-	private:
-		void _addRow(const SArray& array);
-		void _addRow(const stringarray& array);
-		void _addRow(const SDictionary& dict);
-
     public:
-        STable();
-        STable(const char *name, const Array<scolumn> &cols = {}, const SArray &rows = {});
+		STable();
+		STable(int row, int col);
+        STable(const Array<scolumn> &cols, const SArray &rows = {});
         STable(const smat<sobj> &mat);
         STable(const sobj &obj);
         STable(const STable &table);
@@ -79,11 +72,11 @@ namespace slib {
         STable &operator=(const STable &table);
         
         //IO
-        void load(const SDictionary &dict);
+        void load(sobj obj);
         void load(const char *path);
         void loadTxt(const char *path, const char *sep, bool header);
         
-        void save(const SDictionary &param);
+        void save(sobj obj);
         void save(const char *path);
         void saveTxt(const char *path, const char *sep);
         
@@ -100,10 +93,15 @@ namespace slib {
 		const SColumn& column(const char* name) const;
 		SArray &columns();
         const SArray &columns() const;
-        
-        void addColumn(const scolumn&col);
-        void insertColumn(size_t idx, const scolumn&col);
-        void setColumn(size_t idx, const scolumn&col);
+		void addColumn(const SColumn& col);
+		void addColumnDict(const SDictionary& dict);
+        void addColumn(const sobj& obj = snull);
+		void insertColumn(size_t idx, const SColumn& col);
+		void insertColumnDicr(size_t idx, const SDictionary& dict);
+		void insertColumn(size_t idx, const sobj& obj);
+		void setColumn(size_t idx, const SColumn& col);
+		void setColumnDict(size_t idx, const SDictionary& dict);
+        void setColumn(size_t idx, const sobj &col);
         void removeColumn(size_t idx);
         void removeColumns(size_t off, size_t len);
         void removeColumns(const srange &range);
@@ -120,33 +118,30 @@ namespace slib {
         const SArray &row(int idx) const;
 		SArray& rows();
         const SArray &rows() const;
-        sdict namedRow(int idx) const;
-        
-        //void addRow();
+		sobj namedRow(int idx) const;
+		void addRowArray(const SArray& array);
+		void addRowDict(const SDictionary& dict);
 		void addRow(const sobj& obj = snull);
+		void insertRowArray(size_t idx, const SArray& array);
+		void insertRowDict(size_t idx, const SDictionary& dict);
         void insertRow(size_t idx, const sobj &obj = snull);
-        
-        void setRow(size_t idx, const SArray &array);
-        void setRow(size_t idx, const stringarray &array);
-        void setRow(size_t idx, const SDictionary &dict);
-        void setRow(size_t idx, const sobj &obj);
-        
+        void setRowArray(size_t idx, const SArray &array);
+        void setRowDict(size_t idx, const SDictionary &dict);
+        void setRow(size_t idx, const sobj &obj = snull);
         void removeRow(int idx);
         void removeRows(size_t off, size_t len);
         void removeRows(const srange &range);
         void clearRows();
         void swapRow(size_t i1, size_t i2);
-        
-        void resizeRows(size_t s);
+        void resizeRow(size_t s);
+
+		void resize(size_t r, size_t c);
         sobj &value(int row, int col);
         const sobj &value(int row, int col) const;
         void setValue(int row, int col, const sobj &obj);
-        
         void clear();
-        
-        std::pair<size_t, size_t> find(const sobj &obj, smath::DIRECTION dir = HORIZONTAL, size_t offset = 0);
-        smat<sobj> toMatrix();
-        
+        svec2d<size_t> find(const sobj &obj, smath::DIRECTION dir = HORIZONTAL, size_t offset = 0);
+		void toMatrix(smat<sobj> &mat);
         String getClass() const;
         String toString() const;
         SObject *clone() const;

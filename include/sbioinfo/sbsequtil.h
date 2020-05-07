@@ -38,13 +38,7 @@ namespace slib {
         
 		//------------------------------------------------------------
 
-		extern void seqform(String& str);
-		extern subyte seqtype(String& str);
-
-		extern subyte maskByte(sushort type);
-		extern char maskChar(sushort type);
-
-        extern void rawcopy(const subyte *ori, size_t pos, size_t len, subyte *seq);
+		extern void rawcopy(const subyte *ori, size_t pos, size_t len, subyte *seq);
         
         #define BASE_CODER std::function<void(subyte &b, char *s)>
         #define SEQ_CONVERTER std::function<void(const subyte *, size_t, size_t, subyte *)>
@@ -70,32 +64,29 @@ namespace slib {
         extern smat<SEQ_CONVERTER> AA_CONVERTER;
         extern CODON_TABLE DEFAULT_CODON;
 
-		struct SBIOINFO_DLL sbseq_annot {
+		struct SBIOINFO_DLL sbseq_annotation {
 			suint type;
-			String name;
-			sbpos pos;
-			sbseq_annot* prev, *next;
+			sregion pos;
+			bool dir;
 			sdict attribute;
 
-			sbseq_annot();
-			sbseq_annot(suint t, const char* n, const sbpos& p);
-			sbseq_annot(const sbseq_annot& a);
-			~sbseq_annot();
+			sbseq_annotation();
+			sbseq_annotation(suint t, const srange& p, bool d = false);
+			sbseq_annotation(const sbseq_annotation& a);
+			~sbseq_annotation();
 
-			sbseq_annot& operator=(const sbseq_annot& a);
-			sbseq_annot& operator+=(const sbseq_annot& a);
-			sbseq_annot& operator-=(const sbseq_annot& a);
-			sbseq_annot& operator/=(const sbseq_annot& a);
+			sbseq_annotation& operator=(const sbseq_annotation& a);
 
-			void join(sbseq_annot* annot);
-
-			String toString(const char *format) const;
-
-			bool operator<(const sbseq_annot& a) const;
-			bool operator==(const sbseq_annot& a) const;
+			bool operator<(const sbseq_annotation& a) const;
+			bool operator==(const sbseq_annotation& a) const;
 		};
+		using seqannot = Pointer<sbseq_annotation>;
         
         namespace sseq {
+			extern void seqForm(String& str);
+			extern subyte seqType(String& str);
+			extern subyte maskByte(sushort type);
+			extern char maskChar(sushort type);
             /*
              * NA util
              */
@@ -106,7 +97,6 @@ namespace slib {
             extern size_t gcCount(const char *s);
             extern size_t gcCounti(const ubytearray &s);
             extern bool containBase(const char &c, const char *s, size_t l);
-            
             /*
              * DNA util
              */

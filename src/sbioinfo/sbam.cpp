@@ -336,7 +336,7 @@ void SBamFile::reads(sbam::read_vec &list, int idx, const srange &rng) {
     list.clear();
     if(!hasIndex()) return;
     sizearray bins;
-    SBIUtil::getBins(bins, rng);
+    sbiutil::getBins(bins, rng);
     if (bins.empty()) return;
     sforeach(bins) {
         auto &chunks = index.chunks[idx][index._bin_map[idx][E_]];
@@ -355,7 +355,7 @@ void SBamFile::reads(sbam::read_vec &list, int idx, const sregion &reg) {
     list.clear();
     if(!hasIndex()) return;
     sizearray bins;
-    SBIUtil::getBins(bins, reg);
+    sbiutil::getBins(bins, reg);
     if (bins.empty()) return;
     sforeach(bins) {
         auto &chunks = index.chunks[idx][index._bin_map[idx][E_]];

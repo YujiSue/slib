@@ -149,7 +149,7 @@ inline sobj toDict(int &offset, const char *s) {
                             key.resize(len);
                             memcpy(&key[0], &s[offset-len], len);
                             key.trimming();
-                            if (key.isQuoted()) key.transform(SString::DELETE_QUOTE);
+                            if (key.isQuoted()) key.transform(DELETE_QUOTE);
                             len = 0;
                         }
                         k = false;
@@ -243,7 +243,7 @@ sobj SJson::jsObj(const char *s) {
     if (str.empty()) return snull;
     else if (str[0] == '[') return jsArray(str);
     else if (str[0] == '{') return jsDict(str);
-    else if (str.isQuoted()) return str.transformed(String::DELETE_QUOTE);
+    else if (str.isQuoted()) return str.transformed(DELETE_QUOTE);
     else if (str.equal(R(/null/))) return snull;
     return str.number();
 }

@@ -38,7 +38,6 @@ namespace slib {
         
         SDictionary &operator=(const SDictionary &dic);
 		SDictionary& operator=(SDictionary &&dic);
-        SDictionary &operator=(const sobj &obj);
         
         //IO
         void load(const char *path);

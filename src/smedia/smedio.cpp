@@ -1,7 +1,7 @@
 #include "smedia/smedio.h"
 #include "smedia/simage.h"
 
-#ifdef _USE_CV
+#ifdef USE_CV
 #include "opencv/cv.h"
 #include "smedia/scv.h"
 #else
@@ -16,7 +16,7 @@ using namespace slib;
 using namespace slib::smedia;
 
 void SImageIO::load(const sio::SFile& file, SImage *image) {
-#ifdef _USE_CV
+#ifdef USE_CV
 	cv::Mat img = cv::imread(file.path().cstr());
 	cv2simg(img, image);
 #else
@@ -28,7 +28,7 @@ void SImageIO::load(const sio::SFile& file, SImage *image) {
 #endif
 }
 void SImageIO::save(const sio::SFile& file, SImage *image) {
-#ifdef _USE_CV
+#ifdef USE_CV
 	cv::Mat img = s2cvimg(image);
 	cv::imwrite(file.path().cstr(), img);
 #else
@@ -39,7 +39,7 @@ void SImageIO::save(const sio::SFile& file, SImage *image) {
 	else throw SException(ERR_INFO, SLIB_FORMAT_ERROR, file.path());
 #endif
 }
-#ifndef _USE_CV
+#ifndef USE_CV
 void SImageIO::importTIFF(const char *path, SImage *img) {
     TIFF *tiff = TIFFOpen(path, "r");
 	if (!tiff) throw SMediaException(ERR_INFO, sio::FILE_OPEN_ERROR, path);

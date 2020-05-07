@@ -10,8 +10,8 @@ SBioInfoException::SBioInfoException(const char* f, sint l, const char* func, si
 }
 SBioInfoException::~SBioInfoException() {}
 
-size_t slib::sbio::SBIUtil::countBin(sorder& order, srange range) {
-    auto cap = range.length()>>13;
+size_t slib::sbio::sbiutil::countBin(sorder& order, srange range) {
+	auto cap = range.length() >> 13;
     if (cap < 8) cap = 8;
     order.reserve(cap);
     sint count = 1; order[0] = 0;
@@ -27,42 +27,44 @@ size_t slib::sbio::SBIUtil::countBin(sorder& order, srange range) {
     sforin(i, beg, end) { order[4681+i] = count; ++count; }
     return count;
 }
-size_t SBIUtil::getBin(srange range) {
-    range.begin>>=14; range.end>>=14; if (range.begin == range.end) return 4681+range.begin;
-    range.begin>>=3; range.end>>=3; if (range.begin == range.end) return 585+range.begin;
-    range.begin>>=3; range.end>>=3; if (range.begin == range.end) return 73+range.begin;
-    range.begin>>=3; range.end>>=3; if (range.begin == range.end) return 9+range.begin;
-    range.begin>>=3; range.end>>=3; if (range.begin == range.end) return 1+range.begin;
+size_t sbiutil::getBin(srange range) {
+	range.begin >>= 14; range.end >>= 14;
+	if (range.begin == range.end) return 4681 + range.begin;
+	range.begin >>= 3; range.end >>= 3;
+	if (range.begin == range.end) return 585 + range.begin;
+	range.begin >>= 3; range.end >>= 3;
+	if (range.begin == range.end) return 73 + range.begin;
+	range.begin >>= 3; range.end >>= 3;
+	if (range.begin == range.end) return 9 + range.begin;
+	range.begin >>= 3; range.end >>= 3;
+	if (range.begin == range.end) return 1 + range.begin;
     return 0;
 }
-void SBIUtil::getBins(sizearray &bins, srange range) {
+void sbiutil::getBins(sizearray &bins, srange range) {
     bins.add(0);
-    auto last = (range.end>>26)+1; sforin(i, range.begin>>26, last) bins.add(1+i);
+	auto last = (range.end >> 26) + 1;
+	sforin(i, range.begin >> 26, last) bins.add(1 + i);
     last = (range.end>>23)+1; sforin(i, range.begin>>23, last) bins.add(9+i);
     last = (range.end>>20)+1; sforin(i, range.begin>>20, last) bins.add(73+i);
     last = (range.end>>17)+1; sforin(i, range.begin>>17, last) bins.add(585+i);
     last = (range.end>>14)+1; sforin(i, range.begin>>14, last) bins.add(4681+i);
 }
-void SBIUtil::getBins(sizearray &bins, const sregion &region) {
+void sbiutil::getBins(sizearray &bins, const sregion &region) {
     sforeach(region) getBins(bins, E_);
     bins.sort();
     auto size = bins.size();
     sforeach(bins) {
         if (E_ == -1) continue;
-        if (E_ == *(it+1)) {
-            auto it_ = it+1;
+        if (E_ == E_NXT) {
+			auto it_ = it + 1;
             while (it_ < bins.end() && E_ == *it_) { *it_ = -1; ++it_; --size; }
         }
     }
     bins.sort();
     bins.resize(size);
 }
-double SBIUtil::scoreVal(double v) {
-    return exp(v*logf(10.0)/-10.0);
-}
-double SBIUtil::phredVal(double v) {
-    return -10.0*(log(v)/log(10.0));
-}
+double sbiutil::scoreVal(double v) { return exp(v * logf(10.0) / -10.0); }
+double sbiutil::phredVal(double v) { return -10.0*(log(v)/log(10.0)); }
 sbpos::sbpos() : idx(-1), srange(), dir(false) {}
 sbpos::sbpos(sint i, sint b, sint e, bool d) : idx(i), srange(b, e), dir(d) {}
 sbpos::sbpos(const char *s, const sindex *namei) { set(s, namei); }

@@ -15,6 +15,7 @@ namespace slib {
         SArray(const intarray &iarray);
         SArray(const stringarray &strarray);
         SArray(const sobj &obj);
+		SArray(SArray&& array);
         SArray(const SArray &array);
         ~SArray();
         

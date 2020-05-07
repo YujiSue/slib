@@ -20,26 +20,25 @@ namespace slib {
 			friend SBSeqIO;
             friend SBSeqList;
                         
-        public:
-            typedef Array<sbseq_annot> annot_vec;
-            
         protected:
             sushort _type;
             sint _length;
-            String _name;
-            sregion _mask;
-			sdict _attribute;
-			SAnnotation<sbseq_annot> _annotation;
-            //annot_vec _annotation;
-            SEQ_CONVERTER _dec, _enc;
+			sregion _mask;
+			SEQ_CONVERTER _dec, _enc;
+
+		public:
+            String name;
+            sdict attribute;
+			Array<seqannot> annotation;
             
         private:
             void _init();
-            void setType();
+            void _setType();
             
         public:
             SBioSeq();
             SBioSeq(sushort t, const char *name = nullptr, const char *seq = nullptr);
+			SBioSeq(const char* seq);
             SBioSeq(const SBioSeq &seq);
             ~SBioSeq();
             
@@ -53,43 +52,36 @@ namespace slib {
             bool isScored() const;
             bool isAnnotated() const;
 			bool isAttributed() const;
+
             sushort type() const;
             subyte seqtype() const;
             subyte compress() const;
             
-            const sint &length() const;
-            const String &name() const;
+            sint length() const;
             const sregion &mask() const;
-			//annotation() const;
-			const sdict& attribute() const;
             
             void setSeq(const char *seq);
-            void setName(const char *name);
             void setLength(const size_t &l, bool alias = false);
             void addMask(const srange &range);
-			//void addAnnotation();
-			void addAttribute(const char* key, sobj val);
-			
 			void removeMask(const srange& range);
-			//void removeAnnotation();
-			void removeAttribute(const char* key);
-            void clearAll();
+			void clearAll();
             
             void encode(const char *seq, size_t off = 0, size_t len = -1, bool dir = false);
             void decode(char *seq, size_t off = 0, size_t len = -1, bool dir = false);
             void recode(subyte c, ubytearray &seq, size_t off = 0, size_t len = -1, bool dir = false);
             
             void convert(sushort t);
+
             SBioSeq subseq(const sbpos &pos);
             SBioSeq subseq(size_t off, size_t len, bool dir = false);
             String raw(const sbpos &pos) const;
             String raw(size_t off = 0, size_t len = -1, bool dir = false) const;
-            
+            /*
             void append(const char *seq);
             void append(const SBioSeq &seq);
             void insert(size_t idx, const char *seq);
             void insert(size_t idx, const SBioSeq &seq);
-            
+            */
             void circulate();
             void complement();
             void splice(const sregion &region);
@@ -112,9 +104,11 @@ namespace slib {
             
         protected:
 			bool _loaded;
-            sindex _index;
-			intarray _length;
-			sdict _attribute;
+            intarray _length;
+
+		public:
+			sindex index;
+			sdict attribute;
             
         public:
             SBSeqList();
@@ -122,21 +116,14 @@ namespace slib {
             virtual ~SBSeqList();
             
 			bool isLoaded() const;
-			sindex& nameIdx();
-            const sindex &nameIdx() const;
             size_t seqIdx(const char *name);
 			intarray& lengthList();
 			const intarray &lengthList() const;
             suinteger total() const;
-			sdict& attribute();
-			const sdict& attribute() const;
 
 			void load(const char *path);
             void save(const char *path);
-            void index(const char *path);
-            
-			void addAttribute(const char* key, sobj val);
-			void removeAttribute(const char* key);
+            void makeIndex(const char *path);
 
             SBioSeq getSeq(sushort type, const sbpos &pos);
             SBioSeq getSeq(sushort type, int idx, size_t pos, size_t len, bool dir = false);

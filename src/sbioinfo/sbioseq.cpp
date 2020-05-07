@@ -5,31 +5,35 @@ using namespace slib::sio;
 using namespace slib::sbio;
 
 SBioSeq::SBioSeq() : _type(0), _length(0), _dec(nullptr), _enc(nullptr), ubytearray() {}
-SBioSeq::SBioSeq(sushort t, const char *name, const char *seq) : SBioSeq() {
+SBioSeq::SBioSeq(const char* seq) : SBioSeq() { setSeq(seq); }
+SBioSeq::SBioSeq(sushort t, const char *n, const char *seq) : SBioSeq() {
     _type = t;
     _init();
-    if (name) _name = name;
+    if (n) name = n;
     if (seq) setSeq(seq);
 }
 SBioSeq::SBioSeq(const SBioSeq &seq) {
     _type = seq._type;
-    _name = seq._name;
+	_length = seq._length;
     _mask = seq._mask;
     _dec = seq._dec;
     _enc = seq._enc;
-    setLength(seq.length());
-    ubytearray::copy(seq.ptr(), seq.size());
+	name = seq.name;
+	annotation = seq.annotation;
+	attribute = seq.attribute;
+	ubytearray::copy(seq.ptr(), seq.size());
 }
 SBioSeq::~SBioSeq() {}
 
 SBioSeq &SBioSeq::operator=(const SBioSeq &seq) {
-    _type = seq._type;
-    _length = seq._length;
-    _name = seq._name;
-    _mask = seq._mask;
-    _annotation = seq._annotation;
-    _dec = seq._dec;
-    _enc = seq._enc;
+	_type = seq._type;
+	_length = seq._length;
+	_mask = seq._mask;
+	_dec = seq._dec;
+	_enc = seq._enc;
+	name = seq.name;
+	annotation = seq.annotation;
+	attribute = seq.attribute;
 	ubytearray::copy(seq.ptr(), seq.size());
     return *this;
 }
@@ -60,7 +64,6 @@ void SBioSeq::save(const char *path) {
     else if (ext == "gb" || ext == "gbk") SBSeqIO::saveGBK(file, this);
     else SBSeqIO::saveTXT(file, this);
 }
-
 void SBioSeq::_init() {
     int t = seqtype(), c = compress();
     switch (t) {
@@ -92,17 +95,12 @@ sushort SBioSeq::type() const { return _type; }
 subyte SBioSeq::seqtype() const { return _type&0x0F; }
 subyte SBioSeq::compress() const { return (_type>>4)&0x0F; }
 
-const sint &SBioSeq::length() const { return _length; }
-const String &SBioSeq::name() const { return _name; }
+sint SBioSeq::length() const { return _length; }
 const sregion &SBioSeq::mask() const { return _mask; }
-
-const sdict& SBioSeq::attribute() const { return _attribute; }
-
 void SBioSeq::setSeq(const char *seq) {
     setLength(strlen(seq));
     encode(seq);
 }
-void SBioSeq::setName(const char *name) { _name = name; }
 void SBioSeq::setLength(const size_t &l, bool alias) {
     _length = (int)l;
     if (!alias) {
@@ -112,29 +110,19 @@ void SBioSeq::setLength(const size_t &l, bool alias) {
     }
 }
 void SBioSeq::addMask(const srange &range) { _mask.add(range); }
-
-void SBioSeq::addAttribute(const char* key, sobj val) { 
-	_attribute.set(key, val);
-	if (!isAttributed()) _type |= ATTRIBUTED;
-}
 void SBioSeq::removeMask(const srange &range) { _mask.exclude(range); }
-
-void SBioSeq::removeAttribute(const char* key) { 
-	_attribute.remove(key); 
-	if (_attribute.empty()) _type -= ATTRIBUTED;
-}
 
 void SBioSeq::clearAll() {
     ubytearray::clear();
     _type = 0;
     _length = 0;
-    _name.clear();
     _mask.clear();
-    _annotation.clear();
 	_dec = DNA_CONVERTER[0][0];
 	_enc = DNA_CONVERTER[0][0];
+	name.clear();
+	annotation.clear();
+	attribute.clear();
 }
-
 void SBioSeq::encode(const char *seq, size_t off, size_t len, bool dir) {
     if (len == -1 || _length < off+len) len = _length-off;
     _enc((const subyte *)seq, off, len==-1?(_length-off):len, ubytearray::ptr());
@@ -155,7 +143,7 @@ void SBioSeq::decode(char *seq, size_t off, size_t len, bool dir) {
         }
     }
     if (isMasked() && compress() == 4) {
-        auto mask = maskChar(_type);
+        auto mask = sseq::maskChar(_type);
         sforeach(_mask) {
             sforin(i, E_.begin, E_.end+1) seq[i] = mask;
         }
@@ -237,12 +225,12 @@ void SBioSeq::convert(sushort t) {
     _type = t;
 }
 SBioSeq SBioSeq::subseq(const sbpos &pos) {
-    if (compress()) return SBioSeq(COMPRESS1|seqtype(), _name+"_sub", raw(pos));
-    else return SBioSeq(seqtype(), _name+"_sub", raw(pos));
+    if (compress()) return SBioSeq(COMPRESS1|seqtype(), name+"_sub", raw(pos));
+    else return SBioSeq(seqtype(), name+"_sub", raw(pos));
 }
 SBioSeq SBioSeq::subseq(size_t off, size_t len, bool dir) {
-    if (compress()) return SBioSeq(COMPRESS1|seqtype(), _name+"_sub", raw(off, len, dir));
-    else return SBioSeq(seqtype(), _name+"_sub", raw(off, len, dir));
+    if (compress()) return SBioSeq(COMPRESS1|seqtype(), name+"_sub", raw(off, len, dir));
+    else return SBioSeq(seqtype(), name+"_sub", raw(off, len, dir));
 }
 String SBioSeq::raw(const sbpos &pos) const {
     return raw(pos.begin, pos.length()+1, pos.dir);
@@ -252,7 +240,7 @@ String SBioSeq::raw(size_t off, size_t len, bool dir) const {
     String seq(len+1, '\0'); seq.resize(len);
     _dec(ubytearray::ptr(), off, len, (subyte *)seq.ptr());
     if (isMasked()) {
-        auto mask = maskChar(_type);
+        auto mask = sseq::maskChar(_type);
         srange range((int)off, (int)(off+len-1));
         auto region = _mask.subregion(range);
         if (!region.empty()) {

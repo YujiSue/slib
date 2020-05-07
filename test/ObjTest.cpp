@@ -3,7 +3,6 @@
 
 using namespace slib;
 
-#ifdef SOBJECT_TEST
 inline int func1(int i, double d, const char* s) {
 	std::cout << i << " " << d << " " << s <<" " << std::flush;
 	return 0;
@@ -35,8 +34,6 @@ void test::SObjTest() {
 
 	std::cout << fn.func<int(int, double, const char*)>()(1, 2.0, "abc") << std::endl;
 }
-#endif
-#ifdef SNUMBER_TEST
 void SNumberTest() {
 	SNumber num1 = 100; //integer:整数
 	std::cout << "num1:" << num1 << std::endl;
@@ -64,16 +61,14 @@ void SNumberTest() {
 	--num10; //Decrement:１つ減る
 	std::cout << "num10:" << num10 << std::endl;
 }
-#endif
-#ifdef SSTRING_TEST
 void SStringTest() {
 	SString str1 = "abc";
 	SString str2 = "123";
 	SString str3 = u8"いろはにほへと";
 	SString str4 = u8"ちりぬるを";
 
-	std::cout << "str1 upper:" << str1.transformed(String::TO_UPPER) << std::endl; // :大文字に変換
-	std::cout << "str2 wide:" << str2.transformed(String::TO_WIDE) << std::endl; // :全角に変換
+	std::cout << "str1 upper:" << str1.transformed(TO_UPPER) << std::endl; // :大文字に変換
+	std::cout << "str2 wide:" << str2.transformed(TO_WIDE) << std::endl; // :全角に変換
 	std::cout << "str3+str4:" << str3 + str4 << std::endl; // :文字列の合成１
 	std::cout << "str1+int:" << str1 + 10 << std::endl; // :文字列の合成２
 	std::cout << "str2+num:" << str2 + 0.5 << std::endl; // :文字列の合成３
@@ -84,8 +79,6 @@ void SStringTest() {
 	str3.charAt(0) = u8"あ";
 	std::cout << "str3:" << str3 << std::endl;
 }
-#endif
-#ifdef SDATE_TEST
 extern void SDateTest() {
 	SDate date1;
 	std::cout << "date1:" << date1 << std::endl;
@@ -97,13 +90,9 @@ extern void SDateTest() {
 	SDate date3(SDate::YMDHMS_J);
 	std::cout << "date3:" << date3 << std::endl;
 }
-#endif
-#ifdef SDATA_TEST
 void SDataTest() {
 	SData dat1;
 }
-#endif
-#ifdef SARRAY_TEST
 void SArrayTest() {
 	SArray array1 = { 100, "abc", true, SDate(), V({u8"いろは", 2.0 }) };
 	std::cout << "array1:" << array1 << std::endl;
@@ -112,16 +101,37 @@ void SArrayTest() {
 	SArray array3 = String("abc,de,f,ghi,jklm").split(",");
 	std::cout << "array3:" << array3 << std::endl;
 }
-#endif
-#ifdef SDICT_TEST
 void SDictTest() {
 	SDictionary dict1 = { kv("int", 100), kv("real",0.5), kv("str",u8"じゅげむ"), kv("array", V({ 100, "abc", true, SDate(), V({u8"いろは", 2.0 })})) };
 	SDictionary dict2 = String(u8"id=1;name=Suzuki;value=80").parse(";", "=");
 	std::cout << "id:" << dict2["id"] << NEW_LINE << "name:" << dict2["name"] << NEW_LINE << "value:" << dict2["value"] << std::endl;
 }
-#endif
 
-void test::SFuncTest() {}
+inline void testf1(int i) {
+	std::cout << "func arg: " << i << std::endl;
+}
+inline String testf2(String str) {
+	return "re:" + str;
+}
+void test::SFuncTest() {
+	SFunction<void(void)> func1 = []() { std::cout << "func1" << std::endl; };
+	func1();
+	SFunction<void(int)> func2 = testf1;
+	func2(10);
+	SFunction<String(String)> func3 = testf2;
+	std::cout << func3("call func") << std::endl;
+
+}
 void test::STableTest() {
-
+	STable tbl;
+	tbl.setName("Table");
+	tbl.resize(5, 3);
+	tbl.setValue(0, 0, u8"な");
+	tbl.setValue(1, 1, u8"な");
+	tbl.setValue(2, 2, u8"め");
+	tbl.setValue(3, 0, u8"よ");
+	tbl.setValue(3, 1, u8"こ");
+	tbl.setValue(0, 2, 10);
+	tbl.setValue(4, 0, 3.14);
+	std::cout << tbl << std::endl;
 }
