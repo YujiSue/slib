@@ -513,7 +513,7 @@ namespace slib {
     template <typename T, class M>
     void BiArray<T, M>::reserve(size_t s, size_t off) {
         auto s_ = size();
-		if (off == -1) off = (s - s_) / 2;
+		if (!off || off == -1) off = (s - s_) / 2;
         if (_capacity < s) {
             if (_begin) {
                 auto tmp = M::alloc(s);

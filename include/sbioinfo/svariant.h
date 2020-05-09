@@ -96,12 +96,11 @@ namespace slib {
 			friend SVarFilter;
 
         public:
-			sushort list_type;
 			sint refnum;
 			stringarray refname;
 			intarray reflength;
-			String list_name, ref_ver;
-			sdict list_attribute;
+			String name, refver, filetype;
+			sdict attribute;
             
             
         public:

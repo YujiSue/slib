@@ -8,9 +8,9 @@ SVarList::SVarList() : Array<svar>() {}
 SVarList::SVarList(const char* s) : SVarList() { load(s); }
 SVarList::SVarList(const SVarList &vl) : Array<svar>(vl) {
     //par = vl.par;
-	list_type = vl.list_type;
-    list_name = vl.list_name;
-    list_attribute = vl.list_attribute;
+	filetype = vl.filetype;
+    name = vl.name;
+    attribute = vl.attribute;
 }
 SVarList::~SVarList() {}
 
@@ -50,8 +50,8 @@ void SVarList::clearAll() {
 	refnum = 0;
     refname.clear();
 	reflength.clear();
-	ref_ver = "";
-	list_type = 0;
-    list_name = "";
-    list_attribute.clear();
+	refver = "";
+	filetype = 0;
+    name = "";
+    attribute.clear();
 }

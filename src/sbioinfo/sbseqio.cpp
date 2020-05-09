@@ -71,7 +71,7 @@ sushort SBSeqIO::fileType(sio::SFile& file) {
 	if (tmp[0] == '>') return sbio::FASTA;
 	else if (tmp[0] == 'A' && tmp[1] == 'B' && tmp[2] == 'I' && tmp[3] == 'F') return sbio::ABI;
 	else if (tmp[0] == 'L' && tmp[1] == 'O' && tmp[2] == 'C' && tmp[3] == 'U' && tmp[4] == 'S') return sbio::GENBANK;
-	else return sio::TEXT_FILE;
+	else return sbio::PLAIN_TEXT;
 	file.setOffset(0);
 }
 void SBSeqIO::loadTXT(sio::SFile& file, SBioSeq* seq) {

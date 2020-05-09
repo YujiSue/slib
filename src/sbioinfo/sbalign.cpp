@@ -371,7 +371,7 @@ void SAlignment::ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen) {
 }
 void SAlignment::set(salign_param *p) {
     _par = p;
-    cigars.reserve(p->align_length, false);
+    cigars.reserve(p->align_length);
     if (_par->score_table.empty()) _par->makeTable();
     init(); reset();
 }

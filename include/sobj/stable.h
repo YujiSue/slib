@@ -63,7 +63,7 @@ namespace slib {
     public:
 		STable();
 		STable(int row, int col);
-        STable(const Array<scolumn> &cols, const SArray &rows = {});
+        STable(const Array<scolumn> &cols, const SArray &rows);
         STable(const smat<sobj> &mat);
         STable(const sobj &obj);
         STable(const STable &table);

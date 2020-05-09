@@ -359,10 +359,10 @@ SVarFilter::~SVarFilter() {}
 
 void SVarFilter::merge(SVarList& vl1, SVarList& vl2) {
 	auto dist = _par ? _par->max_dist : 0;
-	sforeach(vl2.list_attribute) {
-		if (!vl1.list_attribute.hasKey(E_.key())) vl1.list_attribute.insert(E_);
+	sforeach(vl2.attribute) {
+		if (!vl1.attribute.hasKey(E_.key())) vl1.attribute.insert(E_);
 	}
-	vl1.list_name += "_" + vl2.list_name + "_merged";
+	vl1.name += "_" + vl2.name + "_merged";
 	vl1.append(vl2);
 	auto size = vl1.size();
 	vl1.sort();
@@ -420,7 +420,7 @@ void SVarFilter::common(SVarList& vl1, SVarList& vl2) {
 }
 void SVarFilter::unique(SVarList& uni, SVarList& vl1, SVarList& vl2) {
 	uni = vl1;
-	uni.list_name += "_" + vl1.list_name + "_uniq";
+	uni.name += "_" + vl1.name + "_uniq";
 	SVarFilter::subtract(uni, vl2);
 }
 

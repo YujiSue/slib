@@ -389,7 +389,7 @@ const sattribute SVarIO::ION_VAR_CALL = { ks("FDP", "copy"), ks("AF", "freq"), k
 void SVarIO::loadTxt(sio::SFile& file, SVarList* list, SBSeqList* ref) {}
 void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 	list->clearAll();
-	list->list_type = sio::TSV_FILE;
+	list->filetype = "tsv";
 	if (!file.isOpened()) file.open(nullptr, sio::READ);
 	String row;
 	file.readLine(row);
@@ -428,7 +428,7 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 			else if (col[i] == "Freq") var->copy.frequency= dat[i];
 
 
-			else if (col[i] == "List" && list->list_name != dat[i]) list->list_name = dat[i];
+			else if (col[i] == "List" && list->name != dat[i]) list->name = dat[i];
 			else if (col[i] == "Name") var->name = dat[i];
 			list->add(var);
 		}
@@ -449,7 +449,7 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 			if (E_.key == "ID") continue;
 			content[E_.key] = E_.value.isQuoted() ? String::dequot(E_.value) : E_.value;
 		}
-		list->list_attribute[key][attr["ID"]] = content;
+		list->attribute[key][attr["ID"]] = content;
 	}
 	else if (key == "contig") {
 		val.transform(DELETE_QUOTE);
@@ -458,19 +458,19 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 		sforeach(attr) {
 			if (E_.key == "ID") list->refname.add(E_.value.isQuoted() ? String::dequot(E_.value) : E_.value);
 			else if (E_.key == "length") list->reflength.add(E_.value.intValue());
-			else if (E_.key == "assembly") list->ref_ver = E_.value.isQuoted() ? String::dequot(E_.value) : E_.value;
+			else if (E_.key == "assembly") list->refver = E_.value.isQuoted() ? String::dequot(E_.value) : E_.value;
 		}
 	}
 	else {
 		if (val.isQuoted()) val.transform(DELETE_QUOTE);
-		list->list_attribute[key] = val;
+		list->attribute[key] = val;
 	}
 }
 inline void _readVCFTitle(String& row, SVarList *list, bool &format) {
 	row.clip(1);
 	stringarray header = row.split("\t");
 	if (8 < header.size()) format = true;
-	list->list_name = format ? header[9] : header[8];
+	list->name = format ? header[9] : header[8];
 }
 inline void _VCFToSNV(SVariant &var, String& alt, stringarray& data) {
 	var.type = SNV;
@@ -597,8 +597,8 @@ inline void _readVCFData(String& row, SVarList* list, Array<SVariant> &variants,
 	int vcount = alts.size();
 	variants.resize(vcount);
 	sforin(i, 0, vcount) _VCFToVar(variants[i], alts[i], data, list->refname);
-	_setVCFInfo(variants, data[7], list->list_attribute["INFO"]);
-	if (format) _setVCFFormat(variants, data[8], data[9], list->list_attribute["FORMAT"]);
+	_setVCFInfo(variants, data[7], list->attribute["INFO"]);
+	if (format) _setVCFFormat(variants, data[8], data[9], list->attribute["FORMAT"]);
 	if (converter) {
 		sforeach(*converter) {
 			sforeach_(vit, variants) {
@@ -620,10 +620,10 @@ inline void _readVCFData(String& row, SVarList* list, Array<SVariant> &variants,
 }
 void SVarIO::loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, sattribute *converter) {
 	list->clearAll();
-	list->list_type = sbio::VCF;
+	list->filetype = "vcf";
 	bool format = false;
 	if (!file.isOpened()) file.open(nullptr, sio::READ);
-	list->list_name = file.filename(false);
+	list->name = file.filename(false);
 	Array<SVariant> variants;
 	String row;
 	while (!file.eof()) {
@@ -738,9 +738,9 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			else if (*cit == "Qual") file << SNumber(E_->qual).precised(2) << String::TAB;
 			else if (*cit == "Freq") file << SNumber(E_->copy.frequency).precised(2) << String::TAB;
 
-			else if (*cit == "List") file << list->list_name << String::TAB;
+			else if (*cit == "List") file << list->name << String::TAB;
 			else if (*cit == "Name") file << E_->name << String::TAB;
-			else if (*cit == "Sample") file << list->list_name << String::TAB;
+			else if (*cit == "Sample") file << list->name << String::TAB;
 
 		}
 		file << String::LF; file.flush();
@@ -750,12 +750,12 @@ inline void _writeVCFContig(SVarList* list, SFile& file) {
 	sforin(i, 0, list->refnum) {
 		file << "##contig=<ID=" << list->refname[i];
 		if (i < list->reflength.size()) file << ",length=" << list->reflength[i];
-		if (list->ref_ver.length()) file << ",assembly=" << list->ref_ver;
+		if (list->refver.length()) file << ",assembly=" << list->refver;
 		file << ">" << String::LF; file.flush();
 	}
 }
 inline void _writeVCFHeader(SVarList* list, SFile& file, const char* tag) {
-	auto data = list->list_attribute[tag];
+	auto data = list->attribute[tag];
 	auto keys = data.keyset();
 	sforeach(keys) {
 		file << "##" << tag << "=<ID=" << E_;
@@ -775,20 +775,20 @@ void SVarIO::saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 	_writeVCFContig(list, file);
 	bool format = false;
 	stringarray info_key, format_key;
-	if (list->list_type != sbio::VCF) _makeVCFAttribute(list);
-	format = list->list_attribute.hasKey("FORMAT");
-	if (list->list_attribute["INFO"]) {
-		info_key = list->list_attribute["INFO"].keyset();
+	if (list->filetype != "vcf") _makeVCFAttribute(list);
+	format = list->attribute.hasKey("FORMAT");
+	if (list->attribute["INFO"]) {
+		info_key = list->attribute["INFO"].keyset();
 		_writeVCFHeader(list, file, "INFO");
 	}
-	if (list->list_attribute["FILTER"]) _writeVCFHeader(list, file, "FILTER");
-	if (list->list_attribute["FORMAT"]) {
-		format_key = list->list_attribute["FORMAT"].keyset();
+	if (list->attribute["FILTER"]) _writeVCFHeader(list, file, "FILTER");
+	if (list->attribute["FORMAT"]) {
+		format_key = list->attribute["FORMAT"].keyset();
 		_writeVCFHeader(list, file, "FORMAT");
 	}
-	if (list->list_attribute["ALT"]) _writeVCFHeader(list, file, "ALT");
-	if (list->list_attribute["PEDIGREE"]) _writeVCFHeader(list, file, "PEDIGREE");
-	file << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t" << (format ? "FORMAT\t" : "") << list->list_name << String::LF; file.flush();
+	if (list->attribute["ALT"]) _writeVCFHeader(list, file, "ALT");
+	if (list->attribute["PEDIGREE"]) _writeVCFHeader(list, file, "PEDIGREE");
+	file << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t" << (format ? "FORMAT\t" : "") << list->name << String::LF; file.flush();
 	sforeach(*list) {
 		if (E_->type == DELETION) {
 			auto refstr = ref->at(E_->pos[0].idx)->raw(E_->pos[0].begin - 2, E_->pos[0].end + 2 - E_->pos[0].begin),

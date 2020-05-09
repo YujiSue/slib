@@ -25,24 +25,30 @@ namespace slib {
 		constexpr sushort UNAVAILABLE_FLAG = 0x8000;
 
 		//File type
-		constexpr sushort FASTA = 0x0B01;
-		constexpr sushort GENBANK = 0x0B02;
+		// 0x0000 bin
+		// 0x0001 txt
+		// 0x0010 seq
+		// 0x0020 pos
+		// 0x0100 gene
+		// 0x0200 var
+		// 0x1000 score
+		// 0x2000 index
+		constexpr sushort PLAIN_TEXT = 0x0001;
+		
+		constexpr sushort FASTA = 0x0011;
+		constexpr sushort FASTQ = 0x1011;
+		constexpr sushort GENBANK = 0x0111;
+		constexpr sushort ABI = 0x1010;
 
-		constexpr sushort ABI = 0x0B0A;
+		constexpr sushort BED_TEXT = 0x0021;
+		constexpr sushort GTF = 0x0121;
+		constexpr sushort GFF3 = 0x1121;
 
-		constexpr sushort BED_TEXT = 0x0B10;
+		constexpr sushort VCF = 0x0221;
 
-		constexpr sushort GTF = 0x0B12;
-		constexpr sushort GFF2 = 0x0B12;
-		constexpr sushort GFF3 = 0x0B13;
-
-		constexpr sushort VCF = 0x0B1C;
-
-		constexpr sushort FASTQ = 0x0BA0;
-		constexpr sushort SAM = 0x0BA1;
-		constexpr sushort BAM = 0x0BA2;
-		constexpr sushort BAI = 0x0BA3;
-
+		constexpr sushort SAM = 0x1021;
+		constexpr sushort BAM = 0x1020;
+		constexpr sushort BAI = 0x3020;
 
 		//Annotation category
 		constexpr sushort MISC_FEATURE = 0x0000;

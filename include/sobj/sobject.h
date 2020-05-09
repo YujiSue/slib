@@ -180,6 +180,7 @@ namespace slib {
         SObjPtr(const SArray &array);
         SObjPtr(const SPair &pair);
         SObjPtr(const SDictionary &dict);
+		SObjPtr(const SText& txt);
 		template<class Return, class... Args>
         SObjPtr(const SFunction<Return(Args...)>&func) : _type(FUNC_OBJ), _ptr(new SFunction<Return(Args...)>(func)) {}
 		SObjPtr(const SColumn& col);

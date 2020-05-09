@@ -225,9 +225,7 @@ void SBSeqList::makeIndex(const char *path) {
     sint tmp;
     sushort type;
     try {
-		attribute["_file"] = sio::SFile(path, sio::READ);
-		attribute["_file_type"] = "slib";
-		auto& file = attribute["_file"].file();
+		auto file = sio::SFile(path, sio::READ);
         //Read magic
 		file.readBytes(magic, 4);
         if (memcmp(magic, SLIB_SBIOSEQ_MAGIC, 4)) {
@@ -282,6 +280,9 @@ void SBSeqList::makeIndex(const char *path) {
             auto &seq = Array<sbseq>::at(i);
             off += (seq->length()-1)/(0<seq->compress()?seq->compress():1)+1;
         }
+		file.close();
+		attribute["_file"] = sio::SFile(path, sio::READ);
+		attribute["_file_type"] = "slib";
 		_loaded = false;
     } catch (sio::SIOException ie) {
 		ie.print();

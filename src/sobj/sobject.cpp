@@ -94,6 +94,7 @@ SObjPtr::SObjPtr(const SData &dat) : _type(DATA_OBJ), _ptr(new SData(dat)) {}
 SObjPtr::SObjPtr(const SArray &array) : _type(ARRAY_OBJ), _ptr(new SArray(array)) {}
 SObjPtr::SObjPtr(const SPair &pair) : _type(PAIR_OBJ), _ptr(new SPair(pair)) {}
 SObjPtr::SObjPtr(const SDictionary &dict) : _type(DICT_OBJ), _ptr(new SDictionary(dict)) {}
+SObjPtr::SObjPtr(const SText& txt) : _type(TEXT_OBJ), _ptr(new SText(txt)) {}
 SObjPtr::SObjPtr(const SColumn& col) : _type(COLUMN_OBJ), _ptr(new SColumn(col)) {}
 SObjPtr::SObjPtr(const STable &tbl) : _type(TABLE_OBJ), _ptr(new STable(tbl)) {}
 SObjPtr::SObjPtr(const SDataBase& db) : _type(DB_OBJ), _ptr(new SDataBase(db.path())) {}
@@ -977,7 +978,7 @@ String SObjPtr::str() const {
 }
 
 SNumber &SObjPtr::number() {
-    if (isNull()) _ptr = new SNumber();
+    if (isNull()) *this = SNumber();
     if (isNum()) return *dynamic_cast<SNumber *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -989,7 +990,7 @@ const SNumber &SObjPtr::number() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SChar &SObjPtr::character() {
-    if (isNull()) _ptr = new SChar();
+    if (isNull()) *this = SChar();
     if (isChar()) return *dynamic_cast<SChar *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -999,7 +1000,7 @@ const SChar &SObjPtr::character() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SString &SObjPtr::string() {
-    if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isNull()) *this = SString();
     if (isStr()) return *dynamic_cast<SString *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1009,7 +1010,7 @@ const SString &SObjPtr::string() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SDate &SObjPtr::date() {
-    if (isNull()) _ptr = new SDate();
+    if (isNull()) *this = SDate();
     if (isDate()) return *dynamic_cast<SDate *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1019,7 +1020,7 @@ const SDate &SObjPtr::date() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SData &SObjPtr::data() {
-    if (isNull()) _ptr = new SData();
+    if (isNull()) *this = SData();
     if (isDat()) return *dynamic_cast<SData *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1029,7 +1030,7 @@ const SData &SObjPtr::data() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SArray &SObjPtr::array() {
-    if (isNull()) _ptr = new SArray();
+    if (isNull()) *this = SArray();
     if (isArray()) return *dynamic_cast<SArray *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1039,7 +1040,7 @@ const SArray &SObjPtr::array() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SPair &SObjPtr::pair() {
-    if (isNull()) _ptr = new SPair();
+    if (isNull()) *this = SPair();
     if (isPair()) return *dynamic_cast<SPair *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1049,7 +1050,7 @@ const SPair &SObjPtr::pair() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SDictionary &SObjPtr::dict() {
-    if (isNull()) _ptr = new SDictionary();
+    if (isNull()) *this = SDictionary();
     if (isDict()) return *dynamic_cast<SDictionary *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1059,7 +1060,7 @@ const SDictionary &SObjPtr::dict() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SText& SObjPtr::text() {
-	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isNull()) *this = SText();
 	if (isText()) return *dynamic_cast<SText*>(_ptr);
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1069,7 +1070,7 @@ const SText& SObjPtr::text() const {
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 sio::SFile& SObjPtr::file() {
-	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isNull()) *this = sio::SFile::home();
 	if (isFile()) return *dynamic_cast<sio::SFile*>(_ptr);
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1079,7 +1080,7 @@ const sio::SFile& SObjPtr::file() const {
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SColumn &SObjPtr::column() {
-    if (isNull()) _ptr = new SColumn();
+    if (isNull()) *this = SColumn();
     if (isColumn()) return *dynamic_cast<SColumn *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1089,7 +1090,7 @@ const SColumn &SObjPtr::column() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 STable &SObjPtr::table() {
-    if (isNull()) _ptr = new STable();
+    if (isNull()) *this = STable();
     if (isTable()) return *dynamic_cast<STable *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1099,7 +1100,7 @@ const STable &SObjPtr::table() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SDataBase& SObjPtr::db() {
-	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isNull()) *this = SDataBase();
 	if (isDB()) return *dynamic_cast<SDataBase*>(_ptr);
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1109,7 +1110,7 @@ const SDataBase& SObjPtr::db() const {
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 smedia::SColor& SObjPtr::color() {
-	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isNull()) *this = smedia::SColor();
 	if (isColor()) return *dynamic_cast<smedia::SColor*>(_ptr);
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1119,7 +1120,7 @@ const smedia::SColor& SObjPtr::color() const {
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 smedia::SImage &SObjPtr::image() {
-    if (isNull()) _ptr = new smedia::SImage();
+    if (isNull()) *this = smedia::SImage();
     if (isImg()) return *dynamic_cast<smedia::SImage *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1129,7 +1130,7 @@ const smedia::SImage &SObjPtr::image() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 smedia::SFigure &SObjPtr::figure() {
-    if (isNull()) _ptr = new smedia::SFigure();
+    if (isNull()) *this = smedia::SFigure();
     if (isFig()) return *dynamic_cast<smedia::SFigure *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1139,7 +1140,7 @@ const smedia::SFigure &SObjPtr::figure() const {
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 smedia::SCanvas &SObjPtr::canvas() {
-    if (isNull()) _ptr = new smedia::SCanvas();
+    if (isNull()) *this = smedia::SCanvas();
     if (isCnvs()) return *dynamic_cast<smedia::SCanvas *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -1151,7 +1152,7 @@ const smedia::SCanvas &SObjPtr::canvas() const {
 //smedia::SAudio &audio();
 //const smedia::SAudio &audio() const;
 smedia::SMovie &SObjPtr::movie() {
-    if (isNull()) _ptr = new smedia::SMovie();
+    if (isNull()) *this = smedia::SMovie();
     if (isMov()) return *dynamic_cast<smedia::SMovie *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
