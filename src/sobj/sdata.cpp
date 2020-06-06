@@ -7,7 +7,7 @@ using namespace slib::sio;
 
 SData::SData(): ubytearray(), SObject() {}
 SData::SData(size_t size, void *dat) : ubytearray(size), SObject() {
-    ubytearray::copy((uint8_t *)dat, size);
+    if (dat) ubytearray::copy((subyte *)dat, size);
 }
 SData::SData(const char *s) : SData(SCode::decodeCharCount(s)) {
     SCode::decodeBASE64(s, (void *)ubytearray::ptr(), ubytearray::size());
@@ -22,7 +22,7 @@ SData::SData(const sobj &obj) : SData() {
     if (obj.isDat()) *this = obj.data();
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SData::SData(const SData &data) : SData(data.size(), const_cast<uint8_t *>(data.ptr())) {}
+SData::SData(const SData &data) : SData(data.size(), const_cast<subyte *>(data.ptr())) {}
 SData::~SData() {}
 
 SData &SData::operator = (const SData &dat) {

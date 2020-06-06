@@ -756,7 +756,7 @@ STable& SDataBase::getResult(STable* table) {
 				break;
 			case SQLITE_BLOB:
 			{
-				SData tmp(sqlite3_column_bytes(_stmt, i), '\0');
+				SData tmp(sqlite3_column_bytes(_stmt, i), nullptr);
 				memcpy(&tmp[0], sqlite3_column_blob(_stmt, i), tmp.size());
 				row[name] = tmp;
 				if (!col) table->addColumn(SColumn(DATA_COLUMN, name));
@@ -797,7 +797,7 @@ SDictionary& SDataBase::getRow(SDictionary* dict) {
 			case SQLITE_BLOB:
 			{
 				int size = sqlite3_column_bytes(_stmt, i);
-				SData tmp(size, '\0');
+				SData tmp(size, nullptr);
 				memcpy(&tmp[0], sqlite3_column_blob(_stmt, i), tmp.size());
 				dict->set(name, tmp);
 				break;
