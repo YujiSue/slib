@@ -91,7 +91,7 @@ String sql::condQue(const sobj& conds, bool join) {
 	_addLogicCondQue(que, conds);
 	return que;
 }
-String sql::caseQue(const char* name, const sattribute& attr, const char* exception, const char* as) {
+String sql::caseBy(const char* name, const sattribute& attr, const char* exception, const char* as) {
 	String que;
 	que << " CASE " << name;
 	for (auto it = attr.begin(); it != attr.end(); ++it)
@@ -120,7 +120,7 @@ String sql::caseQue(const sobj& obj) {
 	if (cases.hasKey("as")) que << " AS " << cases["as"];
 	return que;
 }
-String sql::orderQue(const Array<std::pair<String, ORDER>>& orders) {
+String sql::order(const Array<std::pair<String, ORDER>>& orders) {
 	if (orders.empty()) return "";
 	String oque;
 	sforeach(orders) oque << E_.first << " " << (E_.second == ASC ? "ASC" : "DESC") << ",";
@@ -135,7 +135,7 @@ String sql::orderQue(const sobj& obj) {
 	que.resize(que.length() - 1);
 	return String(" ORDER BY ") << que;
 }
-String sql::limitQue(int l, int o) {
+String sql::limit(int l, int o) {
 	if (0 < l) {
 		if (o < 0) return String(" LIMIT ") << l;
 		else return String(" LIMIT ") << o << "," << l;
@@ -382,7 +382,7 @@ void SDBTable::setRecordAt(size_t idx, const SDictionary& row, const char* key) 
 	sforeach(row) que << E_.key << "=" << sql::value(E_.value) << ",";
 	if (!row.empty()) que.resize(que.length() - 1);
 	_db->begin();
-	_db->sqlexec(que << "WHERE "<< key << "=" << idx);
+	_db->sqlexec(que << " WHERE "<< key << "=" << idx);
 	_db->commit();
 }
 void SDBTable::setRecordPrepare(const SArray& cols, const char* key) {
@@ -412,7 +412,7 @@ SDictionary& SDBTable::getRecord(const stringarray& cols,
 	const char* order,
 	SDictionary* result) {
 	_db->begin();
-	_db->sqlprepare(sql::selectQuery(_table, cols, condition, order, sql::limitQue(1), false));
+	_db->sqlprepare(sql::selectQuery(_table, cols, condition, order, sql::limit(1), false));
 	auto& dict = _db->getRow(result);
 	_db->commit();
 	return dict;
@@ -426,7 +426,7 @@ SDictionary& SDBTable::getRecord(const SDictionary& info, SDictionary* result) {
 }
 SDictionary& SDBTable::getRecordAt(size_t idx, const stringarray& cols, const char* key, SDictionary* result) {
 	_db->begin();
-	_db->sqlprepare(sql::selectQuery(_table, cols, String(" WHERE ID=") << idx, nullptr, sql::limitQue(1)));
+	_db->sqlprepare(sql::selectQuery(_table, cols, String(" WHERE ID=") << idx, nullptr, sql::limit(1)));
 	auto& dict = _db->getRow(result);
 	_db->commit();
 	return dict;

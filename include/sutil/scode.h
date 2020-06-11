@@ -82,8 +82,10 @@ namespace slib {
         static suinteger decodeCharCount(const char *base);
         static void encodeB64Char(const void *data, char *encoded, size_t size);
         static void decodeB64Char(const char *data, void *decoded);
-        static void encodeBASE64(const void *ori, size_t size, char *base);
-        static void decodeBASE64(const char *base, void *ori, const size_t &size);
+		static void encodeBASE64(const String &ori, String &base);
+		static void encodeBASE64(const void *ori, size_t size, char *base);
+		static void decodeBASE64(const String &base, String& ori);
+		static void decodeBASE64(const char *base, void *ori, const size_t &size);
         
         static void expand(ubytearray &bytes);
         static void compress(ubytearray &bytes);

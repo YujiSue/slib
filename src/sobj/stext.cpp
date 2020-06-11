@@ -168,8 +168,8 @@ void SText::resize(size_t size) {
 void SText::load(const char *path) {/**/}
 void SText::save(const char *path) {/**/}
 
-const slib::Array<text_attribute> &SText::attributes() const { return _attribute; }
-
+const Array<text_attribute>& SText::attributes() const { return _attribute; }
+//Array<text_attribute>& SText::attributes() { return _attribute; }
 slib::Array<text_attribute> SText::attribute(srange range) const {
     Array<text_attribute> list;
     if (_attribute.size()) {

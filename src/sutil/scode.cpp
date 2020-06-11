@@ -348,19 +348,41 @@ uint64_t SCode::decodeCharCount(const char *base) {
     memcpy(&size, decode, 8);
     return size;
 }
+void SCode::encodeBASE64(const String& ori, String &base) {
+	base.resize((((ori.size() * 4 - 1) / 3) / 4 + 1) * 4);
+	suinteger length = ori.size() / 3;
+	auto op = ori.cstr();
+	auto bp = &base[0];
+	sforin(i, 0, length) {
+		SCode::encodeB64Char(op, bp, 3);
+		op += 3; bp += 4;
+	}
+	if (ori.size() % 3) encodeB64Char(op, bp, ori.size() % 3);
+}
 void SCode::encodeBASE64(const void *ori, size_t size, char *base) {
     char encode[9];
     memset(encode, 0, 9);
     memcpy(encode, &size, 8);
     sforin(i, 0, 3) SCode::encodeB64Char((const void *)&encode[i*3], &base[i*4], 3);
-    uint64_t length = (size-1)/3+1;
+	suint length = (size-1)/3+1;
     sforin(i, 0, length-1) SCode::encodeB64Char(&((char *)ori)[i*3], &base[12+i*4], 3);
     encodeB64Char(&((char *)ori)[(length-1)*3], &base[12+(length-1)*4], size-3*(length-1));
     base[12+length*4] = '\0';
 }
 void SCode::decodeBASE64(const char *base, void *ori, const size_t &size) {
-    uint64_t length = (size-1)/3+1;
+    suint length = (size-1)/3+1;
     sforin(i, 0, length) SCode::decodeB64Char(&base[12+i*4], &((char *)ori)[i*3]);
+}
+void SCode::decodeBASE64(const String& base, String& ori) {
+	suint length = base.size() / 4;
+	ori.resize(length * 3);
+	auto bp = base.cstr();
+	auto op = &ori[0];
+	sforin(i, 0, length) {
+		SCode::decodeB64Char(bp, op);
+		bp += 4; op += 3;
+	}
+	ori.resize(strlen(ori.cstr()));
 }
 
 void SCode::expand(ubytearray &bytes) {

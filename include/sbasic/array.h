@@ -372,6 +372,7 @@ namespace slib {
 			++_end;
 			return sarr_iter<T>(p);
 		}
+		else if (p == _end) add(val);
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     }
 	template <typename T, class M>
@@ -382,10 +383,11 @@ namespace slib {
 			auto s = _end - _begin + 1;
 			if (_capacity <= s) { _expand(s); p = _begin + idx; }
 			M::shift(p + 1, p, _end - p);
-			M::assign(p, val); 
+			M::assign(p, val);
 			++_end;
 			return sarr_iter<T>(p);
 		}
+		else if (iter == end()) add(val);
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 	}
     template <typename T, class M>

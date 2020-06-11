@@ -42,6 +42,7 @@ void SBioSeq::load(sushort t, const char *path) {
     if (_type) _init();
     SFile file(path, sio::READ);
 	auto ftype = SBSeqIO::fileType(file);
+	file.setOffset(0);
 	switch (ftype) {
 	case sbio::FASTA:
 		SBSeqIO::loadFASTA(t, file, this);

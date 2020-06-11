@@ -49,11 +49,11 @@ namespace slib {
 			return query;
 		}
 		extern String condQue(const sobj& conds, bool join = false);
-		extern String caseQue(const char* name, const sattribute& attr, const char* exception, const char* as);
+		extern String caseBy(const char* name, const sattribute& attr, const char* exception, const char* as);
 		extern String caseQue(const sobj& obj);
-		extern String orderQue(const Array<std::pair<String, ORDER>>& orders);
+		extern String order(const Array<std::pair<String, ORDER>>& orders);
 		extern String orderQue(const sobj& orders);
-		extern String limitQue(int l, int o = -1);
+		extern String limit(int l, int o = -1);
 		extern String limitQue(const sobj& obj);
 		extern String strListQue(const stringarray& list);
 		extern String intListQue(const intarray& list);

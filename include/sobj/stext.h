@@ -106,7 +106,7 @@ namespace slib {
         void save(const char *path);
         
         const Array<text_attribute> &attributes() const;
-        
+		Array<text_attribute>& attributes();
         Array<text_attribute> attribute(srange range) const;
         bool isAttributed(srange range) const;
         
