@@ -43,6 +43,7 @@ void SData::compress() { SCode::compress(*this); }
 void SData::expand() { SCode::expand(*this); }
 void SData::trans(String& str) { 
 	if (_capacity) {
+		str.reserve(_capacity);
 		str.interpret(ptr(), size());
 		discard();
 	}

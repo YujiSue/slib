@@ -19,7 +19,7 @@ SNetException::~SNetException() {}
 
 size_t slib::writeCallback(void *buf, size_t size, size_t nmemb, void *ptr) {
     size_t block = size * nmemb;
-    auto dat = static_cast<SData *>(ptr);
+	SData* dat = static_cast<SData *>(ptr);
     dat->append((subyte *)buf, block);
     return block;
 }
@@ -59,6 +59,7 @@ void SNetWork::http(const char *url, bool ssl, const char *cookie, const char *p
     _res = curl_easy_perform(_curl);
     if (_res) throw SNetException(ERR_INFO, SLIB_EXEC_ERROR, "curl_easy_perform", CURL_ERR_TEXT(_res, curl_easy_strerror(_res)));
     curl_easy_cleanup(_curl);
+	curl_global_cleanup();
 }
 
 void SNetWork::ftp(const char *url, bool ssl, const char *info) {
@@ -73,7 +74,10 @@ void SNetWork::connect(const SDictionary &dict) {
     curl_easy_setopt(_curl, CURLOPT_URL, (const char *)dict["url"]);
     curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, true);
     if(dict.hasKey("ssl")) {
-        if (dict["ignore-ssl"]) curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		if (dict["ignore-ssl"]) {
+			curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
+			curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYHOST, 0L);
+		}
     }
     if(dict["cookie"]) {
         curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, (const char *)dict["cookie"]);
@@ -81,7 +85,8 @@ void SNetWork::connect(const SDictionary &dict) {
     }
     if(dict["post"]) {
         curl_easy_setopt(_curl, CURLOPT_POST, true);
-        curl_easy_setopt(_curl, CURLOPT_POSTFIELDS, (const char *)toString(dict["post"].dict(), "=", "&"));
+		curl_easy_setopt(_curl, CURLOPT_POSTFIELDS, (const char *)dict["post"]);
+		curl_easy_setopt(_curl, CURLOPT_POSTFIELDSIZE, strlen(dict["post"]));
     }
     if(dict["load"]) {
         curl_easy_setopt(_curl, CURLOPT_WRITEDATA, (void *)&data);
@@ -90,4 +95,5 @@ void SNetWork::connect(const SDictionary &dict) {
     _res = curl_easy_perform(_curl);
 	if (_res) throw SNetException(ERR_INFO, SLIB_EXEC_ERROR, "curl_easy_perform", CURL_ERR_TEXT(_res, curl_easy_strerror(_res)));
     curl_easy_cleanup(_curl);
+	curl_global_cleanup();
 }
