@@ -83,7 +83,7 @@ namespace test {
 }
 
 namespace test{
-	extern void SBSeqTest();
+	//extern void SBSeqTest();
 }
 
 #ifdef NODE_TEST

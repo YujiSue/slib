@@ -20,6 +20,7 @@
 #include "sutil/sxml.h"
 #include "sutil/ssys.h"
 #include "sio/sfile.h"
+#include "snet/snet.h"
 #include "smedia/simage.h"
 #include "smedia/sfigure.h"
 

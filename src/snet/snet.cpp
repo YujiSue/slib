@@ -6,7 +6,7 @@ SDictionary slib::STANDARD_HTTP =
 { kv("url", ""), kv("ssl", false), kv("cookie", snull), kv("post", snull), kv("load", true)};
 
 SDictionary slib::STANDARD_HTTPS =
-{ kv("url", ""), kv("ssl", true), kv("cookie", snull), kv("post", snull), kv("load", true)};
+{ kv("url", ""), kv("ssl", true), kv("ignore-ssl", false), kv("cookie", snull), kv("post", snull), kv("load", true)};
 
 
 SNetException::SNetException(const char* f, sint l, const char* func, sint e, const char* target, const char* note)
@@ -73,12 +73,7 @@ void SNetWork::connect(const SDictionary &dict) {
     curl_easy_setopt(_curl, CURLOPT_URL, (const char *)dict["url"]);
     curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, true);
     if(dict.hasKey("ssl")) {
-        #ifdef SKIP_PEER_VERIFICATION
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        #endif
-        #ifdef SKIP_HOSTNAME_VERIFICATION
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        #endif
+        if (dict["ignore-ssl"]) curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
     }
     if(dict["cookie"]) {
         curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, (const char *)dict["cookie"]);

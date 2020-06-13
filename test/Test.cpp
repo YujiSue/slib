@@ -48,6 +48,9 @@ int main(int argc, const char** argv) {
 #include "opencv2/highgui.hpp"
 
 int main(int argc, const char** argv) {
+	sql::selectQue(_table, info);
+
+
 	bool rec = false;
 	cv::VideoCapture cap(0);
 	cv::Mat frame;
@@ -78,9 +81,11 @@ int main(int argc, const char** argv) {
 
 
 //#include "sbio/sbioinfo.h"
-
+#include "sobj.h"
 int main()
-{
+{	
+
+
 #ifdef MATH_TEST
 	test::CalcTest();
 	test::FracTest();
@@ -157,7 +162,7 @@ int main()
 
 #endif
 #ifdef SBIOINFO_TEST
-	test::SBSeqTest();
+	//test::SBSeqTest();
 #endif
 
 	return 0;
