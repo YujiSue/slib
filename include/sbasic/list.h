@@ -217,7 +217,7 @@ namespace slib {
     template <typename T>
     T &List<T>::at(int idx) {
         if (_size) {
-			if (idx < 0 && -idx < _size) return *(end() - (-idx));
+			if (idx < 0 && -idx <= _size) return *(end() - (-idx));
 			else if (idx < _size) return *(begin() + idx);
         }
         throw SException(ERR_INFO, SLIB_RANGE_ERROR);

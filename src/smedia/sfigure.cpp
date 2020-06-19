@@ -8,7 +8,6 @@ SFigure::SFigure() : SNode<SFigure, FIGURE_OBJ>() {}
 SFigure::SFigure(int t) : SFigure() { _type = t; }
 SFigure::SFigure(int t, const SDictionary &dic) : SFigure() {
     _type = t;
-    if (dic["id"]) _id = dic["id"];
     if (dic["stroke"]) _paint.stroke = dic["stroke"];
     if (dic["brush"]) _paint.brush = dic["brush"];
     if (dic["filter"]) _paint.filter = dic["filter"];
@@ -44,7 +43,7 @@ void SFigure::_updateBoundary() {
 
 
 uint16_t SFigure::type() const { return _type; }
-const String &SFigure::name() const { return _id; }
+const String &SFigure::name() const { return _attribute["name"]; }
 strans2d SFigure::transformer() const { return _trans; }
 SPaint &SFigure::painter() { return _paint; }
 const SPaint &SFigure::painter() const { return _paint; }
@@ -57,7 +56,7 @@ size_t SFigure::vnum() const { return _vertex.size(); }
 v2fvec &SFigure::vertex() { return _vertex; }
 const v2fvec &SFigure::vertex() const { return _vertex; }
 
-void SFigure::setName(const char *s) { _id = s; }
+void SFigure::setName(const char *s) { _attribute["name"] = s; }
 void SFigure::setOrigin(smath::sgeom::ORIGIN ori) {
     if (_trans.isNull()) _trans = STransform2D();
     _origin = oriPos(_boundary, ori);
@@ -108,7 +107,7 @@ void SFigure::setFillColor(const SGradient &g) {
 void SFigure::setBrush(const SBrush &b) { _paint.brush = b; }
 void SFigure::setPaint(const SPaint &p) { _paint = p; }
 void SFigure::setAttribute(const SDictionary &dic) {
-    if (dic["id"]) _id = dic["id"];
+    if (dic["id"]) _attribute["name"] = dic["id"];
     if (dic["stroke"]) _paint.stroke = dic["stroke"];
     if (dic["brush"]) _paint.brush = dic["brush"];
     if (dic["filter"]) _paint.filter = dic["filter"];

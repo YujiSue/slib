@@ -51,10 +51,10 @@ void SFile::_setPath(const char *path) {
 void SFile::_open() {
     if (isDir()) return;
 	if (exist()) {
-		std::ios_base::openmode om = std::ios::binary;
-		if (_mode & sio::READ) om |= std::ios::in;
-		else if (_mode & sio::WRITE) om |= std::ios::out;
-		else if (_mode & sio::APPEND) om |= std::ios::out | std::ios::app;
+		std::ios_base::openmode om = std::ios_base::binary;
+		if (_mode & sio::READ) om |= std::ios_base::in;
+		else if (_mode & sio::WRITE) om |= std::ios_base::out;
+		else if (_mode & sio::APPEND) om |= std::ios_base::out | std::ios_base::ate;
 #ifdef WIN_OS 
 		_stream.open(_path.localize(), om);
 #else
@@ -492,9 +492,9 @@ void SFile::readLine(String &str) {
         _stream.read(&buf[0], buffer_size);
         bool crlf = true;
         pos = buf.find("\r\n");
-        if (pos == std::string::npos) { pos = buf.find("\n"); crlf = false; }
-        if (pos == std::string::npos) pos = buf.find("\r");
-        if (pos == std::string::npos) str += buf;
+        if (pos == NOT_FOUND) { pos = buf.find("\n"); crlf = false; }
+        if (pos == NOT_FOUND) { pos = buf.find("\r"); crlf = false; }
+        if (pos == NOT_FOUND) str += buf;
         else {
             str += buf.substring(0, pos);
             if (eof()) _stream.clear();

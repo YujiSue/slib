@@ -96,10 +96,7 @@ namespace slib {
              BAM read info
              */
             struct SBIOINFO_DLL readinfo {
-                sbam::voffset offset;
-				//ubytearray data;
-
-                sint read_length, seq_length;
+                sint length, seq_length;
                 sbpos pos;
                 SCigarArray cigars;
                 sushort bin, flag;
@@ -114,16 +111,15 @@ namespace slib {
                 
                 bool headclip(int len);
                 bool tailclip(int len);
+				void set(ubytearray &data);
                 void init();
-                srange readRange();
+                srange range();
                 String toString();
                 
                 bool operator<(const readinfo &ri) const;
                 bool operator==(const readinfo &ri) const;
             };
-            
             typedef Range<sbam::voffset> voff_chunk;
-            typedef Array<sbam::readinfo> read_vec;
             
             /*
              BAM index
@@ -138,12 +134,12 @@ namespace slib {
                 sint _lin_num, _bin_num, _chunk_num;
                 suint _bin;
                 suinteger _beg, _end;
-                Array<Map<suint, suint>> _bin_map;
-                
+
             public:
                 sint ref_num;
                 voff_chunk_vec chunks;
                 voff_vec loffset;
+				Array<Map<suint, suint>> bin_map;
                 
             private:
                 void setNum(int n);
@@ -190,7 +186,8 @@ namespace slib {
             sbam::bgzf_dat *_data, *_buffer;
             
         public:
-            sbam::readinfo read;
+            //sbam::readinfo read;
+			ubytearray read;
             sbam::header info;
             sbam::bai index;
             
@@ -215,9 +212,10 @@ namespace slib {
             void setVOff(const sbam::voffset &v);
             //void sort();
             //void makeIndex();
-            bool next(sbam::readinfo *ri = nullptr);
-            void reads(sbam::read_vec &list, int idx, const srange &rng);
-            void reads(sbam::read_vec &list, int idx, const sregion &reg);
+            //bool next(sbam::readinfo *ri = nullptr);
+			bool next(ubytearray* dat = nullptr);
+            //void reads(sbam::read_vec &list, int idx, const srange &rng);
+            //void reads(sbam::read_vec &list, int idx, const sregion &reg);
         };
     }
 }

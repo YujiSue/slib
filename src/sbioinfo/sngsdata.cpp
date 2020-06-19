@@ -309,11 +309,11 @@ inline void varIdx4(Array<svar_data> *vec, intarray2d *idxs) {
 
 void SNGSData::varindex(svariant_param *vp) {
     sforin(i, 0, ref_num) {
-        _threads.addTask(varIdx1, &variants[5*i], &delidx[i]);
-        _threads.addTask(varIdx1, &variants[5*i+1], &insidx[i]);
-        _threads.addTask(varIdx2, &variants[5*i+2], &invidx[2*i], &invidx[2*i+1]);
-        _threads.addTask(varIdx3, &variants[5*i+3], &trsidx[i]);
-        _threads.addTask(varIdx4, &variants[5*i+4], &trinvidx[i]);
+		_threads.addTask(varIdx1, &variants[5 * i], &delidx[i]);
+		_threads.addTask(varIdx1, &variants[5 * i + 1], &insidx[i]);
+		_threads.addTask(varIdx2, &variants[5 * i + 2], &invidx[2 * i], &invidx[2 * i + 1]);
+		_threads.addTask(varIdx3, &variants[5 * i + 3], &trsidx[i]);
+		_threads.addTask(varIdx4, &variants[5 * i + 4], &trinvidx[i]);
     }
     _threads.complete();
 }

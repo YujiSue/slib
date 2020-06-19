@@ -90,7 +90,7 @@ scnv_param::scnv_param() {
 	border[3] = DEFAULT_HOMO_DUPCP;
 	border[4] = DEFAULT_MULCP;
 	min_qual = DEFAULT_MIN_QUAL;
-	prob = matd(6, 6, 
+	emission = matd(6, 6, 
 		{
 			1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
@@ -101,12 +101,12 @@ scnv_param::scnv_param() {
 		});
 	transition = matd(6, 6,
 		{
-			0.3, 0.1, 0.3, 0.1, 0.1, 0.1,
-			0.1, 0.3, 0.3, 0.1, 0.1, 0.1,
-			0.1, 0.1, 0.5, 0.1, 0.1, 0.1,
-			0.1, 0.1, 0.3, 0.3, 0.1, 0.1,
-			0.1, 0.1, 0.3, 0.1, 0.3, 0.1,
-			0.1, 0.1, 0.3, 0.1, 0.1, 0.3
+			0.5, 0.0, 0.5, 0.0, 0.0, 0.0,
+			0.0, 0.5, 0.5, 0.0, 0.0, 0.0,
+			1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0,
+			0.0, 0.0, 0.5, 0.5, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0, 0.5, 0.0,
+			0.0, 0.0, 0.5, 0.0, 0.0, 0.5
 		});
 }
 scnv_param::scnv_param(const scnv_param& par) {
@@ -114,7 +114,7 @@ scnv_param::scnv_param(const scnv_param& par) {
 	min_bg = par.min_bg;
 	memcpy(border, par.border, sizeof(double) * 5);
 	min_qual = par.min_qual;
-	prob = par.prob;
+	emission = par.emission;
 	transition = par.transition;
 }
 scnv_param::~scnv_param() {}
@@ -123,7 +123,7 @@ scnv_param& scnv_param::operator=(const scnv_param& par) {
 	min_bg = par.min_bg;
 	memcpy(border, par.border, sizeof(double) * 5);
 	min_qual = par.min_qual;
-	prob = par.prob;
+	emission = par.emission;
 	transition = par.transition;
 	return *this;
 }
@@ -135,9 +135,9 @@ void scnv_param::set(const sobj& obj) {
 		sforin(i, 0, 5) border[i] = array[i];
 	}
 	if (obj["qual"]) min_qual = obj["qual"];
-	if (obj["prob"]) {
-		auto pit = obj["prob"].array().begin();
-		sforeach(prob) { E_ = *pit; ++pit; }
+	if (obj["emit"]) {
+		auto pit = obj["emit"].array().begin();
+		sforeach(emission) { E_ = *pit; ++pit; }
 	}
 	if (obj["trans"]) {
 		auto pit = obj["trans"].array().begin();
@@ -147,12 +147,12 @@ void scnv_param::set(const sobj& obj) {
 sobj scnv_param::toObj() {
 	sobj cnvborder, cnvprob, cnvtrans;
 	sforin(i, 0, 5) cnvborder.add(border[i]);
-	sforeach(prob) cnvprob.add(E_);
+	sforeach(emission) cnvprob.add(E_);
 	sforeach(transition) cnvtrans.add(E_);
 
 	return { 
 		kv("len", min_length), kv("bg", min_bg), kv("border", cnvborder),
-		kv("qual", min_qual), kv("prob", cnvprob), kv("trans", cnvtrans)
+		kv("qual", min_qual), kv("emit", cnvprob), kv("trans", cnvtrans)
 	};
 }
 

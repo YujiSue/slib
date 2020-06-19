@@ -44,12 +44,12 @@ namespace slib {
         class SOBJ_DLL SFigure : public SNode<SFigure, FIGURE_OBJ> {
 		protected:
 			sushort _type;
-			String _id;
 			strans2d _trans;
 			SPaint _paint;
 			sareaf _boundary;
 			v2f _origin;
 			v2fvec _vertex;
+			sattribute _attribute;
 
         protected:
             void _makeBoundary(v2f &point);
@@ -184,6 +184,7 @@ namespace slib {
             void drawPict(float x, float y, const char *s);
             void drawText(float x, float y, const char *s);
             
+			void addFigure(sfig fig);
             void addPoint(spt pt);
             void addLine(sline ln);
             void addPath(spath path);

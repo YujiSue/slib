@@ -238,7 +238,6 @@ void SBSeqList::makeIndex(const char *path) {
         if (tmp < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(tmp).c_str(), ">0");
         resize(tmp);
 		attribute["_offset"] = SArray(tmp);
-        
         sforin(i, 0, size()) {
             auto &seq = Array<sbseq>::at(i);
             //Read sequence type

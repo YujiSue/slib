@@ -37,6 +37,13 @@ namespace slib {
 		constexpr suint USE_NODE = 0x0400;
 		constexpr suint USE_CEF = 0x0800;
 
+		#define SLIB_LOG_CODE 0x01
+
+		#define SLIB_LAUNCH_CODE 0x0A
+		#define SLIB_TERMINATE_CODE 0x0B
+
+		#define SLIB_WARNING_CODE 0x0E
+		#define SLIB_ERROR_CODE 0x0F
 
         #define SAPP_ERROR 0x0A00
         #define SAPP_ERROR_EXIT 0x0A01
@@ -64,6 +71,28 @@ namespace slib {
             SAppException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SAppException();
         };
+
+		struct log_data {
+			SDate date;
+			sint code;
+			String msg;
+
+			log_data(sint c = 0, const char* s = nullptr);
+			~log_data();
+		};
+		class SAPP_DLL SLogger {
+		private:
+			SLock _lock;
+			sio::SFile _file;
+			Array<log_data> _data;
+
+		public:
+			SLogger(const char* path = nullptr);
+			~SLogger();
+			void open(const char* path);
+			void close();
+			void log(sint code, const char* msg);
+		};
         
         class SAPP_DLL SApp {
         public:

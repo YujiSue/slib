@@ -3,6 +3,9 @@
 using namespace slib;
 using namespace slib::sbio;
 
+inline void lenCheck(sint& len) {
+	if (len < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, String(len), READ_SIZE_ERR_MSG);
+}
 sbam::voffset::voffset() : file_offset(0), block_offset(0) {}
 sbam::voffset::voffset(int64_t fo, sushort bo) : file_offset(fo), block_offset(bo) {}
 sbam::voffset::voffset(suinteger offset) : file_offset(offset>>16), block_offset(offset&0xFFFF) {}
@@ -33,8 +36,7 @@ void sbam::header::init() { text.clear(); }
 
 sbam::readinfo::readinfo() {}
 sbam::readinfo::readinfo(const sbam::readinfo &ri) {
-    offset = ri.offset;
-    read_length = ri.read_length;
+    length = ri.length;
     seq_length = ri.seq_length;
     pos = ri.pos;
     cigars = ri.cigars;
@@ -59,7 +61,7 @@ bool sbam::readinfo::tailclip(int len) {
     len < cigars.last().length;
 }
 void sbam::readinfo::init() {
-    read_length = 0;
+    length = 0;
     seq_length = 0;
     pos.init();
     bin = 0;
@@ -74,14 +76,62 @@ void sbam::readinfo::init() {
     name = "";
     auxiliary  = "";
 }
-srange sbam::readinfo::readRange() {
+void sbam::readinfo::set(ubytearray& data) {
+	init();
+	if (data.empty()) return;
+	length = data.size();
+	sint tmp;
+	auto ptr = data.ptr();
+	pos.idx = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	pos.begin = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	if (pos.idx < -1 || pos.begin < -1)
+		throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "position", "Read info");
+	tmp = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	name.resize(tmp & 0xFF);
+	mapq = (tmp >> 8) & 0xFF;
+	bin = (tmp >> 16) & 0xFFFF;
+	tmp = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	flag = (tmp >> 16) & 0xFFFF;
+	if (flag & 0x10) pos.dir = true;
+	tmp = tmp & 0xFFFF;
+	cigars.resize(tmp, false);
+	seq_length = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	sequence.resize((seq_length + 1) / 2);
+	qual.resize(seq_length);
+	next_refid = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	next_pos = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	template_length = *reinterpret_cast<sint*>(ptr);
+	ptr += 4; length -= 4; lenCheck(length);
+	memcpy(&name[0], ptr, name.size());
+	ptr += name.size(); length -= name.size(); lenCheck(length);
+	if (name.last() == '\0') name.resize(name.size() - 1);
+	sforeach(cigars) {
+		E_ = *reinterpret_cast<sint*>(ptr);
+		ptr += 4; length -= 4; lenCheck(length);
+	}
+	pos.end = pos.begin + cigars.countRef() - 1;
+	memcpy(sequence.ptr(), ptr, sequence.size());
+	ptr += sequence.size(); length -= sequence.size(); lenCheck(length);
+	memcpy(qual.ptr(), ptr, qual.size());
+	ptr += qual.size(); length -= qual.size(); lenCheck(length);
+	auxiliary.resize(length);
+	memcpy(auxiliary.ptr(), ptr, auxiliary.size());
+}
+srange sbam::readinfo::range() {
     return srange(pos.begin, pos.begin+cigars.countRef()-1);
 }
 String sbam::readinfo::toString() {
 	String str, seq(seq_length, '\0'), qstr(seq_length, '\0');
 	sseq::ddecode2(sequence.ptr(), 0, seq_length, (subyte*)&seq[0]);
 	sforin(i, 0, qual.size()) qstr[i] = qual[i] + 33;
-	str << name << String::TAB << (int)flag << String::TAB << pos.idx << String::TAB << pos.begin + 1 << String::TAB <<
+	str << name << String::TAB << String(flag) << String::TAB << pos.idx << String::TAB << pos.begin + 1 << String::TAB <<
 		(int)mapq << String::TAB << cigars.toString() << String::TAB << (int)next_refid << String::TAB << (int)next_pos << String::TAB <<
 		seq_length << String::TAB << seq << String::TAB << qstr;
     return str;
@@ -90,7 +140,6 @@ bool sbam::readinfo::operator<(const sbam::readinfo &ri) const { return pos < ri
 bool sbam::readinfo::operator==(const sbam::readinfo &ri) const {
     return pos == ri.pos && sequence == ri.sequence;
 }
-
 sbam::bai::bai() : ref_num(0) {}
 sbam::bai::bai(const char *path) : sbam::bai() { load(path); }
 sbam::bai::~bai() {};
@@ -98,7 +147,7 @@ void sbam::bai::setNum(int n) {
     ref_num = n;
     chunks.resize(ref_num);
     loffset.resize(ref_num);
-    _bin_map.resize(ref_num);
+    bin_map.resize(ref_num);
     sforeach(chunks) E_.resize(MAX_BIN);
 }
 void sbam::bai::load(const char *path) {
@@ -111,7 +160,7 @@ void sbam::bai::load(const char *path) {
         if(ref_num < 0) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, "ref_num", ">0");
         setNum(ref_num);
         sforin(i, 0, ref_num) {
-            auto &map = _bin_map[i];
+            auto &map = bin_map[i];
             file.readInt(_bin_num);
             chunks[i].resize(_bin_num);
             sforin(j, 0, _bin_num) {
@@ -288,9 +337,15 @@ void SBamFile::setVOff(const sbam::voffset &off) {
 }
 //void SBamFile::sort() {}
 //void SBamFile::createIndex() {}
-inline void lenCheck(sint &len) {
-    if (len < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, String(len), READ_SIZE_ERR_MSG);
+bool SBamFile::next(ubytearray* dat) {
+	if (!dat) dat = &read;
+	dat->clear();
+	sint len;
+	if (!_readData(&len, 4)) return false;
+	dat->resize(len);
+	if (!_readData(dat->ptr(), len)) return false;
 }
+/*
 bool SBamFile::next(sbam::readinfo *ri) {
     if (!ri) ri = &read;
     ri->init();
@@ -332,9 +387,12 @@ bool SBamFile::next(sbam::readinfo *ri) {
     _readData(&ri->auxiliary[0], len);
     return true;
 }
+*/
+/*
 void SBamFile::reads(sbam::read_vec &list, int idx, const srange &rng) {
     list.clear();
     if(!hasIndex()) return;
+	sbam::readinfo ri;
     sizearray bins;
     sbiutil::getBins(bins, rng);
     if (bins.empty()) return;
@@ -345,7 +403,8 @@ void SBamFile::reads(sbam::read_vec &list, int idx, const srange &rng) {
             setVOff(cit->begin);
             do {
                 if(!next()) break;
-                if(rng.overlap(read.readRange())) list.add(read);
+				read.interpret(ri);
+                if(rng.overlap(ri.range())) list.add(read);
             }
             while (_data->offset < cit->end);
         }
@@ -354,6 +413,7 @@ void SBamFile::reads(sbam::read_vec &list, int idx, const srange &rng) {
 void SBamFile::reads(sbam::read_vec &list, int idx, const sregion &reg) {
     list.clear();
     if(!hasIndex()) return;
+	sbam::readinfo ri;
     sizearray bins;
     sbiutil::getBins(bins, reg);
     if (bins.empty()) return;
@@ -364,9 +424,11 @@ void SBamFile::reads(sbam::read_vec &list, int idx, const sregion &reg) {
             setVOff(cit->begin);
             do {
                 if(!next()) break;
-                if(reg.overlap(read.readRange())) list.add(read);
+				read.interpret(ri);
+                if(reg.overlap(ri.range())) list.add(read);
             }
             while (_data->offset < cit->end);
         }
     }
 }
+*/

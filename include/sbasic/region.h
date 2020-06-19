@@ -19,7 +19,7 @@ namespace slib {
         
         Region &operator=(const Range<T> &rng);
         Region &operator=(const Region &reg);
-        T length() const;
+        T length(bool closed = false) const;
         Range<T> range() const;
         bool include(const T &val) const;
         bool include(const Range<T> &rng) const;
@@ -66,7 +66,7 @@ namespace slib {
         return *this;
     }
     template <typename T>
-    T Region<T>::length() const { T len = initVal<T>(); sforeach(*this) { len += E_.length(); } return len; }
+    T Region<T>::length(bool closed) const { T len = initVal<T>(); sforeach(*this) { len += E_.length(closed); } return len; }
     template <typename T>
     Range<T> Region<T>::range() const {
         if (!Array<Range<T>, RMemory<Range<T>>>::empty())

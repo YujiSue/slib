@@ -254,46 +254,46 @@ void SJson::load(const char *path) {
     parse(json);
 }
 
-inline void writeObj(sio::SFile &file, const sobj &obj, size_t &indent) {
-    if (obj.isArray()) {
-        file<<String::TAB*indent<<"[";
-        if (obj.empty()) file<<"]"<<NEW_LINE;
-        else {
-            file<<NEW_LINE; ++indent;
-            sforeachi(obj) {
-                writeObj(file, obj[i], indent);
-                if (i < obj.size()-1) file<<","<<NEW_LINE;
-                else file<<NEW_LINE;
-            }
-            --indent;
-            file<<String::TAB*indent<<"]"<<NEW_LINE;
-        }
-        file.flush();
-    }
-    else if (obj.isDict()) {
-        file<<String::TAB*indent<<"{";
-        if (obj.empty()) file<<"}"<<NEW_LINE;
-        else {
-            file<<NEW_LINE; ++indent;
-            auto keys = obj.keyset();
-            sforeachi(keys) {
-                file<<String::TAB<<String::dquot(keys[i])<<":";
-                writeObj(file, obj[keys[i]], indent);
-                if (i < keys.size()-1) file<<","<<NEW_LINE;
-                else file<<NEW_LINE;
-            }
-            --indent;
-            file<<String::TAB*indent<<"}"<<NEW_LINE;
-        }
-        file.flush();
-    }
-    else file<<String::TAB*indent<<SJson::jsString(obj);
+inline void writeObj(sio::SFile &file, const sobj &obj, sint layer) {
+	if (obj.isArray()) {
+		file << "[";
+		if (obj.empty()) file << "]" << NEW_LINE;
+		else {
+			file << NEW_LINE;
+			sforeachi(obj) {
+				writeObj(file, obj[i], layer + 1);
+				if (i < obj.size() - 1) file << "," << NEW_LINE;
+				else file << NEW_LINE;
+			}
+			file << String::TAB * layer << "]";
+		}
+		file.flush();
+	}
+	else if (obj.isDict()) {
+		file << "{";
+		if (obj.empty()) file << "}" << NEW_LINE;
+		else {
+			file << NEW_LINE;
+			auto keys = obj.keyset();
+			sforeachi(keys) {
+				file << String::TAB * (layer+1) << String::dquot(keys[i]) << ":";
+				if (obj[keys[i]].isArray()) writeObj(file, obj[keys[i]], layer + 1);
+				else if (obj[keys[i]].isDict()) writeObj(file, obj[keys[i]], layer + 1);
+				else writeObj(file, obj[keys[i]], 0);
+				if (i < keys.size() - 1) file << "," << NEW_LINE;
+				else file << NEW_LINE;
+			}
+			file << String::TAB * layer << "}";
+		}
+		file.flush();
+	}
+	else file << String::TAB * layer << SJson::jsString(obj);
 }
 
 void SJson::save(const char *path) {
     sio::SFile file(path, sio::CREATE);
-    size_t indent = 0; 
-	writeObj(file, *this, indent);
+    sint layer = 0; 
+	writeObj(file, *this, layer);
 }
 
 void SJson::parse(const char *s) { *this = SJson::jsObj(s); }

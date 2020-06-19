@@ -38,6 +38,41 @@ SAppException::SAppException(const char* f, sint l, const char* func, sint e, co
 }
 SAppException::~SAppException() {}
 
+inline String codeStr(sint code) {
+	if (code & SLIB_LOG_CODE) return "log";
+	else if (code & SLIB_LAUNCH_CODE) return "launched";
+	else if (code & SLIB_TERMINATE_CODE) return "terminated";
+	else if (code & SLIB_ERROR_CODE) return "error";
+	else if (code & SLIB_WARNING_CODE) return "warning";
+}
+log_data::log_data(sint c, const char* s) {
+	date = SDate(SDate::YMDHMS);
+	code = c;
+	msg = s;
+}
+log_data::~log_data() {}
+SLogger::SLogger(const char* path) {
+	if (path) open(path);
+}
+SLogger::~SLogger() { if (_file.isOpened()) _file.close(); }
+void SLogger::open(const char* path) {
+	if (sio::fileExist(path)) _file = sio::SFile(path, sio::APPEND);
+	else _file = sio::SFile(path, sio::CREATE);
+}
+void SLogger::close() {
+	_file.close();
+}
+void SLogger::log(sint code, const char* msg) {
+	_lock.lock();
+	SDate date(SDate::YMDHMS);
+	if (_file.isOpened()) {
+		_file << date.toString() << "[" << codeStr(code) << "]" << String::TAB << msg << NEW_LINE;
+		_file.flush();
+	}
+	else _data.add(log_data(code, msg));
+	_lock.unlock();
+}
+
 SApp::SApp() {}
 SApp::SApp(const char *path) : SApp() {
     try { profile.load(path); }

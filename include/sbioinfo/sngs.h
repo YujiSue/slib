@@ -23,6 +23,34 @@ namespace slib {
             sobj toObj();
         };
         
+		struct summary_data {
+			sint refnum, dpbin;
+			intarray reflen, dpsize;
+			suinteger readnum;
+			integerarray count;
+			double avelen, avedp, uncover;
+			doublearray readlen;
+			floatarray2d depth;
+			/*
+			Array<sregion> target;
+
+			sint ref_num, depth_bin;
+			intarray ref_length, depth_size, uncovered;
+			suinteger total_length, total_reads;
+			bool target_seq;
+			Array<sregion> target;
+			integerarray read_count;
+			double average_length, average_depth, covered_region;
+			doublearray read_length;
+			*/
+			Array<vararray> variants;
+
+			summary_data();
+			~summary_data();
+
+			suinteger total();
+
+		};
         
         class SBIOINFO_DLL SNGSData {
         public:

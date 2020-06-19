@@ -56,20 +56,22 @@ namespace slib {
 			sobj toObj();
 		};
 
+		typedef enum {
+			HOMO_DEL_CNV = 0,
+			HETERO_DEL_CNV = 1,
+			NON_CNV = 2,
+			HETERO_DUP_CNV = 3,
+			HOMO_DUP_CNV = 4,
+			MULTI_CNV = 5,
+		} CNV_TYPE;
+
 		struct scnv_param {
-			typedef enum {
-				HOMO_DEL_CNV = 0,
-				HETERO_DEL_CNV = 1,
-				NON_CNV = 2,
-				HETERO_DUP_CNV = 3,
-				HOMO_DUP_CNV = 4,
-				MULTI_CNV = 5,
-			} CNV_STATE;
+			
 
 			//copy: [0, border[0]), [border[0], border[1]), [border[1], border[2]), [border[2], border[3]), [border[3], border[4]), [border[4], +inf)
 			sint min_length;
 			double min_bg, border[5], min_qual;
-			matd prob, transition;
+			matd emission, transition;
 
 			scnv_param();
 			scnv_param(const scnv_param& p);
