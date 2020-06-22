@@ -39,7 +39,9 @@ namespace slib {
             bool operator < (const svar_data &v) const;
             bool operator ==(const svar_data &v) const;
         };
+
         typedef Array<svar_data> vararray;
+		typedef Array<svar_data *> varparray;
 
 		struct scn_data {
 			float depth[2], ndepth[2], bgdepth[2], bgndepth[2], ratio[2], frequency;

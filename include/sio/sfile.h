@@ -31,7 +31,7 @@ namespace slib {
             
         public:
             SFile();
-            SFile(const char *path, int m = sio::READ);
+            SFile(const char *path, int m = 0);
             SFile(const SFile &file);
             ~SFile();
             

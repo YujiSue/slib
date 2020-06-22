@@ -8,7 +8,7 @@
 namespace slib {
 	using namespace smath;
 	namespace sbio {
-
+		struct SBIOINFO_DLL svar_data;
 		class SBIOINFO_DLL SVariant;
 		class SBIOINFO_DLL SVarList;
 
@@ -156,6 +156,8 @@ namespace slib {
 			SVarFilter(SBSeqList* ref = nullptr, SBAnnotDB* db = nullptr, svariant_param* p = nullptr, Array<sregion>* t = nullptr);
 			~SVarFilter();
 
+			void consolidate(Array<svar_data>& variants);
+			void subtract(Array<svar_data>& variants1, Array<svar_data>& variants2);
 			void merge(SVarList& vl1, SVarList& vl2);
 			void subtract(SVarList& vl1, SVarList& vl2);
 			void common(SVarList& vl1, SVarList& vl2);

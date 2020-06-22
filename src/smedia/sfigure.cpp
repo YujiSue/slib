@@ -12,7 +12,15 @@ SFigure::SFigure(int t, const SDictionary &dic) : SFigure() {
     if (dic["brush"]) _paint.brush = dic["brush"];
     if (dic["filter"]) _paint.filter = dic["filter"];
 }
-SFigure::SFigure(const SFigure &fig) : SNode<SFigure, FIGURE_OBJ>(fig) {}
+SFigure::SFigure(const SFigure &fig) : SNode<SFigure, FIGURE_OBJ>(fig) {
+	_type = fig._type;
+	_trans = fig._trans;
+	_paint = fig._paint;
+	_boundary = fig._boundary;
+	_origin = fig._origin;
+	_vertex = fig._vertex;
+	_attribute = fig._attribute;
+}
 SFigure::~SFigure() {}
 
 void SFigure::_makeBoundary(v2f &point) {

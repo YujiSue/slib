@@ -24,6 +24,9 @@ namespace slib {
 #define v4f SVector4D<float>
 #define v4d SVector4D<double>
 #define sveci SVector<sint, CMemory<sint>>
+#define svecu SVector<suint, CMemory<suint>>
+#define svecl SVector<sinteger, CMemory<sinteger>>
+#define svecs SVector<suinteger, CMemory<suinteger>>
 #define svecf SVector<float, CMemory<float>>
 #define svecd SVector<double, CMemory<double>>
 #define v2ivec SVector<v2i, RMemory<v2i>>

@@ -5,14 +5,14 @@ using namespace slib;
 using namespace slib::sio;
 using namespace slib::smedia;
 
-void SXmlNode::encodeXML(String &str) {
+inline void xml::encodeXML(String &str) {
     str.replace("&", "&amp;");
 	str.replace("\"", "&quot;");
 	str.replace("\'", "&apos;");
 	str.replace("<", "&lt;");
 	str.replace(">", "&gt;");
 }
-void SXmlNode::decodeXML(String& str) {
+inline void xml::decodeXML(String& str) {
 	str.replace("&quot;", "\"");
 	str.replace("&apos;", "\'");
 	str.replace("&lt;", "<");
@@ -484,7 +484,7 @@ void slib::SXmlNode::parseTag(const char* s) {
 	if (1 < list.size()) {
 		sforin(i, 1, list.size()) {
 			auto dat = list[i].split("=");
-			decodeXML(dat[1]);
+			xml::decodeXML(dat[1]);
 			attribute[dat[0]] = String::dequot(dat[1]);
 		}
 	}
@@ -566,7 +566,7 @@ String SXmlNode::toString() const {
 			auto keys = attribute.hasKey("_key") ? attribute["_key"].split(",") : attribute.keyset();
 			sforeach(keys) {
 				String tmp = attribute[E_];
-				encodeXML(tmp);
+				xml::encodeXML(tmp);
 				xstr << " " << E_ << "=" << String::dquot(tmp);
 			}
 		}
@@ -580,7 +580,7 @@ String SXmlNode::toString() const {
 			}
 			else {
 				String tmp = content;
-				encodeXML(tmp);
+				xml::encodeXML(tmp);
 				xstr << tmp;
 			}
 			xstr << "</" << tag << ">" << NEW_LINE;

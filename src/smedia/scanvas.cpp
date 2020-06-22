@@ -52,7 +52,7 @@ const SColor &SCanvas::background() const { return _background; }
 void SCanvas::resize(size_t w, size_t h) { _frame.width = w; _frame.height = h; }
 void SCanvas::setBackGround(const SColor &col) { _background = col; }
 void SCanvas::setFrame(sarea area) { _frame = area; }
-
+void SCanvas::addFigure(sfig fig) { _root.addFigure(fig); }
 void SCanvas::addPoint(spt pt) { _root.addFigure(pt); }
 void SCanvas::addLine(sline ln) { _root.addFigure(ln); }
 void SCanvas::addPath(spath path) { _root.addFigure(path); }

@@ -356,7 +356,58 @@ inline void _annotate(SVariant* var, SBSeqList* ref, SBAnnotDB* db) {
 
 SVarFilter::SVarFilter(SBSeqList* ref, SBAnnotDB* db, svariant_param* p, Array<sregion>* t) : _ref(ref), _db(db), _par(p), _target(t) {}
 SVarFilter::~SVarFilter() {}
-
+void SVarFilter::consolidate(Array<svar_data>& variants) {
+	if (variants.empty()) return;
+	auto size = variants.size();
+	variants.sort();
+	sforeach(variants) {
+		if (!(E_.type)) continue;
+		auto it_ = it + 1;
+		while (it_ < variants.end()) {
+			if (!(E_.lt(*it_, _par->max_dist))) break;
+			if (E_.equal(*it_, _par->max_dist)) {
+				E_ += (*it_); it_->type = 0; --size;
+			}
+			++it_;
+		}
+	}
+	variants.sort([](const svar_data& v1, const svar_data& v2) {
+			if (!(v1.type)) return false;
+			if (!(v2.type)) return true;
+			return v1 < v2;
+		});
+	variants.resize(size);
+}
+void SVarFilter::subtract(Array<svar_data>& variants1, Array<svar_data>& variants2) {
+	Array<std::pair<sbyte, svar_data*>> vec;
+	size_t size = variants1.size();
+	sforeach(variants1) vec.add(0, &E_);
+	sforeach(variants2) vec.add(1, &E_);
+	vec.sort([](const std::pair<sbyte, svar_data*>& p1, const std::pair<sbyte, svar_data*>& p2) {
+		return *(p1.second) < *(p2.second);
+		});
+	sforeach(vec) {
+		if (!E_.second) continue;
+		auto it_ = it + 1;
+		svar_data* vptr = nullptr;
+		while (it_ < vec.end()) {
+			if (E_.second->equal(*it_->second, _par->max_dist)) {
+				if (!E_.first) vptr = E_.second;
+				else if (!it_->first) vptr = it_->second;
+				it_->second = nullptr;
+			}
+			else if (!(E_.second->lt(*it_->second, _par->max_dist))) break;
+			++it_;
+		}
+		if (vptr) { vptr->type = 0; --size; }
+	}
+	variants1.sort([](const svar_data& v1, const svar_data& v2) {
+		if (!(v1.type)) return false;
+		if (!(v2.type)) return true;
+		return v1 < v2;
+		});
+	variants1.resize(size);
+}
 void SVarFilter::merge(SVarList& vl1, SVarList& vl2) {
 	auto dist = _par ? _par->max_dist : 0;
 	sforeach(vl2.attribute) {

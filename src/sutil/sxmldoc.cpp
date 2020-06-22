@@ -115,7 +115,7 @@ void SXmlDoc::_read(SFile &file, String &tag, SXmlNode *parent) {
             file.readTo(tag, ">");
             if(tag[0] == '/') {
 				if (tag == '/' + node->tag) {
-					SXmlNode::decodeXML(content);
+					xml::decodeXML(content);
 					node->content = content;
 					break;
 				}
@@ -136,64 +136,61 @@ void SXmlDoc::load(const char *path) {
         _read(file, tag, nullptr);
     }
 }
-inline void _write(SFile &file, SXmlNode *node) {
-    size_t layer = node->layer();
-    file<<String::TAB*layer<<"<";
-    if (node->type == xml::DEFINITION_NODE) {
-        file<<"?xml"<<" version="<<String::dquot(node->attribute["version"])<<
-        " encoding="<<String::dquot(node->attribute["encoding"])<<"?>"<<NEW_LINE;
-    }
-    else if (node->type == xml::CDATA_NODE)
-        file<<"![CDATA["<<node->content<<"]]>"<<NEW_LINE;
-    else if (node->type == xml::COMMENT_NODE)
-        file<<"!--"<<node->content<<"-->"<<NEW_LINE;
-    else if (node->type&xml::DOCTYPE_NODE) {
-        auto doc = "!DOCTYPE "+node->tag+" ";
-        if (node->type == xml::DOCTYPE_PUB_NODE)
-            file<<doc<<"PUBLIC "<<String::dquot(node->attribute["public"])<<" "<<String::dquot(node->attribute["dtd"])<<">"<<NEW_LINE;
-        else if (node->type == xml::DOCTYPE_NODE)
-            file<<doc<<"SYSTEM "<<String::dquot(node->attribute["dtd"])<<">"<<NEW_LINE;
-        else {
-            file<<"["<<NEW_LINE;
-            sforeach(node->children()) {
-                /*
-                 */
-            }
-            file<<"]>"<<NEW_LINE;
-        }
-    }
-    else {
-        file<<node->tag;
-        if (!node->attribute.empty()) {
-            auto keys = node->attribute.hasKey("_key")?node->attribute["_key"].split(","):node->attribute.keyset();
+inline void _write(SFile &file, sxnode node) {
+	size_t l = node->layer() - 1;
+	if (node->type == xml::DEFINITION_NODE)
+		file << String("<?xml") <<
+		(node->attribute["version"] ? " version=" + String::dquot(node->attribute["version"]) : "") <<
+		(node->attribute["encoding"] ? " encoding=" + String::dquot(node->attribute["encoding"]) : "") << "?>" << NEW_LINE;
+	else if (node->type == xml::CDATA_NODE)
+		file << String::TAB * l << "<![CDATA[" << node->content << "]]>" << NEW_LINE;
+	else if (node->type == xml::COMMENT_NODE)
+		file << String::TAB * l << "<!--" << node->content << "-->" << NEW_LINE;
+	else if (node->type & xml::DOCTYPE_NODE) {
+		file << String("<!DOCTYPE ") << node->tag << " ";
+		if (node->type == xml::DOCTYPE_PUB_NODE)
+			file << "PUBLIC " << String::dquot(node->attribute["public"]) << " " << String::dquot(node->attribute["dtd"]) << ">" << NEW_LINE;
+		else if (node->type == xml::DOCTYPE_SYS_NODE)
+			file << "SYSTEM " << String::dquot(node->attribute["dtd"]) << ">" << NEW_LINE;
+		else {
+			file << "[" << NEW_LINE;
+			/*
+			 */
+			file << "]>" << NEW_LINE;
+		}
+	}
+	else if (node->type != xml::HIDDEN_TAG) {
+		file << String::TAB * l << "<" << node->tag;
+		if (!node->attribute.empty()) {
+			auto keys = node->attribute.hasKey("_key") ? node->attribute["_key"].split(",") : node->attribute.keyset();
 			sforeach(keys) {
-				SXmlNode::encodeXML(node->attribute[E_]);
-				file << " " << E_ << "=" << String::dquot(node->attribute[E_]);
+				String tmp = node->attribute[E_];
+				xml::encodeXML(tmp);
+				file << " " << E_ << "=" << String::dquot(tmp);
 			}
-        }
-        if(node->type&xml::SINGLE_TAG) file<<"/>"<<NEW_LINE;
-        else {
-            file<<">";
-            if(node->childCount()) {
-                file<<NEW_LINE;
-                sforeach(node->children()) _write(file, E_.toClassPtr<SXmlNode>());
-                file<<String::TAB*layer;
-            }
+		}
+		if (node->type & xml::SINGLE_TAG) file << "/>" << NEW_LINE;
+		else {
+			file << ">";
+			if (node->childCount()) {
+				file << NEW_LINE;
+				sforeach(node->children()) _write(file, E_);
+				file << String::TAB * l;
+			}
 			else {
-				SXmlNode::encodeXML(node->content);
-				file << node->content;
+				String tmp = node->content;
+				xml::encodeXML(tmp);
+				file << tmp;
 			}
-            file<<"</"<<node->tag<<">"<<NEW_LINE;
-            file.flush();
-        }
-    }
+			file << "</" << node->tag << ">" << NEW_LINE;
+		}
+		file.flush();
+	}
+	file.flush();
 }
 void SXmlDoc::save(const char *path) {
     SFile file(path, sio::CREATE);
-    _write(file, _definition);
-    _write(file, _doctype);
-    sforeach(_root) _write(file, E_);
-    _write(file, _entity);
+	sforeach(_root) _write(file, E_);
 }
 void SXmlDoc::clear() {
     _definition.release(); _definition.discard();

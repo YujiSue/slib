@@ -1,5 +1,5 @@
-#ifndef __SCANVAS_H__
-#define __SCANVAS_H__
+#ifndef SLIB_SCANVAS_H
+#define SLIB_SCANVAS_H
 
 #include "sutil/sutil.h"
 #include "sobj/stext.h"

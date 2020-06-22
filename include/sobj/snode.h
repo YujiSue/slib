@@ -53,9 +53,10 @@ namespace slib {
 		}
 		size_t layer() const {
 			size_t l = 0;
-			Cls* ptr = _parent;
-			while (!ptr) {
-				ptr = ptr->_parent; ++l;
+			auto ptr = _parent;
+			while (ptr != nullptr) {
+				++l;
+				ptr = ptr->_parent;
 			}
 			return l;
 		}

@@ -15,6 +15,8 @@ namespace slib {
 		constexpr sushort DOCTYPE_SYS_NODE = 0x0220;
 		constexpr sushort CDATA_NODE = 0x0400;
 		constexpr sushort COMMENT_NODE = 0x0800;
+		constexpr sushort ENTITY_NODE = 0x1000;
+
 
 		constexpr sushort SINGLE_TAG = 0x0001;
 		constexpr sushort START_TAG = 0x0002;
@@ -29,6 +31,9 @@ namespace slib {
 		constexpr sushort SVG = 0x0021;
 		//constexpr sushort OOML = 0x0041;
 		//constexpr sushort SOML = 0x0081;
+
+		extern inline void encodeXML(String& str);
+		extern inline void decodeXML(String& str);
 
 	}
         
@@ -45,8 +50,6 @@ namespace slib {
 		sattribute attribute;
 
 	public:
-		static void encodeXML(String &str);
-		static void decodeXML(String& str);
 		static sxnode plistNode(const sobj& obj);
 		static sobj toPlistObj(const sxnode& node);
 
