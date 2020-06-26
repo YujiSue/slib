@@ -33,7 +33,7 @@ void summary_data::init() {
 bool summary_data::comparable(summary_data& dat) {
 	return refnum == dat.refnum && bin == dat.bin && reflen == dat.reflen;
 }
-depth_data::depth_data() {}
+depth_data::depth_data() : current(0.0f) {}
 depth_data::~depth_data() {}
 void depth_data::init() {
 	sforeach(count) E_.reset(0);
@@ -95,6 +95,31 @@ void SNGSData::setParam(sngs_param* p) {
 	//_threads.setSize(p->thread_count);
 }
 */
+inline void readVar(svar_data& var, sio::SFile& file) {
+	subyte byte;
+	sint tmp; 
+	file.readUByte(byte);
+	var.type = byte;
+	file.readInt(var.pos[0].idx);
+	file.readInt(tmp);
+	var.pos[0].dir = tmp & 0x80000000 ? true : false;
+	var.pos[0].begin = tmp & 0x7FFFFFFF;
+	file.readInt(tmp);
+	var.pos[0].end = var.pos[0].begin + tmp - 1;
+	file.readInt(var.pos[1].idx);
+	file.readInt(tmp);
+	var.pos[1].dir = tmp & 0x80000000 ? true : false;
+	var.pos[1].begin = tmp & 0x7FFFFFFF;
+	file.readInt(tmp);
+	var.pos[1].end = var.pos[1].begin + tmp - 1;
+	file.readInt(tmp);
+	var.alt.resize(tmp);
+	if (tmp) file.readBytes(&var.alt[0], tmp);
+	file.readInt(tmp);
+	var.read[1] = tmp & 0xFFFF;
+	var.read[0] = (tmp >> 16) & 0xFFFF;
+	file.readReal(var.qual);
+}
 inline void loadVariant(vararray *variants, sio::SFile &file) {
     subyte byte;
     sint tmp;
@@ -214,9 +239,9 @@ void SNGSData::open(const char* path) {
 				throughVariant(_file);
 			}
 		}
-		sforin(d, 0, summary.refnum) {
-			depth.offset[d] = _file.offset();
-			_file.setOffset(_file.offset() + depth.count[d].size() * sizeof(float));
+		depth.offset[0] = _file.offset();
+		sforin(d, 1, summary.refnum) {
+			depth.offset[d] = depth.offset[d - 1] + ((summary.reflen[d - 1] - 1) / summary.bin + 1) * sizeof(float);
 		}
 		if (_file.eof()) _file.clear();
 	}
@@ -277,6 +302,22 @@ void SNGSData::save(const char *path) {
 	catch (SIOException ie) {
 		ie.print();
 	}
+}
+void SNGSData::readVariant(sint r, sint v) {
+	if (!_file.isOpened()) throw SIOException(ERR_INFO);
+	if (_file.eof()) _file.clear();
+	_file.setOffset(srvs.offset[5 * r + v]);
+}
+void SNGSData::nextVar() {
+	readVar(srvs.current, _file);
+}
+void SNGSData::readDepth(sint r, sint p) {
+	if (!_file.isOpened()) throw SIOException(ERR_INFO);
+	if (_file.eof()) _file.clear();
+	_file.setOffset(depth.offset[r] + p * sizeof(float));
+}
+void SNGSData::nextDp() {
+	_file.readFloat(depth.current);
 }
 /*
 void SNGSData::lock(int r, int v) { _mtxs[5 * r + v].lock(); }

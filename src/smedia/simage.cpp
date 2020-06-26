@@ -156,13 +156,6 @@ SImage &SImage::operator=(const SImage &img) {
 	_file = img._file; _attribute = img._attribute;
     return *this;
 }
-void SImage::load(const SDictionary &dict) {
-    clear();
-    /*
-	 *
-	 *
-	 */
-}
 void SImage::load(const char *path) {
     clear(); _file = path;
 	SImageIO::load(_file, this);
@@ -174,7 +167,6 @@ void SImage::save(const char *path) {
 	_file = path;
 	SImageIO::save(_file, this);
 }
-
 sushort SImage::type() const { return _type; }
 bool SImage::empty() const { return _data.empty(); }
 size_t SImage::size() const { return _data.size(); }

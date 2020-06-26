@@ -1,5 +1,5 @@
-#ifndef SLIB_SCANVAS_H
-#define SLIB_SCANVAS_H
+#ifndef SLIB_SFIGURE_H
+#define SLIB_SFIGURE_H
 
 #include "sutil/sutil.h"
 #include "sobj/stext.h"
@@ -23,19 +23,21 @@ namespace slib {
         class SOBJ_DLL SCurve2D;
         class SOBJ_DLL SPath2D;
         class SOBJ_DLL SRectangle;
-        class SOBJ_DLL SEllipse;
+		class SOBJ_DLL SCircle;
+		class SOBJ_DLL SEllipse;
         class SOBJ_DLL SArc;
         class SOBJ_DLL SPolygon;
         class SOBJ_DLL SPicture;
         class SOBJ_DLL SCalligraphy;
         
         #define sfig scobj<slib::smedia::SFigure, FIGURE_OBJ>
-        #define spt scobj<slib::smedia::SPoint2D, FIGURE_OBJ>
-        #define sline scobj<slib::smedia::SLine2D, FIGURE_OBJ>
-        #define scurve scobj<slib::smedia::SCurve2D, FIGURE_OBJ>
-        #define spath scobj<slib::smedia::SPath2D, FIGURE_OBJ>
+        #define spoint2d scobj<slib::smedia::SPoint2D, FIGURE_OBJ>
+        #define sline2d scobj<slib::smedia::SLine2D, FIGURE_OBJ>
+        #define scurve2d scobj<slib::smedia::SCurve2D, FIGURE_OBJ>
+        #define spath2d scobj<slib::smedia::SPath2D, FIGURE_OBJ>
         #define srect scobj<slib::smedia::SRectangle, FIGURE_OBJ>
-        #define sellipse scobj<slib::smedia::SEllipse, FIGURE_OBJ>
+		#define sellipse scobj<slib::smedia::SEllipse, FIGURE_OBJ>
+        #define scirc scobj<slib::smedia::SCircle, FIGURE_OBJ>
         #define sarc scobj<slib::smedia::SArc, FIGURE_OBJ>
         #define spolygon scobj<slib::smedia::SPolygon, FIGURE_OBJ>
         #define spict scobj<slib::smedia::SPicture, FIGURE_OBJ>
@@ -44,48 +46,45 @@ namespace slib {
         class SOBJ_DLL SFigure : public SNode<SFigure, FIGURE_OBJ> {
 		protected:
 			sushort _type;
-			strans2d _trans;
-			SPaint _paint;
 			sareaf _boundary;
-			v2f _origin;
+			sgeom::ORIGIN _origin;
 			v2fvec _vertex;
-			sattribute _attribute;
+			STransform2D _trans;
+			SPaint _paint;
+			SDictionary _attribute;
 
         protected:
-            void _makeBoundary(v2f &point);
+            void _makeBoundary(v2f pt);
             void _resetBoundary();
             void _updateBoundary();
             
         public:
             SFigure();
-            SFigure(int t);
-            SFigure(int t, const SDictionary &dic);
+            SFigure(sushort t);
+            SFigure(sushort t, const SDictionary &dic);
             SFigure(const SFigure &fig);
             virtual ~SFigure();
             
             sushort type() const;
-            const String &name() const;
-            strans2d transformer() const;
-            SPaint &painter();
+			sareaf boundary() const;
+			sgeom::ORIGIN origin() const;
+			size_t vcount() const;
+			v2fvec& vertex();
+			const v2fvec& vertex() const;
+			SDictionary& attribute();
+			const SDictionary& attribute() const;
+
+			const STransform2D &transformer() const;
             const SPaint &painter() const;
-			SBrush& brush();
-            const SBrush &brush() const;
-			SStroke& stroke();
-            const SStroke &stroke() const;
-            sareaf boundary() const;
-            size_t vnum() const;
-			v2fvec &vertex();
-            const v2fvec &vertex() const;
+			const SBrush &brush() const;
+			const SStroke &stroke() const;
             
-            void setName(const char *s);
             void setOrigin(smath::sgeom::ORIGIN ori);
-            void setOrigin(v2f ori);
-            void setScale(v2f v);
+			void setScale(v2f v);
             void setTranslate(v2f v);
             void setSkew(v2f v);
-            void setRot(float f);
-            void setReflect(uint8_t i);
-            void setTransform(const STransform2D &trans);
+            void setRotation(float f);
+            void setReflect(subyte r);
             void setStrokeType(sushort t);
             void setStrokeWidth(float w);
             void setStrokeColor(const SColor &c);
@@ -97,11 +96,11 @@ namespace slib {
             void setPaint(const SPaint &p);
             void setAttribute(const SDictionary &dic);
             
-            void expand(v2f v);
-            void shift(v2f v);
-            void shear(v2f v);
-            void rotate(float f);
-            void reflect(uint8_t i);
+            void expand(v2f s);
+            void shift(v2f t);
+            void shear(v2f s);
+            void rotate(float rot);
+            void reflect(subyte ref);
             void transform();
             
             void addVertex(v2f v);
@@ -110,28 +109,35 @@ namespace slib {
             void removeVertex(size_t idx);
             void clearVertex();
             
-            void addFigure(SFigure *fig);
-            void addFigure(sfig &&fig);
-            void addFigure(sfig &fig);
-            template<class Cls>
-            void addFigure(scobj<Cls, FIGURE_OBJ> &&fig) {
-                if (_children.empty()) _boundary = fig->boundary();
-                else _boundary.merge(fig->boundary());
-                SNode<SFigure, FIGURE_OBJ>::addChild(dynamic_cast<SFigure *>(fig.ptr()));
-                fig.discard(); _updateBoundary();
-            }
-            template<class Cls>
-            void addFigure(scobj<Cls, FIGURE_OBJ> &fig) {
-                if (_children.empty()) _boundary = fig->boundary();
-                else _boundary.merge(fig->boundary());
-                fig.share(); SNode<SFigure, FIGURE_OBJ>::addChild(dynamic_cast<SFigure *>(fig.ptr()));
-                _updateBoundary();
-            }
-            
+			void addFigure(sfig fig);
+            void addFigure(SFigure &&fig);
+            void addFigure(const SFigure &fig);
+			template<class Cls>
+			void addFigure(Cls &&fig) { 
+				Cls* figc = new Cls(fig);
+				sfig fig_(dynamic_cast<SFigure *>(figc));
+				fig_->addScope();
+				SNode<SFigure, FIGURE_OBJ>::addChild(fig_);
+				_resetBoundary(); _updateBoundary();
+			}
+			template<class Cls>
+			void addFigure(const Cls &fig) {
+				Cls* figc = new Cls(fig);
+				sfig fig_(dynamic_cast<SFigure*>(figc));
+				fig_->addScope();
+				SNode<SFigure, FIGURE_OBJ>::addChild(fig_);
+				_resetBoundary(); _updateBoundary();
+			}
+			template<class Cls>
+            void addFigure(SClsPtr<Cls, FIGURE_OBJ> fig) { 
+				sfig fig_(dynamic_cast<SFigure*>(fig.ptr()));
+				fig_->addScope();
+				SNode<SFigure, FIGURE_OBJ>::addChild(fig_);
+				_resetBoundary(); _updateBoundary();
+			}
             virtual slib::smath::v2f center() const;
             virtual double length() const;
             virtual double area() const;
-            
             virtual bool include(v2f v) const;
             virtual bool cross(sfig fig) const;
             
@@ -144,14 +150,16 @@ namespace slib {
         
         class SOBJ_DLL SCanvas : public SDocument<SFigure> {
         protected:
-            SColor _background;
-            sarea _frame;
-            
+			v2i _size;
+			sarea _frame;
+			SColor _background;
+			SPaint _paint;
+
         private:
             void loadSVG(const char *path);
-            void loadCNVS(const char *path);
+            //void loadCNVS(const char *path);
             void saveSVG(const char *path);
-            void saveCNVS(const char *path);
+            //void saveCNVS(const char *path);
             
         public:
             SCanvas();
@@ -164,6 +172,7 @@ namespace slib {
             
             size_t width() const;
             size_t height() const;
+			v2i size() const;
             sarea frame() const;
             const SColor &background() const;
             void resize(size_t w, size_t h);
@@ -171,29 +180,48 @@ namespace slib {
             void setFrame(sarea area);
             
             void setPaint(const SPaint &paint);
-            void drawPoint(v2f pos);
-            void drawLine(v2f init, v2f end);
-            void drawPath();
-            void drawRect(float x, float y, float w, float h);
-            void drawRect(sareaf area);
-            void drawPolygon(const v2fvec &v);
-            void drawEllipse(float x, float y, float r);
-            void drawEllipse(float x, float y, float w, float h);
-            void drawEllipse(sareaf area);
-            void drawArc();
-            void drawPict(float x, float y, const char *s);
-            void drawText(float x, float y, const char *s);
-            
+
+			template<class... Args>
+			void drawPoint(Args... args) {
+				addFigure(spoint2d(args...));
+			}
+			template<class... Args>
+			void drawLine(Args... args) {
+				addFigure(sline2d(args...));
+			}
+			template<class... Args>
+            void drawPath(Args... args) {
+				addFigure(spath2d(args...));
+			}
+			template<class... Args>
+            void drawRect(Args... args) {
+				addFigure(srect(args...));
+			}
+			template<class... Args>
+			void drawPolygon(Args... args) {
+				addFigure(spolygon(args...));
+			}
+			template<class... Args>
+			void drawEllipse(Args... args) {
+				addFigure(sellipse(args...));
+			}
+			template<class... Args>
+			void drawCircle(Args... args) {
+				addFigure(scircle(args...));
+			}
+			template<class... Args>
+			void drawArc(Args... args) {
+				addFigure(sarc(args...));
+			}
+			template<class... Args>
+			void drawPict(Args... args) {
+				addFigure(spict(args...));
+			}
+			template<class... Args>
+			void drawText(Args... args) {
+				addFigure(scalligraphy(args...));
+			}
 			void addFigure(sfig fig);
-            void addPoint(spt pt);
-            void addLine(sline ln);
-            void addPath(spath path);
-            void addRect(srect rect);
-            void addPolygon(spolygon poly);
-            void addEllipse(sellipse elps);
-            void addArc(sarc arc);
-            void addPict(spict pic);
-            void addText(scalligraphy txt);
             
             String getClass() const;
             String toString() const;

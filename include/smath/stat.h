@@ -296,6 +296,17 @@ namespace slib {
             extern inline double pchisq(double x, double n);
             extern inline double qchisq(double x, double n);
             
+			/*
+			extern inline std::function<double(double)> binomFunc(double m = 0.0, double s = 1.0) {
+				return [m, s](double x) {
+					return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
+				};
+			}
+			extern inline double pbinom(int x, int n, double p) {
+
+			}
+			*/
+
             extern inline std::function<double(int)> poisFunc(double l) {
 				return [l](int x) {
 					return (pow(l, x) * exp(-l)) / smath::factorial(x);
@@ -308,6 +319,8 @@ namespace slib {
 			extern inline double gammaFunc(double d);
             extern inline double ibetaFunc(double d, double m, double n);
             extern inline double betaFunc(double m, double n);
+
+			
             
         }
     }

@@ -26,6 +26,7 @@ namespace slib {
 		struct depth_data {
 			floatarray2d count;
 			uintegerarray offset;
+			float current;
 
 			depth_data();
 			~depth_data();
@@ -36,6 +37,7 @@ namespace slib {
 		struct srvar_data {
 			Array<vararray> variants;
 			uintegerarray offset;
+			svar_data current;
 			//Array<varparray> index;
 			/*
 			Array<Array< delidx, insidx, invidx;
@@ -93,7 +95,11 @@ namespace slib {
 			void open(const char* path);
             void load(const char *path);
             void save(const char *path);
-            
+			void readVariant(sint r = 0, sint v = 0);
+			void nextVar();
+			void readDepth(sint r = 0, sint p = 0);
+			void nextDp();
+
             void setNum(sint num);
             void setLength(int idx, sint len);
 			void setBin(sint bin);

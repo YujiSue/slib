@@ -27,11 +27,9 @@ namespace slib {
         
         constexpr int RECTANGLE = 0x0004;
         constexpr int SQUARE = REGULAR|RECTANGLE;
-        //constexpr int ROUND_RECTANGLE = ROUND|RECTANGLE;
         constexpr int PLANE = 0x0004;
         constexpr int POLYGON = 0x0008;
         constexpr int STAR = CONCAVE|POLYGON;
-        
         constexpr int ELLIPSE = CIRCULAR|RECTANGLE;
         constexpr int CIRCLE = REGULAR|CIRCULAR|RECTANGLE;
         constexpr int ARC = CIRCULAR|LINE;
@@ -42,9 +40,9 @@ namespace slib {
     
     namespace smedia {
         
-        #define strans2d sptr<STransform2D>
-        
-        extern inline v2f oriPos(Area<float> area, sgeom::ORIGIN ori) {
+		class SOBJ_DLL SFigure;
+
+        extern inline v2f oriPos(sareaf &area, sgeom::ORIGIN ori) {
             switch (ori) {
                 case sgeom::UP_LEFT:
                     return v2f(area.ori_x, area.ori_y);
@@ -68,15 +66,8 @@ namespace slib {
         }
         
         class SOBJ_DLL STransform2D {
-        public:
-            static void scaling(v2f v, v2f ori, v2fvec &points, Area<float> &boundary);
-            static void shift(v2f v, v2fvec &points, Area<float> &boundary);
-            static void shear(v2f v, v2f ori, v2fvec &points, Area<float> &boundary);
-            static void rotate(float f, v2f ori, v2fvec &points, Area<float> &boundary);
-            static void reflect(subyte axis, v2f ori, v2fvec &points, Area<float> &boundary);
-            static void trans(mat3f affine, v2f ori, v2fvec &points, Area<float> &boundary);
-            
-        public:
+
+		public:
             v2f scale, translate, skew;
             float rotation;
             subyte reflection;
@@ -85,8 +76,12 @@ namespace slib {
             STransform2D();
             STransform2D(const STransform2D &trans);
             ~STransform2D();
-            
-            mat3f transMatrix() const;
+
+			static void expand(v2f &s, v2fvec& vertex, v2f ori);
+			static void shift(v2f& t, v2fvec& vertex);
+			static void shear(v2f& s, v2fvec& vertex, v2f ori);
+			static void rotate(float rot, v2fvec& vertex, v2f ori);
+			static void reflect(subyte ref, v2fvec& vertex, v2f ori);
             void clear();
         };
         
@@ -96,7 +91,7 @@ namespace slib {
 #define col4f svec4d<float>
         
 		#define kui kvpair<String, suint>
-        extern Map<String, suint> SColorMap;
+        extern Map<String, suint> ColorMap;
         
         constexpr subyte RGB_SPACE = 0x10;
         constexpr subyte CMYK_SPACE = 0x20;
@@ -174,7 +169,6 @@ namespace slib {
         protected:
             sushort _type;
             ubytearray _data;
-			COLOR_TEXT_MODE _mode;
             
         public:
             SColor(sushort t = GRAY8);
@@ -236,10 +230,10 @@ namespace slib {
             bool isCMYK() const;
 
 			void convert(sushort t/*, COLOR_SPACE_CONVERTER conv */); 
-			void setMode(COLOR_TEXT_MODE m);
-
+			
 			virtual String getClass() const;
 			virtual String toString() const;
+			String toString(COLOR_TEXT_MODE mode) const;
 			virtual SObject* clone() const;
             
             bool operator<(const SColor &col) const;

@@ -79,7 +79,6 @@ void STable::load(const char *path) {
 		*this = tbl;
     }
     //else if (ext == "xls" || ext == "xlsx") loadXls();
-    //else if (dict["type"] == "soml")
 }
 void STable::loadTxt(const char *path, const char *sep, bool header) {
     clear();

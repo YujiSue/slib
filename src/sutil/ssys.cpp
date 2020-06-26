@@ -49,13 +49,8 @@ void SSystem::setCurrent(const char *path) {
 }
 void SSystem::exec(const char *cmd) {
     if (!cmd) return;
-    FILE *fp;
-    fp = popen(cmd, "r");
-    if (fp) {
-        while(!feof(fp)) {}
-        pclose(fp);
-    }
-    else throw SException(ERR_INFO, SLIB_EXEC_ERROR, "SSystem::exec", cmd);
+	auto res = system(cmd);
+    if (res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "SSystem::exec", cmd);
 }
 int SSystem::exec(const char *cmd, String &result) {
     result.clear();

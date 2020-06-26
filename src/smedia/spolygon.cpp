@@ -20,17 +20,17 @@ SPolygon::~SPolygon() {}
 
 v2f SPolygon::center() const {
     v2f c; sforeach(_vertex) c += E_;
-    c /= vnum(); return c;
+    c /= vcount(); return c;
 }
 double SPolygon::length() const {
     double len = 0.0;
-    auto cyc = SCycleIterator<v2f>(_vertex.ptr(), 0, vnum());
+    auto cyc = SCycleIterator<v2f>(_vertex.ptr(), 0, vcount());
     do { len += sgeom::length(*(cyc+1)-(*cyc)); ++cyc; } while (cyc.index());
     return len;
 }
 double SPolygon::area() const {
     double area = 0.0;
-    auto cyc = SCycleIterator<v2f>(_vertex.ptr(), 0, vnum());
+    auto cyc = SCycleIterator<v2f>(_vertex.ptr(), 0, vcount());
     do { area += (cyc->x-(cyc+1)->x)*(cyc->y+(cyc+1)->y); ++cyc;
     } while (cyc.index());
     return area*0.5;
@@ -38,7 +38,7 @@ double SPolygon::area() const {
 String SPolygon::getClass() const { return "polygon"; }
 String SPolygon::toString() const {
     String str = getClass()+":{";
-    if (vnum()) {
+    if (vcount()) {
         sforeach(_vertex) str<<"("<<E_.x<<","<<E_.y<<"),";
         str.last() = '}';
     }

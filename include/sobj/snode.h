@@ -28,8 +28,10 @@ namespace slib {
 		size_t childCount() const { return _children.size(); }
 		Cls* parent() const { return _parent; }
 		Cls* root() const {
-			Cls* ptr = _parent;
-			while (!ptr) ptr = ptr->_parent;
+			Cls* ptr = const_cast<Cls *>(dynamic_cast<const Cls *>(this));
+			if (_parent == nullptr) return ptr;
+			do { ptr = ptr->_parent; }
+			while (ptr->_parent != nullptr);
 			return ptr;
 		}
 		List<SClsPtr<Cls, T>>& children() { return _children; }
@@ -46,7 +48,7 @@ namespace slib {
 			if (!_parent) return 0;
 			size_t i = 0;
 			sforeach(_parent->_children) {
-				if (E_->ptr() == this) return i;
+				if (E_.ptr() == (SObject *)this) return i;
 				++i;
 			}
 			return NOT_FOUND;
@@ -59,6 +61,15 @@ namespace slib {
 				ptr = ptr->_parent;
 			}
 			return l;
+		}
+		intarray address() const {
+			intarray addr(layer());
+			auto current = this;
+			srforeach(addr) {
+				E_ = current->index();
+				current = current->_parent;
+			}
+			return addr;
 		}
 		void setParent(Cls* p) { _parent = p; }
 		void addChild(const SClsPtr<Cls, T>& node) {

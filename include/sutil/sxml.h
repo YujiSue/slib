@@ -53,8 +53,8 @@ namespace slib {
 		static sxnode plistNode(const sobj& obj);
 		static sobj toPlistObj(const sxnode& node);
 
-		static void fillSVG(sattribute& attribute, smedia::SBrush& brush, const char *fid);
-		static void strokeSVG(sattribute& attribute, smedia::SStroke& stroke);
+		static void fillSVG(sattribute& attribute, const smedia::SBrush& brush, const char *fid);
+		static void strokeSVG(sattribute& attribute, const smedia::SStroke& stroke);
 		static void txtstyleSVG(sattribute& attribute, text_style& tattr);
 		static sxnode svgNode(smedia::SCanvas* cnvs);
 		static sxnode svgNode(smedia::SFigure* fig);

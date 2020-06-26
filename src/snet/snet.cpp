@@ -38,13 +38,9 @@ void SNetWork::http(const char *url, bool ssl, const char *cookie, const char *p
 	if (!_curl) throw SNetException(ERR_INFO, SLIB_EXEC_ERROR, "curl_easy_init", EXEC_TEXT("null"));
     curl_easy_setopt(_curl, CURLOPT_URL, url);
     curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, true);
-    if(ssl) {
-#ifdef SKIP_PEER_VERIFICATION
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-#endif
-#ifdef SKIP_HOSTNAME_VERIFICATION
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-#endif
+    if(!ssl) {
+		curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYHOST, 0L);
     }
     if(cookie) {
         curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, cookie);

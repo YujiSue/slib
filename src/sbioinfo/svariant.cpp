@@ -75,6 +75,32 @@ scn_data& scn_data::operator=(const scn_data& cn) {
 	memcpy(bgdepth, cn.bgdepth, sizeof(float) * 2); memcpy(bgndepth, cn.bgndepth, sizeof(float) * 2);
 	memcpy(ratio, cn.ratio, sizeof(float) * 2); frequency = cn.frequency; return *this;
 }
+cnvariant::cnvariant() : type(NON_CNV), prob(0.0) { memset(copy, 0, 2 * sizeof(double)); }
+cnvariant::cnvariant(CNV_TYPE t, sint p, float* s, float* b) {
+	type = t; pos = srange(p, p); copy[0] = *s; copy[1] = b ? (*b) : 1.0;
+}
+cnvariant::cnvariant(float* s, float* b, double* r, double* border) {
+	type = cnvariant::classify(s, b, r, border);
+}
+cnvariant::cnvariant(const cnvariant& cnv) {
+	type = cnv.type; pos = cnv.pos; copy[0] = cnv.copy[0]; copy[1] = cnv.copy[1]; prob = cnv.prob;
+}
+cnvariant::~cnvariant() {}
+
+cnvariant& cnvariant::operator=(const cnvariant& cnv) {
+	type = cnv.type; pos = cnv.pos; copy[0] = cnv.copy[0]; copy[1] = cnv.copy[1]; prob = cnv.prob;
+	return  *this;
+}
+CNV_TYPE cnvariant::classify(float* sdp, float* bdp, double* ratio, double* border) {
+	double copy = (*sdp) / (bdp ? (*bdp) : 1.0) * (*ratio);
+	if (copy < border[0]) return HOMO_DEL_CNV;
+	else if (copy < border[1]) return HETERO_DEL_CNV;
+	else if (copy < border[2]) return NON_CNV;
+	else if (copy < border[3]) return HETERO_DUP_CNV;
+	else if (copy < border[4]) return HOMO_DUP_CNV;
+	else return MULTI_CNV;
+}
+
 SVariant::SVariant() : flag(0), homo(false), svar_data() {}
 SVariant::SVariant(sushort f, const svar_data &v) : flag(f), homo(false), svar_data(v) {}
 SVariant::SVariant(const SVariant &var) : svar_data(var) {

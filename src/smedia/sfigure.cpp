@@ -5,9 +5,8 @@ using namespace slib::smath;
 using namespace slib::smedia;
 
 SFigure::SFigure() : SNode<SFigure, FIGURE_OBJ>() {}
-SFigure::SFigure(int t) : SFigure() { _type = t; }
-SFigure::SFigure(int t, const SDictionary &dic) : SFigure() {
-    _type = t;
+SFigure::SFigure(sushort t) : SFigure() { _type = t; }
+SFigure::SFigure(sushort t, const SDictionary &dic) : SFigure(t) {
     if (dic["stroke"]) _paint.stroke = dic["stroke"];
     if (dic["brush"]) _paint.brush = dic["brush"];
     if (dic["filter"]) _paint.filter = dic["filter"];
@@ -23,80 +22,60 @@ SFigure::SFigure(const SFigure &fig) : SNode<SFigure, FIGURE_OBJ>(fig) {
 }
 SFigure::~SFigure() {}
 
-void SFigure::_makeBoundary(v2f &point) {
-    if (point.x < _boundary.ori_x) _boundary.ori_x = point.x;
-    if (point.y < _boundary.ori_y) _boundary.ori_y = point.y;
-    if (_boundary.ori_x+_boundary.width < point.x) _boundary.width = point.x-_boundary.ori_x;
-    if (_boundary.ori_y+_boundary.height < point.y) _boundary.height = point.y-_boundary.ori_y;
+void SFigure::_makeBoundary(v2f pt) {
+	if (_vertex.empty()) {
+		_boundary.ori_x = pt.x; _boundary.ori_y = pt.y;
+	}
+	else {
+		if (_boundary.ori_x + _boundary.width < pt.x) _boundary.width = pt.x - _boundary.ori_x;
+		if (_boundary.ori_y + _boundary.height < pt.y) _boundary.height = pt.y - _boundary.ori_y;
+		if (pt.x < _boundary.ori_x) {
+			_boundary.width += _boundary.ori_x - pt.x;  
+			_boundary.ori_x = pt.x;
+		}
+		if (pt.y < _boundary.ori_y) {
+			_boundary.height += _boundary.ori_y - pt.y;
+			_boundary.ori_y = pt.y;
+		}
+	}
 }
 void SFigure::_resetBoundary() {
-    _boundary = sareaf();
-    if (_vertex.size()) {
-        auto beg = _vertex.begin(), end = _vertex.end();
-        _boundary = sareaf(beg->x, beg->y, 0.0f, 0.0f); ++beg;
-        while (beg < end) {
-            _makeBoundary(*beg); ++beg;
-        }
-    }
+	_boundary = sareaf();
+	if (childCount()) {
+		_boundary = _children[0]->_boundary;
+		sforeach(_children) _boundary.merge(E_->_boundary);
+	}
+	if (_vertex.size()) {
+		_boundary = sareaf(_vertex[0].x, _vertex[0].y, 0.0f, 0.0f);
+		sforeach(_vertex) _boundary.merge(sareaf(E_.x, E_.y, 0, 0));
+	}
 }
 void SFigure::_updateBoundary() {
-    if (SNode<SFigure, FIGURE_OBJ>::isRoot()) return;
-    auto parent = SNode<SFigure, FIGURE_OBJ>::_parent;
-    do {
-        parent->_boundary = _boundary;
-        sforeach(parent->children()) parent->_boundary.merge(E_->_boundary);
-        parent = parent->parent();
-    } while (parent);
+	auto par = this;
+	while (par->_parent != nullptr) {
+		par = par->_parent;
+		par->_resetBoundary();
+	}
 }
-
-
-uint16_t SFigure::type() const { return _type; }
-const String &SFigure::name() const { return _attribute["name"]; }
-strans2d SFigure::transformer() const { return _trans; }
-SPaint &SFigure::painter() { return _paint; }
-const SPaint &SFigure::painter() const { return _paint; }
-SStroke& SFigure::stroke() { return _paint.stroke; }
-const SStroke& SFigure::stroke() const { return _paint.stroke; }
-SBrush& SFigure::brush() { return _paint.brush; }
-const SBrush &SFigure::brush() const { return _paint.brush; }
+sushort SFigure::type() const { return _type; }
 sareaf SFigure::boundary() const { return _boundary; }
-size_t SFigure::vnum() const { return _vertex.size(); }
-v2fvec &SFigure::vertex() { return _vertex; }
-const v2fvec &SFigure::vertex() const { return _vertex; }
+sgeom::ORIGIN SFigure::origin() const { return _origin; }
+size_t SFigure::vcount() const { return _vertex.size(); }
+v2fvec& SFigure::vertex() { return _vertex; }
+const v2fvec& SFigure::vertex() const { return _vertex; }
+SDictionary& SFigure::attribute() { return _attribute; }
+const SDictionary& SFigure::attribute() const { return _attribute; }
+const STransform2D &SFigure::transformer() const { return _trans; }
+const SPaint& SFigure::painter() const { return _paint; }
+const SBrush& SFigure::brush() const { return _paint.brush; }
+const SStroke& SFigure::stroke() const { return _paint.stroke; }
 
-void SFigure::setName(const char *s) { _attribute["name"] = s; }
-void SFigure::setOrigin(smath::sgeom::ORIGIN ori) {
-    if (_trans.isNull()) _trans = STransform2D();
-    _origin = oriPos(_boundary, ori);
-}
-void SFigure::setOrigin(v2f ori) {
-    if (_trans.isNull()) _trans = STransform2D();
-    _origin = ori;
-}
-void SFigure::setScale(v2f v) {
-    if (_trans.isNull()) _trans = STransform2D();
-    _trans->scale = v;
-}
-void SFigure::setTranslate(v2f v) {
-    if (_trans.isNull()) _trans = STransform2D();
-    _trans->translate = v;
-}
-void SFigure::setSkew(v2f v) {
-    if (_trans.isNull()) _trans = STransform2D();
-    _trans->skew = v;
-}
-void SFigure::setRot(float f) {
-    if (_trans.isNull()) _trans = STransform2D();
-    _trans->rotation = f;
-}
-void SFigure::setReflect(subyte i) {
-    if (_trans.isNull()) _trans = STransform2D();
-    _trans->reflection = i;
-}
-void SFigure::setTransform(const STransform2D &trans) {
-    if (_trans.isNull()) _trans = STransform2D(trans);
-    else *_trans = trans;
-}
+void SFigure::setOrigin(smath::sgeom::ORIGIN ori) { _origin = ori; }
+void SFigure::setScale(v2f v) { _trans.scale = v; }
+void SFigure::setTranslate(v2f v) { _trans.translate = v; }
+void SFigure::setSkew(v2f v) { _trans.skew = v; }
+void SFigure::setRotation(float f) { _trans.rotation = f; }
+void SFigure::setReflect(subyte i) { _trans.reflection = i; }
 void SFigure::setStrokeType(sushort t) { _paint.stroke.type = t; }
 void SFigure::setStrokeWidth(float w) { _paint.stroke.width = w; }
 void SFigure::setStrokeColor(const SColor &c) { _paint.stroke.color = c; }
@@ -114,71 +93,66 @@ void SFigure::setFillColor(const SGradient &g) {
 }
 void SFigure::setBrush(const SBrush &b) { _paint.brush = b; }
 void SFigure::setPaint(const SPaint &p) { _paint = p; }
-void SFigure::setAttribute(const SDictionary &dic) {
-    if (dic["id"]) _attribute["name"] = dic["id"];
-    if (dic["stroke"]) _paint.stroke = dic["stroke"];
-    if (dic["brush"]) _paint.brush = dic["brush"];
-    if (dic["filter"]) _paint.filter = dic["filter"];
+void SFigure::setAttribute(const SDictionary &dic) { _attribute = dic; }
+void SFigure::expand(v2f s) {
+    STransform2D::expand(s, _vertex, oriPos(_boundary, _origin));
+    sforeach(_children) { 
+		STransform2D::expand(s, E_->_vertex, oriPos(E_->_boundary, E_->_origin));
+		E_->_resetBoundary();
+	}
+	_resetBoundary(); _updateBoundary();
 }
-void SFigure::expand(v2f v) {
-    STransform2D::scaling(v, _origin, _vertex, _boundary);
-    sforeach(_children) { E_->expand(v); }
-    _updateBoundary();
+void SFigure::shift(v2f t) {
+    STransform2D::shift(t, _vertex);
+    sforeach(_children) { 
+		STransform2D::shift(t, E_->_vertex);
+		E_->_resetBoundary();
+	}
+	_resetBoundary(); _updateBoundary();
 }
-void SFigure::shift(v2f v) {
-    STransform2D::shift(v, _vertex, _boundary);
-    sforeach(_children) { E_->shift(v); }
-    _updateBoundary();
+void SFigure::shear(v2f s) {
+    STransform2D::shear(s, _vertex, oriPos(_boundary, _origin));
+    sforeach(_children) { 
+		STransform2D::shear(s, E_->_vertex, oriPos(E_->_boundary, E_->_origin));
+		E_->_resetBoundary();
+	}
+	_resetBoundary(); _updateBoundary();
 }
-void SFigure::shear(v2f v) {
-    STransform2D::shear(v, _origin, _vertex, _boundary);
-    sforeach(_children) { E_->shear(v); }
-    _updateBoundary();
+void SFigure::rotate(float rot) {
+    STransform2D::rotate(rot, _vertex, oriPos(_boundary, _origin));
+    sforeach(_children) { 
+		STransform2D::rotate(rot, E_->_vertex, oriPos(E_->_boundary, E_->_origin));
+		E_->_resetBoundary();
+	}
+	_resetBoundary(); _updateBoundary();
 }
-void SFigure::rotate(float f) {
-    STransform2D::rotate(f, _origin, _vertex, _boundary);
-    sforeach(_children) { E_->rotate(f); }
-    _updateBoundary();
+void SFigure::reflect(subyte ref) {
+    STransform2D::reflect(ref, _vertex, oriPos(_boundary, _origin));
+    sforeach(_children) { 
+		STransform2D::reflect(ref, E_->_vertex, oriPos(E_->_boundary, E_->_origin));
+		E_->_resetBoundary();
+	}
+	_resetBoundary(); _updateBoundary();
 }
-void SFigure::reflect(subyte i) {
-    STransform2D::reflect(i, _origin, _vertex, _boundary);
-    sforeach(_children) { E_->reflect(i); }
-    _updateBoundary();
-}
-void SFigure::transform() {
-    if (_trans.isNull()) return;
-    sforeach(_children) { E_->setTransform(*_trans); E_->transform(); }
-    STransform2D::trans(_trans->transMatrix(), _origin, _vertex, _boundary);
-    _trans->clear();
-    _updateBoundary();
-}
-
 void SFigure::addVertex(v2f v) {
     if (_vertex.empty()) { _boundary.ori_x = v.x; _boundary.ori_y = v.y; }
-    _vertex.add(v); _makeBoundary(v); _updateBoundary();
+	_makeBoundary(v); _updateBoundary(); _vertex.add(v);
 }
-void SFigure::setVertex(size_t idx, v2f v) { _vertex.set(idx, v); _makeBoundary(v); _updateBoundary(); }
-void SFigure::insertVertex(size_t idx, v2f v) { _vertex.insert(idx, v); _makeBoundary(v); _updateBoundary(); }
+void SFigure::setVertex(size_t idx, v2f v) { _makeBoundary(v); _updateBoundary(); _vertex.set(idx, v); }
+void SFigure::insertVertex(size_t idx, v2f v) { _makeBoundary(v); _updateBoundary(); _vertex.insert(idx, v); }
 void SFigure::removeVertex(size_t idx) { _vertex.removeAt(idx); _resetBoundary(); _updateBoundary(); }
-void SFigure::clearVertex() { _vertex.clear(); _boundary = sareaf(); _updateBoundary(); }
-
-void SFigure::addFigure(SFigure *fig) {
-    if (_children.empty()) _boundary = fig->boundary();
-    else _boundary.merge(fig->boundary());
-    addChild(fig);
-    _updateBoundary();
+void SFigure::clearVertex() { _vertex.clear(); _resetBoundary(); _updateBoundary(); }
+void SFigure::addFigure(sfig fig) {
+	SNode<SFigure, FIGURE_OBJ>::addChild(fig);
+	_resetBoundary(); _updateBoundary();
 }
-void SFigure::addFigure(sfig &&fig) {
-    if (_children.empty()) _boundary = fig->boundary();
-    else _boundary.merge(fig->boundary());
-    SNode<SFigure, FIGURE_OBJ>::addChild(fig);
-    fig.discard(); _updateBoundary();
+void SFigure::addFigure(SFigure&&fig) {
+	SNode<SFigure, FIGURE_OBJ>::addChild(sfig(fig));
+	_resetBoundary(); _updateBoundary();
 }
-void SFigure::addFigure(sfig &fig) {
-    if (_children.empty()) _boundary = fig->boundary();
-    else _boundary.merge(fig->boundary());
-    SNode<SFigure, FIGURE_OBJ>::addChild(fig);
-    fig.share(); _updateBoundary();
+void SFigure::addFigure(const SFigure&fig) {
+	SNode<SFigure, FIGURE_OBJ>::addChild(sfig(fig));
+	_resetBoundary(); _updateBoundary();
 }
 
 v2f SFigure::center() const {
@@ -188,7 +162,6 @@ double SFigure::length() const {
     return 2.0*(_boundary.width+_boundary.height);
 }
 double SFigure::area() const { return _boundary.width*_boundary.height; }
-
 bool SFigure::include(v2f v) const { return _boundary.include(v.x, v.y); }
 bool SFigure::cross(sfig fig) const { return _boundary.overlap(fig->_boundary); }
 

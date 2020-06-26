@@ -29,7 +29,7 @@ const SColor SColor::INDIGO = (suint)0xFF82004B;
 const SColor SColor::NAVY = (suint)0xFF800000;
 const SColor SColor::VIOLET = (suint)0xFFEE82EE;
 const SColor SColor::PURPLE = (suint)0xFF800080;
-Map<String, suint> slib::smedia::SColorMap =
+Map<String, suint> slib::smedia::ColorMap =
 {
     kui("clear", 0x00000000), kui("black", 0x000000FF), kui("white", 0xFFFFFFFF),
     kui("gray", 0x808080FF), kui("lightgray", 0xd3d3d3FF), kui("dimgray", 0x696969FF),
@@ -42,7 +42,7 @@ Map<String, suint> slib::smedia::SColorMap =
     kui("navy", 0x000080FF), kui("violet", 0xEE82EEFF), kui("purple", 0x800080FF)
 };
 
-SColor::SColor(sushort t) : _type(t), _mode(DEFAULT_NUMERIC), SObject() { _data.resize(bytePerPixel(_type), 0); }
+SColor::SColor(sushort t) : _type(t), SObject() { _data.resize(bytePerPixel(_type), 0); }
 SColor::SColor(sushort t, void* bytes) : SColor(t) {
 	_data.copy(static_cast<subyte*>(bytes), _data.size());
 }
@@ -65,39 +65,28 @@ SColor::SColor(int r, int g, int b, int a) : SColor(RGBA) {
 	_data[0] = r & 0xFF; _data[1] = g & 0xFF; _data[2] = b & 0xFF; _data[3] = a & 0xFF;
 }
 SColor::SColor(const char *s) : SColor() {
-	if (!s || s[0] == '\0') {
-		_mode = DEFAULT_NUMERIC;
-		return;
-	}
-	if (SColorMap.hasKey(s)) {
-		*this = SColorMap[s];
-		_mode = HTML_CODE;
-	}
+	if (!s || s[0] == '\0') return;
+	if (ColorMap.hasKey(s)) *this = ColorMap[s];
     else {
         String code(s);
 		if (code[0] == '#') {
-			_mode = HTML_HEX;
 			code.replace("#", "0x");
 			*this = code.number().uintValue();
 		}
 		else if (code.beginWith("0x")) {
-			_mode = DEFAULT_HEX;
 			*this = code.number().uintValue();
 		}
 		else if (code.beginWith("rgb(") && code.endWith(")")) {
-			_mode = CSS_NUMERIC;
 			code.clip(4, code.length() - 5);
 			auto list = code.split(",");
 			*this = col3i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue());
 		}
 		else if (code.beginWith("rgba(") && code.endWith(")")) {
-			_mode = CSS_NUMERIC;
 			code.clip(5, code.length() - 6);
 			auto list = code.split(",");
 			*this = col4i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue(), list[3].ubyteValue());
 		}
 		else if (code.beginWith("(") && code.endWith(")")) {
-			_mode = DEFAULT_NUMERIC;
 			code.transform(DELETE_QUOTE);
 			auto list = code.split(",");
 			if (list.size() == 3) *this = col3i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue());
@@ -384,7 +373,7 @@ float SColor::alphaf() const {
 }
 bool SColor::isInt() const { return colorDepth(_type) < 4; }
 bool SColor::isFloat() const { return colorDepth(_type) == 4; }
-bool SColor::isClear() const { return hasAlpha()&& alpha()==0.0f; }
+bool SColor::isClear() const { return hasAlpha() && alpha() == 0; }
 bool SColor::isMono() const { return channel() == 1; }
 bool SColor::hasAlpha() const { return isRGB() && (channel() == 4); }
 bool SColor::isRGB() const { return colorSpace(_type) == RGB_SPACE; }
@@ -464,11 +453,26 @@ void SColor::convert(sushort t) {
 	}
 	_type = t;
 }
-void SColor::setMode(COLOR_TEXT_MODE m) { _mode = m; }
 String SColor::getClass() const { return "color"; }
 String SColor::toString() const {
+	suint col = rgba();
+	sforeach(ColorMap) { if (E_.value == col) return E_.key; }
 	String str;
-	switch (_mode)
+	if (isInt()) {
+		str << "(" << red() << "," << green() << "," << blue();
+		if (hasAlpha()) str << "," << alpha();
+		str << ")";
+	}
+	else {
+		str << "(" << redf() << "," << greenf() << "," << bluef();
+		if (hasAlpha()) str << "," << alphaf();
+		str << ")";
+	}
+	return str;
+}
+String SColor::toString(COLOR_TEXT_MODE mode) const {
+	String str;
+	switch (mode)
 	{
 	case DEFAULT_NUMERIC:
 	{
@@ -492,8 +496,11 @@ String SColor::toString() const {
 	}
 	case HTML_CODE:
 	{
-		try { str = SColorMap.rlookup(rgba()); }
-		catch (SException ex) { str.clear(); }
+		try { str = ColorMap.rlookup(rgba()); }
+		catch (SException ex) { 
+			str.clear(); 
+			str << "#" << SNumber::toHex(red()) << SNumber::toHex(green()) << SNumber::toHex(blue());
+		}
 	}
 	case HTML_HEX:
 	{
@@ -516,7 +523,7 @@ String SColor::toString() const {
 	default:
 		break;
 	}
-    return str;
+	return str;
 }
 SObject* SColor::clone() const { return new SColor(*this); }
 bool SColor::operator<(const SColor &col) const {

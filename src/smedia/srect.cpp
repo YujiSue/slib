@@ -30,7 +30,7 @@ String SRectangle::getClass() const {
 }
 String SRectangle::toString() const {
     String str = getClass()+":{";
-    if (vnum()) {
+    if (vcount()) {
         sforeach(_vertex) str<<"("<<E_.x<<","<<E_.y<<"),";
         str.last() = '}';
     }

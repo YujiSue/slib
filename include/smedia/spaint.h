@@ -61,9 +61,8 @@ namespace slib {
             SFilter(const SFilter &filter);
             ~SFilter();
         };
-        
-        #define spaint sptr<SPaint>
-        class SOBJ_DLL SPaint {
+
+		class SOBJ_DLL SPaint {
         public:
             SStroke stroke;
             SBrush brush;

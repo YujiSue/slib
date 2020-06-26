@@ -137,7 +137,7 @@ void SPath2D::setClosed(bool b) { _closed = b; }
 String SPath2D::getClass() const { return "path"; }
 String SPath2D::toString() const {
     String str = getClass()+":{";
-    if (vnum()) {
+    if (vcount()) {
         sforeach(_children) {
             str<<E_->toString()<<",";
         }

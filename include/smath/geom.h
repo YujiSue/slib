@@ -21,6 +21,8 @@ namespace slib {
 				UP_RIGHT = 3,
 				DOWN_RIGHT = 4,
 				MASS_CENTER = 5,
+				START = 6,
+				END = 7,
 			} ORIGIN;
 
 			extern inline double length(const v2i& p) { return sqrt(p.x * p.x + p.y * p.y); }

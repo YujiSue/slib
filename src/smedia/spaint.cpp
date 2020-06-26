@@ -3,7 +3,7 @@
 using namespace slib;
 using namespace slib::smedia;
 
-uint16_t slib::smedia::SStroke::toLineStyle(const char *style) {
+sushort slib::smedia::SStroke::toLineStyle(const char *style) {
     String st = style;
     if (st == "solid") return sstyle::SOLID_LINE;
     if (st == "broken") return sstyle::BROKEN_LINE;
@@ -12,7 +12,7 @@ uint16_t slib::smedia::SStroke::toLineStyle(const char *style) {
 }
 
 SStroke::SStroke() : type(sstyle::SOLID_LINE), width(1.0), color(SColor::BLACK) {}
-SStroke::SStroke(uint16_t t, float w, const SColor &col) : type(t), width(w), color(col) {}
+SStroke::SStroke(sushort t, float w, const SColor &col) : type(t), width(w), color(col) {}
 SStroke::SStroke(sobj obj) : SStroke() {
     if (obj.hasKey("type")) type = obj["type"];
     if (obj.hasKey("width")) width = obj["width"];
@@ -40,7 +40,7 @@ SStroke &SStroke::operator=(const SStroke &st) {
     return *this;
 }
 
-uint16_t slib::smedia::SBrush::toBrushStyle(const String &style) {
+sushort slib::smedia::SBrush::toBrushStyle(const String &style) {
     if (style == "fill") return sstyle::FILL_UNIFORM;
     if (style == "line_grad") return sstyle::LINEAR_GRAD;
     if (style == "radgrad") return sstyle::RADIAL_GRAD;
@@ -48,7 +48,7 @@ uint16_t slib::smedia::SBrush::toBrushStyle(const String &style) {
 }
 
 SBrush::SBrush() : type(sstyle::FILL_NONE) {}
-SBrush::SBrush(uint16_t t, const SColor &col) : type(t), color(col) {}
+SBrush::SBrush(sushort t, const SColor &col) : type(t), color(col) {}
 SBrush::SBrush(const SColor & col) {
 	type = sstyle::FILL_UNIFORM;
 	color = col;

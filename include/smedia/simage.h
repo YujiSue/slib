@@ -42,10 +42,8 @@ namespace slib {
             SImage &operator=(const SImage &img);
             
             //IO
-            void load(const SDictionary &dict);
             void load(const char *path);
             void link(const char *path);
-            void save(const SDictionary &dict);
             void save(const char *path);
             
             //Property

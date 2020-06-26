@@ -98,14 +98,13 @@ sobj SXmlNode::toPlistObj(const sxnode& node) {
 	return snull;
 }
 
-void SXmlNode::fillSVG(sattribute &attribute, smedia::SBrush &brush, const char* fid) {
+void SXmlNode::fillSVG(sattribute &attribute, const smedia::SBrush &brush, const char* fid) {
     switch (brush.type) {
         case sstyle::FILL_NONE:
             attribute["fill"] = "none";
             break;
         case sstyle::FILL_UNIFORM:
-			brush.color->setMode(SColor::HTML_HEX);
-            attribute["fill"] = brush.color->toString();
+	        attribute["fill"] = brush.color->toString(SColor::HTML_HEX);
             if (brush.color->hasAlpha())
                 attribute["fill-opacity"] = brush.color->alphaf();
             break;
@@ -119,12 +118,11 @@ void SXmlNode::fillSVG(sattribute &attribute, smedia::SBrush &brush, const char*
             break;
     }
 }
-void SXmlNode::strokeSVG(sattribute &attribute, smedia::SStroke &stroke) {
+void SXmlNode::strokeSVG(sattribute &attribute, const smedia::SStroke &stroke) {
 	if (stroke.type == sstyle::STROKE_NONE) {
 		attribute["stroke-width"] = 0; return;
 	}
-	stroke.color->setMode(SColor::HTML_HEX);
-	attribute["stroke"] = stroke.color->toString();
+	attribute["stroke"] = stroke.color->toString(SColor::HTML_HEX);
 	attribute["stroke-width"] = stroke.width;
 	if (stroke.color->hasAlpha())
 		attribute["stroke-opacity"] = stroke.color->alphaf();
@@ -169,8 +167,7 @@ void SXmlNode::txtstyleSVG(sattribute &attribute, text_style &tattr) {
 	style << "font-family: " << tattr.font << "; ";
 	style << "font-size: " << tattr.size << "px; ";
 	style << "stroke: " << "none; ";
-	tattr.color.setMode(SColor::HTML_HEX);
-	style << "fill: " << tattr.color.toString() << "; ";
+	style << "fill: " << tattr.color.toString(SColor::HTML_HEX) << "; ";
 	attribute["style"] = style;
 }
 
@@ -194,14 +191,13 @@ sxnode SXmlNode::svgNode(SCanvas *cnvs) {
             auto defs = sxnode(xml::START_TAG, "defs", nullptr);
             if (brush.type == sstyle::LINEAR_GRAD) {
                 auto lgrad = sxnode(xml::START_TAG, "linearGradient", nullptr);
-				lgrad->attribute = { ks("id", "lgrad-" + E_->name()) };
+				lgrad->attribute = { ks("id", "lgrad-" + slib::toString(E_->address(), "-")) };
                 for (int f = 0; f < gcolor.count(); ++f) {
                     auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
-					gcolor[f].setMode(SColor::HTML_HEX);
                     stop->attribute =
                     {
                         ks("offset", gcolor.points()[f]),
-                        ks("stop-color", gcolor[f].toString())
+                        ks("stop-color", gcolor[f].toString(SColor::HTML_HEX))
                     };
                     lgrad->addChild(stop);
                 }
@@ -209,14 +205,13 @@ sxnode SXmlNode::svgNode(SCanvas *cnvs) {
             }
             else {
                 auto rgrad = sxnode(xml::START_TAG, "radialGradient", nullptr);
-				rgrad->attribute = { ks("id", "rgrad-" + E_->name()) };
+				rgrad->attribute = { ks("id", "rgrad-" + slib::toString(E_->address(), "-")) };
                 for (int f = 0; f < gcolor.count(); ++f) {
                     auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
-					gcolor[f].setMode(SColor::HTML_HEX);
                     stop->attribute =
                     {
                         ks("offset", gcolor.points()[f]),
-                        ks("stop-color", gcolor[f].toString())
+                        ks("stop-color", gcolor[f].toString(SColor::HTML_HEX))
                     };
                     rgrad->addChild(stop);
                 }
@@ -232,22 +227,20 @@ sxnode SXmlNode::svgNode(SCanvas *cnvs) {
 sxnode SXmlNode::svgNode(SFigure *fig) {
 	sxnode node(xml::SINGLE_TAG, "");
     String transform = "";
-    if (fig->transformer()) {
-        auto &trans = *fig->transformer();
-        if (trans.rotation != 0.0f) {
-            transform<<"rotate("<<smath::rad2deg(trans.rotation)<<","<<fig->center().x<<","<<fig->center().y<<") ";
-        }
-        if (trans.skew.x != 0.0f)
-            transform<<"skewX("<<trans.skew.x<<") ";
-        if (trans.skew.y != 0.0f)
-            transform<<"skewY("<<trans.skew.y<<") ";
-        if (!(trans.translate == v2f(0.0f, 0.0f)))
-            transform<<"translate("<<trans.translate.x<<","<<trans.translate.y<<") ";
-        if (!(trans.scale == v2f(1.0f, 1.0f)))
-            transform<<"scale("<<trans.scale.x<<","<<trans.scale.y<<") ";
-        if (transform.length()) transform.resize(transform.size()-1);
-    }
-    
+	auto& trans = fig->transformer();
+	if (trans.rotation != 0.0f) {
+		transform << "rotate(" << smath::rad2deg(trans.rotation) << "," << fig->center().x << "," << fig->center().y << ") ";
+	}
+	if (trans.skew.x != 0.0f)
+		transform << "skewX(" << trans.skew.x << ") ";
+	if (trans.skew.y != 0.0f)
+		transform << "skewY(" << trans.skew.y << ") ";
+	if (!(trans.translate == v2f(0.0f, 0.0f)))
+		transform << "translate(" << trans.translate.x << "," << trans.translate.y << ") ";
+	if (!(trans.scale == v2f(1.0f, 1.0f)))
+		transform << "scale(" << trans.scale.x << "," << trans.scale.y << ") ";
+	if (transform.length()) transform.resize(transform.size() - 1);
+
     switch (fig->type()) {
         case sshape::POINT:
             break;
@@ -269,7 +262,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         {
             node->tag = "path";
             String path;
-            if (fig->vnum()) {
+            if (fig->vcount()) {
                 sforeach(fig->vertex()) {
                     path<<"M"<<E_.x<<","<<E_.y; ++it;
                     path<<"C"<<E_.x<<","<<E_.y<<" "; ++it;
@@ -281,7 +274,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -292,7 +285,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         {
             node->tag = "path";
             String path;
-            if (fig->vnum()) {
+            if (fig->vcount()) {
                 sforeach(fig->vertex()) {
                     path<<"M"<<E_.x<<","<<E_.y; ++it;
                     path<<"L"<<E_.x<<","<<E_.y;
@@ -302,7 +295,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -313,14 +306,14 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         {
             node->tag = "polygon";
             String pts;
-            if (fig->vnum()) {
+            if (fig->vcount()) {
                 sforeach(fig->vertex()) pts<<E_.x<<" "<<E_.y<<" ";
             }
             if (pts.size()) pts.resize(pts.size()-1);
             node->attribute["points"] = pts;
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD || fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -337,7 +330,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -354,7 +347,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -374,7 +367,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -398,7 +391,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())
@@ -420,7 +413,6 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         {
             node->type = xml::START_TAG;
             node->tag = "g";
-            if (fig->name().size()) node->attribute["ID"] = fig->name();
             sforeach(fig->children()) {
                 if (E_->brush().type == sstyle::LINEAR_GRAD ||
 					E_->brush().type == sstyle::RADIAL_GRAD) {
@@ -429,14 +421,13 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
                     auto defs = sxnode(xml::START_TAG, "defs", nullptr);
                     if (brush.type == sstyle::LINEAR_GRAD) {
                         auto lgrad = sxnode(xml::START_TAG, "linearGradient", nullptr);
-                        lgrad->attribute = { ks("id", "lgrad-"+ E_->name()) };
+                        lgrad->attribute = { ks("id", "lgrad-"+ slib::toString(E_->address(), "-")) };
                         for (int f = 0; f < gcolor.count(); ++f) {
                             auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
-							gcolor[f].setMode(SColor::HTML_HEX);
 							stop->attribute =
 							{
 								ks("offset", gcolor.points()[f]),
-								ks("stop-color", gcolor[f].toString())
+								ks("stop-color", gcolor[f].toString(SColor::HTML_HEX))
                             };
                             lgrad->addChild(stop);
                         }
@@ -444,13 +435,12 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
                     }
                     else {
                         auto rgrad = sxnode(xml::START_TAG, "radialGradient", nullptr);
-                        rgrad->attribute = { ks("id", "rgrad-"+E_->name()) };
+                        rgrad->attribute = { ks("id", "rgrad-"+ slib::toString(E_->address(), "-")) };
                         for (int f = 0; f < gcolor.count(); ++f) {
                             auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
-							gcolor[f].setMode(SColor::HTML_HEX);
                             stop->attribute = {
                                 ks("offset", gcolor.points()[f]),
-                                ks("stop-color", gcolor[f].toString())
+                                ks("stop-color", gcolor[f].toString(SColor::HTML_HEX))
                             };
                             rgrad->addChild(stop);
                         }
@@ -463,7 +453,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == sstyle::LINEAR_GRAD ||
                 fig->brush().type == sstyle::RADIAL_GRAD) {
-                SXmlNode::fillSVG(node->attribute, fig->brush(), fig->name());
+                SXmlNode::fillSVG(node->attribute, fig->brush(), slib::toString(fig->address(), "-"));
             }
             else SXmlNode::fillSVG(node->attribute, fig->brush(), nullptr);
             if (transform.length())

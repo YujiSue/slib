@@ -66,11 +66,11 @@ namespace slib {
     }
     template<typename T>
     void Area<T>::merge(const Area<T> &a) {
-        T x1_ = ori_x<a.ori_x?ori_x:a.ori_x,
-        y1_ = ori_y<a.ori_y?ori_y:a.ori_y,
-        x2_ = ori_x+width<a.ori_x+a.width?a.ori_x+a.width:ori_x+width,
-        y2_ = ori_y+height<a.ori_y+a.height?a.ori_y+a.height:ori_y+height;
-        ori_x = x1_; ori_y = y1_; width = x2_-x1_; height = y2_-y1_;
+		T x1_ = ori_x < a.ori_x ? ori_x : a.ori_x,
+			y1_ = ori_y < a.ori_y ? ori_y : a.ori_y,
+			x2_ = ori_x + width < a.ori_x + a.width ? a.ori_x + a.width : ori_x + width,
+			y2_ = ori_y + height < a.ori_y + a.height ? a.ori_y + a.height : ori_y + height;
+		ori_x = x1_; ori_y = y1_; width = x2_ - x1_; height = y2_ - y1_;
     }
     template<typename T>
     Area<T> Area<T>::conjunction(const Area<T> &a) {

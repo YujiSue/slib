@@ -275,7 +275,7 @@ String::String(size_t s, const char &c) : String() {
         if (s) {
             memset(_str._ss.str, c, s);
             _str._ss.str[s] = '\0';
-            _str._ss.size = s<<1;
+			_str._ss.size = s << 1;
         }
     }
     else {

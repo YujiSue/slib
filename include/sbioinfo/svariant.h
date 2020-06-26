@@ -53,7 +53,21 @@ namespace slib {
 			scn_data &operator=(const scn_data &cn);
 
 		};
-        
+		struct cnvariant {
+			CNV_TYPE type;
+			srange pos;
+			double copy[2], prob;
+
+			cnvariant();
+			cnvariant(CNV_TYPE t, sint p, float* s, float* b);
+			cnvariant(float* s, float* b, double* r, double* bdr);
+			cnvariant(const cnvariant& cnv);
+			~cnvariant();
+
+			cnvariant& operator=(const cnvariant& cnv);
+			static CNV_TYPE classify(float* sdp, float* bdp, double* ratio, double* border);
+		};
+
         class SBIOINFO_DLL SVariant : public svar_data {
 			friend SVarIO;
             friend SVarList;

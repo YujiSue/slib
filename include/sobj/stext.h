@@ -30,23 +30,8 @@ namespace slib {
 	const String DEFAULT_TXT_TAG = String::ESC + "[0m" + String::ESC + "[39m" + String::ESC + "[49m";
 
     class SOBJ_DLL SText;
-    /*
-    class SFont {
-        sushort _type;
-		float _width;
-        String _name;
-        sdict _dat;
-        
-        SFont();
-        ~SFont();
-        
-        sobj operator[](uint32_t i) const;
-        sobj operator[](const char *s) const;
-        
-        void load(const char *path);
-    };
-	*/
-    struct text_style {
+
+	struct text_style {
 		suint type;
         String font, ruby;
         float size, weight;

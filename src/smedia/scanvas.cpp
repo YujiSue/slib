@@ -45,30 +45,37 @@ void SCanvas::save(const char *path) {
      */
 }
 
-size_t SCanvas::width() const { return _frame.width; }
-size_t SCanvas::height() const { return _frame.height; }
+size_t SCanvas::width() const { return _size.x; }
+size_t SCanvas::height() const { return _size.y; }
+v2i SCanvas::size() const { return _size; }
 sarea SCanvas::frame() const { return _frame; }
 const SColor &SCanvas::background() const { return _background; }
-void SCanvas::resize(size_t w, size_t h) { _frame.width = w; _frame.height = h; }
+void SCanvas::resize(size_t w, size_t h) { _size = v2i(w, h); }
 void SCanvas::setBackGround(const SColor &col) { _background = col; }
 void SCanvas::setFrame(sarea area) { _frame = area; }
-void SCanvas::addFigure(sfig fig) { _root.addFigure(fig); }
-void SCanvas::addPoint(spt pt) { _root.addFigure(pt); }
-void SCanvas::addLine(sline ln) { _root.addFigure(ln); }
-void SCanvas::addPath(spath path) { _root.addFigure(path); }
-void SCanvas::addRect(srect rect) { _root.addFigure(rect); }
-void SCanvas::addPolygon(spolygon poly) { _root.addFigure(poly); }
-void SCanvas::addEllipse(sellipse elps) { _root.addFigure(elps); }
-void SCanvas::addArc(sarc arc) { _root.addFigure(arc); }
-void SCanvas::addPict(spict pic) { _root.addFigure(pic); }
-void SCanvas::addText(scalligraphy txt) { _root.addFigure(txt); }
 
+void SCanvas::setPaint(const SPaint& paint) { _paint = paint; }
+/*
+void drawPoint(v2f pos) {}
+void drawLine(v2f init, v2f end);
+void drawPath();
+void drawRect(float x, float y, float w, float h);
+void drawRect(sareaf area);
+void drawPolygon(const v2fvec& v);
+void drawEllipse(float x, float y, float r);
+void drawEllipse(float x, float y, float w, float h);
+void drawEllipse(sareaf area);
+void drawArc();
+void drawPict(float x, float y, const char* s);
+void drawText(float x, float y, const char* s);
+*/
+void SCanvas::addFigure(sfig fig) { _root.addFigure(fig); }
 String SCanvas::getClass() const { return "canvas"; }
 String SCanvas::toString() const {
     auto str = getClass()<<"("<<width()<<","<<height()<<","<<") {";
     if (_root.childCount()) {
         sforeach(_root.children()) {
-			 str<< E_->name()<<"("<< E_->boundary().ori_x<<" "<< E_->boundary().ori_y<<" "<<
+			 str<< E_->getClass()<<"("<< E_->boundary().ori_x<<" "<< E_->boundary().ori_y<<" "<<
 				 E_->boundary().width<<" "<< E_->boundary().height<<")"<<NEW_LINE;
         }
     }
