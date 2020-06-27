@@ -134,6 +134,24 @@ void sseq::denc12(subyte &b, const subyte *s) {
 void sseq::denc14(subyte &b, const subyte *s) {
     b = (sseq::b24(s[0])<<6)|(sseq::b24(s[1])<<4)|(sseq::b24(s[2])<<2)|sseq::b24(s[3]);
 }
+void sseq::ddecode(int mode, const ubytearray &ori, String& seq) {
+	seq.resize(ori.size() * (mode == 0 ? 1 : mode));
+	switch (mode)
+	{
+	case 1:
+		ddecode1(ori.ptr(), 0, seq.size(), (subyte*)seq.ptr());
+		break;
+	case 2:
+		ddecode2(ori.ptr(), 0, seq.size(), (subyte*)seq.ptr());
+		break;
+	case 4:
+		ddecode4(ori.ptr(), 0, seq.size(), (subyte*)seq.ptr());
+		break;
+	default:
+		rawcopy(ori.ptr(), 0, seq.size(), (subyte *)seq.ptr());
+		break;
+	}
+}
 void sseq::ddecode1(const subyte *ori, size_t pos, size_t length, subyte *seq) {
     ori += pos;
     sforin(i, 0, length) { *seq = DNA_BASE16[*ori]; ++seq; ++ori; }
@@ -157,6 +175,25 @@ void sseq::ddecode4(const subyte *ori, size_t pos, size_t length, subyte *seq) {
     }
     if(3 < length) { do { --off; length-=4; ddec40(ori[off], (char *)&seq[length]); } while(3 < length); }
     if(length) { ddec40(ori[--off], s); memcpy(&seq[0], &s[4-length], length); }
+}
+void sseq::dencode(int mode, const char* ori, ubytearray& array) {
+	auto len = strlen(ori);
+	array.resize((len - 1) / (mode == 0 ? 1 : mode) + 1, 0);
+	switch (mode)
+	{
+	case 1:
+		dencode1((const subyte*)ori, 0, len, array.ptr());
+		break;
+	case 2:
+		dencode2((const subyte*)ori, 0, len, array.ptr());
+		break;
+	case 4:
+		dencode4((const subyte*)ori, 0, len, array.ptr());
+		break;
+	default:
+		rawcopy((const subyte*)ori, 0, len, array.ptr());
+		break;
+	}
 }
 void sseq::dencode1(const subyte *ori, size_t pos, size_t length, subyte *seq) {
     ori += pos;

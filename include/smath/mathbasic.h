@@ -83,6 +83,8 @@ namespace slib {
 		constexpr double PI = M_PI;
 		constexpr float F_EPS = FLT_EPSILON;
 		constexpr double D_EPS = DBL_EPSILON;
+		constexpr float F_INF = HUGE_VALF;
+		constexpr double D_INF = HUGE_VAL;
 	}
 }
 

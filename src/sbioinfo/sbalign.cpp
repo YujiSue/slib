@@ -197,7 +197,6 @@ String salign::consensus(const String& ref, const String& que) {
 		if (E_.option == scigar::INSERTION) { 
 			str += que.substring(qoff, E_.length);
 			qoff += E_.length;
-
 		}
 		else if (E_.option == scigar::DELETION) { 
 			str += ref.substring(roff, E_.length);

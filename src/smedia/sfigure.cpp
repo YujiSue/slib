@@ -43,11 +43,14 @@ void SFigure::_resetBoundary() {
 	_boundary = sareaf();
 	if (childCount()) {
 		_boundary = _children[0]->_boundary;
-		sforeach(_children) _boundary.merge(E_->_boundary);
+		sforeach(_children) {
+			_makeBoundary(v2f(E_->_boundary.ori_x, E_->_boundary.ori_y));
+			_makeBoundary(v2f(E_->_boundary.ori_x + E_->_boundary.width, E_->_boundary.ori_y + E_->_boundary.height));
+		}
 	}
 	if (_vertex.size()) {
 		_boundary = sareaf(_vertex[0].x, _vertex[0].y, 0.0f, 0.0f);
-		sforeach(_vertex) _boundary.merge(sareaf(E_.x, E_.y, 0, 0));
+		sforeach(_vertex) _makeBoundary(E_);
 	}
 }
 void SFigure::_updateBoundary() {

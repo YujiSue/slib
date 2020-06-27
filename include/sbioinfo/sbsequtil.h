@@ -112,11 +112,12 @@ namespace slib {
             extern void ddec41(const subyte &b, subyte *s);
             extern void denc12(subyte &b, const subyte *s);
             extern void denc14(subyte &b, const subyte *s);
-            
+			extern void ddecode(int mode, const ubytearray &ori, String& seq);
             extern void ddecode1(const subyte *ori, size_t pos, size_t length, subyte *seq);
             extern void ddecode2(const subyte *ori, size_t pos, size_t length, subyte *seq);
             extern void ddecode4(const subyte *ori, size_t pos, size_t length, subyte *seq);
-            extern void dencode1(const subyte *ori, size_t pos, size_t length, subyte *seq);
+			extern void dencode(int mode, const char* ori, ubytearray& seq);
+			extern void dencode1(const subyte *ori, size_t pos, size_t length, subyte *seq);
             extern void dencode2(const subyte *ori, size_t pos, size_t length, subyte *seq);
             extern void dencode4(const subyte *ori, size_t pos, size_t length, subyte *seq);
             extern void dexpand2(const subyte *ori, size_t pos, size_t length, subyte *seq);

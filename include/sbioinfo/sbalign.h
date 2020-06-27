@@ -111,6 +111,7 @@ namespace slib {
 
 		#define alignarray Array<salign>
         
+
         class SBIOINFO_DLL SAlignment {
             
         private:
