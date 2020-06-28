@@ -5,7 +5,7 @@
 
 namespace slib {
     
-    class SOBJ_DLL SArray : public SObject, public Array<SObjPtr> {
+    class SLIB_DLL SArray : public SObject, public Array<SObjPtr> {
     public:
         SArray();
         SArray(int size);

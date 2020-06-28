@@ -16,14 +16,14 @@ namespace slib {
 	class CArray;
 	template<class Key, class Val>
 	class Map;
-    class SOBJ_DLL String;
-    class SOBJ_DLL SNumber;
-    class SOBJ_DLL SString;
-	class SOBJ_DLL SText;
-    class SOBJ_DLL SObject;
-    class SOBJ_DLL SObjPtr;
+    class SLIB_DLL String;
+    class SLIB_DLL SNumber;
+    class SLIB_DLL SString;
+	class SLIB_DLL SText;
+    class SLIB_DLL SObject;
+    class SLIB_DLL SObjPtr;
 	namespace sio {
-		class SOBJ_DLL SFile;
+		class SLIB_DLL SFile;
 	}
 
 	constexpr subyte TRIMMING = 0x01;
@@ -44,7 +44,7 @@ namespace slib {
 	constexpr char BASIC_UALPHABET[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	constexpr char HEX_STR[17] = "0123456789ABCDEF";
 
-    class SOBJ_DLL Regex {
+    class SLIB_DLL Regex {
     private:
         std::regex _rgx;
         bool _global;
@@ -69,7 +69,7 @@ namespace slib {
 #define NEW_LINE String::LF   
 #endif
     
-    class SOBJ_DLL String {
+    class SLIB_DLL String {
         friend Char;
         
     public:
@@ -453,9 +453,9 @@ namespace slib {
         bool operator != (const String &s) const;
         bool operator != (const SString &s) const;
     };
-    extern SOBJ_DLL String operator+(const char &c, const String &s);
-    extern SOBJ_DLL String operator+(const char *s1, const String &s2);
-    extern SOBJ_DLL String operator+(const std::string &s1, const String &s2);
+    extern SLIB_DLL String operator+(const char &c, const String &s);
+    extern SLIB_DLL String operator+(const char *s1, const String &s2);
+    extern SLIB_DLL String operator+(const std::string &s1, const String &s2);
 }
 
 namespace std {

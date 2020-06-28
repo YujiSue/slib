@@ -5,7 +5,7 @@
 
 namespace slib {
    
-	class SOBJ_DLL SChar : public SObject, public Char {
+	class SLIB_DLL SChar : public SObject, public Char {
     public:
         SChar();
         SChar(String *s, const char *c);
@@ -24,7 +24,7 @@ namespace slib {
         SObject *clone() const;
     };
 
-	class SOBJ_DLL SString : public SObject, public String {
+	class SLIB_DLL SString : public SObject, public String {
         friend SChar;
     protected:
 		SObjPtr _char;

@@ -10,14 +10,14 @@ extern "C" {
 
 namespace slib {
 
-	class SOBJ_DLL SChecker {
+	class SLIB_DLL SChecker {
     public:
 		static suint crc32(subyte* byte, size_t size);
         static bool crc32check(subyte *byte, size_t size, suint &ref);
 
     };
     
-    class SOBJ_DLL SZip {
+    class SLIB_DLL SZip {
     public:
         const static suint LOCAL_FILE_HEADER_SIG;
         const static suint DATA_DESCRIPTOR_SIG;
@@ -71,7 +71,7 @@ namespace slib {
         static void expand(sio::SFile &ori, const char *dest = nullptr, const char *decrypt = nullptr);
     };
     
-    class SOBJ_DLL SCode {
+    class SLIB_DLL SCode {
     public:
         static void urlEncode(String &str);
         static void urlDecode(String &str);

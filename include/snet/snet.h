@@ -22,7 +22,7 @@ namespace slib {
         
 #define CURL_ERR_TEXT(N, T) (u8"libcurl error #"+std::to_string(N)+u8": "+std::string(T)).c_str()
 
-        class SOBJ_DLL SNetException : public SException {
+        class SLIB_DLL SNetException : public SException {
         public:
 			SNetException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SNetException();
@@ -30,7 +30,7 @@ namespace slib {
 
         extern size_t writeCallback(void *buf, size_t size, size_t nmemb, void *ptr);
     
-        class SOBJ_DLL SNetWork {
+        class SLIB_DLL SNetWork {
         private:
             CURL *_curl;
             CURLcode _res;

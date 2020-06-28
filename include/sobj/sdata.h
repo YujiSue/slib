@@ -4,9 +4,9 @@
 #include "sobj/sobject.h"
 
 namespace slib {
-    class SOBJ_DLL SString;
+    class SLIB_DLL SString;
     
-    class SOBJ_DLL SData : public ubytearray, public SObject {
+    class SLIB_DLL SData : public ubytearray, public SObject {
     public:
         SData();
         SData(size_t size, void *dat = nullptr);

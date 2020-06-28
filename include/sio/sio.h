@@ -22,7 +22,7 @@ namespace slib {
 		constexpr suint FILE_OPEN_ERROR = 0x0012;
 		constexpr suint DIRECTORY_LOAD_ERROR = 0x0013;
 
-        class SOBJ_DLL SIOException : public SException {
+        class SLIB_DLL SIOException : public SException {
         public:
             SIOException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SIOException();
@@ -98,7 +98,7 @@ namespace slib {
 		constexpr sushort SVG_FILE = 0x1841;
 		*/
 
-        class SOBJ_DLL SFile;
+        class SLIB_DLL SFile;
         #define filearray Array<slib::sio::SFile>
         
         constexpr subyte READ = 0x01;

@@ -15,20 +15,20 @@ namespace slib {
     using namespace sio;
     
     namespace smedia {
-        class SOBJ_DLL SFigure;
-        class SOBJ_DLL SCanvas;
+        class SLIB_DLL SFigure;
+        class SLIB_DLL SCanvas;
         
-        class SOBJ_DLL SPoint2D;
-        class SOBJ_DLL SLine2D;
-        class SOBJ_DLL SCurve2D;
-        class SOBJ_DLL SPath2D;
-        class SOBJ_DLL SRectangle;
-		class SOBJ_DLL SCircle;
-		class SOBJ_DLL SEllipse;
-        class SOBJ_DLL SArc;
-        class SOBJ_DLL SPolygon;
-        class SOBJ_DLL SPicture;
-        class SOBJ_DLL SCalligraphy;
+        class SLIB_DLL SPoint2D;
+        class SLIB_DLL SLine2D;
+        class SLIB_DLL SCurve2D;
+        class SLIB_DLL SPath2D;
+        class SLIB_DLL SRectangle;
+		class SLIB_DLL SCircle;
+		class SLIB_DLL SEllipse;
+        class SLIB_DLL SArc;
+        class SLIB_DLL SPolygon;
+        class SLIB_DLL SPicture;
+        class SLIB_DLL SCalligraphy;
         
         #define sfig scobj<slib::smedia::SFigure, FIGURE_OBJ>
         #define spoint2d scobj<slib::smedia::SPoint2D, FIGURE_OBJ>
@@ -43,7 +43,7 @@ namespace slib {
         #define spict scobj<slib::smedia::SPicture, FIGURE_OBJ>
         #define scalligraphy scobj<slib::smedia::SCalligraphy, FIGURE_OBJ>
         
-        class SOBJ_DLL SFigure : public SNode<SFigure, FIGURE_OBJ> {
+        class SLIB_DLL SFigure : public SNode<SFigure, FIGURE_OBJ> {
 		protected:
 			sushort _type;
 			sareaf _boundary;
@@ -57,7 +57,7 @@ namespace slib {
             void _makeBoundary(v2f pt);
             void _resetBoundary();
             void _updateBoundary();
-            
+
         public:
             SFigure();
             SFigure(sushort t);
@@ -113,22 +113,6 @@ namespace slib {
             void addFigure(SFigure &&fig);
             void addFigure(const SFigure &fig);
 			template<class Cls>
-			void addFigure(Cls &&fig) { 
-				Cls* figc = new Cls(fig);
-				sfig fig_(dynamic_cast<SFigure *>(figc));
-				fig_->addScope();
-				SNode<SFigure, FIGURE_OBJ>::addChild(fig_);
-				_resetBoundary(); _updateBoundary();
-			}
-			template<class Cls>
-			void addFigure(const Cls &fig) {
-				Cls* figc = new Cls(fig);
-				sfig fig_(dynamic_cast<SFigure*>(figc));
-				fig_->addScope();
-				SNode<SFigure, FIGURE_OBJ>::addChild(fig_);
-				_resetBoundary(); _updateBoundary();
-			}
-			template<class Cls>
             void addFigure(SClsPtr<Cls, FIGURE_OBJ> fig) { 
 				sfig fig_(dynamic_cast<SFigure*>(fig.ptr()));
 				fig_->addScope();
@@ -148,7 +132,7 @@ namespace slib {
         
 #define scnvs scobj<slib::smedia::SCanvas, CANVAS_OBJ>
         
-        class SOBJ_DLL SCanvas : public SDocument<SFigure> {
+        class SLIB_DLL SCanvas : public SDocument<SFigure> {
         protected:
 			v2i _size;
 			sarea _frame;
@@ -228,7 +212,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SPoint2D : public SFigure {
+        class SLIB_DLL SPoint2D : public SFigure {
         protected:
             sushort _shape;
             float _size;
@@ -258,7 +242,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SLine2D : public SFigure {
+        class SLIB_DLL SLine2D : public SFigure {
         public:
             SLine2D();
             SLine2D(v2f p1, v2f p2, const SStroke &stroke = SStroke());
@@ -280,7 +264,7 @@ namespace slib {
             String toString() const;
             SObject *clone() const;
         };
-        class SOBJ_DLL SCurve2D : public SFigure {
+        class SLIB_DLL SCurve2D : public SFigure {
             /*
              BEZIER_2
              BEZIER_3
@@ -306,7 +290,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SPath2D : public SFigure {
+        class SLIB_DLL SPath2D : public SFigure {
         protected:
             bool _closed;
             
@@ -332,7 +316,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SRectangle : public SFigure {
+        class SLIB_DLL SRectangle : public SFigure {
         public:
             SRectangle();
             SRectangle(float x, float y, float w, float h, const SPaint &paint = SPaint());
@@ -348,7 +332,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SEllipse : public SRectangle {
+        class SLIB_DLL SEllipse : public SRectangle {
         public:
             SEllipse();
             SEllipse(float x, float y, float rad, const SPaint &paint = SPaint());
@@ -369,7 +353,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SArc : public SEllipse {
+        class SLIB_DLL SArc : public SEllipse {
         protected:
             v2f _phase;
             smath::ROTATION _dir;
@@ -399,7 +383,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SPolygon : public SFigure {
+        class SLIB_DLL SPolygon : public SFigure {
         public:
             SPolygon();
             SPolygon(size_t n);
@@ -418,7 +402,7 @@ namespace slib {
             SObject *clone() const;;
         };
         
-        class SOBJ_DLL SPicture : public SRectangle {
+        class SLIB_DLL SPicture : public SRectangle {
         protected:
             SImage _image;
             
@@ -433,7 +417,7 @@ namespace slib {
             SObject *clone() const;
         };
         
-        class SOBJ_DLL SCalligraphy : public SFigure {
+        class SLIB_DLL SCalligraphy : public SFigure {
         protected:
             String _text;
             text_style _attribute;

@@ -8,7 +8,7 @@
 namespace slib {
     namespace smedia {
         
-        class SOBJ_DLL SStroke {
+        class SLIB_DLL SStroke {
         public:
             sushort type;
             float width;
@@ -28,7 +28,7 @@ namespace slib {
             SStroke &operator=(const SStroke &stroke);
         };
         
-        class SOBJ_DLL SBrush {
+        class SLIB_DLL SBrush {
         public:
 			sushort type;
             scolor color;
@@ -51,7 +51,7 @@ namespace slib {
 			const SGradient& gradient() const;
         };
         
-        class SOBJ_DLL SFilter {
+        class SLIB_DLL SFilter {
         protected:
             sdict _filter;
             
@@ -62,7 +62,7 @@ namespace slib {
             ~SFilter();
         };
 
-		class SOBJ_DLL SPaint {
+		class SLIB_DLL SPaint {
         public:
             SStroke stroke;
             SBrush brush;

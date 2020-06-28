@@ -29,7 +29,7 @@ namespace slib {
 	const String DEFAULT_COLOR_TXTBG_TAG = String::ESC + "[47m";
 	const String DEFAULT_TXT_TAG = String::ESC + "[0m" + String::ESC + "[39m" + String::ESC + "[49m";
 
-    class SOBJ_DLL SText;
+    class SLIB_DLL SText;
 
 	struct text_style {
 		suint type;
@@ -47,7 +47,7 @@ namespace slib {
     };
 	using text_attribute = std::pair<srange, text_style>;
 
-    class SOBJ_DLL SText : public SObject {
+    class SLIB_DLL SText : public SObject {
         
     private:
         String _string;

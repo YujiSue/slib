@@ -13,6 +13,8 @@
 #define Z_HAVE_UNISTD_H
 #endif
 
+#include "sconfig.h"
+
 /*
  * If you *really* need a unique prefix for all types and library functions,
  * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.

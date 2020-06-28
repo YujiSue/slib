@@ -81,7 +81,7 @@ namespace slib {
 			E_->setParent(dynamic_cast<Cls*>(this));
 			return it;
 		}
-		sli_iter<SClsPtr<Cls, T>> insertChild(sli_citer<SClsPtr<Cls, T>> iter, const SClsPtr<Cls, T>& node) {
+		sli_iter<SClsPtr<Cls, T>> insertChild(sli_iter<SClsPtr<Cls, T>> iter, const SClsPtr<Cls, T>& node) {
 			auto it = _children.insert(iter, node);
 			E_->setParent(dynamic_cast<Cls*>(this));
 			return it;
@@ -91,24 +91,24 @@ namespace slib {
 			E_ = node;
 			E_->setParent(dynamic_cast<Cls*>(this));
 		}
-		void set(sli_citer<SClsPtr<Cls, T>> iter, const SClsPtr<Cls, T>& node) {
+		void set(sli_iter<SClsPtr<Cls, T>> iter, const SClsPtr<Cls, T>& node) {
 			*iter = node;
 			(*iter)->setParent(dynamic_cast<Cls*>(this));
 		}
 		sli_iter<SClsPtr<Cls, T>> removeChildAt(size_t idx) {
 			return _children.removeAt(idx);
 		}
-		sli_iter<SClsPtr<Cls, T>> removeChild(sli_citer<SClsPtr<Cls, T>> iter) {
-			return _children.removeAt(iter, iter + 1);
+		sli_iter<SClsPtr<Cls, T>> removeChild(sli_iter<SClsPtr<Cls, T>> iter) {
+			return _children.remove(iter, iter + 1);
 		}
 		sli_iter<SClsPtr<Cls, T>> eraseChild(const SClsPtr<Cls, T>& node) {
-			sforeach(_children) { if (it->ptr == &node) return _children.remove(it, it + 1); }
+			sforeach(_children) { if (&E_ == &node) return _children.remove(it, it + 1); }
 			return end();
 		}
-		void moveChildTo(sli_citer<SClsPtr<Cls, T>> iter) {
+		void moveChildTo(sli_iter<SClsPtr<Cls, T>> iter) {
 			if (isRoot() || (*iter)->isRoot()) throw SException(ERR_INFO, SLIB_EXEC_ERROR);
-			auto node = const_cast<const Cls*>(_parent)->begin() + index();			
-			(*iter)->parent().insertChild(iter, *node);
+			auto node = _parent->begin() + index();			
+			(*iter)->parent()->insertChild(iter, *node);
 			_parent->removeChild(node);
 		}
 		void clearChildren() { _children.clear(); }

@@ -64,15 +64,24 @@ String SPicture::toString() const {
 }
 SObject *SPicture::clone() const { return new SPicture(*this); }
 
-
+inline float _strWidth(String& str, float f) {
+	float w = 0.0f;
+	auto it = str.ubegin();
+	while (it < str.uend()) {
+		if (1 < E_.length()) w += f;
+		else w += 0.5 * f;
+		NEXT_;
+	}
+	return w;
+}
 SCalligraphy::SCalligraphy() : SFigure(sshape::TEXT) {}
 SCalligraphy::SCalligraphy(float x, float y, const char *s) : SCalligraphy() {
     _text = s;
-    auto w = _attribute.size*_text.length();
+	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
     addVertex(v2f(x, y));
-    addVertex(v2f(x, y+h));
-    addVertex(v2f(x+w, y+h));
+	addVertex(v2f(x, y - h));
+	addVertex(v2f(x + w, y - h));
     addVertex(v2f(x+w, y));
 }
 
@@ -85,38 +94,39 @@ SCalligraphy::~SCalligraphy() {}
 const char *SCalligraphy::text() const { return _text.cstr(); }
 text_style& SCalligraphy::style() { return _attribute; }
 const text_style &SCalligraphy::style() const { return _attribute; }
+
 void SCalligraphy::setText(const char *s) {
     _text = s;
     v2f init = _vertex[0];
     _vertex.clear();
-    auto w = _attribute.size*_text.length();
+	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
-    addVertex(init);
-    addVertex(v2f(init.x, init.y+h));
-    addVertex(v2f(init.x+w, init.y+h));
-    addVertex(v2f(init.x+w, init.y));
+	addVertex(init);
+	addVertex(v2f(init.x, init.y - h));
+	addVertex(v2f(init.x + w, init.y - h));
+	addVertex(v2f(init.x + w, init.y));
 }
 void SCalligraphy::setFont(const char *font, float size) {
     _attribute = text_style(sstyle::PLAIN, font, size, SColor::BLACK, SColor::CLEAR);
     v2f init = _vertex[0];
     _vertex.clear();
-    auto w = _attribute.size*_text.length();
+	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
-    addVertex(init);
-    addVertex(v2f(init.x, init.y+h));
-    addVertex(v2f(init.x+w, init.y+h));
-    addVertex(v2f(init.x+w, init.y));
+	addVertex(init);
+	addVertex(v2f(init.x, init.y - h));
+	addVertex(v2f(init.x + w, init.y - h));
+	addVertex(v2f(init.x + w, init.y));
 }
 void SCalligraphy::setStyle(uint16_t type, const char *font, float size, SColor col, SColor bg) {
     _attribute = text_style(type, font, size, col, bg);
     v2f init = _vertex[0];
     _vertex.clear();
-    auto w = _attribute.size*_text.length();
+	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
-    addVertex(init);
-    addVertex(v2f(init.x, init.y+h));
-    addVertex(v2f(init.x+w, init.y+h));
-    addVertex(v2f(init.x+w, init.y));
+	addVertex(init);
+	addVertex(v2f(init.x, init.y - h));
+	addVertex(v2f(init.x + w, init.y - h));
+	addVertex(v2f(init.x + w, init.y));
 }
 String SCalligraphy::getClass() const {
     return "calligraphy";

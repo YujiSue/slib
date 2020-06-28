@@ -16,7 +16,7 @@ namespace slib {
         #define sframe simg
         #define smov scobj<SMovie, MOVIE_OBJ>
         
-        class SOBJ_DLL SMovie : public SObject {
+        class SLIB_DLL SMovie : public SObject {
         private:
             //TIFF *tiff;
             

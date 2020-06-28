@@ -6,10 +6,10 @@
 
 namespace slib {
     namespace smedia {
-        class SOBJ_DLL SColor;
-        class SOBJ_DLL SPixel;
+        class SLIB_DLL SColor;
+        class SLIB_DLL SPixel;
         
-        class SOBJ_DLL SImageRow {
+        class SLIB_DLL SImageRow {
         protected:
             subyte _bpp, *_data;
 			sushort _type;
@@ -34,7 +34,7 @@ namespace slib {
         };
         
 		using spxl = scobj<SPixel, PIXEL_OBJ>;
-        class SOBJ_DLL SPixel : public SObject {
+        class SLIB_DLL SPixel : public SObject {
         protected:
             subyte _bpp, *_data;
 			sushort _type;
@@ -74,7 +74,7 @@ namespace slib {
         #define spxl_iter SPixelIterator
         #define spxl_citer SPixelCIterator
 
-        class SOBJ_DLL SPixelIterator {
+        class SLIB_DLL SPixelIterator {
         public:
             typedef std::random_access_iterator_tag iterator_category;
             typedef SPixel value_type;
@@ -110,7 +110,7 @@ namespace slib {
             bool operator !=(const SPixelIterator &it) const;
         };
         
-        class SOBJ_DLL SPixelCIterator {
+        class SLIB_DLL SPixelCIterator {
         public:
             typedef std::random_access_iterator_tag iterator_category;
             typedef const SPixel value_type;

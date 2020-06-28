@@ -1,5 +1,6 @@
 #ifndef SLIB_CONFIG_H
 #define SLIB_CONFIG_H
+#ifdef __cplusplus
 extern "C" {
 #include <float.h>
 #include <stdio.h>
@@ -10,6 +11,17 @@ extern "C" {
 #include <sys/types.h>
 #include <time.h>
 }
+#ifndef SLIB_DLL
+#ifdef LOAD_STATIC_LIB
+#define SLIB_DLL
+#elif defined(USE_SLIB_DLL)
+#define SLIB_DLL __declspec(dllimport)
+#elif defined(_WINDLL)
+#define SLIB_DLL __declspec(dllexport)
+#else
+#define SLIB_DLL
+#endif
+#endif
 
 #include <algorithm>
 #include <chrono>
@@ -110,17 +122,7 @@ extern "C" {
 #include <cmath>
 #endif
 
-#ifndef SOBJ_DLL
-#ifdef LOAD_STATIC_LIB
-#define SOBJ_DLL  
-#elif defined(USE_SOBJ_DLL)
-#define SOBJ_DLL __declspec(dllimport)
-#elif defined(_WINDLL)
-#define SOBJ_DLL __declspec(dllexport)
-#else
-#define SOBJ_DLL  
-#endif
-#endif
+
 
 namespace slib {
     #ifdef __APPLE__
@@ -226,4 +228,5 @@ namespace slib {
     extern inline bool sortDesc(const T &t1, const T &t2) { return t2 < t1; }
 	
 }
+#endif 
 #endif 

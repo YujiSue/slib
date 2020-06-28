@@ -4,17 +4,17 @@
 #include "sconfig.h"
 
 namespace slib {
-    class SOBJ_DLL String;
-    class SOBJ_DLL SChar;
-    class SOBJ_DLL SString;
-    class SOBJ_DLL SObjPtr;
+	class SLIB_DLL String;
+    class SLIB_DLL SChar;
+    class SLIB_DLL SString;
+    class SLIB_DLL SObjPtr;
 
-	class SOBJ_DLL Char {
-        friend String;
+	class SLIB_DLL Char {
+        friend class String;
         
     public:
         const char *_ptr;
-        String *_str;
+		String *_str;
         
     public:
         static sbyte u8size(const char *c);

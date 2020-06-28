@@ -5,7 +5,7 @@
 #include "sobj/sobject.h"
 
 namespace slib {
-    class SOBJ_DLL SDate : public SObject, public Time {
+    class SLIB_DLL SDate : public SObject, public Time {
     public:
         static const char *ISO8601;
         static const char *YMD;

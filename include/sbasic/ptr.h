@@ -8,10 +8,7 @@ using namespace System::Threading;
 #endif
 
 namespace slib {
-    
     #define sptr Pointer
-    
-    //Pointer<T>
     template<typename T>
     class Pointer {
     protected:

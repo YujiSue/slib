@@ -37,25 +37,25 @@ namespace slib {
 
 	}
         
-	class SOBJ_DLL SXmlNode;
-	class SOBJ_DLL SXmlDoc;
+	class SLIB_DLL SXmlNode;
+	class SLIB_DLL SXmlDoc;
         
 	using sxnode = SClsPtr<SXmlNode, NODE_OBJ>;
-	class SOBJ_DLL SXmlNode : public SNode<SXmlNode, NODE_OBJ> {
+	class SLIB_DLL SXmlNode : public SNode<SXmlNode, NODE_OBJ> {
 		friend SXmlDoc;
 
 	public:
 		sushort type;
 		String tag, content;
-		sattribute attribute;
+		SDictionary attribute;
 
 	public:
 		static sxnode plistNode(const sobj& obj);
 		static sobj toPlistObj(const sxnode& node);
 
-		static void fillSVG(sattribute& attribute, const smedia::SBrush& brush, const char *fid);
-		static void strokeSVG(sattribute& attribute, const smedia::SStroke& stroke);
-		static void txtstyleSVG(sattribute& attribute, text_style& tattr);
+		static void fillSVG(SDictionary& attribute, const smedia::SBrush& brush, const char *fid);
+		static void strokeSVG(SDictionary& attribute, const smedia::SStroke& stroke);
+		static void txtstyleSVG(SDictionary& attribute, text_style& tattr);
 		static sxnode svgNode(smedia::SCanvas* cnvs);
 		static sxnode svgNode(smedia::SFigure* fig);
 		
@@ -103,7 +103,7 @@ namespace slib {
 	/*
         #define sxml sptr<SXmlNode>
         
-        class SOBJ_DLL SXmlNode : public Node<SXmlNode> {
+        class SLIB_DLL SXmlNode : public Node<SXmlNode> {
             friend SXmlDoc;
         public:
             static constexpr sushort DEFINITION = 0x0100;
@@ -147,7 +147,7 @@ namespace slib {
             void parse(const char *s);
             String toString() const;
         };
-        class SOBJ_DLL SXmlDoc {
+        class SLIB_DLL SXmlDoc {
             friend SXmlNode;
         public:
             static constexpr sushort XML = 0x1000;

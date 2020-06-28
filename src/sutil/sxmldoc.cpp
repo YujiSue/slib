@@ -13,7 +13,7 @@ SXmlDoc::SXmlDoc(const SXmlDoc &doc) : SDocument<SXmlNode>(doc) {
 SXmlDoc::~SXmlDoc() {}
 void SXmlDoc::_init() {
 	_definition = sxnode(xml::DEFINITION_NODE, "xml");
-	_definition->attribute = { ks("version", "1.0"), ks("encoding", "utf-8") };
+	_definition->attribute = { kv("version", "1.0"), kv("encoding", "utf-8") };
 	_root.addChild(_definition);
 	switch (_type) {
 	case xml::PLIST:
@@ -21,12 +21,12 @@ void SXmlDoc::_init() {
 		_doctype = sxnode(xml::DOCTYPE_PUB_NODE, "plist");
 		_doctype->attribute =
 		{
-			ks("public", "-//Apple Computer//DTD PLIST 1.0//EN"),
-			ks("dtd", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
+			kv("public", "-//Apple Computer//DTD PLIST 1.0//EN"),
+			kv("dtd", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
 		};
 		_root.addChild(_doctype);
 		_entity = sxnode(xml::START_TAG, "plist");
-		_entity->attribute = { ks("version", "1.0") };
+		_entity->attribute = { kv("version", "1.0") };
 		_root.addChild(_entity);
 		break;
 	}
@@ -35,8 +35,8 @@ void SXmlDoc::_init() {
 		_doctype = sxnode(xml::DOCTYPE_PUB_NODE, "svg", "");
 		_doctype->attribute =
 		{
-			ks("public", "-//W3C//DTD SVG 1.1//EN"),
-			ks("dtd", "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd")
+			kv("public", "-//W3C//DTD SVG 1.1//EN"),
+			kv("dtd", "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd")
 		};
 		_root.addChild(_doctype);
 		break;

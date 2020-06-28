@@ -23,8 +23,8 @@ namespace slib {
 	constexpr sushort FUNC_COLUMN = 0x0400;
 	constexpr sushort IMG_COLUMN = 0x0800;
 
-    class SOBJ_DLL STable;
-    class SOBJ_DLL SColumn : public SArray {
+    class SLIB_DLL STable;
+    class SLIB_DLL SColumn : public SArray {
         friend STable;
     private:
         sushort _type;
@@ -53,7 +53,7 @@ namespace slib {
         SObject *clone() const;
     };
     
-    class SOBJ_DLL STable : public SObject {
+    class SLIB_DLL STable : public SObject {
         friend SColumn;
 
     protected:

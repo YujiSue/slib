@@ -44,8 +44,7 @@ void SFigure::_resetBoundary() {
 	if (childCount()) {
 		_boundary = _children[0]->_boundary;
 		sforeach(_children) {
-			_makeBoundary(v2f(E_->_boundary.ori_x, E_->_boundary.ori_y));
-			_makeBoundary(v2f(E_->_boundary.ori_x + E_->_boundary.width, E_->_boundary.ori_y + E_->_boundary.height));
+			_boundary.merge(E_->boundary());
 		}
 	}
 	if (_vertex.size()) {
@@ -99,18 +98,12 @@ void SFigure::setPaint(const SPaint &p) { _paint = p; }
 void SFigure::setAttribute(const SDictionary &dic) { _attribute = dic; }
 void SFigure::expand(v2f s) {
     STransform2D::expand(s, _vertex, oriPos(_boundary, _origin));
-    sforeach(_children) { 
-		STransform2D::expand(s, E_->_vertex, oriPos(E_->_boundary, E_->_origin));
-		E_->_resetBoundary();
-	}
+    sforeach(_children) E_->expand(s);
 	_resetBoundary(); _updateBoundary();
 }
 void SFigure::shift(v2f t) {
     STransform2D::shift(t, _vertex);
-    sforeach(_children) { 
-		STransform2D::shift(t, E_->_vertex);
-		E_->_resetBoundary();
-	}
+    sforeach(_children) E_->shift(t);
 	_resetBoundary(); _updateBoundary();
 }
 void SFigure::shear(v2f s) {

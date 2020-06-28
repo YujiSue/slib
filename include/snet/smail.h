@@ -6,7 +6,7 @@
 
 
 namespace slib {
-    class SOBJ_DLL SMail {
+    class SLIB_DLL SMail {
         private:
         public:
         SMail();

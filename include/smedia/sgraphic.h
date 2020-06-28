@@ -40,7 +40,7 @@ namespace slib {
     
     namespace smedia {
         
-		class SOBJ_DLL SFigure;
+		class SLIB_DLL SFigure;
 
         extern inline v2f oriPos(sareaf &area, sgeom::ORIGIN ori) {
             switch (ori) {
@@ -65,7 +65,7 @@ namespace slib {
             }
         }
         
-        class SOBJ_DLL STransform2D {
+        class SLIB_DLL STransform2D {
 
 		public:
             v2f scale, translate, skew;
@@ -128,7 +128,7 @@ namespace slib {
 			return f2icolor(f[3]) | (f2icolor(f[2]) << 8) | (f2icolor(f[1]) << 16) | (f2icolor(f[0]) << 24);
 		}
         
-        class SOBJ_DLL SColor : public SObject {
+        class SLIB_DLL SColor : public SObject {
         public:
             static const SColor CLEAR;
             static const SColor BLACK;
@@ -240,7 +240,7 @@ namespace slib {
             bool operator==(const SColor &col) const;
         };
         
-        class SOBJ_DLL SGradient : public SColor {
+        class SLIB_DLL SGradient : public SColor {
         protected:
             smath::sgeom::COORDINATE _coord;
             float _angle;

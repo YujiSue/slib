@@ -6,7 +6,7 @@
 #include "sbasic/string.h"
 
 namespace slib {
-	class SOBJ_DLL Locale : public Map<String, stringarray> {
+	class SLIB_DLL Locale : public Map<String, stringarray> {
 	protected:
 		sindex _lang;
 

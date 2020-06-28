@@ -31,15 +31,15 @@ const SColor SColor::VIOLET = (suint)0xFFEE82EE;
 const SColor SColor::PURPLE = (suint)0xFF800080;
 Map<String, suint> slib::smedia::ColorMap =
 {
-    kui("clear", 0x00000000), kui("black", 0x000000FF), kui("white", 0xFFFFFFFF),
-    kui("gray", 0x808080FF), kui("lightgray", 0xd3d3d3FF), kui("dimgray", 0x696969FF),
-    kui("red", 0xFF0000FF), kui("magenta", 0xFF00FFFF), kui("pink", 0xFFC0CBFF),
-    kui("crimson", 0xDC143CFF), kui("darkred", 0x88B000FF),
-    kui("orange", 0xFFA500FF), kui("yellow", 0xFFFF00FF), kui("brown", 0xA52A2AFF),
-    kui("lime", 0x00FF00FF), kui("green", 0x008000FF), kui("darkgreen", 0x006400FF),
-    kui("spring", 0x00FF7FFF), kui("blue", 0x0000FFFF), kui("turquoise", 0x40E0D0FF),
-    kui("cyan", 0x00FFFFFF), kui("deepsky", 0x00BFFFFF), kui("indigo", 0x4B0082FF),
-    kui("navy", 0x000080FF), kui("violet", 0xEE82EEFF), kui("purple", 0x800080FF)
+    kui("clear", 0x00000000), kui("black", 0xFF000000), kui("white", 0xFFFFFFFF),
+    kui("gray", 0xFF808080), kui("lightgray", 0xFFD3D3D3), kui("dimgray", 0xFF696969),
+    kui("red", 0xFF0000FF), kui("magenta", 0xFFFF00FF), kui("pink", 0xFFCBC0FF),
+    kui("crimson", 0xFF143CDC), kui("darkred", 0xFF00008B),
+    kui("orange", 0xFF00A5FF), kui("yellow", 0xFF00FFFF), kui("brown", 0xFF2A2AA5),
+    kui("lime", 0xFF00FF00), kui("green", 0xFF008000), kui("darkgreen", 0xFF006400),
+    kui("spring", 0xFF7FFF00), kui("blue", 0xFFFF0000), kui("turquoise", 0xFFD0E040),
+    kui("cyan", 0xFFFFFF00), kui("deepsky", 0xFFFFBF00), kui("indigo", 0xFF82004B),
+    kui("navy", 0xFF800000), kui("violet", 0xFFEE82EE), kui("purple", 0xFF800080)
 };
 
 SColor::SColor(sushort t) : _type(t), SObject() { _data.resize(bytePerPixel(_type), 0); }

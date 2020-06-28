@@ -62,62 +62,48 @@ void SImageIO::importTIFF(const char *path, SImage *img) {
 
 void SImageIO::importJPG(const char *path, SImage *img) {
     FILE *fp = NULL;
-    fp = fopen(path, "rb");
-    if (!fp) throw SMediaException(ERR_INFO, sio::FILE_OPEN_ERROR, path);
-    jpeg_decompress_struct jpegd;
+    struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     JSAMPROW buffer = NULL;
-    int row_stride;
-    
-    jpegd.err = jpeg_std_error(&jerr);
-    jpeg_create_decompress(&jpegd);
-	jpeg_stdio_src(&jpegd, fp);
-	
-	auto res = jpeg_read_header(&jpegd, TRUE);
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_decompress(&cinfo);
+	fp = fopen(path, "rb");
+	if (!fp) throw SMediaException(ERR_INFO, sio::FILE_OPEN_ERROR, path);
+	jpeg_stdio_src(&cinfo, fp);
+	auto res = jpeg_read_header(&cinfo, TRUE);
 	if (res != JPEG_HEADER_OK)
 		throw SMediaException(ERR_INFO, SLIB_EXEC_ERROR, "jpeg_read_header", EXEC_TEXT(std::to_string(res)));
-	jpeg_start_decompress(&jpegd);
-    int depth;
-    switch (jpegd.out_color_space) {
-        case JCS_GRAYSCALE:
-        {
-            img->_type = GRAY8;
-            depth = 1;
+	jpeg_start_decompress(&cinfo);
+	if ((buffer = (JSAMPROW)calloc(sizeof(JSAMPLE) * cinfo.output_width * cinfo.output_components, 1)) == NULL)
+		throw SException(ERR_INFO, SLIB_NULL_ERROR, "buffer");
+    switch (cinfo.output_components) {
+        case 1:
+			img->_type = GRAY8;
             break;
-        }
-        case JCS_RGB:
-        {
-            img->_type = RGB32;
-            depth = 1;
+        case 3:
+			img->_type = RGB24;
             break;
-        }
+		case 4:
+			img->_type = RGB24;
+			break;
         default:
-        {
-			img->_type = GRAY8; 
-			depth = 1;
+			img->_type = GRAY8;
             break;
+    }
+    img->resize(cinfo.output_width, cinfo.output_height);
+	auto offset = img->ptr();
+    sforin (h, 0, cinfo.output_height) {
+        jpeg_read_scanlines(&cinfo, &buffer, 1);
+		auto px = (subyte*)buffer;
+        sforin (w, 0, cinfo.output_width) {
+			sforin(c, 0, cinfo.num_components) {
+				*offset = *px;
+				++offset; ++px;
+			}
         }
     }
-    row_stride = sizeof(JSAMPLE) * jpegd.output_width * jpegd.output_components;
-    if ((buffer = (JSAMPROW)calloc(row_stride, 1)) == NULL)
-        throw SException(ERR_INFO, SLIB_NULL_ERROR, "buffer");
-    img->_width = jpegd.output_width;
-    img->_height = jpegd.output_height;
-    img->resize(img->_width, img->_height);
-    
-    for (int h = 0; h < img->_height; ++h) {
-        jpeg_read_scanlines(&jpegd, &buffer, 1);
-        uint8_t *offset = (uint8_t *)buffer;
-        for (int w = 0; w < img->_width; ++w) {
-            uint8_t *val = img->ptr(w, h);
-            val[0] = *(offset++);
-            val[1] = *(offset++);
-            val[2] = *(offset++);
-            val[3] = 0xFF;
-        }
-    }
-    jpeg_finish_decompress(&jpegd);
-    jpeg_destroy_decompress(&jpegd);
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
     free(buffer);
     fclose(fp);
 }
@@ -222,8 +208,6 @@ void SImageIO::exportJPG(const char *path, int qual, SImage *img) {
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
     FILE *fp = NULL;
-    JSAMPROW row_pointer[1];
-    int row_stride;
     cinfo.err = jpeg_std_error(&jerr);
     jpeg_create_compress(&cinfo);
     if ((fp = fopen(path, "wb")) == NULL)
@@ -244,24 +228,12 @@ void SImageIO::exportJPG(const char *path, int qual, SImage *img) {
     jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, qual, TRUE);
     jpeg_start_compress(&cinfo, TRUE);
-    row_stride = img->_width*img->bpp();
-    if (img->channel() == 4) {
-        auto p = img->ptr(0, 0);
-        row_pointer[0] = (char *)malloc(img->_width*3);
-        delAlpha(row_pointer[0], p, img->_width);
-        while (cinfo.next_scanline < cinfo.image_height) {
-            delAlpha(row_pointer[0], p, img->_width);
-            jpeg_write_scanlines(&cinfo, row_pointer, 1);
-            p += row_stride;
-        }
-    }
-    else {
-        row_pointer[0] = (char *)img->ptr(0, 0);
-        while (cinfo.next_scanline < cinfo.image_height) {
-            jpeg_write_scanlines(&cinfo, row_pointer, 1);
-            row_pointer[0] += row_stride;
-        }
-    }
+	JSAMPROW row = (char *)img->ptr();
+	auto rows = img->_width * img->bpp();
+	while (cinfo.next_scanline < cinfo.image_height) {
+		jpeg_write_scanlines(&cinfo, &row, 1);
+		row += rows;
+	}
     jpeg_finish_compress(&cinfo);
     fclose(fp);
     jpeg_destroy_compress(&cinfo);

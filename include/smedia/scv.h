@@ -28,7 +28,7 @@ namespace slib {
 			img.copy(mat.ptr(0), img.size());
 		}
 		extern inline cv::Mat s2cvimg(SImage& img) {
-			if (img.isLink()) return cv::imread(img.file.path());
+			if (img.isLink()) return cv::imread(img.file().path().cstr());
 			else return cv::Mat(img.height(), img.width(), s2cvtype(img.type()), img.ptr());
 		}
 		extern inline v2i p2vi(cv::Point& p) {
