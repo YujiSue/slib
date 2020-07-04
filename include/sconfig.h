@@ -163,6 +163,8 @@ namespace slib {
     #define REG(X) Regex(#X)
     
     #define E_ (*it)
+	#define E1_ (*it_2.first)
+	#define E2_ (*it_2.second)
 	#define E_NXT (*(it+1))
 	#define E_PRV (*(it-1))
     #define NEXT_ ++it
@@ -176,7 +178,8 @@ namespace slib {
     #define srforeach(V) for(auto it=(V).end()-1;(V).begin()<=it;--it)
     #define sforeach_(I,V) for(auto (I)=(V).begin();(I)<(V).end();++(I))
     #define srforeach_(I,V) for(auto (I)=(V).end()-1;(V).begin()<=(I);--(I))
-    
+	#define sforeach2(X,Y) for(auto it_2=std::make_pair((X).begin(), (Y).begin());it_2.first<(X).end();++it_2.first,++it_2.second)
+	
     #define sforeachc(V) for(auto it=(V).ubegin();it<(V).uend();++it)
     #define srforeachc(V) for(auto it=(V).uend()-1;(V).ubegin()<=it;--it)
     #define sforeachc_(I,V) for(auto (I)=(V).ubegin();(I)<(V).uend();++(I))

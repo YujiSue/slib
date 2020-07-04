@@ -104,9 +104,9 @@ namespace slib {
             void init();
             
             String alref(const String &ref);
-            String match();
+			String match();
             String consensus(const String &ref, const String &que);
-            String alque(const String &que);
+			String alque(const String &que);
         };
 
 		#define alignarray Array<salign>
@@ -129,8 +129,8 @@ namespace slib {
             SAlignment(salign_param *p);
             ~SAlignment();
             
-            void align(subyte *ref, size_t rlen, subyte *que, size_t qlen);
-            void ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen);
+            void align(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool trim = true);
+            void ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool trim = true);
             void set(salign_param *p);
             void init();
             void reset();

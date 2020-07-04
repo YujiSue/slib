@@ -23,6 +23,8 @@ namespace slib {
 #define v4i SVector4D<sint>
 #define v4f SVector4D<float>
 #define v4d SVector4D<double>
+#define svecb SVector<sbyte, CMemory<sbyte>>
+#define svecub SVector<subyte, CMemory<subyte>>
 #define sveci SVector<sint, CMemory<sint>>
 #define svecu SVector<suint, CMemory<suint>>
 #define svecl SVector<sinteger, CMemory<sinteger>>
@@ -152,7 +154,7 @@ namespace slib {
         
         template <typename T, class M = SMemory<T>>
 		struct SVector : public Array<T, M> {
-            typedef Array<T, M> arr;
+            typedef Array<T, M> array;
             
             SVector();
             SVector(size_t s, const T &val = initVal<T>());
@@ -187,23 +189,23 @@ namespace slib {
         #define smat4d SMatrix4D
         #define smat SMatrix
         
-#define matb SMatrix<sbyte, CMemory<sbyte>>
-#define mati SMatrix<int, CMemory<int>>
-#define matf SMatrix<float, CMemory<float>>
-#define matd SMatrix<double, CMemory<double>>
+#define smatb SMatrix<sbyte, CMemory<sbyte>>
+#define smati SMatrix<int, CMemory<int>>
+#define smatf SMatrix<float, CMemory<float>>
+#define smatd SMatrix<double, CMemory<double>>
         
-#define matv2i SMatrix<v2i, RMemory<v2i>>
-#define matv2f SMatrix<v2f, RMemory<v2f>>
-#define matv2d SMatrix<v2d, RMemory<v2d>>
-#define matv3i SMatrix<v3i, RMemory<v3i>>
-#define matv3f SMatrix<v3f, RMemory<v3f>>
-#define matv3d SMatrix<v3d, RMemory<v3d>>
-#define matv4i SMatrix<v4i, RMemory<v4i>>
-#define matv4f SMatrix<v4f, RMemory<v4f>>
-#define matv4d SMatrix<v4d, RMemory<v4d>>
-#define matveci SMatrix<sveci>
-#define matvecf SMatrix<svecf>
-#define matvecd SMatrix<svecd>
+#define v2imat SMatrix<v2i, RMemory<v2i>>
+#define v2fmat SMatrix<v2f, RMemory<v2f>>
+#define v2dmat SMatrix<v2d, RMemory<v2d>>
+#define v3imat SMatrix<v3i, RMemory<v3i>>
+#define v3fmat SMatrix<v3f, RMemory<v3f>>
+#define v3dmat SMatrix<v3d, RMemory<v3d>>
+#define v4imat SMatrix<v4i, RMemory<v4i>>
+#define v4fmat SMatrix<v4f, RMemory<v4f>>
+#define v4dmat SMatrix<v4d, RMemory<v4d>>
+#define svimat SMatrix<sveci>
+#define svfmat SMatrix<svecf>
+#define svdmat SMatrix<svecd>
         
 #define mat2i SMatrix2D<int>
 #define mat2f SMatrix2D<float>
@@ -246,6 +248,7 @@ namespace slib {
             SMatrix2D operator * (const T &val) const;
             SMatrix2D operator / (const T &val) const;
             
+			T determinant() const;
             T *operator[](int idx);
             const T *operator[](int idx) const;
         };
@@ -271,8 +274,9 @@ namespace slib {
             SMatrix3D operator * (const SMatrix3D &m) const;
             SMatrix3D operator * (const T &val) const;
             SMatrix3D operator / (const T &val) const;
-            
-            T *operator[](int idx);
+			SMatrix2D<T> cofactor(sint r, sint c) const;
+			T determinant() const;
+			T *operator[](int idx);
             const T *operator[](int idx) const;
         };
         
@@ -299,7 +303,8 @@ namespace slib {
             SMatrix4D operator * (const T &val);
             SMatrix4D operator / (const T &val);
             
-            T *operator[](int idx);
+			T determinant() const;
+			T *operator[](int idx);
             const T *operator[](int idx) const;
         };
         
@@ -331,12 +336,15 @@ namespace slib {
             SMatrix operator * (const T &val);
             SMatrix operator / (const T &val);
             bool comparable(const SMatrix &m);
-            T *operator[](int row);
+			T *operator[](int row);
             const T *operator[](int row) const;
             T &at(int row, int col);
             const T &at(int row, int col) const;
             void resize(int row, int col);
-            SMatrix submat(int roff, int coff, int rnum, int cnum);
+			SMatrix inverse() const;
+			T determinant() const;
+			SMatrix cofactor(sint r, sint c) const;
+			SMatrix submat(int roff, int coff, int rnum, int cnum);
             SMatrix transpose();
             bool operator<(const SMatrix<T, M> &mat) const;
             bool operator==(const SMatrix<T, M> &mat) const;
@@ -358,7 +366,7 @@ namespace slib {
             }
             return arr;
         }
-        
+
         extern inline v2i operator*(const v2i &v, const mat2i &m) {
 			return v2i(v.x * m[0][0] + v.y * m[1][0], v.x * m[0][1] + v.y * m[1][1]);
 		}
@@ -585,24 +593,24 @@ namespace slib {
         SVector<T, M>::~SVector() {}
         template <typename T, class M>
         SVector<T, M> &SVector<T, M>::operator = (const SVector<T, M> &v) {
-            if (v.size()) arr::copy(v.ptr(), v.size());
-            else arr::clear();
+            if (v.size()) array::copy(v.ptr(), v.size());
+            else array::clear();
             return (*this);
         }
         template <typename T, class M>
         SVector<T, M> &SVector<T, M>::operator += (const SVector<T, M> &v) {
-            if(arr::_size != v._size)
-                throw SMathException(ERR_INFO, DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(arr::_size, v._size));
-            auto p = arr::aoffset, p_ = v.aoffset;
-            sforin(i, 0, arr::asize) { *p += *p_; ++p; ++p_; }
+            if(array::size() != v.size())
+                throw SMathException(ERR_INFO, DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
+            auto p = array::ptr(), p_ = v.ptr();
+            sforin(i, 0, array::size()) { *p += *p_; ++p; ++p_; }
             return *this;
         }
         template <typename T, class M>
         SVector<T, M> &SVector<T, M>::operator += (const T &val) { sforeach(*this) E_ += val; return *this; }
         template <typename T, class M>
         SVector<T, M> &SVector<T, M>::operator -= (const SVector<T, M> &v) {
-            if(arr::size() != v.size())
-                throw SMathException(ERR_INFO, DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(arr::size(), v.size()));
+            if(array::size() != v.size())
+                throw SMathException(ERR_INFO, DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
             auto p = v.ptr();
             sforeach(*this) { E_ -= *p; ++p; }
             return *this;
@@ -629,16 +637,16 @@ namespace slib {
         SVector<T, M> SVector<T, M>::operator / (const T &val) const { SVector<T, M> div = *this; div /= val; return div; }
         template <typename T, class M>
         T SVector<T, M>::operator *(const svec &v) const {
-            if (arr::_size != v._size || arr::empty())
-                throw SMathException(ERR_INFO, DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(arr::_size, v._size));
+            if (array::size() != v.size() || array::empty())
+                throw SMathException(ERR_INFO, DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
             T prod = initVal<T>();
             sforeach(*this) prod += E_*E_;
             return prod;
         }
         template <typename T, class M>
-        scyc_iter<T> SVector<T, M>::cycle(int i) { return scyc_iter<T>(arr::ptr(i), i, arr::size()); }
+        scyc_iter<T> SVector<T, M>::cycle(int i) { return scyc_iter<T>(array::ptr(i), i, array::size()); }
         template <typename T, class M>
-        scyc_citer<T> SVector<T, M>::cycle(int i) const { return scyc_citer<T>(arr::ptr(i), i, arr::size()); }
+        scyc_citer<T> SVector<T, M>::cycle(int i) const { return scyc_citer<T>(aarrayrr::ptr(i), i, array::size()); }
         
         
         
@@ -710,7 +718,10 @@ namespace slib {
         SMatrix2D<T> SMatrix2D<T>::operator * (const T &val) const { return SMatrix2D<T>(*this) *= val; }
         template <typename T>
         SMatrix2D<T> SMatrix2D<T>::operator / (const T &val) const { return SMatrix2D<T>(*this) /= val; }
-        
+		template <typename T>
+		T SMatrix2D<T>::determinant() const {
+			return element[0] * element[3] - element[1] * element[2];
+		}
         template <typename T>
         T *SMatrix2D<T>::operator[](int idx) { return &element[idx*2]; }
         template <typename T>
@@ -787,8 +798,64 @@ namespace slib {
         SMatrix3D<T> SMatrix3D<T>::operator * (const T &val) const { SMatrix3D<T> prod = *this; prod *= val; return prod; }
         template <typename T>
         SMatrix3D<T> SMatrix3D<T>::operator / (const T &val) const { SMatrix3D<T> div = *this; div /= val; return div; }
-        
-        template <typename T>
+		template <typename T>
+		SMatrix2D<T> SMatrix3D<T>::cofactor(sint r, sint c) const {
+			SMatrix2D<T> mat;
+			switch (r)
+			{
+			case 0:
+			{
+				switch (c)
+				{
+				case 0:
+					return SMatrix2D<T>(element[4], element[5], element[7], element[8]);
+				case 1:
+					return SMatrix2D<T>(element[3], element[5], element[6], element[8]);
+				case 2:
+					return SMatrix2D<T>(element[3], element[4], element[6], element[7]);
+				default:
+					break;
+				}
+			}
+			case 1:
+			{
+				switch (c)
+				{
+				case 0:
+					return SMatrix2D<T>(element[1], element[2], element[7], element[8]);
+				case 1:
+					return SMatrix2D<T>(element[0], element[2], element[6], element[8]);
+				case 2:
+					return SMatrix2D<T>(element[0], element[1], element[6], element[7]);
+				default:
+					break;
+				}
+			}
+			case 2:
+			{
+				switch (c)
+				{
+				case 0:
+					return SMatrix2D<T>(element[1], element[2], element[4], element[5]);
+				case 1:
+					return SMatrix2D<T>(element[0], element[2], element[3], element[5]);
+				case 2:
+					return SMatrix2D<T>(element[1], element[2], element[3], element[4]);
+				default:
+					break;
+				}
+			}
+			default:
+				break;
+			}
+			throw SMathException(ERR_INFO, SLIB_RANGE_ERROR);
+		}
+		template <typename T>
+		T SMatrix3D<T>::determinant() const {
+			return element[0] * element[4] * element[8] + element[1] * element[5] * element[6] + element[2] * element[3] * element[7] -
+				element[2] * element[4] * element[6] - element[1] * element[3] * element[8] - element[0] * element[5] * element[7];
+		}
+		template <typename T>
         T *SMatrix3D<T>::operator[](int idx) { return &element[idx*3]; }
         template <typename T>
         const T *SMatrix3D<T>::operator[](int idx) const { return &element[idx*3]; }
@@ -856,8 +923,13 @@ namespace slib {
         SMatrix4D<T> SMatrix4D<T>::operator * (const T &val) { SMatrix4D<T> prod = *this; prod *= val; return prod; }
         template <typename T>
         SMatrix4D<T> SMatrix4D<T>::operator / (const T &val) { SMatrix4D<T> div = *this; div /= val; return div; }
-        
-        template <typename T>
+		template <typename T>
+		T SMatrix4D<T>::determinant() const {
+
+
+
+		}
+		template <typename T>
         T *SMatrix4D<T>::operator[](int idx) { return &element[idx*4]; }
         template <typename T>
         const T *SMatrix4D<T>::operator[](int idx) const { return &element[idx*4]; }
@@ -985,6 +1057,38 @@ namespace slib {
             }
             return true;
         }
+
+		template<typename T, class M>
+		extern inline void JacobiMethod(SMatrix<T, M> &mat, smatd& evec, svecd &evalue, sint iter = 100, double threshold = 1e-10) {
+			sint lcount = 0;
+			
+			while (lcount < iter) {
+				auto loop = false;
+				sforin(r, 0, mat.row) {
+					sforin(auto c, 0, mat.col) {
+						
+						
+					
+					}
+					
+					tmp[r] = (vec[r] - tmp[r]) / mat[r][r];
+
+
+					if (threshold < abs(tmp[r]-eigen[r]) loop = true;
+				}
+				if (!loop) break;
+				++lcount;
+			}
+		}
+		//QR method
+		template<typename T, class M>
+		extern inline void eigen(SMatrix<T, M>& mat, smatd& evec, svecd& evalue) {
+
+
+
+
+		}
+
     }
 }
 #endif  

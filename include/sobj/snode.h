@@ -101,7 +101,7 @@ namespace slib {
 		sli_iter<SClsPtr<Cls, T>> removeChild(sli_iter<SClsPtr<Cls, T>> iter) {
 			return _children.remove(iter, iter + 1);
 		}
-		sli_iter<SClsPtr<Cls, T>> eraseChild(const SClsPtr<Cls, T>& node) {
+		sli_iter<SClsPtr<Cls, T>> removeChild(const SClsPtr<Cls, T>& node) {
 			sforeach(_children) { if (&E_ == &node) return _children.remove(it, it + 1); }
 			return end();
 		}
@@ -118,19 +118,6 @@ namespace slib {
 
 	};
 
-	/*
-    template<class Cls, OBJ_TYPE T = NODE_OBJ, class Container=Array<scobj<Cls, T>>>
-    class SNode : public SObject, public Node<Cls, scobj<Cls, T>, Container> {
-    public:
-        SNode();
-        SNode(const SNode &node);
-        ~SNode();
-        
-        String getClass() const;
-        String toString() const;
-        SObject *clone() const;
-    };
-	*/
 	/*
 	class SFileNode : public SNode<SFileNode> {
 	protected:

@@ -21,10 +21,11 @@ inline void xml::decodeXML(String& str) {
 }
 
 SXmlNode::SXmlNode() : SNode<SXmlNode>() {}
-SXmlNode::SXmlNode(suint t, const char* s, const char* c) : SNode<SXmlNode>() {
+SXmlNode::SXmlNode(suint t, const char* s, const char* c, std::initializer_list<kvpair<String, SObjPtr>> a) : SNode<SXmlNode>() {
     type = t;
     if (s) tag = s;
 	if (c) content = c;
+	if (a.size()) attribute = a;
 }
 SXmlNode::~SXmlNode() {}
 
@@ -286,10 +287,29 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         {
             node->tag = "path";
             String path;
-            if (fig->vcount()) {
-                sforeach(fig->vertex()) {
-                    path<<"M"<<E_.x<<","<<E_.y; ++it;
-                    path<<"L"<<E_.x<<","<<E_.y;
+            if (fig->childCount()) {
+                sforeach(fig->children()) {
+					if (E_->type() == sshape::LINE) {
+						if (!E_->vertex().empty()) {
+							auto vit = E_->vertex().begin();
+							path << "M" << (*vit).x << "," << (*vit).y;
+							++vit;
+							while (vit < E_->vertex().end()) {
+								path << " L" << (*vit).x << "," << (*vit).y;
+								++vit;
+							}
+						}
+					}
+					else if (E_->type() == sshape::CURVE) {
+						if (!E_->vertex().empty()) {
+							sforeach_(vit, fig->vertex()) {
+								path << "M" << (*vit).x << "," << (*vit).y; ++vit;
+								path << "C" << (*vit).x << "," << (*vit).y << " "; ++vit;
+								path << (*vit).x << "," << (*vit).y << " "; ++vit;
+								path << (*vit).x << "," << (*vit).y;
+							}
+						}
+					}
                 }
             }
             node->attribute["d"] = path;
@@ -528,55 +548,105 @@ void SXmlNode::parse(const char *s) {
         }
     }
 }
-String SXmlNode::toString() const {
-	size_t l = layer();
-	if (type == xml::DEFINITION_NODE)
-		return String("<?xml") <<
-		(attribute["version"] ? " version=" + String::dquot(attribute["version"]) : "") <<
-		(attribute["encoding"] ? " encoding=" + String::dquot(attribute["encoding"]) : "") << "?>" << NEW_LINE;
-	else if (type == xml::CDATA_NODE)
-		return String::TAB * l << "<![CDATA[" << content << "]]>" << NEW_LINE;
-	else if (type == xml::COMMENT_NODE)
-		return String::TAB * l << "<!--" << content << "-->" << NEW_LINE;
-	else if (type & xml::DOCTYPE_NODE) {
-		auto doc = String("<!DOCTYPE ") << tag << " ";
-		if (type == xml::DOCTYPE_PUB_NODE)
-			return doc << "PUBLIC " << String::dquot(attribute["public"]) << " " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
-		else if (type == xml::DOCTYPE_SYS_NODE)
-			return doc << "SYSTEM " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
-		else {
-			doc += "[" + NEW_LINE;
-			/*
-			 */
-			return doc << "]>" << NEW_LINE;
-		}
-	}
-	else if (type != xml::HIDDEN_TAG) {
-		String xstr = String::TAB * l << "<" << tag;
-		if (!attribute.empty()) {
-			auto keys = attribute.hasKey("_key") ? attribute["_key"].split(",") : attribute.keyset();
-			sforeach(keys) {
-				String tmp = attribute[E_];
-				xml::encodeXML(tmp);
-				xstr << " " << E_ << "=" << String::dquot(tmp);
-			}
-		}
-		if (type & xml::SINGLE_TAG) xstr << "/>" << NEW_LINE;
-		else {
-			xstr << ">";
-			if (childCount()) {
-				xstr << NEW_LINE;
-				sforeach(children()) xstr << E_->toString();
-				xstr << String::TAB * l;
-			}
+String SXmlNode::toString() const { return toString(true); }
+String SXmlNode::toString(bool formed) const {
+	if (formed) {
+		size_t l = layer();
+		if (type == xml::DEFINITION_NODE)
+			return String("<?xml") <<
+			(attribute["version"] ? " version=" + String::dquot(attribute["version"]) : "") <<
+			(attribute["encoding"] ? " encoding=" + String::dquot(attribute["encoding"]) : "") << "?>" << NEW_LINE;
+		else if (type == xml::CDATA_NODE)
+			return String::TAB * l << "<![CDATA[" << content << "]]>" << NEW_LINE;
+		else if (type == xml::COMMENT_NODE)
+			return String::TAB * l << "<!--" << content << "-->" << NEW_LINE;
+		else if (type & xml::DOCTYPE_NODE) {
+			auto doc = String("<!DOCTYPE ") << tag << " ";
+			if (type == xml::DOCTYPE_PUB_NODE)
+				return doc << "PUBLIC " << String::dquot(attribute["public"]) << " " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
+			else if (type == xml::DOCTYPE_SYS_NODE)
+				return doc << "SYSTEM " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
 			else {
-				String tmp = content;
-				xml::encodeXML(tmp);
-				xstr << tmp;
+				doc += "[" + NEW_LINE;
+				/*
+				 */
+				return doc << "]>" << NEW_LINE;
 			}
-			xstr << "</" << tag << ">" << NEW_LINE;
 		}
-		return xstr;
+		else if (type != xml::HIDDEN_TAG) {
+			String xstr = String::TAB * l << "<" << tag;
+			if (!attribute.empty()) {
+				auto keys = attribute.hasKey("_key") ? attribute["_key"].split(",") : attribute.keyset();
+				sforeach(keys) {
+					String tmp = attribute[E_];
+					xml::encodeXML(tmp);
+					xstr << " " << E_ << "=" << String::dquot(tmp);
+				}
+			}
+			if (type & xml::SINGLE_TAG) xstr << "/>" << NEW_LINE;
+			else {
+				xstr << ">";
+				if (childCount()) {
+					xstr << NEW_LINE;
+					sforeach(children()) xstr << E_->toString();
+					xstr << String::TAB * l;
+				}
+				else {
+					String tmp = content;
+					xml::encodeXML(tmp);
+					xstr << tmp;
+				}
+				xstr << "</" << tag << ">" << NEW_LINE;
+			}
+			return xstr;
+		}
 	}
-	return "";
+	else {
+		if (type == xml::DEFINITION_NODE)
+			return String("<?xml") <<
+			(attribute["version"] ? " version=" + String::dquot(attribute["version"]) : "") <<
+			(attribute["encoding"] ? " encoding=" + String::dquot(attribute["encoding"]) : "") << "?>" << NEW_LINE;
+		else if (type == xml::CDATA_NODE)
+			return String("<![CDATA[") << content << "]]>" << NEW_LINE;
+		else if (type == xml::COMMENT_NODE)
+			return String("<!--") << content << "-->" << NEW_LINE;
+		else if (type & xml::DOCTYPE_NODE) {
+			auto doc = String("<!DOCTYPE ") << tag << " ";
+			if (type == xml::DOCTYPE_PUB_NODE)
+				return doc << "PUBLIC " << String::dquot(attribute["public"]) << " " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
+			else if (type == xml::DOCTYPE_SYS_NODE)
+				return doc << "SYSTEM " << String::dquot(attribute["dtd"]) << ">" << NEW_LINE;
+			else {
+				doc += "[" + NEW_LINE;
+				/*
+				 */
+				return doc << "]>" << NEW_LINE;
+			}
+		}
+		else if (type != xml::HIDDEN_TAG) {
+			String xstr = String("<") << tag;
+			if (!attribute.empty()) {
+				auto keys = attribute.hasKey("_key") ? attribute["_key"].split(",") : attribute.keyset();
+				sforeach(keys) {
+					String tmp = attribute[E_];
+					xml::encodeXML(tmp);
+					xstr << " " << E_ << "=" << String::dquot(tmp);
+				}
+			}
+			if (type & xml::SINGLE_TAG) xstr << "/>";
+			else {
+				xstr << ">";
+				if (childCount()) {
+					sforeach(children()) xstr << E_->toString();
+				}
+				else {
+					String tmp = content;
+					xml::encodeXML(tmp);
+					xstr << tmp;
+				}
+				xstr << "</" << tag << ">" << NEW_LINE;
+			}
+			return xstr;
+		}
+	}
 }

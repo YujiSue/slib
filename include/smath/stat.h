@@ -12,6 +12,7 @@ namespace slib {
 				sint idx = 0; T max = *val;
 				sforin(i, 0, s) {
 					if (max < *val) { max = *val; idx = i; }
+					++val;
 				}
 				return idx;
 			}
@@ -36,6 +37,7 @@ namespace slib {
 				T max = *val;
 				sforin(i, 0, s) {
 					if (max < *val) max = *val;
+					++val;
 				}
 				return max;
 			}
@@ -60,6 +62,7 @@ namespace slib {
 				sint idx = 0; T min = *val;
 				sforin(i, 0, s) {
 					if ((*val) < min) { min = *val; idx = i; }
+					++val;
 				}
 				return idx;
 			}
@@ -84,6 +87,7 @@ namespace slib {
 				T min = *val;
 				sforin(i, 0, s) {
 					if (*val < min) min = *val;
+					++val;
 				}
 				return min;
 			}
@@ -250,6 +254,102 @@ namespace slib {
 			extern inline T variance(const SVector<T, M>& vec, bool unbiased = false) {
 				return (moment<2, T, M>(vec) - smath::power(average(vec), 2)) / (unbiased ? vec.size() - 1 : vec.size());
 			}
+			template<typename T>
+			extern inline double covariance(const SVector<svec2d<T>, RMemory<svec2d<T>>>& vec) {
+				auto sum = sstat::sum(vec);
+				v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
+				auto cov = 0;
+				sforeach(vec) cov += ((double)vec.x - ave.x) * ((double)vec.y - ave.y);
+				return cov / vec.size();
+			}
+			template<typename T>
+			extern inline mat2d covmat(const SVector<svec2d<T>, RMemory<svec2d<T>>>& vec) {
+				auto sum = sstat::sum(vec);
+				v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
+				mat2d mat;
+				double dx, dy;
+				sforeach(vec) {
+					dx = (double)E_.x - ave.x;
+					dy = (double)E_.y - ave.y;
+					mat.element[0] += dx * dx;
+					mat.element[1] += dx * dy;
+					mat.element[3] += dy * dy;
+				}
+				mat.element[2] = mat.element[1];
+				return mat / vec.size();
+			}
+			template<typename T>
+			extern inline mat3d covmat(const SVector<svec3d<T>, RMemory<svec3d<T>>>& vec) {
+				auto sum = sstat::sum(vec);
+				v3d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size());
+				mat3d mat;
+				double dx, dy, dz;
+				sforeach(vec) {
+					dx = (double)E_.x - ave.x;
+					dy = (double)E_.y - ave.y;
+					dz = (double)E_.z - ave.z;
+					mat.element[0] += dx * dx;
+					mat.element[1] += dx * dy;
+					mat.element[2] += dx * dz;
+					mat.element[4] += dy * dy;
+					mat.element[5] += dy * dz;
+					mat.element[8] += dz * dz;
+				}
+				mat.element[3] = mat.element[1];
+				mat.element[6] = mat.element[2];
+				mat.element[7] = mat.element[5];
+				return mat / vec.size();
+			}
+			template<typename T>
+			extern inline mat4d covmat(const SVector<svec4d<T>, RMemory<svec4d<T>>>& vec) {
+				auto sum = sstat::sum(vec);
+				v4d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size(), (double)sum.w / vec.size());
+				mat4d mat;
+				double dx, dy, dz, dw;
+				sforeach(vec) {
+					dx = (double)E_.x - ave.x;
+					dy = (double)E_.y - ave.y;
+					dz = (double)E_.z - ave.z;
+					dw = (double)E_.w - ave.w;
+					mat.element[0] += dx * dx;
+					mat.element[1] += dx * dy;
+					mat.element[2] += dx * dz;
+					mat.element[3] += dx * dw;
+					mat.element[5] += dy * dy;
+					mat.element[6] += dy * dz;
+					mat.element[7] += dy * dw;
+					mat.element[10] += dz * dz;
+					mat.element[11] += dz * dw;
+					mat.element[15] += dw * dw;
+				}
+				mat.element[4] = mat.element[1];
+				mat.element[8] = mat.element[2];
+				mat.element[9] = mat.element[6];
+				mat.element[12] = mat.element[3];
+				mat.element[13] = mat.element[7];
+				mat.element[14] = mat.element[11];
+				return mat / vec.size();
+			}
+			template<typename T>
+			extern inline SMatrix<T, CMemory<T>> covmat(const SVector<SVector<T, CMemory<T>>>& vec) {
+				auto sum = sstat::sum(vec);
+				auto count = vec.size();
+				auto dim = vec[0].size();
+				svecd ave(dim, 0), diff(dim);
+				sforeach2(vec, ave) E2_ = (double)E1_ / count;
+				SMatrix<T, CMemory<T>> mat(dim, dim, 0);
+				double dx, dy, dz, dw;
+				sforeach(vec) {
+					sforin(d, 0, dim) diff[d] = (double)E_[d] - ave[d];
+					sforin(i, 0, dim) {
+						sforin(j, 0, i + 1) mat[i][j] += diff[i] * diff[j];
+					}
+				}
+				sforin(i, 0, dim) {
+					sforin(j, i + 1, dim) mat[i][j] = mat[j][i];
+				}
+				return mat / dim;
+			}
 			template<typename T, class M>
 			extern inline T stddev(const SVector<T, M>& vec, bool corrected = false) {
 				return sqrt(variance(vec, corrected));
@@ -278,6 +378,16 @@ namespace slib {
 				vec.copyTo(vec_);
 				vec_.sort();
 				return svec3d<T>(vec_[vec.size() / 4], vec_[vec.size() / 2], vec_[3 * vec.size() / 4]);
+			}
+
+			template<typename T, class M>
+			extern sint count(const SVector<T, M>& vec, 
+				std::function<bool(sarr_citer<T> & iter)> condition = [](sarr_citer<T>&) { return true; }) {
+				sint i = 0;
+				sforeach(vec) {
+					if (condition(E_)) ++i;
+				}
+				return i;
 			}
 
             extern inline std::function<double(double)> normFunc(double m = 0.0, double s = 1.0) {
@@ -320,156 +430,6 @@ namespace slib {
             extern inline double ibetaFunc(double d, double m, double n);
             extern inline double betaFunc(double m, double n);
 
-			
-			template<typename T>
-			extern inline double euclidLength(T* val1, T* val2, int dim) {
-				double dist = 0.0;
-				sforin(d, 0, dim) {
-					dist += power((*val1) - (*val2), 2);
-					++val1; ++val2;
-				}
-				return dist;
-			}
-			extern inline void hcMassCenter(double* val1, double* val2, int dim, svecd& centroid) {
-				
-			}
-			template<typename T>
-			struct hierarchy {
-				Array<hierarchy<T>> elements;
-
-				hierarchy() {}
-				hierarchy(const T& t) {}
-				~hierarchy() {}
-				
-				size_t count() const { 
-					return 0;
-				}
-				void add(const T& t) { elements.add(hierarchy(t)); }
-				void integrate(sarr_citer<hierarchy<T>> it1, sarr_citer<hierarchy<T>> it2);
-
-				void separate(sarr_citer<hierarchy<T>> it);
-			};
-			struct cluster_data {
-
-
-
-			};
-
-			template<typename T>
-			extern inline void hcluster(matd &data, sveci& group, const char* method = "default",
-				std::function<double(T*, T*, int)> distance = euclidLength,
-				std::function<void(double*, double*, int, svecd&)> center = hcMassCenter) {
-				intarray2d groups;
-				svdvec layered;
-				svecd dist(data.row * (data.row - 1) / 2, 0);
-				auto rptr = data[0];
-				auto dptr = dist.ptr();
-				sforin(r1, 0, data.row) {
-					auto rptr_ = rptr + data.col;
-					sforin(r2, r1 + 1, data.row) {
-						(*dptr) = distance(rptr, rptr_, data.col);
-						rptr_ += data.col;
-					}
-					rptr += data.col;
-				}
-				int count = data.row;
-				while (true) {
-					auto idx = argmin(dist);
-					if (dist[idx] == D_INF) break;
-
-
-					
-				}
-
-
-
-
-			}
-			template<typename T, class M>
-			extern inline void kmMassCentroid(int k, smat<T, M>& data, sveci& group, svec<T, M>&centroid) {
-				int count = 0;
-				centroid.reset(0);
-				auto rptr = data[0];
-				sforeach(group) {
-					if (E_ == k) {
-						sforin(c, 0, data.col) {
-							centroid[c] += (*rptr); ++rptr;
-						}
-						++count;
-					}
-				}
-				centroid /= count;
-			}
-			template<typename T, class M>
-			extern inline void initCentroid(int cluster, smat<T, M>& data, svec<svec<T, M>>& centroid) {
-				intarray extract;
-				SRandom rand;
-				while (extract.size() < cluster) {
-					auto i = rand.iruni(0, data.row);
-					if (extract.find(i) == NOT_FOUND) extract.add(i);
-				}
-				sforin(c, 0, cluster) {
-					centroid[c].copy(data[extract[c]], data.col);
-				}
-			}
-			template<typename T, class M>
-			extern inline void initCentroidPlus(int cluster, smat<T, M>& data, svec<svec<T, M>>& centroid, std::function<double(T*, T*, int)> &distance) {
-				intarray extract;
-				svecd dist(data.row);
-				SRandom rand;
-				extract.add(rand.iruni(0, data.row));
-				while (extract.size() < cluster) {
-					auto rptr = data[0];
-					auto prev = data[extract.last()];
-					auto d = dist.ptr();
-					sforin(r, 0, data.row) {
-						if (extract.find(r) == NOT_FOUND) (*d) = distance(rptr, prev, data.col);
-						else (*d) = 0;
-						rptr += data.col; ++d;
-					}
-					dist /= sum(dist);
-					auto prob = rand.runi();
-					sforeach(dist) {
-						prob -= E_;
-						if (prob <= 0.0) {
-							extract.add(INDEX_(dist));
-							break;
-						}
-					}
-				}
-				sforin(c, 0, cluster) {
-					centroid[c].copy(data[extract[c]], data.col);
-				}
-			}
-			template<typename T, class M>
-			extern inline void kmeans(int cluster, smat<T, M>& data, sveci& group, int iter,
-				const char *method = "default",
-				std::function<double(T*, T*, int)> distance = euclidLength<T>,
-				std::function<void(int, smat<T, M>&, sveci &, svec<T, M>&)> center = kmMassCentroid<T, M>) {
-				svecd dist(cluster, 0);
-				group.resize(data.row, 0);
-				svec<svec<T, M>> centroid(cluster), tmpcent(cluster);
-				SRandom rand;
-				sforin(c, 0, cluster) {
-					centroid[c].resize(data.col, 0);
-					tmpcent[c].resize(data.col, 0);
-				}
-				String alg = method;
-				if (alg == "kmeans++") initCentroidPlus<T, M>(cluster, data, centroid, distance);
-				else initCentroid<T, M>(cluster, data, centroid);
-				sforin(i, 0, iter) {
-					auto rptr = data[0];
-					auto gp = group.ptr();
-					sforin(r, 0, data.row) {
-						sforin(c, 0, cluster) dist[c] = distance(rptr, centroid[c].ptr(), data.col);
-						*gp = argmin(dist);
-						rptr += data.col; ++gp;
-					}
-					sforin(c, 0, cluster) center(c, data, group, tmpcent[c]);
-					if (centroid == tmpcent) break;
-					else centroid.swap(tmpcent);
-				}
-			}
         }
     }
 }

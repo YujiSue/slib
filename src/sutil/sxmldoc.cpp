@@ -48,6 +48,11 @@ void SXmlDoc::_init() {
 sxnode SXmlDoc::definition() const { return _definition; }
 sxnode SXmlDoc::doctype() const { return _doctype; }
 sxnode SXmlDoc::entity() const { return _entity; }
+void SXmlDoc::setEntity(sxnode node) { 
+	_root.removeChild(node);
+	_entity = node;
+	_root.addChild(_entity);
+}
 void SXmlDoc::addToEntity(sxnode node) { _entity->addChild(node); }
 void SXmlDoc::_read(SFile &file, String &tag, SXmlNode *parent) {
     if(file.eof()) return;

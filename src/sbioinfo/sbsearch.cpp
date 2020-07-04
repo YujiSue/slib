@@ -6,7 +6,7 @@ using namespace slib::sbio;
 sbsearch_param::sbsearch_param(sushort t) {
 	ref_type = t & 0x0F;
 	code_size = (t >> 4) & 0x0F;
-    ds_search = true;
+    ds_search = ref_type==sbio::DNA_SEQ;
     multi_thread = true;
     min_match = DEFAULT_MIN_SIZE;
 	seed_len = ref_type & AA_SEQ ? DEFAULT_AASEED : DEFAULT_SEED;

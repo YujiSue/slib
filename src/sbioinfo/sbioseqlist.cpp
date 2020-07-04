@@ -246,7 +246,7 @@ void SBSeqList::makeIndex(const char *path) {
             seq = SBioSeq(type);
             //Read sequence length
 			file.readInt(tmp);
-			seq->setLength(tmp);
+			seq->setLength(tmp, true);
 			_length.add(tmp);
             //Read sequence name
 			file.readInt(tmp);

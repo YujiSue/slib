@@ -238,19 +238,35 @@ inline int aldir(sint *score) {
 SAlignment::SAlignment() : _par(nullptr) {}
 SAlignment::SAlignment(salign_param *p) : SAlignment() { set(p); }
 SAlignment::~SAlignment() {}
-void SAlignment::align(subyte *ref, size_t rlen, subyte *que, size_t qlen) {
+void SAlignment::align(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool trim) {
     reset(); if (!rlen || !qlen) return;
     auto r_ = ref, q_ = que;
     auto col = qlen+1;
     auto p = _path.ptr(col+1);
-    auto _s = _score.ptr(), s = _score.ptr(col+1), s2 = _score2.ptr(col+1), sr = _score.ptr(col), sc = _score.ptr(1);
+	auto _s = _score.ptr(), s = _score.ptr(col + 1), s2 = _score2.ptr(col + 1), sr = _score.ptr(col), sc = _score.ptr(1);
     auto mr = _maxrow.ptr(1), mc = _maxcol.ptr(1);
+	if (!trim) {
+		auto p = _score.ptr();
+		auto s__ = _score.ptr(qlen-1);
+		*s__ = -_par->gap_score;
+		while (p < s__) {
+			*(s__ - 1) = (*s__) - _par->gap2_score;
+			--s__;
+		}
+		s__ = _score.ptr((rlen - 1) * col);
+		*s__ = -_par->gap_score;
+		while (p < s__) {
+			*(s__ - 1) = (*s__) - _par->gap2_score;
+			s__ -= col;
+		}
+	}
     sforin(i, 1, rlen+1) {
         q_ = que;
         mr = _maxrow.ptr(1);
-        sc = _score.ptr((*mr)*col);
+		sc = _score.ptr((*mr) * col);
         sforin(j, 1, qlen+1) {
-            _scr[0] = 0; *s2 = _par->score_table[*r_][*q_];
+            _scr[0] = 0; 
+			*s2 = _par->score_table[*r_][*q_];
             _scr[1] = (*_s)+(*s2);
             _scr[2] = sc[j]+_par->gap_score+_par->gap2_score*(i-(*mr)-1);
             _scr[3] = sr[*mc]+_par->gap_score+_par->gap2_score*(j-(*mc)-1);
@@ -305,7 +321,7 @@ void SAlignment::align(subyte *ref, size_t rlen, subyte *que, size_t qlen) {
         auto tmp = *beg; *beg = *end; *end = tmp; ++beg; --end;
     }
 }
-void SAlignment::ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen) {
+void SAlignment::ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool tip) {
     reset(); if (!rlen || !qlen) return;
     auto r_ = ref+rlen-1, q_ = que+qlen-1;
     auto col = qlen+1;
@@ -313,9 +329,9 @@ void SAlignment::ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen) {
     auto _s = _score.ptr(), s = _score.ptr(col+1), s2 = _score2.ptr(col+1), sr = _score.ptr(col), sc = _score.ptr(1);
     auto mr = _maxrow.ptr(1), mc = _maxcol.ptr(1);
     sforin(i, 1, rlen+1) {
-        q_ = que+qlen-1;
-        mr = _maxrow.ptr(1);
-        sc = _score.ptr((*mr)*col);
+		q_ = que + qlen - 1;
+		mr = _maxrow.ptr(1);
+		sc = _score.ptr((*mr) * col);
         sforin(j, 1, qlen+1) {
             _scr[0] = 0; *s2 = _par->score_table[*r_][*q_];
             _scr[1] = (*_s)+(*s2);
@@ -372,19 +388,19 @@ void SAlignment::set(salign_param *p) {
     _par = p;
     cigars.reserve(p->align_length);
     if (_par->score_table.empty()) _par->makeTable();
-    init(); reset();
+    init();
 }
 void SAlignment::init() {
     if(!_par) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_par");
-    _maxcol.resize(_par->align_length+1);
-    _maxrow.resize(_par->align_length+1);
-    _score.resize((_par->align_length+1)*(_par->align_length+1));
-    _score2.resize((_par->align_length+1)*(_par->align_length+1));
-    _path.resize((_par->align_length+1)*(_par->align_length+1));
+	_maxcol.resize(_par->align_length + 1);
+	_maxrow.resize(_par->align_length + 1);
+	_score.resize((_par->align_length + 1) * (_par->align_length + 1));
+	_score2.resize((_par->align_length + 1) * (_par->align_length + 1));
+	_path.resize((_par->align_length + 1) * (_par->align_length + 1));
 }
 void SAlignment::reset() {
-    _maxcol.reset(0);
-    _maxrow.reset(0);
+	_maxcol.reset(0);
+	_maxrow.reset(0);
     _score.reset(0);
     _score2.reset(0);
     _path.reset(0);

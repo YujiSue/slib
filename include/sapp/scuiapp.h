@@ -6,6 +6,14 @@
 namespace slib {
     namespace sapp {
 
+#ifdef STANDARD_OUT_STREAM
+#define OUT_ std::cout
+#define RETURN_ std::endl;
+#elif defined(FILE_OUT_STREAM)
+#define OUT_ FILE_
+#define RETURN_ NEW_LINE;FILE_.flush();
+#endif
+
 		class SAPP_DLL SCuiApp : public SApp {
 
         public:

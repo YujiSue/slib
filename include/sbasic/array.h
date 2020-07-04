@@ -20,7 +20,7 @@ namespace slib {
 #define doublearray CArray<double>
 #define integerarray CArray<sinteger>
 #define uintegerarray CArray<suinteger>
-#define ptrarray CArray<void *>
+#define voidarray CArray<void *>
 #define stringarray Array<String>
     
 #define boolarray2d Array<boolarray>
@@ -34,7 +34,7 @@ namespace slib {
 #define doublearray2d Array<doublearray>
 #define integerarray2d Array<integerarray>
 #define uintegerarray2d Array<uintegerarray>
-#define ptrarray2d Array<ptrarray>
+#define voidarray2d Array<voidarray>
     
 #define boolarray3d Array<boolarray2d>
 #define bytearray3d Array<bytearray2d>
@@ -47,7 +47,7 @@ namespace slib {
 #define doublearray3d Array<doublearray2d>
 #define integerarray3d Array<integerarray2d>
 #define uintegerarray3d Array<uintegerarray2d>
-#define ptrarray3d Array<ptrarray2d>
+#define voidarray3d Array<voidarray2d>
     
     //Array<T, M>
     template <typename T, class M=SMemory<T>>
