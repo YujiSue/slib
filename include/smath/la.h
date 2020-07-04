@@ -646,7 +646,7 @@ namespace slib {
         template <typename T, class M>
         scyc_iter<T> SVector<T, M>::cycle(int i) { return scyc_iter<T>(array::ptr(i), i, array::size()); }
         template <typename T, class M>
-        scyc_citer<T> SVector<T, M>::cycle(int i) const { return scyc_citer<T>(aarrayrr::ptr(i), i, array::size()); }
+        scyc_citer<T> SVector<T, M>::cycle(int i) const { return scyc_citer<T>(array::ptr(i), i, array::size()); }
         
         
         
@@ -1065,7 +1065,7 @@ namespace slib {
 			while (lcount < iter) {
 				auto loop = false;
 				sforin(r, 0, mat.row) {
-					sforin(auto c, 0, mat.col) {
+					sforin(c, 0, mat.col) {
 						
 						
 					
