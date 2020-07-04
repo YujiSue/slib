@@ -1070,11 +1070,6 @@ namespace slib {
 						
 					
 					}
-					
-					tmp[r] = (vec[r] - tmp[r]) / mat[r][r];
-
-
-					if (threshold < abs(tmp[r]-eigen[r]) loop = true;
 				}
 				if (!loop) break;
 				++lcount;
