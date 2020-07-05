@@ -11,17 +11,6 @@ extern "C" {
 #include <sys/types.h>
 #include <time.h>
 }
-#ifndef SLIB_DLL
-#ifdef LOAD_STATIC_LIB
-#define SLIB_DLL  
-#elif defined(USE_SLIB_DLL)
-#define SLIB_DLL __declspec(dllimport)
-#elif defined(_WINDLL)
-#define SLIB_DLL __declspec(dllexport)
-#else
-#define SLIB_DLL  
-#endif
-#endif
 
 #include <algorithm>
 #include <chrono>
@@ -122,9 +111,19 @@ extern "C" {
 #include <cmath>
 #endif
 
-
-
 namespace slib {
+#ifndef SLIB_DLL
+#ifdef LOAD_STATIC_LIB
+#define SLIB_DLL  
+#elif defined(USE_SLIB_DLL)
+#define SLIB_DLL __declspec(dllimport)
+#elif defined(_WINDLL)
+#define SLIB_DLL __declspec(dllexport)
+#else
+#define SLIB_DLL  
+#endif
+#endif
+
     #ifdef __APPLE__
     #if TARGET_OS_MAC
     #define MAC_OS
