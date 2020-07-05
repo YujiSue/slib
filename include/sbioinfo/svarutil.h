@@ -71,7 +71,7 @@ namespace slib {
 			//copy: [0, border[0]), [border[0], border[1]), [border[1], border[2]), [border[2], border[3]), [border[3], border[4]), [border[4], +inf)
 			sint min_length;
 			double min_bg, border[5], min_qual;
-			matd emission, transition;
+			smatd emission, transition;
 
 			scnv_param();
 			scnv_param(const scnv_param& p);

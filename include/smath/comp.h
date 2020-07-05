@@ -46,7 +46,7 @@ namespace slib {
             bool isImaginary() const;
             bool isReal() const;
             
-            String precised(size_t size, smath::ROUND round = smath::DEFAULT) const;
+            String rounded(size_t size, smath::ROUND rnd = smath::DEFAULT) const;
             String toString() const;
             
             bool operator < (const Complex &c) const;
@@ -216,10 +216,10 @@ namespace slib {
         template<typename T>
         bool Complex<T>::isReal() const { return imaginary == 0.0f; }
         template<typename T>
-        String Complex<T>::precised(size_t size, smath::ROUND omit) const {
+        String Complex<T>::rounded(size_t size, smath::ROUND rnd) const {
             String str1, str2;
             double tmp1 = real*smath::power(10, size), tmp2 = imaginary*smath::power(10, size);
-            switch (omit) {
+            switch (rnd) {
                 case FLOOR:
                     str1 = std::to_string((int)tmp1);
                     str2 = std::to_string((int)tmp2);

@@ -1,7 +1,7 @@
 #ifndef SLIB_SSCIENCE_H
 #define SLIB_SSCIENCE_H
 
-#include "sobj.h"s
+#include "sobj.h"
 
 namespace slib {
 	namespace ssci {
@@ -9,8 +9,7 @@ namespace slib {
 		class SDataFrame : public STable {
 
 		public:
-			SDataFrame();
-			~SDataFrame();
+			
 
 
 

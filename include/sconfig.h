@@ -13,13 +13,13 @@ extern "C" {
 }
 #ifndef SLIB_DLL
 #ifdef LOAD_STATIC_LIB
-#define SLIB_DLL
+#define SLIB_DLL  
 #elif defined(USE_SLIB_DLL)
 #define SLIB_DLL __declspec(dllimport)
 #elif defined(_WINDLL)
 #define SLIB_DLL __declspec(dllexport)
 #else
-#define SLIB_DLL
+#define SLIB_DLL  
 #endif
 #endif
 

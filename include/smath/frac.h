@@ -40,7 +40,7 @@ namespace slib {
 			int floatValue() const;
 			int doubleValue() const;
 
-            String precised(size_t size, smath::ROUND round = smath::DEFAULT) const;
+            String rounded(size_t size, smath::ROUND rnd = smath::DEFAULT) const;
             String toString() const;
             
             bool operator < (int t) const;
@@ -199,12 +199,12 @@ namespace slib {
 		template<typename T>
 		int Fraction<T>::doubleValue() const { return (double)numerator / denominator; }
         template<typename T>
-        String Fraction<T>::precised(size_t size, smath::ROUND round) const {
+        String Fraction<T>::rounded(size_t size, smath::ROUND rnd) const {
             if (!denominator) return "NaN";
             bool neg = false;
             auto tmp = (double)numerator*smath::power(10, size)/denominator;
             String str;
-            switch (round) {
+            switch (rnd) {
                 case smath::FLOOR:
                     str = std::to_string((int)tmp);
                     break;

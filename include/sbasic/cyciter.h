@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SLIB_CYCITER_H
+#define SLIB_CYCITER_H
 
 #include "sconfig.h"
 
@@ -239,3 +240,5 @@ template<typename T>
 bool SCycleCIterator<T>::operator >(const SCycleCIterator<T>& cit) const { return true; }
 template<typename T>
 bool SCycleCIterator<T>::operator >=(const SCycleCIterator<T>& cit) const { return true; }
+
+#endif

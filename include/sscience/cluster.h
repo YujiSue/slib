@@ -1,7 +1,8 @@
-#ifndef SSCI_SCLUSTER_H
-#define SSCI_SCLUSTER_H
+#ifndef SSCI_CLUSTER_H
+#define SSCI_CLUSTER_H
 
 #include "smath/smath.h"
+#include "sbasic/ptr.h"
 
 using namespace slib;
 using namespace slib::smath;
@@ -39,8 +40,9 @@ namespace slib {
 				c += elements[1]->count();
 				return c;
 			}
-
 		};
+		using sclusterp = Pointer<scluster>;
+
 		inline void clusterIndex(sint i, sint n, sint *c) {
 			sforin(r, 0, n) {
 				if (n - r - 1 <= i) i -= (n - r - 1);
@@ -72,12 +74,11 @@ namespace slib {
 			}
 		}
 		template<typename T, class M>
-		extern inline void LWUpdate(sint c1, sint c2, voidarray &root, svecd &dist, svecd &newdist, HCLUSTER_METHOD method) {
+		extern inline void LWUpdate(sint c1, sint c2, Array<sclusterp> &root, svecd &dist, svecd &newdist, HCLUSTER_METHOD method) {
 			double a[4];
 			double d = dist[distIndex(c1, c2, root.size())];
 			auto size = root.size();
 			if (1 < size) {
-				//svecd tmp((size-1) * (size - 2) / 2, 0.0);
 				switch (method)
 				{
 				case SINGLE_LINK:
@@ -90,7 +91,7 @@ namespace slib {
 					break;
 				case GROUP_AVERAGE:
 				{
-					auto n1 = ((scluster*)root[c1])->count(), n2 = ((scluster*)root[c2])->count();
+					auto n1 = root[c1]->count(), n2 = root[c2]->count();
 					a[0] = (double)n1 / (n1 + n2); a[1] = (double)n2 / (n1 + n2); a[2] = 0.0; a[3] = 0.0;
 					distUpdate(a, d, c1, c2, root.size(), dist, newdist.ptr());
 					break;
@@ -98,7 +99,7 @@ namespace slib {
 				case WARD:
 				{
 					auto ptr = newdist.ptr();
-					auto n1 = ((scluster*)root[c1])->count(), n2 = ((scluster*)root[c2])->count();
+					auto n1 = root[c1]->count(), n2 = root[c2]->count();
 					sforin(i, 0, size) {
 						if (i == c1 || i == c2) continue;
 						sforin(j, i + 1, size) {
@@ -106,7 +107,7 @@ namespace slib {
 							*ptr = dist[distIndex(i, j, size)];
 							++ptr;
 						}
-						auto n3 = ((scluster*)root[i])->count();
+						auto n3 = root[i]->count();
 						a[0] = (double)(n1 + n3) / (n1 + n2 + n3);
 						a[1] = (double)(n2 + n3) / (n1 + n2 + n3);
 						a[2] = (double)(-n3) / (n1 + n2 + n3);
@@ -123,7 +124,7 @@ namespace slib {
 				}
 				dist.swap(newdist);
 			}
-			scluster* sc = new scluster((scluster*)root[c1], (scluster*)root[c2], d);
+			scluster* sc = new scluster(root[c1], root[c2], d);
 			root.add(sc);
 			root.removeAt(c2);
 			root.removeAt(c1);
@@ -134,13 +135,13 @@ namespace slib {
 		}
 
 		template<typename T, class M>
-		extern inline void hcluster(svec<svec<T, M>>& data, voidarray &clusters, HCLUSTER_METHOD method = WARD,
+		extern inline void hcluster(svec<svec<T, M>>& data, Array<sclusterp> &clusters, HCLUSTER_METHOD method = WARD,
 			std::function<double(svec<T, M>&, svec<T, M>&)> distance = EuclidDist<T, M>) {
 			svecd dist(data.size() * (data.size() - 1) / 2, 0.0), newdist;
 			sint integrate[2];
 			auto dp = dist.ptr();
 			sforin(i, 0, data.size()-1) {
-				clusters.add(new scluster(i));
+				clusters.add(i);
 				sforin(j, i + 1, data.size()) {
 					*dp = distance(data[i], data[j]); ++dp;
 				}
@@ -244,9 +245,6 @@ namespace slib {
 		}
 	}
 }
-
-
-
 
 #endif
 

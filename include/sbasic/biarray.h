@@ -1,5 +1,5 @@
-#ifndef __SLIB_BIARRAY_H__
-#define __SLIB_BIARRAY_H__
+#ifndef SLIB_BIARRAY_H
+#define SLIB_BIARRAY_H
 
 #include "sbasic/array.h"
 

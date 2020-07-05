@@ -18,8 +18,8 @@ namespace slib {
             sushort seq_type;
             sshort align_length;
             String method, score_name;
-            matb score_table;
-            matb compare_table;
+            smatb score_table;
+            smatb compare_table;
             
             salign_param(subyte t = MISC_SEQ);
             ~salign_param();

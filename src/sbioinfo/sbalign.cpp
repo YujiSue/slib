@@ -4,8 +4,8 @@ using namespace slib;
 using namespace slib::smath;
 using namespace slib::sbio;
 
-inline void dnascore(matb &table, sbyte pm, sbyte am, sbyte mm, sbyte gp, sbyte gs) {
-    table = matb(16, 16, {
+inline void dnascore(smatb &table, sbyte pm, sbyte am, sbyte mm, sbyte gp, sbyte gs) {
+    table = smatb(16, 16, {
         ///// -  A  C  M  G  R  S  V  T  W  Y  H  K  D  B  N
         /*-*/gs,gp,gp,gp,gp,gp,gp,gp,gp,gp,gp,gp,gp,gp,gp,gp,
         /*A*/gp,pm,mm,am,mm,am,mm,am,mm,am,mm,am,mm,am,mm,am,
@@ -25,8 +25,8 @@ inline void dnascore(matb &table, sbyte pm, sbyte am, sbyte mm, sbyte gp, sbyte 
         /*N*/gp,am,am,am,am,am,am,am,am,am,am,am,am,am,am,am
     });
 }
-inline void rnascore(matb &table, sbyte pm, sbyte am, sbyte mm, sbyte gp, sbyte gs) {
-    table = matb(16, 16, {
+inline void rnascore(smatb &table, sbyte pm, sbyte am, sbyte mm, sbyte gp, sbyte gs) {
+    table = smatb(16, 16, {
         ///// -  A  C  G  T  N
         /*-*/gs,gp,gp,gp,gp,gp,
         /*A*/gp,pm,mm,mm,mm,am,
@@ -36,15 +36,15 @@ inline void rnascore(matb &table, sbyte pm, sbyte am, sbyte mm, sbyte gp, sbyte 
         /*N*/gp,am,am,am,am,am
     });
 }
-inline void aascore(matb &table, const SString &name) {
-    table = matb(26, 26);
+inline void aascore(smatb &table, const SString &name) {
+    table = smatb(26, 26);
     if (name.beginWith("BROSSUM")) {
 		/*
 		*/
     }
 }
-inline void dnacompare(matb &table) {
-    table = matb(16, 16, {
+inline void dnacompare(smatb &table) {
+    table = smatb(16, 16, {
         /////N A C M G R S V T W Y H K D B N
         /*N*/7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
         /*A*/0,7,8,0,8,0,8,0,8,0,8,0,8,0,8,0,

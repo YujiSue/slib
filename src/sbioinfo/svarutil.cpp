@@ -90,7 +90,7 @@ scnv_param::scnv_param() {
 	border[3] = DEFAULT_HOMO_DUPCP;
 	border[4] = DEFAULT_MULCP;
 	min_qual = DEFAULT_MIN_QUAL;
-	emission = matd(6, 6, 
+	emission = smatd(6, 6, 
 		{
 			1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
@@ -99,7 +99,7 @@ scnv_param::scnv_param() {
 			0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
 			0.0, 0.0, 0.0, 0.0, 0.0, 1.0
 		});
-	transition = matd(6, 6,
+	transition = smatd(6, 6,
 		{
 			0.5, 0.0, 0.5, 0.0, 0.0, 0.0,
 			0.0, 0.5, 0.5, 0.0, 0.0, 0.0,
