@@ -1730,8 +1730,8 @@ String SNumber::precised(size_t size, smath::ROUND round) const {
         }
         return str;
     }
-    else if(_type == SNumber::FRAC) return fraction().precised(size, round);
-    else if (_type == SNumber::COMPLEX) return complex().precised(size, round);
+    else if(_type == SNumber::FRAC) return fraction().rounded(size, round);
+    else if (_type == SNumber::COMPLEX) return complex().rounded(size, round);
     else return toString();
 }
 String SNumber::toWideString() const {
