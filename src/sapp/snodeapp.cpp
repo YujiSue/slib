@@ -3,6 +3,8 @@
 using namespace slib;
 using namespace slib::sapp;
 
+#ifdef SNODE_APP
+
 bool SNodeUtil::nodeInstalled() {
 	String result;
 	SSystem::exec("node -v", result);
@@ -334,3 +336,5 @@ sobj SNodeUtil::toObj(napi_env env, napi_value val) {
 	}
 	return obj;
 }
+
+#endif

@@ -29,8 +29,8 @@ namespace slib {
 		constexpr sushort PLIST = 0x0011;
 		constexpr sushort SVG = 0x0021;
 
-		extern inline void encodeXML(String& str);
-		extern inline void decodeXML(String& str);
+		extern void encodeXML(String& str);
+		extern void decodeXML(String& str);
 
 	}
         

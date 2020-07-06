@@ -5,14 +5,14 @@ using namespace slib;
 using namespace slib::sio;
 using namespace slib::smedia;
 
-inline void xml::encodeXML(String &str) {
+void slib::xml::encodeXML(String &str) {
     str.replace("&", "&amp;");
 	str.replace("\"", "&quot;");
 	str.replace("\'", "&apos;");
 	str.replace("<", "&lt;");
 	str.replace(">", "&gt;");
 }
-inline void xml::decodeXML(String& str) {
+void slib::xml::decodeXML(String& str) {
 	str.replace("&quot;", "\"");
 	str.replace("&apos;", "\'");
 	str.replace("&lt;", "<");
