@@ -29,12 +29,12 @@ namespace slib {
 		constexpr int UNIQUE_COLUMN = 0x2000;
 		constexpr int AUTO_INCREMENT_COLUMN = 0x4000;
 
-		extern String colTypeName(int type);
-		extern String colInfo(const sobj& col);
-		extern String colInfos(const SArray& cols);
-		extern String colNames(const SArray& cols);
-		extern String escaped(const char* que);
-		extern String value(sobj obj, bool like = true, subyte match = 0);
+		extern SLIB_DLL String colTypeName(int type);
+		extern SLIB_DLL String colInfo(const sobj& col);
+		extern SLIB_DLL String colInfos(const SArray& cols);
+		extern SLIB_DLL String colNames(const SArray& cols);
+		extern SLIB_DLL String escaped(const char* que);
+		extern SLIB_DLL String value(sobj obj, bool like = true, subyte match = 0);
 
 		inline void addConditionQuery(String& que) {}
 		template <class First, class... Args>
@@ -48,22 +48,22 @@ namespace slib {
 			addConditionQuery(query, args...);
 			return query;
 		}
-		extern String condQue(const sobj& conds, bool join = false);
-		extern String caseBy(const char* name, const sattribute& attr, const char* exception, const char* as);
-		extern String caseQue(const sobj& obj);
-		extern String order(const Array<std::pair<String, ORDER>>& orders);
-		extern String orderQue(const sobj& orders);
-		extern String limit(int l, int o = -1);
-		extern String limitQue(const sobj& obj);
-		extern String strListQue(const stringarray& list);
-		extern String intListQue(const intarray& list);
-		extern String listQue(const sobj& obj);
-		extern String joinQue(const char* tbl, const sobj& obj);
-		extern String selectQue(const char* tbl, const SDictionary& obj);
-		extern String selectQuery(const char* name, const stringarray& cols = { "*" },
+		extern SLIB_DLL String condQue(const sobj& conds, bool join = false);
+		extern SLIB_DLL String caseBy(const char* name, const sattribute& attr, const char* exception, const char* as);
+		extern SLIB_DLL String caseQue(const sobj& obj);
+		extern SLIB_DLL String order(const Array<std::pair<String, ORDER>>& orders);
+		extern SLIB_DLL String orderQue(const sobj& orders);
+		extern SLIB_DLL String limit(int l, int o = -1);
+		extern SLIB_DLL String limitQue(const sobj& obj);
+		extern SLIB_DLL String strListQue(const stringarray& list);
+		extern SLIB_DLL String intListQue(const intarray& list);
+		extern SLIB_DLL String listQue(const sobj& obj);
+		extern SLIB_DLL String joinQue(const char* tbl, const sobj& obj);
+		extern SLIB_DLL String selectQue(const char* tbl, const SDictionary& obj);
+		extern SLIB_DLL String selectQuery(const char* name, const stringarray& cols = { "*" },
 			const char* condition = nullptr, const char* order = nullptr,
 			const char* limit = nullptr, bool distinct = false);
-		extern String joinedSelectQuery(subyte type, const char* name1, const char* name2,
+		extern SLIB_DLL String joinedSelectQuery(subyte type, const char* name1, const char* name2,
 			const char* join, const stringarray& cols = { "*" },
 			const char* condition = nullptr, const char* order = nullptr,
 			const char* limit = nullptr, bool distinct = false);

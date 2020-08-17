@@ -8,9 +8,7 @@
 #endif
 
 #ifndef SAPP_DLL
-#if defined(USE_SAPP_DLL)
-#define SAPP_DLL __declspec(dllimport)
-#elif defined(_WINDLL)
+#if defined(_WINDLL)
 #define SAPP_DLL __declspec(dllexport)
 #else
 #define SAPP_DLL  
@@ -32,18 +30,13 @@ namespace slib {
 		constexpr suint SINGLE_VIEW_UI = 0x0010;
 		constexpr suint MULTI_VIEW_UI = 0x0020;
 
-		constexpr suint USE_CV = 0x0100;
-		constexpr suint USE_GL = 0x0200;
-		constexpr suint USE_NODE = 0x0400;
-		constexpr suint USE_CEF = 0x0800;
+		typedef enum {
+			FILE_OUT = 1,
+			STD_OUT = 2,
+			ALERT = 4,
+			ERROR_LOG = 8,
+		} LOGGER_MODE;
 
-		#define SLIB_LOG_CODE 0x01
-
-		#define SLIB_LAUNCH_CODE 0x0A
-		#define SLIB_TERMINATE_CODE 0x0B
-
-		#define SLIB_WARNING_CODE 0x0E
-		#define SLIB_ERROR_CODE 0x0F
 
         #define SAPP_ERROR 0x0A00
         #define SAPP_ERROR_EXIT 0x0A01
@@ -54,10 +47,9 @@ namespace slib {
         #define COMMAND_NOT_EXIST_ERROR 0x0A13
         #define OPTION_NOT_EXIST_ERROR 0x0A14
 
-        
         #define PLUGIN_LOAD_ERROR 0x0A21
-        #define PLUGIN_EXEC_ERROR 0x0A22
-        #define PLUGIN_NOT_EXIST_ERROR 0x0A23
+		#define PLUGIN_FUNC_LOAD_ERROR 0x0A22
+        #define PLUGIN_EXEC_ERROR 0x0A23
         
         #define SAPP_LAUNCH 0x0AF0
         #define SAPP_TERMINATE 0x0AF1
@@ -104,7 +96,106 @@ namespace slib {
             SApp(SDictionary &&prof);
             virtual ~SApp();
         };
-        
+
+#ifndef splugin
+#ifdef _WINDLL
+#define splugin extern "C" int
+#else
+#define splugin extern int
+#endif
+#endif
+		
+		template<typename... Args>
+		class SPlugIn {
+			typedef int (*Func)(Args...);
+		private:
+			Func _func;
+
+#ifdef WIN_OS
+			HMODULE _dll;
+			FARPROC _proc;
+#else
+			void* _lib;
+#endif
+
+		public:
+			SPlugIn() {
+#ifdef WIN_OS
+				_dll = NULL;
+				_proc = NULL;
+#else
+				_lib = nullptr;
+#endif
+			}
+			SPlugIn(const char* lib) {
+#ifdef WIN_OS
+#ifdef UNICODE
+				wchar_t wtemp[256];
+				auto upath = String(lib).unicode();
+				memcpy(wtemp, upath.c_str(), upath.length() * sizeof(wchar_t));
+				wtemp[upath.length()] = '\0';
+				_dll = LoadLibrary(wtemp);
+#else
+				char ctemp[256];
+				auto upath = String(lib).localize();
+				memcpy(ctemp, upath.cstr(), upath.length() * sizeof(wchar_t));
+				ctemp[upath.length()] = '\0';
+				_dll = LoadLibrary(ctemp);
+#endif
+
+				if (_dll == NULL) throw SAppException(ERR_INFO, PLUGIN_LOAD_ERROR);				
+#else
+				_lib = dlopen(lib, RTLD_LAZY);
+				if (_lib == NULL) throw SAppException(ERR_INFO, SAPP_ERROR);
+#endif
+			}
+			SPlugIn(const char* lib, const char *f) {
+#ifdef WIN_OS
+#ifdef UNICODE
+				wchar_t wtemp[256];
+				auto upath = String(lib).unicode();
+				memcpy(wtemp, upath.c_str(), upath.length()*sizeof(wchar_t));
+				wtemp[upath.length()] = '\0';
+				_dll = LoadLibrary(wtemp);
+#else
+				char ctemp[256];
+				auto upath = String(lib).localize();
+				memcpy(ctemp, upath.cstr(), upath.length() * sizeof(wchar_t));
+				ctemp[upath.length()] = '\0';
+				_dll = LoadLibrary(ctemp);
+#endif
+
+				if (_dll == NULL) throw SAppException(ERR_INFO, PLUGIN_LOAD_ERROR);
+				_proc = GetProcAddress(_dll, f);
+				if (_proc == NULL) throw SAppException(ERR_INFO, PLUGIN_FUNC_LOAD_ERROR);
+				_func = reinterpret_cast<Func>(_proc);
+#else
+				_lib = dlopen(lib, RTLD_LAZY);
+				if (_lib == NULL) throw SAppException(ERR_INFO, SAPP_ERROR);
+				_func = (Ret (*)(const SSet<Args...> &))dlsym(_lib, f);
+				if (_func == NULL) throw SAppException(ERR_INFO, SAPP_ERROR);
+#endif
+			}
+			~SPlugIn() {
+#ifdef WIN_OS
+				if (_dll != NULL) FreeLibrary(_dll);
+#else
+				if (_lib) dlclose(_lib);
+#endif
+			}
+			void call(const char* func) {
+#ifdef WIN_OS
+				_proc = GetProcAddress(_dll, func);
+				if (_proc == NULL) throw SAppException(ERR_INFO, PLUGIN_FUNC_LOAD_ERROR);
+				_func = reinterpret_cast<Func>(_proc);
+#else
+				_func = (Ret(*)(const SSet<Args...>&))dlsym(_lib, f);
+				if (_func == NULL) throw SAppException(ERR_INFO, SAPP_ERROR);
+#endif
+			}
+			int exec(Args... args) { return (*_func)(args...); }
+			int operator()(Args... args) { return (*_func)(args...); }
+		};
     }
 }
 

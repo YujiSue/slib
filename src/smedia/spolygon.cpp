@@ -107,7 +107,7 @@ void SCalligraphy::setText(const char *s) {
 	addVertex(v2f(init.x + w, init.y));
 }
 void SCalligraphy::setFont(const char *font, float size) {
-    _attribute = text_style(sstyle::PLAIN, font, size, SColor::BLACK, SColor::CLEAR);
+    _attribute = text_style(slib::sstyle::PLAIN, font, size, color::BLACK, color::CLEAR);
     v2f init = _vertex[0];
     _vertex.clear();
 	auto w = _strWidth(_text, _attribute.size);
@@ -133,7 +133,7 @@ String SCalligraphy::getClass() const {
 }
 String SCalligraphy::toString() const {
     String str = getClass()+":";
-    str<<String::DQUOT<<_text<<String::DQUOT;
+	str << DQUOT << _text << DQUOT;
     return str;
 }
 SObject *SCalligraphy::clone() const { return new SCalligraphy(*this); }

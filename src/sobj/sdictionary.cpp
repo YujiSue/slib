@@ -26,12 +26,7 @@ SDictionary::SDictionary(const char *s, const char *sep, const char *part) : SDi
 SDictionary::SDictionary(const sindex &idx) : SDictionary() { sforeach(idx) set(it->key, it->value); }
 SDictionary::SDictionary(const sattribute &attr) : SDictionary() {
     if(attr.empty()) return;
-    sforeach(attr) {
-        if(it->value == "null") set(it->key, snull);
-        else if(it->value.isQuoted()) set(it->key, SString::dequot(it->value));
-        else if(it->value.isNumeric()) set(it->key, it->value.number());
-        else set(it->key, it->value);
-    }
+    sforeach(attr) set(E_.key, sobj::toSObj(E_.value));
 }
 SDictionary::SDictionary(const sobj &obj) : SDictionary(obj.dict()) {}
 SDictionary::SDictionary(const SDictionary &dict) : SObject(), Map<String, sobj>(dict) {}
@@ -49,7 +44,13 @@ SDictionary& SDictionary::operator=(SDictionary&& dic) { swap(dic); return *this
 void SDictionary::load(const char *path) {
     if(!empty()) clear();
     auto ext = SFile(path).extension();
-    if (ext == "plist") {
+	if (ext == "sobj") {
+		sio::SFile file(path, sio::READ);
+		sdict dict;
+		file.readSObject(dict);
+		*this = dict;
+	}
+	else if (ext == "plist") {
         SXmlDoc doc;
         doc.load(path);
         auto node = doc.entity()->children().first();
@@ -65,7 +66,11 @@ void SDictionary::load(const char *path) {
 }
 void SDictionary::save(const char *path) {
     auto ext = SFile(path).extension();
-    if (ext == "plist") {
+	if (ext == "sobj") {
+		sio::SFile file(path, sio::CREATE);
+		file.writeSObject(*this);
+	}
+	else if (ext == "plist") {
         SXmlDoc doc(xml::PLIST);
         doc.addToEntity(SXmlNode::plistNode(*this));
         doc.save(path);

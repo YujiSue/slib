@@ -79,7 +79,7 @@ namespace slib {
 			const SBrush &brush() const;
 			const SStroke &stroke() const;
             
-            void setOrigin(smath::sgeom::ORIGIN ori);
+            void setOrigin(sgeom::ORIGIN ori);
 			void setScale(v2f v);
             void setTranslate(v2f v);
             void setSkew(v2f v);
@@ -119,7 +119,7 @@ namespace slib {
 				SNode<SFigure, FIGURE_OBJ>::addChild(fig_);
 				_resetBoundary(); _updateBoundary();
 			}
-            virtual slib::smath::v2f center() const;
+            virtual v2f center() const;
             virtual double length() const;
             virtual double area() const;
             virtual bool include(v2f v) const;
@@ -134,8 +134,8 @@ namespace slib {
         
         class SLIB_DLL SCanvas : public SDocument<SFigure> {
         protected:
-			v2i _size;
-			sarea _frame;
+			v2f _size;
+			sareaf _frame;
 			SColor _background;
 			SPaint _paint;
 
@@ -157,55 +157,55 @@ namespace slib {
             size_t width() const;
             size_t height() const;
 			v2i size() const;
-            sarea frame() const;
+            sareaf frame() const;
             const SColor &background() const;
             void resize(size_t w, size_t h);
             void setBackGround(const SColor &col);
-            void setFrame(sarea area);
+            void setFrame(sareaf area);
             
             void setPaint(const SPaint &paint);
 
 			template<class... Args>
 			void drawPoint(Args... args) {
-				addFigure(spoint2d(args...));
+				drawFigure(spoint2d(args...));
 			}
 			template<class... Args>
 			void drawLine(Args... args) {
-				addFigure(sline2d(args...));
+				drawFigure(sfig(dynamic_cast<SFigure *>(new SLine2D(args...))));
 			}
 			template<class... Args>
             void drawPath(Args... args) {
-				addFigure(spath2d(args...));
+				drawFigure(sfig(dynamic_cast<SFigure*>(new SPath2D(args...))));
 			}
 			template<class... Args>
             void drawRect(Args... args) {
-				addFigure(srect(args...));
+				drawFigure(sfig(dynamic_cast<SFigure*>(new SRectangle(args...))));
 			}
 			template<class... Args>
 			void drawPolygon(Args... args) {
-				addFigure(spolygon(args...));
+				drawFigure(sfig(dynamic_cast<SFigure*>(new SPolygon(args...))));
 			}
 			template<class... Args>
 			void drawEllipse(Args... args) {
-				addFigure(sellipse(args...));
+				drawFigure(sfig(dynamic_cast<SFigure*>(new SEllipse(args...))));
 			}
-			template<class... Args>
-			void drawCircle(Args... args) {
-				addFigure(scircle(args...));
-			}
+			//template<class... Args>
+			//void drawCircle(Args... args) {
+			//	drawFigure(scircle(args...));
+			//}
 			template<class... Args>
 			void drawArc(Args... args) {
-				addFigure(sarc(args...));
+				drawFigure(sfig(dynamic_cast<SFigure*>(new SArc(args...))));
 			}
 			template<class... Args>
 			void drawPict(Args... args) {
-				addFigure(spict(args...));
+				drawFigure(sfig(dynamic_cast<SFigure*>(new SPicture(args...))));
 			}
 			template<class... Args>
 			void drawText(Args... args) {
-				addFigure(scalligraphy(args...));
+				drawFigure(sfig(dynamic_cast<SFigure*>(new SCalligraphy(args...))));
 			}
-			void addFigure(sfig fig);
+			void drawFigure(sfig fig);
             
             String getClass() const;
             String toString() const;
@@ -230,7 +230,7 @@ namespace slib {
             void setShape(sushort s);
             void setSize(float f);
             
-            slib::smath::v2f center() const;
+            v2f center() const;
             double length() const;
             double area() const;
             
@@ -254,7 +254,7 @@ namespace slib {
             void setDotLine(intarray &i);
             void setBrokenLine(intarray &i);
             
-            slib::smath::v2f center() const;
+            v2f center() const;
             double length() const;
             double area() const;
             
@@ -392,7 +392,7 @@ namespace slib {
             SPolygon(const SPolygon &poly);
             ~SPolygon();
             
-            slib::smath::v2f center() const;
+            v2f center() const;
             double length() const;
             double area() const;
             //bool include(v2f v) const;

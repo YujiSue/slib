@@ -24,7 +24,7 @@ float SPoint2D::size() const { return _size; }
 void SPoint2D::setShape(sushort s) { _shape = s; }
 void SPoint2D::setSize(float f) { _size = f; }
 
-slib::smath::v2f SPoint2D::center() const { return _vertex[0]; }
+v2f SPoint2D::center() const { return _vertex[0]; }
 double SPoint2D::length() const { return 0.0f; }
 double SPoint2D::area() const { return 0.0f; }
 
@@ -54,15 +54,15 @@ SLine2D::SLine2D(const SLine2D &l) : SFigure(l) {}
 SLine2D::~SLine2D() {}
 
 void SLine2D::setStraightLine() {
-    _paint.stroke.type = sstyle::SOLID_LINE;
+    _paint.stroke.type = slib::sstyle::SOLID_LINE;
     _paint.stroke.interval.clear();
 }
 void SLine2D::setDotLine(intarray &i) {
-    _paint.stroke.type = sstyle::DOT_LINE;
+    _paint.stroke.type = slib::sstyle::DOT_LINE;
     _paint.stroke.interval = i;
 }
 void SLine2D::setBrokenLine(intarray &i) {
-    _paint.stroke.type = sstyle::DASHED_LINE;
+    _paint.stroke.type = slib::sstyle::DASHED_LINE;
     _paint.stroke.interval = i;
 }
 
@@ -79,7 +79,7 @@ String SLine2D::getClass() const {
     return "line";
 }
 String SLine2D::toString() const {
-    String str = getClass();+":{";
+	String str = getClass() + ":{";
     return str<<"("<<_vertex[0].x<<","<<_vertex[0].y<<"),("<<_vertex[1].x<<","<<_vertex[1].y<<")}";
 }
 SObject *SLine2D::clone() const { return new SLine2D(*this); }

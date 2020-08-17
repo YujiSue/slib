@@ -16,14 +16,10 @@ String SSystem::charCode() {
 String SSystem::userName() {
 	String name;
 #ifdef  WIN_OS
-#ifdef _MANAGED
-	//System::Environment::UserName
-#else
 	DWORD size = 4096;
 	TCHAR buf[4096];
 	GetUserName(buf, &size);
 	name = String::toUTF8(buf);
-#endif
 #else
 	char buf[4096];
 	getlogin_r(buf, 4096);

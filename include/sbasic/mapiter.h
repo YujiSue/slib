@@ -3,8 +3,10 @@
 
 #include "sconfig.h"
 
-namespace slib {
+#define smap_iter slib::SMapIterator
+#define smap_citer slib::SMapCIterator
     
+namespace slib {
 	template<class Key, class Val>
 	class Map;
 
@@ -18,14 +20,10 @@ namespace slib {
         kvpair(const std::pair<Key, Val> &pair);
         kvpair(const kvpair &pair);
         ~kvpair();
-        
         kvpair &operator=(const kvpair &pair);
     };
-    
     template<class Key, class Val>
     struct map_data {
-
-    public:
 		bool filled;
 		subyte data[sizeof(kvpair<Key, Val>)];
         map_data *next;
@@ -33,7 +31,6 @@ namespace slib {
         map_data();
         map_data(const map_data &dat);
         ~map_data();
-
         map_data &operator=(const map_data &dat);
 		kvpair<Key, Val>& pair();
 		const kvpair<Key, Val>& pair() const;
@@ -41,10 +38,6 @@ namespace slib {
 		void release();
 		void insert(map_data* dat);
     };
-    
-    #define smap_iter SMapIterator
-    #define smap_citer SMapCIterator
-    
     template<class Key, class Val>
     class SMapIterator {
 		friend Map<Key, Val>;
@@ -63,7 +56,6 @@ namespace slib {
         SMapIterator(const SMapIterator &it);
         ~SMapIterator();
         SMapIterator& operator=(const SMapIterator &it);
-        
         reference operator*();
         pointer operator->();
         reference operator[](std::ptrdiff_t diff);
@@ -76,7 +68,6 @@ namespace slib {
         bool operator ==(const SMapIterator &it) const;
         bool operator !=(const SMapIterator &it) const;
     };
-    
     template<class Key, class Val>
     class SMapCIterator {
 		friend Map<Key, Val>;
@@ -95,7 +86,6 @@ namespace slib {
         SMapCIterator(const SMapCIterator &it);
         ~SMapCIterator();
         SMapCIterator& operator=(const SMapCIterator &it);
-        
         reference operator *();
         pointer operator ->();
         reference operator [](std::ptrdiff_t diff);
@@ -127,7 +117,7 @@ namespace slib {
     
     /*============================================================*/
     template<class Key, class Val>
-	map_data<Key, Val>::map_data() : filled(false) { next = this + 1; }
+	map_data<Key, Val>::map_data() : filled(false), next(nullptr) { next = this + 1; }
     template<class Key, class Val>
     map_data<Key, Val>::map_data(const map_data<Key, Val> &dat) : map_data() {
 		filled = dat.filled; next = dat.next; 
@@ -142,21 +132,21 @@ namespace slib {
 		return *this;
     }
 	template<class Key, class Val>
-	kvpair<Key, Val>& map_data<Key, Val>::pair() { return *reinterpret_cast<kvpair<Key, Val>*>(&data[0]); }
+	inline kvpair<Key, Val>& map_data<Key, Val>::pair() { return *reinterpret_cast<kvpair<Key, Val>*>(&data[0]); }
 	template<class Key, class Val>
-	const kvpair<Key, Val>& map_data<Key, Val>::pair() const { return *reinterpret_cast<const kvpair<Key, Val>*>(&data[0]); }
+	inline const kvpair<Key, Val>& map_data<Key, Val>::pair() const { return *reinterpret_cast<const kvpair<Key, Val>*>(&data[0]); }
 	template<class Key, class Val>
-	void map_data<Key, Val>::init(const Key& k) {
+	inline void map_data<Key, Val>::init(const Key& k) {
 		filled = true;
 		new(reinterpret_cast<kvpair<Key, Val>*>(&data[0])) kvpair<Key, Val>(k, Val());
 	}
 	template<class Key, class Val>
-	void map_data<Key, Val>::release() {
+	inline void map_data<Key, Val>::release() {
 		filled = false;
 		(reinterpret_cast<kvpair<Key, Val>*>(&data[0]))->~kvpair<Key, Val>();
 	}
 	template<class Key, class Val>
-	void map_data<Key, Val>::insert(map_data* dat) { dat->next = next; next = dat; }
+	inline void map_data<Key, Val>::insert(map_data* dat) { dat->next = next; next = dat; }
     /*============================================================*/
     template<class Key, class Val>
     SMapIterator<Key, Val>::SMapIterator(map_data<Key, Val> *p) : _ptr(p) {
@@ -169,29 +159,29 @@ namespace slib {
     template<class Key, class Val>
     SMapIterator<Key, Val> &SMapIterator<Key, Val>::operator=(const SMapIterator &it) { _ptr = it._ptr; return *this; }
     template<class Key, class Val>
-    kvpair<Key, Val> &SMapIterator<Key, Val>::operator*() { return _ptr->pair(); }
+	inline kvpair<Key, Val> &SMapIterator<Key, Val>::operator*() { return _ptr->pair(); }
     template<class Key, class Val>
-    kvpair<Key, Val> *SMapIterator<Key, Val>::operator ->() { return reinterpret_cast<kvpair<Key, Val>*>(_ptr->data); }
+	inline kvpair<Key, Val> *SMapIterator<Key, Val>::operator ->() { return reinterpret_cast<kvpair<Key, Val>*>(_ptr->data); }
     template<class Key, class Val>
-    kvpair<Key, Val> &SMapIterator<Key, Val>::operator[](std::ptrdiff_t diff) { sforin(i, 0, diff) ++(*this); return _ptr->pair(); }
+	inline kvpair<Key, Val> &SMapIterator<Key, Val>::operator[](std::ptrdiff_t diff) { sforin(i, 0, diff) ++(*this); return _ptr->pair(); }
     template<class Key, class Val>
-    SMapIterator<Key, Val> &SMapIterator<Key, Val>::operator ++() {
+	inline SMapIterator<Key, Val> &SMapIterator<Key, Val>::operator ++() {
         if (_ptr->next) { do { _ptr = _ptr->next; } while (_ptr->next && !_ptr->filled); } return *this;
     }
     template<class Key, class Val>
-    SMapIterator<Key, Val> SMapIterator<Key, Val>::operator ++(int) { return ++SMapIterator(_ptr); }
+	inline SMapIterator<Key, Val> SMapIterator<Key, Val>::operator ++(int) { return ++SMapIterator(_ptr); }
     template<class Key, class Val>
-    SMapIterator<Key, Val> &SMapIterator<Key, Val>::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++(*this); return *this; }
+	inline SMapIterator<Key, Val> &SMapIterator<Key, Val>::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++(*this); return *this; }
     template<class Key, class Val>
-    SMapIterator<Key, Val> SMapIterator<Key, Val>::operator +(std::ptrdiff_t diff) { auto it = SMapIterator(_ptr); sforin(i, 0, diff) ++it; return it; }
+	inline SMapIterator<Key, Val> SMapIterator<Key, Val>::operator +(std::ptrdiff_t diff) { auto it = SMapIterator(_ptr); sforin(i, 0, diff) ++it; return it; }
     template<class Key, class Val>
-    void SMapIterator<Key, Val>::swap(SMapIterator it1, SMapIterator it2) { auto temp = it1._ptr; it1._ptr = it2._ptr; it2._ptr = temp; }
+	inline void SMapIterator<Key, Val>::swap(SMapIterator it1, SMapIterator it2) { auto temp = it1._ptr; it1._ptr = it2._ptr; it2._ptr = temp; }
     template<class Key, class Val>
-    bool SMapIterator<Key, Val>::operator <(const SMapIterator<Key, Val> &it) const { return _ptr < it._ptr; }
+	inline bool SMapIterator<Key, Val>::operator <(const SMapIterator<Key, Val> &it) const { return _ptr < it._ptr; }
     template<class Key, class Val>
-    bool SMapIterator<Key, Val>::operator ==(const SMapIterator<Key, Val> &it) const { return _ptr == it._ptr; }
+	inline bool SMapIterator<Key, Val>::operator ==(const SMapIterator<Key, Val> &it) const { return _ptr == it._ptr; }
     template<class Key, class Val>
-    bool SMapIterator<Key, Val>::operator !=(const SMapIterator<Key, Val> &it) const { return _ptr != it._ptr; }
+	inline bool SMapIterator<Key, Val>::operator !=(const SMapIterator<Key, Val> &it) const { return _ptr != it._ptr; }
     
     /*============================================================*/
     template<class Key, class Val>
@@ -205,29 +195,29 @@ namespace slib {
     template<class Key, class Val>
     SMapCIterator<Key, Val> &SMapCIterator<Key, Val>::operator=(const SMapCIterator &it) { _ptr = it._ptr; return *this; }
     template<class Key, class Val>
-    const kvpair<Key, Val> &SMapCIterator<Key, Val>::operator *() { return _ptr->pair(); }
+	inline const kvpair<Key, Val> &SMapCIterator<Key, Val>::operator *() { return _ptr->pair(); }
     template<class Key, class Val>
-    const kvpair<Key, Val> *SMapCIterator<Key, Val>::operator ->() { return reinterpret_cast<const kvpair<Key, Val>*>(_ptr->data); }
+	inline const kvpair<Key, Val> *SMapCIterator<Key, Val>::operator ->() { return reinterpret_cast<const kvpair<Key, Val>*>(_ptr->data); }
     template<class Key, class Val>
-    const kvpair<Key, Val> &SMapCIterator<Key, Val>::operator [](std::ptrdiff_t diff) {  sforin(i, 0, diff) ++(*this); return _ptr->pair(); }
+	inline const kvpair<Key, Val> &SMapCIterator<Key, Val>::operator [](std::ptrdiff_t diff) {  sforin(i, 0, diff) ++(*this); return _ptr->pair(); }
     template<class Key, class Val>
-    SMapCIterator<Key, Val> &SMapCIterator<Key, Val>::operator ++() {
+	inline SMapCIterator<Key, Val> &SMapCIterator<Key, Val>::operator ++() {
 		if (_ptr->next) { do { _ptr = _ptr->next; } while (_ptr->next && !_ptr->filled); } return *this;
     }
     template<class Key, class Val>
-    SMapCIterator<Key, Val> SMapCIterator<Key, Val>::operator ++(int) { return ++SMapCIterator(_ptr); }
+	inline SMapCIterator<Key, Val> SMapCIterator<Key, Val>::operator ++(int) { return ++SMapCIterator(_ptr); }
     template<class Key, class Val>
-    SMapCIterator<Key, Val> &SMapCIterator<Key, Val>::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++(*this); return *this; }
+	inline SMapCIterator<Key, Val> &SMapCIterator<Key, Val>::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++(*this); return *this; }
     template<class Key, class Val>
-    SMapCIterator<Key, Val> SMapCIterator<Key, Val>::operator +(std::ptrdiff_t diff) { auto it = SMapCIterator(_ptr); sforin(i, 0, diff) ++it; return it; }
+	inline SMapCIterator<Key, Val> SMapCIterator<Key, Val>::operator +(std::ptrdiff_t diff) { auto it = SMapCIterator(_ptr); sforin(i, 0, diff) ++it; return it; }
     template<class Key, class Val>
-    void SMapCIterator<Key, Val>::swap(SMapCIterator<Key, Val> it1, SMapCIterator<Key, Val> it2) { auto temp = it1._ptr; it1._ptr = it2._ptr; it2._ptr = temp; }
+	inline void SMapCIterator<Key, Val>::swap(SMapCIterator<Key, Val> it1, SMapCIterator<Key, Val> it2) { auto temp = it1._ptr; it1._ptr = it2._ptr; it2._ptr = temp; }
     template<class Key, class Val>
-    bool SMapCIterator<Key, Val>::operator <(const SMapCIterator<Key, Val> &it) const { return _ptr < it._ptr; }
+	inline bool SMapCIterator<Key, Val>::operator <(const SMapCIterator<Key, Val> &it) const { return _ptr < it._ptr; }
     template<class Key, class Val>
-    bool SMapCIterator<Key, Val>::operator ==(const SMapCIterator<Key, Val> &it) const { return _ptr == it._ptr; }
+	inline bool SMapCIterator<Key, Val>::operator ==(const SMapCIterator<Key, Val> &it) const { return _ptr == it._ptr; }
     template<class Key, class Val>
-    bool SMapCIterator<Key, Val>::operator !=(const SMapCIterator<Key, Val> &it) const { return _ptr != it._ptr; }
+	inline bool SMapCIterator<Key, Val>::operator !=(const SMapCIterator<Key, Val> &it) const { return _ptr != it._ptr; }
 }
 
 #endif

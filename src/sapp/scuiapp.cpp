@@ -25,7 +25,7 @@ inline void outputOp(sobj &option, sobj &list, bool op) {
 	else if (!lop.empty()) std::cout << lop;
 }
 inline void outputSelectOp(sobj &option, sobj &list) {
-    std::cout<<" ╎ ";
+	std::cout << " ╎ ";
     sforeach(list) {
 		if (E_.string().beginWith("_") || !option.hasKey(E_)) continue;
 		if (option[E_]["type"] == "exec") continue;
@@ -35,7 +35,7 @@ inline void outputSelectOp(sobj &option, sobj &list) {
 		else std::cout << SItalicText((option[E_].hasKey("caption") ? option[E_]["caption"] : "arg")) << " ]";
         if (it < list.end()-1) std::cout<<" or ";
     }
-    std::cout<<" ╎";
+	std::cout << " ╎";
 }
 inline int showUsage(SDictionary &profile, const sobj &cmd) {
     std::cout<<"Usage:"<<std::endl;
@@ -182,12 +182,10 @@ inline int showVer(SDictionary& profile, const sobj& cmd) {
 	std::cout << profile["app"]["name"] << " " << profile["app"]["version"] << std::endl;
 	return SAPP_EXECTED;
 }
-
 SCuiApp::SCuiApp() : SApp() {}
 SCuiApp::SCuiApp(const char *path) : SApp(path) {}
 SCuiApp::SCuiApp(SDictionary &&prof) : SApp(std::forward<SDictionary &&>(prof)) {}
 SCuiApp::~SCuiApp() {}
-
 inline int getOption(String& op, const char* args) {
 	if (args[0] == '-') {
 		if (args[1] == '-') { op = &args[2]; return 2; }
@@ -252,13 +250,13 @@ int SCuiApp::init(int argc, const char** argv) {
 				if (app_option["_abbr"].hasKey(op)) {
 					op = app_option["_abbr"][op];
 					if (app_option[op]["type"] == "exec")
-						return app_option[op]["func"].func<int(SDictionary&, const sobj&)>()(profile, snull);
+						return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, snull);
 				}
 				throw SAppException(ERR_INFO, INSUFFICIENT_ARGS_ERROR, "application init", "<command>");
 			}
 			case 2: {
 				if (app_option.hasKey(op) && app_option[op]["type"] == "exec")
-					return app_option[op]["func"].func<int(SDictionary&, const sobj&)>()(profile, snull);
+					return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, snull);
 				throw SAppException(ERR_INFO, INSUFFICIENT_ARGS_ERROR, "application init", "<command>");
 			}
 			}
@@ -296,7 +294,7 @@ int SCuiApp::init(int argc, const char** argv) {
 						op = app_option["_abbr"][op];
 						if (required.contain(op)) app_option[op]["_set"] = true;
 						if (app_option[op]["type"] == "exec")
-							return app_option[op]["func"].func<int(SDictionary&, const sobj&)>()(profile, preference["_cmd"]);
+							return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, preference["_cmd"]);
 						else if (app_option[op]["type"] == "bool") preference[op] = true;
 						else if (app_option[op]["type"] == "num") { arg++; preference[op] = SNumber::toNumber(arg[0]); }
 						else { arg++; preference[op] = arg[0]; }
@@ -310,7 +308,7 @@ int SCuiApp::init(int argc, const char** argv) {
 					if (required.contain(op)) app_option[op]["_set"] = true;
 					if (app_option[op]["type"] == "bool") preference[op] = true;
 					else if (app_option[op]["type"] == "exec") 
-						return app_option[op]["func"].func<int(SDictionary&, const sobj &)>()(profile, preference["_cmd"]);
+						return app_option[op]["func"].funci<SDictionary&, const sobj &>()(profile, preference["_cmd"]);
 					else {
 						arg++; preference[op] = arg[0];
 					}
@@ -357,7 +355,6 @@ int SCuiApp::init(int argc, const char** argv) {
     }
     return 0;
 }
-
 int SCuiApp::run(int argc, const char **argv) {
 	auto res = init(argc, argv);
 	if (res) return res == SAPP_EXECTED ? 0 : res;

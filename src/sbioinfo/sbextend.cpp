@@ -63,7 +63,7 @@ void SBExtend::_extendHead(salign *al) {
                 _ref -= _rl; _que -= _ql;
                 al->ref.begin -= _rl; al->aligned.begin -= _ql;
                 al->score += _s; _rlen -= _rl; _qlen -= _ql;
-                srforin(cit, it_, it) al->cigars.put(*cit);
+                srforin(cit, it, it_) al->cigars.put(*cit);
                 _rl = 0; _ql = 0; _len = 0; _s = (*_score); _ext = true; it_ = it;
             }
             PREV_;

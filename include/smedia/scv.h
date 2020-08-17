@@ -2,75 +2,110 @@
 #define SLIB_CV_ADAPTOR_H
 
 #include "smedia/simage.h"
+#include "smedia/sfigure.h"
 #include "opencv/cv.h"
 #include "opencv2/opencv.hpp"
+#include "opencv2/highgui.hpp"
 
 namespace slib {
     namespace smedia {
-		extern inline int s2cvtype(sushort type) {
+		extern inline int toCVType(sushort type) {
 			if (type == GRAY8) return CV_8UC1;
 			else if (type == GRAY16) return CV_16U;
 			else if (type == RGB24) return CV_8UC3;
 			else if (type == RGB32 || type == RGBA) return CV_8UC4;
 			return CV_8UC1;
 		}
-		extern inline sushort cv2stype(int type) {
+		extern inline sushort toSType(int type) {
 			if (type == CV_8UC1) return GRAY8;
 			else if (type == CV_16U) return GRAY16;
 			else if (type == CV_8UC3) return RGB24;
 			else if (type == CV_8UC4) return RGBA;
 			return GRAY8;
 		}
-		extern inline void cv2simg(cv::Mat& mat, SImage& img) {
+		extern inline v2i toSVeci(cv::Point& p) { return v2i(p.x, p.y); }
+		extern inline v2i toSVeci(cv::Point2f& p) { return v2i(p.x, p.y); }
+		extern inline v2f toSVecf(cv::Point& p) { return v2f(p.x, p.y); }
+		extern inline v2f toSVecf(cv::Point2f& p) { return v2f(p.x, p.y); }
+		template<typename T>
+		extern inline cv::Point toCVPoint(const svec2d<T>& v) { return cv::Point(v.x, v.y); }
+		template<typename T>
+		extern inline cv::Point2f toCVPointf(const svec2d<T>& v) { return cv::Point2f(v.x, v.y); }
+		template<typename T>
+		extern inline cv::Point toCVSize(const Area<T>& a) { return cv::Size(a.width, a.height); }
+		template<typename T>
+		extern inline cv::Rect toCVRect(const Area<T>& a) {
+			return cv::Rect(a.ori_x, a.ori_y, a.width, a.height);
+		}
+		extern inline cv::Scalar toCVColor(const SColor& col) {
+			return cv::Scalar(col.blue(), col.green(), col.red(), col.alpha());
+		}
+		extern inline cv::InputArrayOfArrays toCVArray(v2fvec& vertex) {
+			std::vector<cv::Point2f> vec(vertex.size());
+			sforeach2(vec, vertex) E1_ = toCVPointf(E2_);
+			return cv::InputArrayOfArrays(vec);
+		}
+		extern inline void toSImg(cv::Mat& mat, SImage& img) {
 			img.clear();
-			img.setType(cv2stype(mat.type()));
+			img.setType(toSType(mat.type()));
 			img.resize(mat.cols, mat.rows);
 			img.copy(mat.ptr(0), img.size());
 		}
-		extern inline cv::Mat s2cvimg(SImage& img) {
+		extern inline cv::Mat toCVMat(SImage& img) {
 			if (img.isLink()) return cv::imread(img.file().path().cstr());
-			else return cv::Mat(img.height(), img.width(), s2cvtype(img.type()), img.ptr());
+			else {
+				img.addScope();
+				return cv::Mat(img.height(), img.width(), toCVType(img.type()), img.ptr());
+			}
 		}
-		extern inline v2i p2vi(cv::Point& p) {
-			return v2i(p.x, p.y);
+		extern inline cv::Mat toCVMat(SCanvas& cnvs) {
+			cv::Mat mat(cnvs.height(), cnvs.width(), CV_8UC4);
+			mat = toCVColor(cnvs.background());
+			sforeach(cnvs.root()) {
+				if (E_.type() && sshape::POINT) {
+					
+
+				}
+				else if (E_.type() == sshape::LINE) {
+					cv::line(mat, toCVPoint(E_->vertex()[0]), toCVPoint(E_->vertex()[1]), toCVColor(E_->stroke().color), E_->stroke().width);
+				}
+				else if (E_.type() == sshape::RECTANGLE) {
+					cv::rectangle(mat, toCVRect(E_->boundary()), toCVColor(E_->brush().color), -1);
+					cv::rectangle(mat, toCVRect(E_->boundary()), toCVColor(E_->stroke().color), E_->stroke().width);
+				}
+				else if (E_.type() == sshape::ELLIPSE || E_.type() == sshape::CIRCLE) {
+					cv::ellipse(mat, toCVPoint(E_->center()), toCVSize(E_->boundary()), 0.0, 0.0, 360.0, toCVColor(E_->brush().color), -1);
+					cv::ellipse(mat, toCVPoint(E_->center()), toCVSize(E_->boundary()), 0.0, 0.0, 360.0, toCVColor(E_->stroke().color), E_->stroke().width);
+				}
+				else if (E_.type() == sshape::POLYGON) {
+					auto cvpts = toCVArray(E_->vertex());
+					cv::fillPoly(mat, cvpts, toCVColor(E_->brush().color));
+					cv::polylines(mat, cvpts, true, toCVColor(E_->stroke().color), E_->stroke().width);
+				}
+
+			}
+			return mat;
 		}
-		extern inline v2f p2vf(cv::Point& p) {
-			return v2f(p.x, p.y);
+		extern inline void displayCV(SImage& img) {
+			cv::Mat mat = toCVMat(img);
+			cv::namedWindow("Image");
+			cv::imshow("Image", mat);
+			while (true) {
+				if(cv::waitKeyEx(10) == 27) break;
+			}
 		}
-		extern inline v2d p2vd(cv::Point& p) {
-			return v2d(p.x, p.y);
+		extern inline void displayCV(SCanvas& cnvs) {
+			cv::Mat mat = toCVMat(cnvs);
+			cv::namedWindow("Canvas");
+			cv::imshow("Canvas", mat);
+			while (true) {
+				if (cv::waitKeyEx(10) == 27) break;
+			}
 		}
-		template<typename N>
-		extern inline cv::Point v2cvp(const SVector2D<N>& v) {
-			return cv::Point(v.x, v.y);
+		extern inline void displayCV(sobj& obj) {
+			if (obj.isImg()) displayCV(obj.image());
+			else if (obj.isCnvs()) displayCV(obj.canvas());
 		}
-		/*        
-        extern inline cv::Mat adjustGray16(simage *img) {
-            int64_t totalpx = img->height()*img->width();
-            cv::Mat mat(img->height(), img->width(), CV_8U);
-            int16_t max = 0, min = 0xFFFF;
-            uint16_t *imgpxs = (uint16_t *)img->ptr();
-            uint8_t *matpx = &mat.data[0];
-            for (int i = 0; i < totalpx; ++i) {
-                *matpx = 255.0*((*imgpxs)-min)/(max-min);
-                ++imgpxs; ++matpx;
-            }
-            return mat;
-        }
-        extern inline cv::Mat adjustGray16(simage *img, int min, int max) {
-            int64_t totalpx = img->height()*img->width();
-            cv::Mat mat(img->height(), img->width(), CV_8U);
-            uint16_t *imgpxs = (uint16_t *)img->ptr();
-            uint8_t *matpx = &mat.data[0];
-            for (int i = 0; i < totalpx; ++i) {
-                if(*imgpxs < min) *matpx = 0;
-                else if(max < *imgpxs) *matpx = 255;
-                else *matpx = 255.0*((*imgpxs)-min)/(max-min);
-                ++imgpxs; ++matpx;
-            }
-            return mat;
-        }
-		*/
     }
 }
 #endif

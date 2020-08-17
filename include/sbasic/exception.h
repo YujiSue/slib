@@ -6,8 +6,16 @@
 
 namespace slib {
     class SLIB_DLL String;
-    
-    constexpr suint SLIB_NULL_ERROR = 0x0001;
+
+#ifdef SLIB_DEBUG
+#define EXPORT_MSG(e) (e).print(true)
+#define ERR_MSG(e) (e).toSrting(true)
+#else
+#define EXPORT_MSG(e) (e).print(false)
+#define ERR_MSG(e) (e).toSrting(false)
+#endif
+
+	constexpr suint SLIB_NULL_ERROR = 0x0001;
     constexpr suint SLIB_CAST_ERROR = 0x0002;
     constexpr suint SLIB_RANGE_ERROR = 0x0003;
     constexpr suint SLIB_FORMAT_ERROR = 0x0004;
@@ -20,8 +28,7 @@ namespace slib {
 	constexpr suint SLIB_CREATE_PIPE_ERR = 0x000B;
 	constexpr suint SLIB_SHARED_MEMORY_ALLOC_ERR = 0x000C;
 
-    
-	#define TARGET_TEXT(T) u8"'"+String(T)+u8"'"
+	#define TARGET_TEXT(T) u8"\""+String(T)+u8"\""
     #define CAST_TEXT(F, T) u8"< '"+String(F)+u8"' => '"+String(T)+u8">"
     #define RANGE_TEXT(B, E) u8"["+String(B)+u8", "+String(E)+u8")"
 	#define EXEC_TEXT(E) u8"Return :"+String(E)
@@ -39,8 +46,13 @@ namespace slib {
         virtual ~SException();
         
         sint error();
-        String toString() const;
-        void print() const;    
+#ifdef _DEBUG
+		String toString(bool debug = true) const;
+		void print(bool debug = true) const;
+#else
+        String toString(bool debug = false) const;
+        void print(bool debug = false) const;
+#endif
 	};
 }
 

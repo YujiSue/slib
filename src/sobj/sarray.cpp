@@ -12,21 +12,13 @@ SArray::SArray(std::initializer_list<sobj> li) : Array<sobj>(li) {}
 SArray::SArray(const char *s, const char *sep) : SArray(SString(s).split(sep)) {}
 SArray::SArray(const intarray &iarray) : SArray() {
     if (iarray.empty()) return;
-    Array<sobj>::resize(iarray.size());
-    auto p = ptr();
-    sforeach(iarray) { *p = E_; ++p; }
+	Array<sobj>::resize(iarray.size());
+	sforeach2(*this, iarray) E1_ = E2_;
 }
 SArray::SArray(const stringarray &strarray) : SArray() {
     if (strarray.empty()) return;
     Array<sobj>::resize(strarray.size());
-    auto p = ptr();
-    sforeach(strarray) {
-        if(E_ == "null") *p = snull;
-        else if(E_.isQuoted()) *p = String::dequot(E_);
-        else if(E_.isNumeric()) *p = SNumber::toNumber(E_);
-        else *p = E_;
-        ++p;
-    }
+	sforeach2(*this, strarray) E1_ = sobj::toSObj(E2_);
 }
 SArray::SArray(const sobj &obj) : SArray() {
     if (obj.isNull()) return;
@@ -36,19 +28,21 @@ SArray::SArray(const sobj &obj) : SArray() {
 SArray::SArray(SArray&& array) : Array(std::forward<Array &&>(array)) {}
 SArray::SArray(const SArray &array) : Array(array) {}
 SArray::~SArray() {}
-
 SArray &SArray::operator = (const SArray &array) {
     clear(); resize(array.size());
-    auto it = begin(), e = end();
-    auto p = array.ptr();
-    while(it < e) { E_ = *p; NEXT_; ++p; }
+	sforeach2(*this, array) E1_ = E2_;
     return *this;
 }
-
 void SArray::load(const char *path) {
     if(!empty()) clear();
     auto ext = SFile(path).extension();
-    if (ext == "plist") {
+	if (ext == "sobj") {
+		sio::SFile file(path, sio::READ);
+		sarray array;
+		file.readSObject(array);
+		*this = array;
+	}
+	else if (ext == "plist") {
         SXmlDoc doc;
         doc.load(path);
         auto node = doc.entity()->children().first();
@@ -62,10 +56,13 @@ void SArray::load(const char *path) {
         *this = js.array();
     }
 }
-
 void SArray::save(const char *path) {
     auto ext = SFile(path).extension();
-    if (ext == "plist") {
+	if (ext == "sobj") {
+		sio::SFile file(path, sio::CREATE);
+		file.writeSObject(*this);
+	}
+    else if (ext == "plist") {
         SXmlDoc doc(xml::PLIST);
         doc.addToEntity(SXmlNode::plistNode(*this));
         doc.save(path);
@@ -127,7 +124,11 @@ String SArray::toString() const {
     str.last() = ']';
     return str;
 }
-SObject *SArray::clone() const { return new SArray(*this);
+SObject *SArray::clone() const { 
+	if (empty()) return new SArray();
+	auto array = new SArray(size());
+	sforeach2(*array, *this) E1_ = E2_.clone();
+	return array;
 }
 bool SArray::operator < (const sobj &obj) const {
     if (obj.isNull()) return false;
@@ -136,8 +137,9 @@ bool SArray::operator < (const sobj &obj) const {
 }
 bool SArray::operator < (const SArray &array) const {
     if (size() != array.size()) return size() < array.size();
-    auto ait = array.begin();
-    sforeach(*this) { if (E_ != *ait) return E_ < *ait; else ++ait; }
+	sforeach2(*this, array) {
+		if (E1_ != E2_) return E1_ < E2_;
+	}
     return false;
 }
 bool SArray::operator == (const sobj &obj) const {
@@ -146,8 +148,9 @@ bool SArray::operator == (const sobj &obj) const {
 }
 bool SArray::operator == (const SArray &array) const {
     if (size() != array.size()) return false;
-    auto ait = array.begin();
-    sforeach(*this) { if (E_ != *ait) return false; else ++ait; }
+	sforeach2(*this, array) {
+		if (E1_ != E2_) return false;
+	}
     return true;
 }
 

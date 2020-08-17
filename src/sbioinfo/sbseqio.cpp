@@ -132,43 +132,141 @@ void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 	seq->clearAll();
 	seq->attribute["format"] = "GenBank";
 	if (!file.isOpened()) file.open();
-	String row;
+	size_t len = -1;
+	String row, data;
 	while (!file.eof()) {
 		file.readLine(row);
 		if (row.beginWith("LOCUS")) {
+			auto list = row.substring(12).split(" ");
+			seq->name = list[0];
+			seq->setLength(list[1]);
+			if (list[3].contain("DNA")) seq->convert(sbio::DNA_SEQ);
+			else if (list[3].contain("RNA")) seq->convert(sbio::RNA_SEQ);
+
+			if (list[4] == "PRI") seq->attribute["class"] = "primate";
+			else if (list[4] == "ROD") seq->attribute["class"] = "rodent";
+			else if (list[4] == "MAM") seq->attribute["class"] = "mammal";
+			else if (list[4] == "VRT") seq->attribute["class"] = "vertebrate";
+			else if (list[4] == "INV") seq->attribute["class"] = "invertebrate";
+			else if (list[4] == "PLN") seq->attribute["class"] = "plant";
+			else if (list[4] == "BCT") seq->attribute["class"] = "bacteria";
+			else if (list[4] == "VRL") seq->attribute["class"] = "viral";
+			else if (list[4] == "PHG") seq->attribute["class"] = "phage";
+			else if (list[4] == "SYN") seq->attribute["class"] = "synthetic";
+			else if (list[4] == "UNA") seq->attribute["class"] = snull;
+			else if (list[4] == "EST") seq->attribute["class"] = "EST";
+			else if (list[4] == "PAT") seq->attribute["class"] = "patent";
+			else if (list[4] == "STS") seq->attribute["class"] = "tag";
+			else if (list[4] == "GSS") seq->attribute["class"] = "genome";
+			else if (list[4] == "HTG") seq->attribute["class"] = "htgenome";
+			else if (list[4] == "HTC") seq->attribute["class"] = "htcdna";
+			else if (list[4] == "ENV") seq->attribute["class"] = "environment";
+
+			seq->attribute["date"] = SDate(list[5], "DD-MMM-YYYY");
+			file.readLine(row);
+		}
+		if (row.beginWith("DEFINITION")) {
+			seq->attribute["definition"] = row.substring(12);
+			file.readLine(row);
+			while (!file.eof() && row[0] != ' ') {
+				seq->attribute["definition"].string() += " " + row.substring(12);
+				file.readLine(row);
+			}
+		}
+		if (row.beginWith("ACCESSION")) {
+			seq->attribute["accession"] = row.substring(12);
+		}
+		if (row.beginWith("VERSION")) {
+			data = row.substring(12);
+			auto list = data.split(" ");
+			seq->attribute["version"] = list[0];
+			if (1 < list.size()) {
+				sforin(i, 1, list.size()) {
+					if (list[i].beginWith("GI:")) seq->attribute["gi"] = list[i].substring(3);
+				}
+			}
+		}
+		if (row.beginWith("KEYWORDS")) {
+			data = row.substring(12);
+			if (data != ".") seq->attribute["keywords"] = data;
+		}
+		if (row.beginWith("SOURCE")) {
+			data = row.substring(12);
+			seq->attribute["source"] = data;
+			file.readLine(row);
+			if (row.beginWith("  ORGANISM")) {
+				seq->attribute["organism"] = SArray({ row.substring(12) });
+				file.readLine(row);
+				while (!file.eof() && row[0] != ' ') {
+					auto list = data.split(";");
+					sforeach(list) {
+						if (E_.first() == ' ') seq->attribute["organism"].add(E_.substring(1));
+						else if (E_.last() == '.') seq->attribute["organism"].add(E_.substring(0, E_.length() - 1));
+						else seq->attribute["organism"].add(E_);
+					}
+					file.readLine(row);
+				}
+			}
+		}
+		if (row.beginWith("REFERENCE")) {
+			if (!seq->attribute.hasKey("reference")) seq->attribute["reference"] = SArray();
+			SDictionary dict;
+			file.readLine(row);
+			while (!file.eof() && row.beginWith("  ")) {
+				if (row.beginWith("  AUTHORS")) {
+					data = row.substring(12);
+					file.readLine(row);
+					while (!file.eof() && row.beginWith("   ")) {
+						data += row.substring(12);
+						file.readLine(row);
+					}
+					dict["authors"] = sarray(data.split(", "));
+				}
+				if (row.beginWith("  TITLE")) {
+					data = row.substring(12);
+					file.readLine(row);
+					while (!file.eof() && row.beginWith("   ")) {
+						data += " " + row.substring(12);
+						file.readLine(row);
+					}
+					dict["title"] = data;
+				}
+				if (row.beginWith("  JOURNAL")) {
+					dict["journal"] = row.substring(12);
+					file.readLine(row);
+				}
+				if (row.beginWith("  PUBMED")) {
+					dict["pubmed"] =row.substring(12).integer();
+					file.readLine(row);
+				}
+			}
+			seq->attribute["reference"].add(dict);
+		}
+		if (row.beginWith("FEATURES")) {
+			file.readLine(row);
+			while (!file.eof() && row.beginWith("     ")) {
+
+
+
+
+				file.readLine(row);
+			}
+
+			//21
+
 
 		}
-		else if (row.beginWith("DEFINITION")) {
-
+		if (row.beginWith("ORIGIN")) {
+			data.clear();
+			file.readLine(row);
+			while (!file.eof() && row[0] != ' ') {
+				data += row.substring(10).replaced(" ", "");
+				file.readLine(row);
+			}
+			if (len != -1 && len != data.length()) throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR);
+			seq->setSeq(data);
 		}
-		else if (row.beginWith("ACCESSION")) {
-
-		}
-		else if (row.beginWith("VERSION")) {
-
-		}
-		else if (row.beginWith("KEYWORDS")) {
-
-		}
-		else if (row.beginWith("SOURCE")) {
-
-		}
-		else if (row.beginWith("REFERENCE")) {
-
-		}
-		else if (row.beginWith("KEYWORDS")) {
-
-		}
-		else if (row.beginWith("FEATURES")) {
-
-		}
-		else if (row.beginWith("ORIGIN")) {
-
-		}
-		else if (row.beginWith("//")) break;
-		else {
-
-		}
+		if (row.beginWith("//")) break;
 	}
 }
 void SBSeqIO::loadFASTA(sushort type, sio::SFile& file, SBioSeq* seq) {
@@ -237,29 +335,29 @@ void SBSeqIO::saveGBK(sio::SFile& file, SBioSeq* seq) {
 }
 void SBSeqIO::saveFASTA(sio::SFile& file, SBioSeq* seq) {
 	if (!file.isOpened()) file.open(nullptr, sio::WRITE);
-	file << ">" << seq->name << String::LF; file.flush();
+	file << ">" << seq->name << LF; file.flush();
 	size_t current = 0;
 	while (current + FASTA_ROW_CHAR < seq->_length) {
-		file << seq->raw(current, FASTA_ROW_CHAR) << String::LF;
+		file << seq->raw(current, FASTA_ROW_CHAR) << LF;
 		file.flush();
 		current += FASTA_ROW_CHAR;
 	}
 	if (current < seq->_length)
-		file << seq->raw(current, seq->_length - current) << String::LF;
+		file << seq->raw(current, seq->_length - current) << LF;
 	file.close();
 }
 void SBSeqIO::saveFASTA(sio::SFile& file, SBSeqList* list) {
 	if (!file.isOpened()) file.open(nullptr, sio::WRITE);
 	sforeach(*list) {
-		file << ">" << E_->name << String::LF; file.flush();
+		file << ">" << E_->name << LF; file.flush();
 		size_t current = 0;
 		while (current + FASTA_ROW_CHAR < E_->_length) {
-			file << E_->raw(current, FASTA_ROW_CHAR) << String::LF;
+			file << E_->raw(current, FASTA_ROW_CHAR) << LF;
 			file.flush();
 			current += FASTA_ROW_CHAR;
 		}
 		if (current < E_->_length)
-			file << E_->raw(current, E_->_length - current) << String::LF;
+			file << E_->raw(current, E_->_length - current) << LF;
 	}
 	file.close();
 }

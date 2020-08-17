@@ -38,15 +38,10 @@ namespace slib {
         
         SDictionary &operator=(const SDictionary &dic);
 		SDictionary& operator=(SDictionary &&dic);
-        
-        //IO
         void load(const char *path);
         void save(const char *path);
-        
-        //search
         smap_iter<String, slib::SObjPtr> search(const char *que);
         SArray lump(const stringarray &keys);
-        
         String getClass() const;
         String toString() const;
         SObject *clone() const;

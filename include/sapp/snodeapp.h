@@ -20,7 +20,9 @@ namespace slib {
 			} JS_OBJ_TYPE;
 
 			static bool nodeInstalled();
-			static bool gypInstalled();
+			static bool ngypInstalled();
+			static void installNode();
+			static void installNGyp();
 			
 			static JS_OBJ_TYPE jsType(napi_env env, napi_value val);
 			static size_t jsStrlen(napi_env env, napi_value val);

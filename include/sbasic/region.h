@@ -4,16 +4,18 @@
 #include "sbasic/range.h"
 #include "sbasic/array.h"
 
+#define sregion slib::Region<sint>
+#define sregionf slib::Region<float>
+#define sregiond slib::Region<double>
+
 namespace slib {
-    #define sregion Region<sint>
-    #define sregionf Region<float>
-    #define sregiond Region<double>
-    
     template<typename T>
     class Region : public Array<Range<T>, RMemory<Range<T>>> {
+		typedef Array<Range<T>, RMemory<Range<T>>> array;
     public:
         Region();
         Region(const Range<T> &rng);
+		Region(std::initializer_list<Range<T>> li);
         Region(const Region &reg);
         ~Region();
         
@@ -44,44 +46,67 @@ namespace slib {
     /*============================================================*/
     
     template <typename T>
-    Region<T>::Region() : Array<Range<T>, RMemory<Range<T>>>() {}
+    Region<T>::Region() : array() {}
     template <typename T>
-    Region<T>::Region(const Range<T> &rng) : Region() { Array<Range<T>, RMemory<Range<T>>>::add(rng); }
+    Region<T>::Region(const Range<T> &rng) : Region() { array::add(rng); }
+	template <typename T>
+	Region<T>::Region(std::initializer_list<Range<T>> li) : array(li.size()) {
+		sforeach2(*this, li) E1_ = E2_;
+	}
     template <typename T>
-    Region<T>::Region(const Region &reg) : Array<Range<T>, RMemory<Range<T>>>(reg) {}
+    Region<T>::Region(const Region &reg) : array(reg) {}
     template <typename T>
     Region<T>::~Region() {}
-    
     template <typename T>
     Region<T> &Region<T>::operator=(const Range<T> &rng) {
-        Array<Range<T>, RMemory<Range<T>>>::clear();
-        Array<Range<T>, RMemory<Range<T>>>::add(rng); return *this;
+		array::clear();
+		array::add(rng);
+		return *this;
     }
     template <typename T>
     Region<T> &Region<T>::operator=(const Region<T> &reg) {
-        Array<Range<T>, RMemory<Range<T>>>::resize(reg.size());
-        auto it = Array<Range<T>, RMemory<Range<T>>>::_begin;
-        auto it_ = reg._begin;
-        while (it < Array<Range<T>, RMemory<Range<T>>>::_end) { E_ = *it_; NEXT_; ++it_; }
+		array::resize(reg.size());
+		sforeach2(*this, reg) E1_ = E2_;
         return *this;
     }
     template <typename T>
-    T Region<T>::length(bool closed) const { T len = initVal<T>(); sforeach(*this) { len += E_.length(closed); } return len; }
+    T Region<T>::length(bool closed) const { 
+		T len = initVal<T>(); 
+		sforeach(*this) len += E_.length(closed); 
+		return len; 
+	}
     template <typename T>
     Range<T> Region<T>::range() const {
-        if (!Array<Range<T>, RMemory<Range<T>>>::empty())
-            return Range<T>(Array<Range<T>, RMemory<Range<T>>>::first().begin,
-                             Array<Range<T>, RMemory<Range<T>>>::last().end);
+        if (!array::empty()) return Range<T>(array::first().begin, array::last().end);
         return Range<T>();
     }
     template <typename T>
-    bool Region<T>::include(const T &val) const { sforeach(*this) { if(E_.include(val)) return true; } return false; }
+    bool Region<T>::include(const T &val) const {
+		sforeach(*this) {
+			if(E_.include(val)) return true;
+		}
+		return false; }
     template <typename T>
-    bool Region<T>::include(const Range<T> &rng) const { sforeach(*this) { if(E_.include(rng)) return true; } return false; }
+    bool Region<T>::include(const Range<T> &rng) const {
+		sforeach(*this) {
+			if(E_.include(rng)) return true; 
+		}
+		return false;
+	}
     template <typename T>
-    bool Region<T>::overlap(const Range<T> &rng) const { sforeach(*this) { if(E_.overlap(rng)) return true; } return false; }
+    bool Region<T>::overlap(const Range<T> &rng) const { 
+		sforeach(*this) { 
+			if(E_.overlap(rng)) return true; 
+		} 
+		return false; 
+	}
     template <typename T>
-    bool Region<T>::overlap(const Region &reg) const { sforeach(*this) { if(reg.overlap(E_)) return true; } return false; }
+    bool Region<T>::overlap(const Region &reg) const { 
+		sforeach(*this) { 
+			if(reg.overlap(E_)) return true; 
+		} 
+		return false; 
+	}
     template <typename T>
     Region<T> Region<T>::subregion(const Range<T> &rng) const {
         Region reg;
@@ -95,15 +120,14 @@ namespace slib {
         }
         return reg;
     }
-    
     template <typename T>
     void Region<T>::shift(const T &len) {
-        if (Array<Range<T>, RMemory<Range<T>>>::empty()) return;
+        if (array::empty()) return;
         sforeach(*this) E_.shift(len);
     }
     template <typename T>
     void Region<T>::expand(const T &off, const T &len) {
-        if (Array<Range<T>, RMemory<Range<T>>>::empty()) return;
+        if (array::empty()) return;
         sforeach(*this) {
             if (off <= E_.begin) E_.shift(len);
             else if (off <= E_.end) E_.expand(len);
@@ -111,31 +135,27 @@ namespace slib {
     }
     template <typename T>
     void Region<T>::merge(const Range<T> &rng) {
-        Array<Range<T>, RMemory<Range<T>>>::add(rng);
-        std::sort(Array<Range<T>, RMemory<Range<T>>>::begin(),
-                  Array<Range<T>, RMemory<Range<T>>>::end(),
-                  [](const Range<T> &r1, const Range<T> &r2) { return r1 < r2; });
-        sforeach(*this) {
-            auto it_ = it+1;
-            while (it_ < Array<Range<T>, RMemory<Range<T>>>::end() && E_.overlap(*it_)) { E_.merge(*it_); ++it_; }
-            if (it+1 < it_) Array<Range<T>, RMemory<Range<T>>>::remove(it+1, it_);
+		array::add(rng);
+		array::sort();
+		auto it = array::begin(), end = array::end();
+		while(it < end - 1) {
+			auto it_ = it + 1;
+            while (it_ < end && E_.overlap(E__)) { E_.merge(E__); ++it_; }
+			if (it + 1 < it_) it = array::remove(it + 1, it_);
+			else NEXT_;
         }
     }
     template <typename T>
     void Region<T>::merge(const Region<T> &reg) {
-        Array<Range<T>, RMemory<Range<T>>>::append(reg);
-        std::sort(Array<Range<T>, RMemory<Range<T>>>::begin(),
-                  Array<Range<T>, RMemory<Range<T>>>::end(),
-                  [](const Range<T> &r1, const Range<T> &r2) { return r1 < r2; });
-        sforeach(*this) {
-            auto it_ = it+1;
-            while (it_ < Array<Range<T>, RMemory<Range<T>>>::end() && E_.overlap(*it_)) { E_.merge(*it_); ++it_; }
-            if (it+1 < it_) {
-                auto off = it-Array<Range<T>, RMemory<Range<T>>>::begin();
-                Array<Range<T>, RMemory<Range<T>>>::remove(off, 1);
-                it = Array<Range<T>, RMemory<Range<T>>>::begin()+off;
-            }
-        }
+		array::append(reg);
+		array::sort();
+		auto it = array::begin(), end = array::end();
+		while (it < end - 1) {
+			auto it_ = it + 1;
+			while (it_ < end && E_.overlap(E__)) { E_.merge(E__); ++it_; }
+			if (it + 1 < it_) it = array::remove(it + 1, it_);
+			else NEXT_;
+		}
     }
     template <typename T>
     void Region<T>::conjunction(const Range<T> &rng) { *this = subregion(rng); }
@@ -143,42 +163,33 @@ namespace slib {
     void Region<T>::exclude(const Range<T> &rng) {
         if (range().overlap(rng)) {
             sforeach(*this) {
-                if (E_.include(rng)) {
-                    if (E_.begin == rng.begin) E_.begin = rng.end+1;
-                    else if (E_.end == rng.end) E_.end = rng.begin-1;
-                    else {
-                        auto tmp = E_.end;
-                        E_.end = rng.begin-1;
-                        Array<Range<T>, RMemory<Range<T>>>::insert(it-Array<Range<T>, RMemory<Range<T>>>::begin()+1,
-                                                                     Range<T>(rng.end+1, tmp));
-                    }
-                }
-                else if (rng.include(E_)) {
-                    auto it_ = it+1;
-                    while(it_ < Array<Range<T>, RMemory<Range<T>>>::end() && rng.include(*it_)) ++it_;
-                    auto off = it-Array<Range<T>, RMemory<Range<T>>>::begin();
-                    Array<Range<T>, RMemory<Range<T>>>::remove(off, 1);
-                    it = Array<Range<T>, RMemory<Range<T>>>::begin()+off;
-                }
-                else if(E_.overlap(rng)) {
-                    if (E_.begin < rng.begin) E_.end = rng.begin-1;
-                    else E_.begin = rng.end+1;
-                }
-                else if(it+1 < Array<Range<T>, RMemory<Range<T>>>::end() && E_.end < rng.begin && rng.end < (it+1)->begin) break;
+				if (rng.include(E_)) it = array::remove(it, it + 1);
+				if (E_.include(rng)) {
+					if (E_.begin == rng.begin) E_.begin = rng.end + 1;
+					else if (E_.end == rng.end) E_.end = rng.begin - 1;
+					else {
+						Range<T> tmp(E_.begin, rng.begin - 1);
+						E_.begin = rng.end + 1;
+						it = array::insert(it, tmp);
+					}
+				}
+				else if (E_.overlap(rng)) {
+					if (E_.begin < rng.begin) E_.end = rng.begin - 1;
+					else E_.begin = rng.end + 1;
+				}
+				else if (rng.end < E_.begin) break;
             }
         }
     }
     template <typename T>
     srange Region<T>::find(const T &val) const {
-        if (Array<Range<T>, RMemory<Range<T>>>::empty()) return srange(-1, -1);
-        if (val < Array<Range<T>, RMemory<Range<T>>>::first().begin) return srange(-1, 0);
-        else if (Array<Range<T>, RMemory<Range<T>>>::last().end < val)
-            return srange(Array<Range<T>, RMemory<Range<T>>>::size()-1, Array<Range<T>, RMemory<Range<T>>>::size());
-        sforeachi(*this) {
-            if (Array<Range<T>, RMemory<Range<T>>>::at(i).include(val)) return srange(i, i);
-            if (i+1 < Array<Range<T>, RMemory<Range<T>>>::size() &&
-                Array<Range<T>, RMemory<Range<T>>>::at(i).end < val &&
-                val < Array<Range<T>, RMemory<Range<T>>>::at(i+1).begin) return srange(i, i+1);
+        if (array::empty()) return srange(-1, -1);
+        if (val < array::first().begin) return srange(-1, 0);
+        else if (array::last().end < val)
+            return srange(array::size(), array::size());
+        sforeach(*this) {
+            if (E_.include(val)) return srange(INDEX_(*this), INDEX_(*this));
+			if (array::begin() < it && E_PREV.end < val && val < E_.begin) return srange(INDEX_(*this) - 1, INDEX_(*this));
         }
         return srange(-1, -1);
     }
@@ -187,13 +198,14 @@ namespace slib {
         srange r1 = find(rng.begin), r2 = find(rng.end);
         return srange(r1.begin, r2.end);
     }
-    
     template <typename T>
     bool Region<T>::operator < (const Region &reg) const { return range() < reg.range(); }
     template <typename T>
     bool Region<T>::operator == (const Region &reg) const {
-        if (Array<Range<T>, RMemory<Range<T>>>::size() != reg.size()) return false;
-        sforeachi(*this) { if(Array<Range<T>, RMemory<Range<T>>>::at(i) != reg[i]) return false; }
+        if (array::size() != reg.size()) return false;
+        sforeach2(*this, reg) { 
+			if(E1_ != E2_) return false; 
+		}
         return true;
     }
     template <typename T>
@@ -203,10 +215,11 @@ namespace slib {
         Region<T> comp;
         if (rng.begin < region.first().begin)
             comp.add(Range<T>(rng.begin, region.first().begin-1));
-        sforin(it, region.begin(), region.end()-1)
-        comp.add(Range<T>(it->end, (it+1)->begin-1));
-        if (region.last().end < rng.end)
-            comp.add(Range<T>(region.last().end+1, rng.end));
+		sforin(it, region.begin(), region.end() - 1) {
+			if (E_.end + 1 <= E_NEXT.begin - 1) 
+				comp.add(Range<T>(E_.end + 1, E_NEXT.begin - 1));
+		}
+		if (region.last().end < rng.end) comp.add(Range<T>(region.last().end + 1, rng.end));
         return comp;
     }
 }

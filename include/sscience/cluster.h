@@ -3,12 +3,42 @@
 
 #include "smath/smath.h"
 #include "sbasic/ptr.h"
+#include "sbasic/string.h"
 
 using namespace slib;
 using namespace slib::smath;
 
 namespace slib {
 	namespace ssci {
+		template<typename T, class M>
+		extern inline double EuclidDistance(svec<T, M>& vec1, svec<T, M>& vec2) {
+			return sgeom::distance(vec1, vec2);
+		}
+		template<typename T, class M>
+		extern inline double HammingDistance(svec<T, M>& vec1, svec<T, M>& vec2) {
+			size_t count = 0;
+			sforeach2(vec1, vec2) {
+				if (E1_ != E2_) ++count;
+			}
+			return count;
+		}
+		template<typename T, class M>
+		extern inline double LevenshteinDistance(svec<T, M>& vec1, svec<T, M>& vec2) {
+			smati dist(vec1.size() + 1, vec2.size() + 1, 0);
+			sint cost, tmp[3];
+			sforin(r, 0, dist.row) dist[r][0] = r;
+			sforin(c, 0, dist.col) dist[0][c] = c;
+			sforin(r, 1, dist.row) {
+				sforin(c, 1, dist.col) {
+					cost = vec1[r - 1] == vec2[c - 1] ? 0 : 1;
+					tmp[0] = dist[r - 1][c] + 1;
+					tmp[1] = dist[r][c - 1] + 1;
+					tmp[2] = dist[r - 1][c - 1] + cost;
+					dist[r][c] = sstat::argmin(tmp, 3);
+				}
+			}
+			return dist.last();
+		}
 
 		typedef enum {
 			SINGLE_LINK = 1,
@@ -22,7 +52,7 @@ namespace slib {
 			scluster* parent, *elements[2];
 			double distance;
 
-			scluster() : parent(nullptr), distance(0.0) { memset(elements, 0, sizeof(scluster*) * 2); }
+			scluster() : index(-1), parent(nullptr), distance(0.0) { memset(elements, 0, sizeof(scluster*) * 2); }
 			scluster(sint i) : scluster() {
 				index = i; elements[0] = this;
 			}
@@ -32,6 +62,7 @@ namespace slib {
 			}
 			~scluster() {}
 			scluster* sibring() { return parent->elements[0] == this ? parent->elements[1] : parent->elements[0]; }
+			
 			bool isOrigin() const { return elements[1] == nullptr; }
 			sint count() {
 				if (isOrigin()) return 1;
@@ -129,14 +160,10 @@ namespace slib {
 			root.removeAt(c2);
 			root.removeAt(c1);
 		}
-		template<typename T, class M>
-		extern inline double EuclidDist(svec<T, M>& vec1, svec<T, M>& vec2) {
-			return sgeom::distance(vec1, vec2);
-		}
-
+		
 		template<typename T, class M>
 		extern inline void hcluster(svec<svec<T, M>>& data, Array<sclusterp> &clusters, HCLUSTER_METHOD method = WARD,
-			std::function<double(svec<T, M>&, svec<T, M>&)> distance = EuclidDist<T, M>) {
+			std::function<double(svec<T, M>&, svec<T, M>&)> distance = EuclidDistance<T, M>) {
 			svecd dist(data.size() * (data.size() - 1) / 2, 0.0), newdist;
 			sint integrate[2];
 			auto dp = dist.ptr();
@@ -155,19 +182,66 @@ namespace slib {
 		}
 
 		template<typename T, class M>
-		extern inline void massCentroid(int k, svec<svec<T, M>>& data, sveci& group, svec<T, M>& centroid) {
-			if (data.empty()) return;
-			int count = 0, dim = data[0].size();
-			centroid.resize(dim);
-			auto git = group.begin();
-			sforeach(data) {
-				if ((*git) == k) {
-					centroid += E_;
-					++count;
-				}
-				++git;
+		class HClusterAnalysis {
+		public:
+			svec<svec<T, M>>* data;
+			HCLUSTER_METHOD method;
+			std::function<double(svec<T, M>&, svec<T, M>&)> distFunc;
+			Array<sclusterp> clusters;
+
+		public:
+			HClusterAnalysis(svec<svec<T, M>>& dat) {
+				data = &dat;
 			}
-			centroid /= count;
+			~HClusterAnalysis() {}
+
+			void analyze(HCLUSTER_METHOD m = WARD,
+				std::function<double(svec<T, M>&, svec<T, M>&)> distance = EuclidDistance<T, M>) {
+				method = m;
+				distFunc = distance;
+				hcluster(*data, clusters, method, distFunc);
+			}
+			//void plot();
+			//void summary();
+			//void export();
+		};
+
+		template<typename T, class M>
+		extern inline void massCentroid(svec<svec<T, M>>& data, sveci& group, svec<svec<T, M>>& centroid) {
+			if (data.empty()) return;
+			sveci count(centroid.size());
+			sforeach(centroid) E_.reset(0);
+			sforeach2(data, group) {
+				centroid[E2_] += E1_;
+				++count[E2_];
+			}
+			sforeach2(centroid, count) E1_ /= E2_;
+		}
+		template<typename T, class M>
+		extern inline void maxFreqCentroid(svec<svec<T, M>>& data, sveci& group, svec<svec<T, M>>& centroid) {
+			if (data.empty()) return;
+			sint cluster = centroid.size(), dim = centroid[0].size();
+			smat<Map<T, sint>> count(centroid.size(), dim);
+			T maxkey; sint max;
+			sforeach2(data, group) {
+				sforin(i, 0, dim) {
+					if (count[E2_][i].hasKey(E1_[i])) ++count[E2_][i][E1_[i]];
+					else count[E2_][i][E1_[i]] = 0;
+				}
+			}
+			sforin(i, 0, cluster) {
+				sforin(j, 0, dim) {
+					maxkey = count[i][j].begin().key;
+					max = count[i][j].begin().value;
+					sforeach(count[i][j]) {
+						if (max < E_.value) {
+							max = E_.value;
+							maxkey = E_.key;
+						}
+					}
+					centroid[i][j] = maxkey;
+				}
+			}
 		}
 		template<typename T, class M>
 		extern inline void initCentroid(int cluster, svec<svec<T, M>>& data, svec<svec<T, M>>& centroid) {
@@ -199,7 +273,7 @@ namespace slib {
 					else (*d) = 0;
 					++rptr; ++d;
 				}
-				dist /= smath::sstat::sum(dist);
+				dist /= smath::ssstat::sum(dist);
 				auto prob = rand.runi();
 				sforeach(dist) {
 					prob -= E_;
@@ -211,11 +285,12 @@ namespace slib {
 			}
 			sforin(c, 0, cluster) centroid[c] = data[extract[c]];
 		}
+		
 		template<typename T, class M>
 		extern inline void kmeans(int cluster, svec<svec<T, M>>& data, sveci& group, svec<svec<T, M>>& centroid,
 			int iter, const char* method = "default",
-			std::function<double(svec<T, M>&, svec<T, M>&)> distance = EuclidDist<T, M>,
-			std::function<void(int, svec<svec<T, M>>&, sveci&, svec<T, M>&)> center = massCentroid<T, M>) {
+			std::function<double(svec<T, M>&, svec<T, M>&)> distance = EuclidDistance<T, M>,
+			std::function<void(svec<svec<T, M>>&, sveci&, svec<svec<T, M>>&)> center = massCentroid<T, M>) {
 			if (data.empty()) return;
 			auto row = data.size(), col = data[0].size();
 			svecd dist(cluster, 0);
@@ -235,14 +310,48 @@ namespace slib {
 				auto gp = group.ptr();
 				sforin(r, 0, row) {
 					sforin(c, 0, cluster) dist[c] = distance(*rptr, centroid[c]);
-					*gp = smath::sstat::argmin(dist);
+					*gp = smath::ssstat::argmin(dist);
 					++rptr; ++gp;
 				}
-				sforin(c, 0, cluster) center(c, data, group, tmpcent[c]);
+				center(data, group, tmpcent);
 				if (centroid == tmpcent) break;
 				else centroid.swap(tmpcent);
 			}
 		}
+
+		template<typename T, class M>
+		class KMeansAnalysis {
+		public:
+			sint cluster, iter;
+			sveci group;
+			svec<svec<T, M>> *data, centroid;
+			std::function<double(svec<T, M>&, svec<T, M>&)> distFunc;
+			std::function<void(int, svec<svec<T, M>>&, sveci&, svec<T, M>&)> centerFunc;
+			SWork* threads;
+
+		public:
+			KMeansAnalysis(svec<svec<T, M>> &dat) {
+				data = &dat;
+				group.resize(data->size(), 0);
+			}
+			~KMeansAnalysis() {}
+
+			void setMultiThreadMode(SWork &w) { threads = &w; }
+			void analyze(sint n = 8, sint i = 300, const char *method = "default",
+				std::function<double(svec<T, M>&, svec<T, M>&)> dist = EuclidDistance,
+				std::function<void(int, svec<svec<T, M>>&, sveci&, svec<T, M>&)> center = massCentroid) {
+				cluster = n; iter = i;
+				distFunc = dist;
+				centerFunc = center;
+				centroid.resize(cluster);
+				sforin(c, 0, cluster) centroid[c].resize(data->first().size());
+				kmeans(cluster, *data, group, centroid, iter, method, distFunc, centerFunc);
+			}
+			//void plot();
+			//void summary();
+			//void export();
+		};
+
 	}
 }
 

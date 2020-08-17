@@ -29,7 +29,7 @@ namespace slib {
 		SDate& revised();
 		SDictionary& attribute();
 		Node& root();
-		
+
 		void setTitle(const char* s);
 		void setAuthor(const char* s);
 		void setRoot(Node&& elem);

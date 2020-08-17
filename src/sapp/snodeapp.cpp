@@ -3,8 +3,6 @@
 using namespace slib;
 using namespace slib::sapp;
 
-#ifdef SNODE_APP
-
 bool SNodeUtil::nodeInstalled() {
 	String result;
 	SSystem::exec("node -v", result);
@@ -14,12 +12,17 @@ bool SNodeUtil::nodeInstalled() {
 	}
 	return false;
 }
-bool SNodeUtil::gypInstalled() {
+bool SNodeUtil::ngypInstalled() {
 	String result;
 	SSystem::exec("node-gyp -v", result);
 	return result.equal(R(/ ^ v[0 - 9] + .[0 - 9] + .[0 - 9] / ));
 }
-
+void SNodeUtil::installNode() {
+	
+}
+void SNodeUtil::installNGyp() {
+	SSystem::exec("npm install -g node-gyp");
+}
 SNodeUtil::JS_OBJ_TYPE SNodeUtil::jsType(napi_env env, napi_value val) {
 	napi_status st = napi_generic_failure;
 	napi_valuetype type;
@@ -336,5 +339,3 @@ sobj SNodeUtil::toObj(napi_env env, napi_value val) {
 	}
 	return obj;
 }
-
-#endif

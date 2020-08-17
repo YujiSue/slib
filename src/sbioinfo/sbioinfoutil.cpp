@@ -55,7 +55,7 @@ void sbiutil::getBins(sizearray &bins, const sregion &region) {
     auto size = bins.size();
     sforeach(bins) {
         if (E_ == -1) continue;
-        if (E_ == E_NXT) {
+        if (E_ == E_NEXT) {
 			auto it_ = it + 1;
             while (it_ < bins.end() && E_ == *it_) { *it_ = -1; ++it_; --size; }
         }
@@ -99,7 +99,7 @@ void sbpos::set(const char *s, const sindex *namei) {
         else end = begin;
     }
     else {
-        if (str.contain(String::TAB)) sep = String::TAB;
+        if (str.contain(TAB)) sep = TAB;
         if (str.contain(",")) sep = ",";
         auto val = str.split(sep);
         idx = namei?namei->at(val[0]):val[0].intValue();

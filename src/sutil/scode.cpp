@@ -139,10 +139,10 @@ void SZip::load(const char* path) {
 		sforeach(_contents) readZippCent(_file, E_);
 	}
     catch (sio::SIOException ie) {
-		ie.toString();
+		ie.print();
 	}
 	catch (SException ex) {
-		ex.toString();
+		ex.print();
 	}
 }
 void SZip::save(const char* path) {
@@ -241,9 +241,9 @@ void SZip::expand(SFile &ori, const char *dest, const char *decrypt) {
             }
         }
     } catch (sio::SIOException ie) {
-        ie.toString();
+        ie.print();
     } catch (SException ex) {
-        ex.toString();
+        ex.print();
     }
 }
 
@@ -384,11 +384,44 @@ void SCode::decodeBASE64(const String& base, String& ori) {
 	}
 	ori.resize(strlen(ori.cstr()));
 }
-
-void SCode::expand(ubytearray &bytes) {
+void SCode::expandTo(ubytearray& ori, ubytearray& dest, size_t cap, sint bits, sint flush) {
+	if (ori.empty()) return;
+	int capacity = cap == -1 ? (ori.size() * 1.5) : cap;
+	dest.resize(capacity);
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.next_in = (Bytef*)ori.ptr();
+	strm.avail_in = (unsigned int)ori.size();
+	strm.next_out = (Bytef*)dest.ptr();
+	strm.avail_out = capacity;
+	int res = inflateInit2(&strm, bits);
+	if (res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflateInit2", EXEC_TEXT(std::to_string(res)));
+	res = inflate(&strm, flush);
+	if (res != Z_STREAM_END || strm.total_in < ori.size()) {
+		if (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
+			while (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
+				int capacity_ = capacity * 1.5;
+				dest.resize(capacity_);
+				strm.next_out = dest.ptr(strm.total_out);
+				strm.avail_out = capacity_ - capacity;
+				res = inflate(&strm, flush);
+				capacity = capacity_;
+			}
+		}
+		if (res == Z_STREAM_ERROR || res == Z_DATA_ERROR || res == Z_MEM_ERROR)
+			throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflate", EXEC_TEXT(std::to_string(res)));
+	}
+	res = inflateEnd(&strm);
+	if (res == Z_DATA_ERROR)
+		throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflateEnd", EXEC_TEXT(std::to_string(res)));
+	dest.resize(strm.total_out);
+}
+void SCode::expand(ubytearray &bytes, size_t cap, sint bits, sint flush) {
     if (bytes.empty()) return;
-    int capacity = bytes.size()*1.5;
-    ubytearray tmp;
+	int capacity = cap == -1 ? (bytes.size() * 1.5) : cap;
+	ubytearray tmp;
     tmp.resize(capacity);
     z_stream strm;
     strm.zalloc = Z_NULL;
@@ -398,9 +431,8 @@ void SCode::expand(ubytearray &bytes) {
     strm.avail_in = (unsigned int)bytes.size();
     strm.next_out = (Bytef *)tmp.ptr();
     strm.avail_out = capacity;
-    int res = inflateInit2(&strm, 31);
+    int res = inflateInit2(&strm, bits);
     if (res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflateInit2", EXEC_TEXT(std::to_string(res)));
-    int flush = Z_NO_FLUSH;
     res = inflate(&strm, flush);
     if (res != Z_STREAM_END || strm.total_in < bytes.size()) {
         if (res == Z_BUF_ERROR || strm.total_in < bytes.size()) {

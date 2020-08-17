@@ -3,32 +3,6 @@
 using namespace slib;
 using namespace slib::smedia;
 
-const SColor SColor::CLEAR = (suint)0x00000000;
-const SColor SColor::BLACK = (suint)0xFF000000;
-const SColor SColor::WHITE = (suint)0xFFFFFFFF;
-const SColor SColor::GRAY = (suint)0xFF808080;
-const SColor SColor::LIGHTGRAY = (suint)0xFFD3D3D3;
-const SColor SColor::DIMGRAY = (suint)0xFF696969;
-const SColor SColor::RED = (suint)0xFF0000FF;
-const SColor SColor::MAGENTA = (suint)0xFFFF00FF;
-const SColor SColor::PINK = (suint)0xFFCBC0FF;
-const SColor SColor::CRIMSON = (suint)0xFF143CDC;
-const SColor SColor::DARKRED = (suint)0xFF00008B;
-const SColor SColor::ORANGE = (suint)0xFF00A5FF;
-const SColor SColor::YELLOW = (suint)0xFF00FFFF;
-const SColor SColor::BROWN = (suint)0xFF2A2AA5;
-const SColor SColor::LIME = (suint)0xFF00FF00;
-const SColor SColor::GREEN = (suint)0xFF008000;
-const SColor SColor::DARKGREEN = (suint)0xFF006400;
-const SColor SColor::SPRING = (suint)0xFF7FFF00;
-const SColor SColor::BLUE = (suint)0xFFFF0000;
-const SColor SColor::TURQUOISE = (suint)0xFFD0E040;
-const SColor SColor::CYAN = (suint)0xFFFFFF00;
-const SColor SColor::DEEPSKY = (suint)0xFFFFBF00;
-const SColor SColor::INDIGO = (suint)0xFF82004B;
-const SColor SColor::NAVY = (suint)0xFF800000;
-const SColor SColor::VIOLET = (suint)0xFFEE82EE;
-const SColor SColor::PURPLE = (suint)0xFF800080;
 Map<String, suint> slib::smedia::ColorMap =
 {
     kui("clear", 0x00000000), kui("black", 0xFF000000), kui("white", 0xFFFFFFFF),
@@ -87,7 +61,7 @@ SColor::SColor(const char *s) : SColor() {
 			*this = col4i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue(), list[3].ubyteValue());
 		}
 		else if (code.beginWith("(") && code.endWith(")")) {
-			code.transform(DELETE_QUOTE);
+			code.transform(slib::sstyle::DELETE_QUOTE);
 			auto list = code.split(",");
 			if (list.size() == 3) *this = col3i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue());
 			else if (list.size() == 4) *this = col4i(list[0].ubyteValue(), list[1].ubyteValue(), list[2].ubyteValue(), list[3].ubyteValue());
@@ -121,14 +95,14 @@ subyte SColor::gray8() const {
 	if (isFloat()) {
 		float* tmp = reinterpret_cast<float*>(_data.ptr());
 		if (channel() == 1) return f2bcolor(tmp[0]);
-		else return f2bcolor(smath::sstat::average(tmp, 3));
+		else return f2bcolor(sstat::average(tmp, 3));
 	}
 	else {
 		if (channel() == 1) {
 			if (bpp() == 1) return _data[0];
 			else return s2bcolor(*reinterpret_cast<const sushort*>(_data.ptr()));
 		}
-		else return smath::sstat::average(_data.ptr(), 3);
+		else return sstat::average(_data.ptr(), 3);
 	}
 }
 sushort SColor::gray16() const {
@@ -136,14 +110,14 @@ sushort SColor::gray16() const {
 	if (isFloat()) {
 		float* tmp = reinterpret_cast<float*>(_data.ptr());
 		if (channel() == 1) return f2scolor(tmp[0]);
-		else return f2scolor(smath::sstat::average(tmp, 3));
+		else return f2scolor(sstat::average(tmp, 3));
 	}
 	else {
 		if (channel() == 1) {
 			if (bpp() == 1) return b2scolor(_data[0]);
 			else return *reinterpret_cast<const sushort*>(_data.ptr());
 		}
-		else return b2scolor(smath::sstat::average(_data.ptr(), 3));
+		else return b2scolor(sstat::average(_data.ptr(), 3));
 	}
 }
 float SColor::grayf() const {
@@ -151,14 +125,14 @@ float SColor::grayf() const {
 	if (isFloat()) {
 		float* tmp = reinterpret_cast<float*>(_data.ptr());
 		if (channel() == 1) return tmp[0];
-		else return smath::sstat::average(tmp, 3);
+		else return sstat::average(tmp, 3);
 	}
 	else {
 		if (channel() == 1) {
 			if (bpp() == 1) return b2fcolor(_data[0]);
 			else return s2fcolor(*reinterpret_cast<const sushort*>(_data.ptr()));
 		}
-		else return b2fcolor(smath::sstat::average(_data.ptr(), 3));
+		else return b2fcolor(sstat::average(_data.ptr(), 3));
 	}
 }
 suint SColor::rgb() const {
@@ -534,13 +508,13 @@ bool SColor::operator==(const SColor &col) const {
 }
 
 SGradient::SGradient() : _coord(sgeom::XYZ), _angle(0.0f), SColor() {
-	addColor(0.0f, SColor::WHITE); addColor(1.0f, SColor::BLACK);
+	addColor(0.0f, color::WHITE); addColor(1.0f, color::BLACK);
 }
 SGradient::SGradient(const SGradient &grad) : _coord(grad._coord), _angle(grad._angle) {
     SColor::_type = grad._type; grad._data.copyTo(SColor::_data);  grad._points.copyTo(_points);
 }
 SGradient::~SGradient() {}
-smath::sgeom::COORDINATE SGradient::coordinate() const { return _coord; }
+sgeom::COORDINATE SGradient::coordinate() const { return _coord; }
 size_t SGradient::count() const { return _points.size(); }
 float SGradient::angle() const { return _angle; }
 SColor SGradient::operator[](size_t idx) const { return colorAt(idx); }
@@ -549,7 +523,7 @@ SColor SGradient::colorAt(size_t idx) const {
 }
 floatarray &SGradient::points() { return _points; }
 const floatarray &SGradient::points() const { return _points; }
-void SGradient::setCoordinate(smath::sgeom::COORDINATE coord) { _coord = coord; }
+void SGradient::setCoordinate(sgeom::COORDINATE coord) { _coord = coord; }
 void SGradient::setAngle(float f) { _angle = f; }
 void SGradient::setPosition(size_t idx, float f) { _points[idx] = f; }
 void SGradient::addColor(float f, const SColor &col) {
@@ -565,7 +539,7 @@ void SGradient::addColor(float f, const SColor &col) {
 			size_t idx = 0;
 			auto it = _points.begin(), end = _points.end();
 			while (it + 1 < end) {
-				if (E_ < f && f < E_NXT) {
+				if (E_ < f && f < E_NEXT) {
 					idx = it - _points.begin() + 1; break;
 				}
 			}
@@ -584,7 +558,7 @@ void SGradient::addColor(float f, const SColor &col) {
 			size_t idx = 0;
 			auto it = _points.begin(), end = _points.end();
 			while (it + 1 < end) {
-				if (E_ < f && f < E_NXT) {
+				if (E_ < f && f < E_NEXT) {
 					idx = it - _points.begin() + 1; break;
 				}
 			}
@@ -607,7 +581,7 @@ void SGradient::removeColor(size_t idx) {
 void SGradient::clear() {
     _angle = 0.0f; _points.clear(); SColor::_data.clear();
 }
-String SGradient::getClass() const { return _coord == smath::sgeom::XYZ ? "lgrad" : "rgrad"; }
+String SGradient::getClass() const { return _coord == sgeom::XYZ ? "lgrad" : "rgrad"; }
 String SGradient::toString() const {
 	String str;
 

@@ -44,59 +44,30 @@ namespace slib {
         #define HOME_PATH String(getenv("HOME"))
 		#endif
         #define CURRENT_PATH currentPath()
-        /*
-		//File type
-		constexpr sushort BINARY_FILE = 0x0000;
+        
+		
+		extern inline void _EXPAND_ARGS(SDictionary& params) {}
+		template<class... REST>
+		extern inline void _EXPAND_ARGS(SDictionary& params, const char *par, REST... rest) {
+			auto str = String(par);
+			auto pos = str.find("=");
+			if (pos == NOT_FOUND) throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
+			auto key = str.substring(0, pos);
+			auto val = str.substring(pos + 1);
+			if (val.isQuoted()) params[key] = String::dequot(val);
+			else if (val.isNumeric()) params[key] = SNumber::toNumber(val);
+			else if (val == "null") params[key] = snull;
+			else if (String::lower(val) == "true" || String::lower(val) == "yes") params[key] = SNumber(true);
+			else if (String::lower(val) == "false" || String::lower(val) == "no") params[key] = SNumber(false);
+			else params[key] =val;
+			_EXPAND_ARGS(params, rest...);
+		}
+		template<class... Args>
+		extern inline void EXPAND_ARGS(Args... args) {
+			SDictionary& params;
+			_EXPAND_ARGS(params, args...);
+		}
 
-		//Text 0x0010
-		constexpr sushort TEXT_FILE = 0x0010;
-		constexpr sushort RTF_FILE = 0x0011;
-		constexpr sushort CSV_FILE = 0x0012;
-		constexpr sushort TSV_FILE = 0x0013;
-
-		//Data 0x0020
-		constexpr sushort JSON_FILE = 0x0021;
-
-		//Image 0x0040
-		constexpr sushort RAW = 0x0041;
-		constexpr sushort PICT = 0x0042;
-		constexpr sushort BMP = 0x0043;
-		constexpr sushort TIFF = 0x0044;
-		constexpr sushort JPEG = 0x0045;
-		constexpr sushort PNG = 0x0046;
-
-		//Sound 0x0080
-
-
-		//Movie 0x00C0
-
-
-		//3D 0x100
-		constexpr sushort OBJ_FILE = 0x0101;
-
-		//Archived 0x800
-		constexpr sushort ZIP_FILE = 0x0801;
-
-
-		constexpr sushort EXE_FILE = 0x0821;
-		constexpr sushort PKG_FILE = 0x0822;
-
-		//Program 0x1000
-		//Script 0x1100
-		//Compile 0x1200
-		//Interpret 0x1400
-		//Hybrid 0x1600
-		//ML 0x1800
-		constexpr sushort XML_FILE = 0x1801;
-		constexpr sushort HTML_FILE = 0x1811;
-		constexpr sushort XHTML_FILE = 0x1812;
-		constexpr sushort MD_FILE = 0x1821;
-
-		constexpr sushort PLIST_FILE = 0x180A;
-		//constexpr sushort SOML_FILE = 0x180F;
-
-		constexpr sushort SVG_FILE = 0x1841;
-		*/
 
         class SLIB_DLL SFile;
         #define filearray Array<slib::sio::SFile>
@@ -111,54 +82,34 @@ namespace slib {
         constexpr subyte CANCEL_IFEXIST = 0x02;
         constexpr subyte BACKUP_ORI = 0x04;
         
-        extern String currentPath();
-        extern bool fileExist(const char *s);
+		extern inline String currentPath() {
+			String path;
+#if defined(MAC_OS) || defined(UNIX_OS) || defined(LINUX_OS)
+			SSystem::exec("pwd", path);
+#else
+			SSystem::exec("cd", path);
+			path = String::toUTF8(path);
+#endif
+			path.trimming();
+			return path;
+		}
+		extern inline bool fileExist(const char* s) {
+			int res;
+#if defined(WIN32_OS)
+			struct _stat32 buf;
+			res = _stat32(s, &buf);
+			return !res;
+#elif defined(WIN64_OS)
+			struct _stat64 buf;
+			res = _stat64(s, &buf);
+			return !res;
+#else
+			struct stat buf;
+			res = stat(s, &buf);
+			return !res;
+#endif
+		}
     }
-
-	template<typename T, class M>
-	extern inline std::ostream& operator<<(std::ostream& os, const Array<T, M>& array) { return os << toString(array); }
-	template<typename T, size_t S, class M>
-	extern inline std::ostream& operator<<(std::ostream& os, const FixedArray<T, S, M>& array) { return os << toString(array); }
-	template<typename T, class M>
-	extern inline std::ostream& operator<<(std::ostream& os, const BiArray<T, M>& array) { return os << toString(array); }
-	template<class Key, class Val>
-	extern inline std::ostream& operator<<(std::ostream& os, const Map<Key, Val>& map) { return os << toString(map); }
-
-    extern inline std::ostream &operator<<(std::ostream &os, const Char &c) { 
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		return os << c.toString().localize().cstr();
-#else
-		return os << c.toString().cstr();
-#endif
-	}
-	extern inline std::ostream &operator<<(std::ostream &os, const String & str) {
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		return os << str.localize().cstr();
-#else
-		return os << str.cstr();
-#endif
-	}
-	extern inline std::istream& operator>>(std::istream& is, String& str) {
-		is.seekg(0, std::ios::end);
-		size_t size = is.tellg();
-		is.clear();
-		is.seekg(0);
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		char* buf = new char[size + 1];
-		is.read(buf, size);
-		buf[size] = 0;
-		str = String::toUTF8(buf);
-#else
-		str.resize(size);
-		return is.read(str.ptr(), size);
-#endif
-		return is;
-	}
-	template<typename T>
-	extern inline std::ostream& operator<<(std::ostream& os, const Fraction<T>& f) { return os << f.toString(); }
-	template<typename T>
-	extern inline std::ostream& operator<<(std::ostream& os, const Complex<T>& c) { return os << c.toString(); }
-
     extern inline std::ostream &operator<<(std::ostream &os, const SNumber &num) { return os << num.toString(); }
 	extern inline std::ostream &operator<<(std::ostream &os, const SChar& c) { return os << c.toString(); }
 	extern inline std::ostream &operator<<(std::ostream &os, const SString &str) {

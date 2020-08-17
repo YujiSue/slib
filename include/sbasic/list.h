@@ -7,7 +7,6 @@
 #include "sbasic/listiter.h"
 
 namespace slib {
-    //List<T>
     template <typename T>
     class List {
         typedef std::function<bool(const T &t1, const T &t2)> Comparer;

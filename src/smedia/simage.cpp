@@ -6,7 +6,7 @@ using namespace slib::smath;
 using namespace slib::smedia;
 
 inline void gray8_16(const subyte *src, subyte *to) {
-    uint16_t val = (int)(*src)*MAX_USHORT/MAX_UBYTE;
+    sushort val = (int)(*src)*MAX_USHORT/MAX_UBYTE;
     memcpy(to, &val, 2);
 }
 inline void gray8_32(const subyte *src, subyte *to) {
@@ -54,7 +54,6 @@ inline void nn_interpolator(subyte *dest, float x, float y, const SImage *src, s
     int x_ = (int)x, y_ = (int)y;
     memcpy(dest, src->ptr((x-x_<0.5f?x:x+1), (y-y_<0.5f?y:y+1)), bpp);
 }
-
 inline void bl_interpolator(subyte *dest, float x, float y, const SImage *src, subyte bpp) {
     int x_ = (int)x, y_ = (int)y;
     float t = x-x_, s = y-y_;
@@ -64,13 +63,11 @@ inline void bl_interpolator(subyte *dest, float x, float y, const SImage *src, s
         dest[b] = (subyte)(s*px1+(1-s)*px2);
     }
 }
-
 inline float bc_weight(float f) {
     if (f <= 1.0) return 1.0-2.0*f*f+f*f*f;
     else if (f <= 2.0) return 4.0-8.0*f+5.0*f*f-f*f*f;
     return 0.0;
 }
-
 inline void bc_interpolator(subyte *dest, float x, float y, const SImage *src, subyte bpp) {
     int x_ = (int)x, y_ = (int) y;
     float wx[4], wy[4];
@@ -241,7 +238,7 @@ void SImage::swap(SImage &img) {
     auto tmpf = _file; _file = img._file; img._file = tmpf;
     _attribute.swap(img._attribute);
 }
-void SImage::toMatrix(smat<subyte> &mat) {
+void SImage::toMatrix(smatub &mat) {
 	mat.resize(_height, _width * bytePerPixel(_type));
     memcpy(mat.ptr(), _data.ptr(), _data.size());
 }

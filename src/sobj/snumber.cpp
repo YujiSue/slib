@@ -6,11 +6,15 @@
 using namespace slib;
 
 String SNumber::toBinary(subyte b) {
-	return HEX_STR[(b >> 7)] + HEX_STR[((b >> 6) & 0x01)] + HEX_STR[((b >> 5) & 0x01)] + HEX_STR[((b >> 4) & 0x01)] +
-		HEX_STR[((b >> 3) & 0x01)] + HEX_STR[((b >> 2) & 0x01)] + HEX_STR[((b >> 1) & 0x01)] + HEX_STR[(b & 0x01)];
+	String str(8, 0);
+	srforin(i, 0, 8) {
+		str[i] = slib::HEX_STR[(b & 0x01)];
+		b >>= 1;
+	}
+	return str;
 }
-String SNumber::toOct(subyte b) { return String(HEX_STR[(b >> 6) & 0x07]) + HEX_STR[((b >> 3) & 0x07)] + HEX_STR[(b & 0x07)]; }
-String SNumber::toHex(subyte b) { return String(HEX_STR[(b >> 4) & 0x0F]) + HEX_STR[(b & 0x0F)]; }
+String SNumber::toOct(subyte b) { return String(slib::HEX_STR[(b >> 6) & 0x07]) + slib::HEX_STR[((b >> 3) & 0x07)] + slib::HEX_STR[(b & 0x07)]; }
+String SNumber::toHex(subyte b) { return String(slib::HEX_STR[(b >> 4) & 0x0F]) + slib::HEX_STR[(b & 0x0F)]; }
 SNumber SNumber::toNumber(const char *s) { return String(s).number(); }
 SNumber::SNumber() : _type(SNumber::INTEGER) { _value._i = 0; }
 SNumber::SNumber(char c) : _type(SNumber::INTEGER) { _value._i = (sbyte)c; }
@@ -1733,12 +1737,6 @@ String SNumber::precised(size_t size, smath::ROUND round) const {
     else if(_type == SNumber::FRAC) return fraction().rounded(size, round);
     else if (_type == SNumber::COMPLEX) return complex().rounded(size, round);
     else return toString();
-}
-String SNumber::toWideString() const {
-    auto str = toString();
-    String str_;
-    sforeach(str) { str_ += Char::wideChar(E_); }
-    return str;
 }
 String SNumber::getClass() const {
     if (_type == SNumber::INTEGER || _type == SNumber::UINTEGER) return "integer";

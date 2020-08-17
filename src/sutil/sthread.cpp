@@ -6,27 +6,23 @@ SLock::SLock() { _lock.exchange(false); }
 SLock::~SLock() {}
 void SLock::lock() { while (_lock.exchange(true, std::memory_order_acquire) == true) {} }
 void SLock::unlock() { _lock.store(false, std::memory_order_release); }
-SAutoLock::SAutoLock(SLock& l) : _lock(&l) { _lock->lock(); }
-SAutoLock::~SAutoLock() { _lock->unlock(); }
-
+SAutoLock::SAutoLock() { _lock.lock(); }
+SAutoLock::~SAutoLock() { _lock.unlock(); }
 SThread::SThread() : _state(NO_TASK), _id(0) {}
 SThread::SThread(suinteger i) : _state(NO_TASK), _id(i) {}
 SThread::~SThread() {}
 const SThread::STATE SThread::state() const { return _state; }
 void SThread::setState(STATE st) { _state = st; }
-void SThread::complete() { 
+void SThread::complete() {
 	_thread.join();
 	_state = COMPLETED;
 }
-
-
 STask::STask() {}
 STask::~STask() {}
 STask& STask::operator=(const STask& t) {
 	_func = t._func; return *this;
 }
 void STask::operator()() { _func(); }
-#ifndef _MANAGED
 inline void _work(bool *run, SThread *thread, std::condition_variable *cv, std::queue<STask> *tasks, std::mutex *mtx) {
 	while (*run) {
 		STask task;
@@ -50,8 +46,6 @@ inline void _work(bool *run, SThread *thread, std::condition_variable *cv, std::
 	if (tasks->empty()) thread->setState(SThread::COMPLETED);
 	else thread->setState(SThread::CANCELED);
 }
-#endif
-
 SWork::SWork() : _run(false), _count(0) {}
 SWork::SWork(size_t size) : SWork() { setSize(size); }
 SWork::~SWork() {

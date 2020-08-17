@@ -20,10 +20,13 @@ void SImageIO::load(const sio::SFile& file, SImage *image) {
 	cv::Mat img = cv::imread(file.path().cstr());
 	cv2simg(img, image);
 #else
-	auto ext = file.extension();
-	if (ext.beginWith("tif")) importTIFF(file.path(), image);
-	else if (ext == "jpg" || ext == "jpeg") importJPG(file.path(), image);
-	else if (ext == "png") importPNG(file.path(), image);
+	auto ext = file.extension(), path = file.path();
+#ifdef WIN_OS
+	path = path.localize();
+#endif
+	if (ext.beginWith("tif")) importTIFF(path.cstr(), image);
+	else if (ext == "jpg" || ext == "jpeg") importJPG(path.cstr(), image);
+	else if (ext == "png") importPNG(path.cstr(), image);
 	else throw SException(ERR_INFO, SLIB_FORMAT_ERROR, ext, "SLIB IMAGE");
 #endif
 }
@@ -32,10 +35,13 @@ void SImageIO::save(const sio::SFile& file, SImage *image) {
 	cv::Mat img = s2cvimg(image);
 	cv::imwrite(file.path().cstr(), img);
 #else
-	auto ext = file.extension();
-	if (ext.beginWith("tif")) exportTIFF(file.path(), 0, image);
-	else if (ext == "jpg" || ext == "jpeg") exportJPG(file.path(), 1.0, image);
-	else if (ext == "png") exportPNG(file.path(), image);
+	auto ext = file.extension(), path = file.path();
+#ifdef WIN_OS
+	path = path.localize();
+#endif
+	if (ext.beginWith("tif")) exportTIFF(path.cstr(), 0, image);
+	else if (ext == "jpg" || ext == "jpeg") exportJPG(path.cstr(), 1.0, image);
+	else if (ext == "png") exportPNG(path.cstr(), image);
 	else throw SException(ERR_INFO, SLIB_FORMAT_ERROR, file.path());
 #endif
 }
@@ -65,7 +71,7 @@ void SImageIO::importJPG(const char *path, SImage *img) {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     JSAMPROW buffer = NULL;
-	cinfo.err = jpeg_std_error(&jerr);
+	cinfo.err = jpeg_std_error(&jerr); 
 	jpeg_create_decompress(&cinfo);
 	fp = fopen(path, "rb");
 	if (!fp) throw SMediaException(ERR_INFO, sio::FILE_OPEN_ERROR, path);
@@ -84,7 +90,7 @@ void SImageIO::importJPG(const char *path, SImage *img) {
 			img->_type = RGB24;
             break;
 		case 4:
-			img->_type = RGB24;
+			img->_type = RGBA;
 			break;
         default:
 			img->_type = GRAY8;
@@ -144,7 +150,7 @@ void SImageIO::importPNG(const char *path, SImage *img) {
         }
         case PNG_COLOR_TYPE_RGB:
         {
-            img->setType(RGB32);
+            img->setType(RGB24);
             img->resize(img->_width, img->_height);
             for (int h = 0; h < img->_height; ++h) {
                 auto row = rows[h];

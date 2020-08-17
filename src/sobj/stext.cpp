@@ -7,13 +7,13 @@ using namespace slib::sio;
 
 text_style::text_style(int t, const char *f, float s, smedia::SColor c, smedia::SColor b) :
                                         type(t), font(f), size(s), color(c), background(b) {}
-text_style::text_style(const sobj &obj) : text_style() {
-	if (obj["type"]) type = obj["type"];
-	if (obj["font"]) font = obj["font"];
-	if (obj["size"]) size = obj["size"];
-	if (obj["weight"]) size = obj["weight"];
-	if (obj["color"]) color = smedia::SColor((const char*)obj["color"]);
-	if (obj["bg"]) background = smedia::SColor((const char*)obj["bg"]);
+text_style::text_style(SDictionary& dict) : text_style() {
+	if (dict["type"]) type = dict["type"];
+	if (dict["font"]) font = dict["font"];
+	if (dict["size"]) size = dict["size"];
+	if (dict["weight"]) size = dict["weight"];
+	if (dict["color"]) color = smedia::SColor((const char*)dict["color"]);
+	if (dict["bg"]) background = smedia::SColor((const char*)dict["bg"]);
 }
 text_style::text_style(const text_style &style) {
     type = style.type;
@@ -37,14 +37,24 @@ sobj text_style::toObj() const {
 	return { kv("type", type), kv("font", font), kv("size", size), kv("weight", weight), kv("color", color), kv("bg", background) };
 }
 
-SText::SText() {}
-SText::SText(const String &s, const sobj &a) : _string(s) { 
+SText::SText() : SObject() {}
+SText::SText(const char* s) : _string(s), SObject() {}
+SText::SText(const char* s, SDictionary&& a) : SText(s) {
 	auto attr = text_style(a);
-	auto range = srange(0, s.length());
+	auto range = srange(0, _string.length());
 	auto atp = std::make_pair(range, attr);
 	_attribute.add(atp);
 }
-SText::SText(const SText &text) : SText(text._string) { _attribute = text._attribute; }
+SText::SText(sobj obj) : SText() {
+	if (obj.isText()) *this = obj.text();
+	else if (obj.isDict()) {
+		_string = obj["text"];
+
+
+	}
+	else _string = obj.toString();
+}
+SText::SText(const SText& text) : SText() { _string = text._string; _attribute = text._attribute; }
 SText::~SText() {}
 
 SText &SText::operator = (const char *s) { _string = s; return *this; };
@@ -213,10 +223,10 @@ void SText::setBGColor(srange range, const smedia::SColor &col) {
     ta.second.background = col;
     _attribute.add(ta);
 }
-void SText::setAttribute(srange range, const sobj &attr) {
+void SText::setAttribute(srange range, sobj attr) {
     text_attribute ta;
     ta.first = range;
-    ta.second = attr;
+    ta.second = attr.dict();
     _attribute.add(ta);
 }
 

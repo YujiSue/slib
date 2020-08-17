@@ -127,7 +127,7 @@ inline void _convert(sobj &obj, sushort from, sushort to) {
 			else if (to == BOOL_COLUMN) obj.number().setType(SNumber::BOOL);
 		}
 		else if (to & STRING_COLUMN) obj = obj.toString();
-		else if (to == DATE_COLUMN) obj = SDate(obj.toString(), SDate::YMDHMS);
+		else if (to == DATE_COLUMN) obj = SDate(obj.toString(), slib::sstyle::YMDHMS);
 		else if (to == DATA_COLUMN) obj = SData(obj.toString().length(), (void *)obj.toString().cstr());
 		else _setInitObj(obj, to);
 	}

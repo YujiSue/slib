@@ -393,10 +393,10 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 	if (!file.isOpened()) file.open(nullptr, sio::READ);
 	String row;
 	file.readLine(row);
-	auto col = row.split(String::TAB);
+	auto col = row.split(TAB);
 	while (!file.eof()) {
 		file.readLine(row);
-		auto dat = row.split(String::TAB);
+		auto dat = row.split(TAB);
 		sforeachi(col) {
 			SVariant *var = new SVariant();
 			if (col[i] == "Chr" || col[i] == "Chr1") {
@@ -412,12 +412,12 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 
 			else if (col[i] == "Cov") var->copy.depth[0] = dat[i];
 			else if (col[i] == "Allele cov") var->read[0] = dat[i];
-			//			else if (col[i] == "Gene") file << "" << String::TAB;
-			//			else if (col[i] == "Region") file << "" << String::TAB;
-			//			else if (col[i] == "Mutant") file << "" << String::TAB;
-			//			else if (col[i] == "Repeat") file << "" << String::TAB;
-			//			else if (col[i] == "Mutation") file << "" << String::TAB;
-			//			else if (col[i] == "Substitution") file << "" << String::TAB;
+			//			else if (col[i] == "Gene") file << "" << TAB;
+			//			else if (col[i] == "Region") file << "" << TAB;
+			//			else if (col[i] == "Mutant") file << "" << TAB;
+			//			else if (col[i] == "Repeat") file << "" << TAB;
+			//			else if (col[i] == "Mutation") file << "" << TAB;
+			//			else if (col[i] == "Substitution") file << "" << TAB;
 
 			else if (col[i] == "Ref" && dat[i] != "-") var->attribute["Ref"] = dat[i];
 			else if (col[i] == "Var" && dat[i] != "-") var->alt = dat[i];
@@ -442,7 +442,7 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 		val = row.substring(pos + 1);
 	if (key == "INFO" || key == "FILTER" || key == "FORMAT" ||
 		key == "ALT" || key == "PEDIGREE") {
-		if (val.first() == '<' && val.last() == '>') val.transform(DELETE_QUOTE);
+		if (val.first() == '<' && val.last() == '>') val.transform(sstyle::DELETE_QUOTE);
 		sattribute attr = val.parse(",", "=");
 		sdict content;
 		sforeach(attr) {
@@ -452,7 +452,7 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 		list->attribute[key][attr["ID"]] = content;
 	}
 	else if (key == "contig") {
-		val.transform(DELETE_QUOTE);
+		val.transform(sstyle::DELETE_QUOTE);
 		sattribute attr = val.parse(",", "=");
 		sdict content;
 		sforeach(attr) {
@@ -462,7 +462,7 @@ inline void _readVCFHeader(String &row, SVarList *list) {
 		}
 	}
 	else {
-		if (val.isQuoted()) val.transform(DELETE_QUOTE);
+		if (val.isQuoted()) val.transform(sstyle::DELETE_QUOTE);
 		list->attribute[key] = val;
 	}
 }
@@ -646,35 +646,35 @@ void SVarIO::saveTxt(sio::SFile& file, SVarList* list) {}
 void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 	if (!file.isOpened()) file.make();
 	if (col.empty()) return;
-	file << toString(col, String::TAB) << String::LF; file.flush();
+	file << toString(col, TAB) << LF; file.flush();
 	if (list->empty()) return;
 	sforeach(*list) {
 		sforeach_(cit, col) {
-			if (*cit == "Chr" || *cit == "Chr1") file << list->refname[E_->pos[0].idx] << String::TAB;
-			else if (*cit == "Chr2") file << (E_->pos[1].idx < 0?"-":list->refname[E_->pos[1].idx]) << String::TAB;
-			else if (*cit == "Pos" || *cit == "Pos1") file << E_->pos[0].begin << String::TAB;
-			else if (*cit == "Pos2") file << E_->pos[1].begin << String::TAB;
+			if (*cit == "Chr" || *cit == "Chr1") file << list->refname[E_->pos[0].idx] << TAB;
+			else if (*cit == "Chr2") file << (E_->pos[1].idx < 0?"-":list->refname[E_->pos[1].idx]) << TAB;
+			else if (*cit == "Pos" || *cit == "Pos1") file << E_->pos[0].begin << TAB;
+			else if (*cit == "Pos2") file << E_->pos[1].begin << TAB;
 			else if (*cit == "Len" || *cit == "Len1") {
 				if ((E_->flag & SMALL_VARIANT) && E_->type == INSERTION )
-					file << E_->alt.length() << String::TAB;
-				else file << E_->pos[0].length(true) << String::TAB;
+					file << E_->alt.length() << TAB;
+				else file << E_->pos[0].length(true) << TAB;
 			}
-			else if (*cit == "Len2") file << E_->pos[1].length(true) << String::TAB;
+			else if (*cit == "Len2") file << E_->pos[1].length(true) << TAB;
 
-			else if (*cit == "Cov") file << (int)E_->copy.depth[0] << String::TAB;
-			else if (*cit == "Allele cov" || *cit == "Split read") file << E_->total() << String::TAB;
-			else if (*cit == "Copy" || *cit == "Copy1") file << SNumber(E_->copy.ratio[0]).precised(2) << String::TAB;
-			else if (*cit == "Copy2") file << SNumber(E_->copy.ratio[1]).precised(2) << String::TAB;
-			else if (*cit == "Read bias") file << SNumber(SVarUtil::readBias(E_->read)).precised(2) << String::TAB;
+			else if (*cit == "Cov") file << (int)E_->copy.depth[0] << TAB;
+			else if (*cit == "Allele cov" || *cit == "Split read") file << E_->total() << TAB;
+			else if (*cit == "Copy" || *cit == "Copy1") file << SNumber(E_->copy.ratio[0]).precised(2) << TAB;
+			else if (*cit == "Copy2") file << SNumber(E_->copy.ratio[1]).precised(2) << TAB;
+			else if (*cit == "Read bias") file << SNumber(SVarUtil::readBias(E_->read)).precised(2) << TAB;
 
 			else if (*cit == "Gene") {
 				if (!E_->genes.empty()) {
 					String genenames;
 					sforeach_(git, E_->genes) genenames << git->name << ",";
 					if (!genenames.empty()) genenames.resize(genenames.length() - 1);
-					file << genenames << String::TAB;
+					file << genenames << TAB;
 				}
-				else file << "-" << String::TAB;
+				else file << "-" << TAB;
 			}
 			else if (*cit == "Region" || *cit == "Site") {
 				if (!E_->genes.empty()) {
@@ -685,15 +685,15 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 						regioname << SVarUtil::vsite(site) << ",";
 					}
 					if (!regioname.empty()) regioname.resize(regioname.length() - 1);
-					file << regioname << String::TAB;
+					file << regioname << TAB;
 				}
-				else file << "-" << String::TAB;
+				else file << "-" << TAB;
 			}
 			else if (*cit == "Mutant") {
-				if (!E_->mutants.empty()) file << toString(E_->mutants) << String::TAB;
-				else file << "-" << String::TAB;
+				if (!E_->mutants.empty()) file << toString(E_->mutants) << TAB;
+				else file << "-" << TAB;
 			}
-			else if (*cit == "Repeat") file << (E_->attribute["repeat"] ? "true" : "false") << String::TAB;
+			else if (*cit == "Repeat") file << (E_->attribute["repeat"] ? "true" : "false") << TAB;
 			else if (*cit == "Mutation") {
 				if (!E_->genes.empty()) {
 					String mutname;
@@ -706,9 +706,9 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 						}
 					}
 					if (!mutname.empty()) mutname.resize(mutname.length() - 1);
-					file << mutname << String::TAB;
+					file << mutname << TAB;
 				}
-				else file << "-" << String::TAB;
+				else file << "-" << TAB;
 			}
 			else if (*cit == "Substitution") {
 				if (!E_->genes.empty()) {
@@ -726,24 +726,24 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 						}
 					}
 					if (!substitute.empty()) substitute.resize(substitute.length() - 1);
-					file << substitute << String::TAB;
+					file << substitute << TAB;
 				}
-				else file << "-" << String::TAB;
+				else file << "-" << TAB;
 			}
-			else if (*cit == "Ref") file << (E_->attribute["Ref"] ? E_->attribute["Ref"] : "-") << String::TAB;
-			else if (*cit == "Var") file << (E_->alt.size() ? E_->alt : "-") << String::TAB;
+			else if (*cit == "Ref") file << (E_->attribute["Ref"] ? E_->attribute["Ref"] : "-") << TAB;
+			else if (*cit == "Var") file << (E_->alt.size() ? E_->alt : "-") << TAB;
 
-			else if (*cit == "Type") file << SVarUtil::vtype(E_->type) << String::TAB;
-			else if (*cit == "Genotype" || *cit == "Homo") file << (E_->homo ? "Homo" : "Hetero") << String::TAB;
-			else if (*cit == "Qual") file << SNumber(E_->qual).precised(2) << String::TAB;
-			else if (*cit == "Freq") file << SNumber(E_->copy.frequency).precised(2) << String::TAB;
+			else if (*cit == "Type") file << SVarUtil::vtype(E_->type) << TAB;
+			else if (*cit == "Genotype" || *cit == "Homo") file << (E_->homo ? "Homo" : "Hetero") << TAB;
+			else if (*cit == "Qual") file << SNumber(E_->qual).precised(2) << TAB;
+			else if (*cit == "Freq") file << SNumber(E_->copy.frequency).precised(2) << TAB;
 
-			else if (*cit == "List") file << list->name << String::TAB;
-			else if (*cit == "Name") file << E_->name << String::TAB;
-			else if (*cit == "Sample") file << list->name << String::TAB;
+			else if (*cit == "List") file << list->name << TAB;
+			else if (*cit == "Name") file << E_->name << TAB;
+			else if (*cit == "Sample") file << list->name << TAB;
 
 		}
-		file << String::LF; file.flush();
+		file << LF; file.flush();
 	}
 }
 inline void _writeVCFContig(SVarList* list, SFile& file) {
@@ -751,7 +751,7 @@ inline void _writeVCFContig(SVarList* list, SFile& file) {
 		file << "##contig=<ID=" << list->refname[i];
 		if (i < list->reflength.size()) file << ",length=" << list->reflength[i];
 		if (list->refver.length()) file << ",assembly=" << list->refver;
-		file << ">" << String::LF; file.flush();
+		file << ">" << LF; file.flush();
 	}
 }
 inline void _writeVCFHeader(SVarList* list, SFile& file, const char* tag) {
@@ -763,15 +763,15 @@ inline void _writeVCFHeader(SVarList* list, SFile& file, const char* tag) {
 			auto& dat = data[E_].dict();
 			sforeach_(it_, dat) file << "," << it_->key << "=" << it_->value;
 		}
-		file << ">" << String::LF; file.flush();
+		file << ">" << LF; file.flush();
 	}
 }
 inline void _makeVCFAttribute(SVarList* list) {}
 
 void SVarIO::saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 	if (!file.isOpened()) file.make();
-	file << "##fileformat=VCFv4.1" << String::LF;
-	file << "##source=libsbioinfo" << String::LF;
+	file << "##fileformat=VCFv4.1" << LF;
+	file << "##source=libsbioinfo" << LF;
 	_writeVCFContig(list, file);
 	bool format = false;
 	stringarray info_key, format_key;
@@ -788,7 +788,7 @@ void SVarIO::saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 	}
 	if (list->attribute["ALT"]) _writeVCFHeader(list, file, "ALT");
 	if (list->attribute["PEDIGREE"]) _writeVCFHeader(list, file, "PEDIGREE");
-	file << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t" << (format ? "FORMAT\t" : "") << list->name << String::LF; file.flush();
+	file << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t" << (format ? "FORMAT\t" : "") << list->name << LF; file.flush();
 	sforeach(*list) {
 		if (E_->type == DELETION) {
 			auto refstr = ref->at(E_->pos[0].idx)->raw(E_->pos[0].begin - 2, E_->pos[0].end + 2 - E_->pos[0].begin),
@@ -827,11 +827,11 @@ void SVarIO::saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 			}
 			if (format_key_str == "") format_key_str = "\t";
 			else format_key_str.last() = '\t';
-			if (format_str == "") format_str = String::LF;
+			if (format_str == "") format_str = LF;
 			else format_str.last() = '\n';
 			file << format_key_str << format_str;
 		}
-		else file << String::LF;
+		else file << LF;
 		file.flush();
 	}
 }

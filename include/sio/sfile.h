@@ -6,7 +6,7 @@
 
 namespace slib {
     namespace sio {
-		#define SDirectory(X) SFile((X), DIRECTORY)
+		#define SDirectory(X) SFile((X), slib::sio::DIRECTORY)
         class SLIB_DLL SFile : public SObject {
 		public:
 			enum SEEK_ORI {

@@ -7,6 +7,8 @@
 #include "sobj/sdict.h"
 #include "sobj/stable.h"
 #include "sobj/sfunc.h"
+#include "sio/sfile.h"
+#include "sutil/sdb.h"
 
 #include "smedia/simage.h"
 #include "smedia/sfigure.h"
@@ -368,7 +370,7 @@ void SObjPtr::swap(SObjPtr &ptr) {
 }
 SObjPtr &SObjPtr::operator[](int idx) {
     if (isNull()) { _type = ARRAY_OBJ; _ptr = new SArray(); }
-	if (isStr()) { return string().u8char(idx); }
+	if (isStr()) { return string().charAt(idx); }
     if (isArray()) return array()[idx];
     if (isTable()) return table()[idx];
     //if (isCnvs()) return canvas()[idx];
@@ -377,7 +379,7 @@ SObjPtr &SObjPtr::operator[](int idx) {
 }
 const SObjPtr &SObjPtr::operator[](int idx) const {
     if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-	if (isStr()) { return string().u8char(idx); }
+	if (isStr()) { return string().charAt(idx); }
 
 	
 	if (isArray()) return array()[idx];
@@ -497,6 +499,12 @@ SCIterator SObjPtr::end() const {
     else if (isArray()) return SCIterator(array().end());
     else if (isDict()) return SCIterator(dict().end());
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
+SObjPtr SObjPtr::toSObj(const String &s) {
+	if (s == "null") return snull;
+	else if (s.isQuoted()) return String::dequot(s);
+	else if (s.isNumeric()) return SNumber::toNumber(s);
+	else return s;
 }
 sobj SObjPtr::import(sobj info) {
 	sobj obj;
@@ -1161,7 +1169,11 @@ const smedia::SMovie &SObjPtr::movie() const {
     if (isMov()) return *dynamic_cast<smedia::SMovie *>(_ptr);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-
+sobj SObjPtr::clone() const {
+	if (isNull()) return snull;
+	else if (isHollow()) return sobj(_type);
+	return sobj(_type, _ptr->clone());
+}
 SObjPtr::operator SObject *() const { return _ptr; }
 
 SObjPtr::operator bool() const { return boolean(); }
@@ -1224,8 +1236,14 @@ bool SObjPtr::operator != (const SObjPtr &obj) const {
 bool SObjPtr::operator != (const char *s) const {
     return !((*this)==s);
 }
-bool slib::operator<(const int &i, const SObjPtr &obj) {
-    if (obj.isNum()) return SNumber(i) < obj.number();
-    else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+String slib::operator+(const char* s, const SObjPtr& obj) {
+	return String(s) + obj.toString();
+}
+String slib::operator+(const ::std::string& s, const SObjPtr& obj) {
+	return String(s) + obj.toString();
+}
+bool slib::operator<(const int& i, const SObjPtr& obj) {
+	if (obj.isNum()) return SNumber(i) < obj.number();
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 

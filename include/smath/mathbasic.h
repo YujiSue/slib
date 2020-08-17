@@ -11,7 +11,7 @@ namespace slib {
 
 #define DIMENSION_SIZE_DIFF(X, Y) String(X)+u8" ≠ "+String(Y)
 
-		class SLIB_DLL SMathException : public SException {
+		class SMathException : public SException {
 		public:
 			SMathException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr) :
 				SException(f, l, func, e, target, note) {
@@ -44,7 +44,9 @@ namespace slib {
 
 		typedef enum {
 			HORIZONTAL = 1,
+			COLUMN = 1,
 			VERTICAL = 2,
+			ROW = 2,
 			DEPTH = 3,
 			TEMPORAL = 4,
 		} DIRECTION;

@@ -3,12 +3,11 @@
 
 #include "sbasic/char.h"
 
+#define su8_iter slib::SUtf8Iterator
+#define su8_citer slib::SUtf8CIterator
+
 namespace slib {
     class SLIB_DLL String;
-    
-    #define su8_iter SUtf8Iterator
-    #define su8_citer SUtf8CIterator
-    
     class SLIB_DLL SUtf8Iterator {
     public:
         typedef std::random_access_iterator_tag iterator_category;

@@ -56,7 +56,7 @@ namespace slib {
     class SLIB_DLL SNumber;
 	using snum = SClsPtr<SNumber, NUMBER_OBJ>;
     class SLIB_DLL SChar;
-	using sch = SClsPtr<SChar, CHAR_OBJ>;
+	using schar = SClsPtr<SChar, CHAR_OBJ>;
     class SLIB_DLL SString;
 	using ss = SClsPtr<SString, STRING_OBJ>;
     class SLIB_DLL SText;
@@ -70,7 +70,7 @@ namespace slib {
     class SLIB_DLL SPair;
 	using spair = SClsPtr<SPair, PAIR_OBJ>;
     class SLIB_DLL SDictionary;
-	using sdict = SClsPtr<SDictionary, DICT_OBJ>;
+	using sdict = slib::SClsPtr<slib::SDictionary, DICT_OBJ>;
 	template<class Return, class... Args>
 	class SFunction;
 	template<class Return, class... Args>
@@ -89,7 +89,6 @@ namespace slib {
     namespace smedia {
 		class SLIB_DLL SColor;
 		using scolor = SClsPtr<SColor, COLOR_OBJ>;
-
 		class SLIB_DLL SImage;
 		using simg = SClsPtr<SImage, IMAGE_OBJ>;
         class SLIB_DLL SFigure;
@@ -132,195 +131,199 @@ namespace slib {
     class SLIB_DLL SIterator;
     class SLIB_DLL SCIterator;
     
-    class SLIB_DLL SObjPtr {
-    protected:
-        OBJ_TYPE _type;
-        SObject *_ptr;
-        
-    public:
-        SObjPtr();
+	class SLIB_DLL SObjPtr {
+	protected:
+		OBJ_TYPE _type;
+		SObject* _ptr;
+
+	public:
+		SObjPtr();
 		SObjPtr(OBJ_TYPE ot);
-        SObjPtr(bool b);
-        SObjPtr(sbyte i);
-        SObjPtr(subyte ui);
-        SObjPtr(sshort i);
-        SObjPtr(sushort ui);
-        SObjPtr(int i);
-        SObjPtr(unsigned int ui);
-        SObjPtr(size_t ui);        
+		SObjPtr(bool b);
+		SObjPtr(sbyte i);
+		SObjPtr(subyte ui);
+		SObjPtr(sshort i);
+		SObjPtr(sushort ui);
+		SObjPtr(int i);
+		SObjPtr(unsigned int ui);
+		SObjPtr(size_t ui);
 #ifdef WIN64_OS
-        SObjPtr(long i);
+		SObjPtr(long i);
 #ifndef MAC_OS
-        SObjPtr(unsigned long ui);
+		SObjPtr(unsigned long ui);
 #endif
 #endif
-        SObjPtr(long long i);
+		SObjPtr(long long i);
 #ifdef MAC_OS
-        SObjPtr(unsigned long long i);
+		SObjPtr(unsigned long long i);
 #endif
 #ifdef LINUX_OS
 		SObjPtr(sinteger i);
 #endif
-        SObjPtr(float f);
-        SObjPtr(double d);
+		SObjPtr(float f);
+		SObjPtr(double d);
 		SObjPtr(const smath::Fraction<sint>& frac);
 		SObjPtr(const smath::Complex<float>& comp);
-        SObjPtr(const char *s);
-        SObjPtr(const ::std::string &str);
-        SObjPtr(String &&str);
-        SObjPtr(const String &str);
-        SObjPtr(::std::initializer_list<SObjPtr> li);
-        SObjPtr(::std::initializer_list<::std::pair<String, SObjPtr>> li);
-        SObjPtr(::std::initializer_list<kvpair<String, SObjPtr>> li);
-        SObjPtr(const SNumber &num);
-        SObjPtr(const SChar &ch);
-        SObjPtr(const SString &str);
-        SObjPtr(const SDate &date);
-        SObjPtr(const SData &dat);
-        SObjPtr(const SArray &array);
-        SObjPtr(const SPair &pair);
-        SObjPtr(const SDictionary &dict);
+		SObjPtr(const char* s);
+		SObjPtr(const ::std::string& str);
+		SObjPtr(String&& str);
+		SObjPtr(const String& str);
+		SObjPtr(::std::initializer_list<SObjPtr> li);
+		SObjPtr(::std::initializer_list<::std::pair<String, SObjPtr>> li);
+		SObjPtr(::std::initializer_list<kvpair<String, SObjPtr>> li);
+		SObjPtr(const SNumber& num);
+		SObjPtr(const SChar& ch);
+		SObjPtr(const SString& str);
+		SObjPtr(const SDate& date);
+		SObjPtr(const SData& dat);
+		SObjPtr(const SArray& array);
+		SObjPtr(const SPair& pair);
+		SObjPtr(const SDictionary& dict);
 		SObjPtr(const SText& txt);
 		template<class Return, class... Args>
-        SObjPtr(const SFunction<Return(Args...)>&func) : _type(FUNC_OBJ), _ptr(new SFunction<Return(Args...)>(func)) {}
+		SObjPtr(const std::function<Return(Args...)>& func) : _type(FUNC_OBJ), _ptr(new SFunction<Return(Args...)>(func)) {}
+		template<class Return, class... Args>
+		SObjPtr(const SFunction<Return(Args...)>& func) : _type(FUNC_OBJ), _ptr(new SFunction<Return(Args...)>(func)) {}
 		SObjPtr(const SColumn& col);
-		SObjPtr(const STable &tbl);
+		SObjPtr(const STable& tbl);
 		SObjPtr(const SDataBase& db);
 
-        SObjPtr(const sio::SFile &file);
+		SObjPtr(const sio::SFile& file);
 		SObjPtr(const smedia::SColor& col);
-        SObjPtr(const smedia::SImage &img);
-        SObjPtr(const smedia::SFigure &fig);
-        SObjPtr(const smedia::SCanvas &cnvs);
-        //SObjPtr(const smedia::SSound &snd);
-        SObjPtr(const smedia::SMovie &mov);
-        SObjPtr(SObject *so);
-        template<class Cls>
-        SObjPtr(OBJ_TYPE t, Cls *cls) : _type(t), _ptr(dynamic_cast<SObject *>(cls)) {}
-        SObjPtr(SObjPtr &&obj);
-        SObjPtr(const SObjPtr &obj);
-        template<class Cls, OBJ_TYPE T>
-        SObjPtr(SClsPtr<Cls, T> &&obj) : _type(T), _ptr(obj._ptr) { obj.discard(); }
-        template<class Cls, OBJ_TYPE T>
-        SObjPtr(const SClsPtr<Cls, T> &obj) : _type(T), _ptr(obj._ptr) { share(); }
-        ~SObjPtr();
+		SObjPtr(const smedia::SImage& img);
+		SObjPtr(const smedia::SFigure& fig);
+		SObjPtr(const smedia::SCanvas& cnvs);
+		//SObjPtr(const smedia::SSound &snd);
+		SObjPtr(const smedia::SMovie& mov);
+		SObjPtr(SObject* so);
+		template<class Cls>
+		SObjPtr(OBJ_TYPE t, Cls* cls) : _type(t), _ptr(dynamic_cast<SObject*>(cls)) {}
+		SObjPtr(SObjPtr&& obj);
+		SObjPtr(const SObjPtr& obj);
+		template<class Cls, OBJ_TYPE T>
+		SObjPtr(SClsPtr<Cls, T>&& obj) : _type(T), _ptr(obj._ptr) { obj.discard(); }
+		template<class Cls, OBJ_TYPE T>
+		SObjPtr(const SClsPtr<Cls, T>& obj) : _type(T), _ptr(obj._ptr) { share(); }
+		virtual ~SObjPtr();
 
-        SObjPtr &operator = (SObjPtr &&obj);
-        SObjPtr &operator = (const SObjPtr &obj);
-        template<class Cls, OBJ_TYPE T>
-        SObjPtr &operator = (SClsPtr<Cls, T> &&obj);
-        template<class Cls, OBJ_TYPE T>
-        SObjPtr &operator = (const SClsPtr<Cls, T> &obj);
-        
-        SObjPtr &operator += (const char *s);
-        SObjPtr &operator += (const ::std::string &s);
-        SObjPtr &operator += (const String &s);
-        SObjPtr &operator += (const SString &s);
-        SObjPtr &operator += (const SObjPtr &obj);
-        template<typename T>
-        SObjPtr &operator += (const T &val) {
-            if (isNum()) number() += val;
-            else if (isStr()) string() += val;
-        }
-        SObjPtr &operator -= (const SObjPtr &obj);
-        template<typename T>
-        SObjPtr &operator -= (const T &val) {
-            if (isNum()) number() -= val;
-            return *this;
-        }
-        SObjPtr &operator *= (int i);
-        SObjPtr &operator *= (size_t s);
-        SObjPtr &operator *= (const SObjPtr &obj);
-        template<typename T>
-        SObjPtr &operator *= (const T &val) {
-            if (isNum()) number() *= val;
-            return *this;
-        }
-        SObjPtr &operator /= (const SObjPtr &obj);
-        template<typename T>
-        SObjPtr &operator /= (const T &val) {
-            if (isNum()) number() /= val;
-            return *this;
-        }
-        SObjPtr &operator %= (const SObjPtr &obj);
-        template<typename T>
-        SObjPtr &operator %= (const T &val) {
-            if (isNum()) number() %= val;
-            return *this;
-        }
-        SObjPtr &operator++();
-        SObjPtr &operator--();
-        SObjPtr operator-() const;
-        
-        SObjPtr operator+(const char *s) const;
-        SObjPtr operator+(const ::std::string &s) const;
-        SObjPtr operator+(const String &s) const;
-        SObjPtr operator+(const SString &s) const;
-        SObjPtr operator+(const SObjPtr &obj) const;
-        template<typename T>
-        SObjPtr operator+(T val) const {
-            if (isNum()) return number()+val;
-            throw SException(ERR_INFO, SLIB_CAST_ERROR, T(_ptr), CAST_TEXT(, T(number)));
-        }
-        SObjPtr operator-(const SObjPtr &obj) const;
-        template<typename T>
-        SObjPtr operator-(T val) const {
-            if (isNum()) return number()-val;
-            throw SException(ERR_INFO, SLIB_CAST_ERROR);
-        }
-        SObjPtr operator*(int i) const;
-        SObjPtr operator*(size_t s) const;
-        template<typename T>
-        SObjPtr operator*(T val) const {
-            if (isNum()) return number()*val;
-            throw SException(ERR_INFO, SLIB_CAST_ERROR);
-        }
-        SObjPtr operator*(const SObjPtr &obj) const;
-        template<typename T>
-        SObjPtr operator/(T val) const {
-            if (isNum()) return number()/val;
-            throw SException(ERR_INFO, SLIB_CAST_ERROR);
-        }
-        SObjPtr operator/(const SObjPtr &obj) const;
-        template<typename T>
-        SObjPtr operator%(T val) const {
-            if (isNum()) return number()%val;
-            throw SException(ERR_INFO, SLIB_CAST_ERROR);
-        }
-        SObjPtr operator%(const SObjPtr &obj) const;
-        
-        SObject *ptr();
-        const SObject *ptr() const;
-        SObject *operator->() const;
-        SObject &operator*();
-        const SObject &operator*() const;
-        
-        void share();
-        void release();
-        void copyTo(SObjPtr &ptr) const;
-        void moveTo(SObjPtr &ptr);
-        void clone(const slib::SObjPtr &obj);
-        void discard();
-        void swap(SObjPtr &ptr);
-        
-        SObjPtr &operator[](int idx);
-        const SObjPtr &operator[](int idx) const;
-        SObjPtr &operator[](const char *key);
-        const SObjPtr &operator[](const char *key) const;
-        SObjPtr &operator[](const ::std::string &key);
-        const SObjPtr &operator[](const ::std::string &key) const;
-        SObjPtr &operator[](const String &key);
-        const SObjPtr &operator[](const String &key) const;
-        SObjPtr &operator[](const SString &key);
-        const SObjPtr &operator[](const SString &key) const;
-        SObjPtr &operator[](const SObjPtr &obj);
-        const SObjPtr &operator[](const SObjPtr &obj) const;
-        
-        SIterator begin();
-        SCIterator begin() const;
-        SIterator end();
-        SCIterator end() const;
-        
+		SObjPtr& operator = (SObjPtr&& obj);
+		SObjPtr& operator = (const SObjPtr& obj);
+		template<class Cls, OBJ_TYPE T>
+		SObjPtr& operator = (SClsPtr<Cls, T>&& obj);
+		template<class Cls, OBJ_TYPE T>
+		SObjPtr& operator = (const SClsPtr<Cls, T>& obj);
+
+		SObjPtr& operator += (const char* s);
+		SObjPtr& operator += (const ::std::string& s);
+		SObjPtr& operator += (const String& s);
+		SObjPtr& operator += (const SString& s);
+		SObjPtr& operator += (const SObjPtr& obj);
+		template<typename T>
+		SObjPtr& operator += (const T& val) {
+			if (isNum()) number() += val;
+			else if (isStr()) string() += val;
+		}
+		SObjPtr& operator -= (const SObjPtr& obj);
+		template<typename T>
+		SObjPtr& operator -= (const T& val) {
+			if (isNum()) number() -= val;
+			return *this;
+		}
+		SObjPtr& operator *= (int i);
+		SObjPtr& operator *= (size_t s);
+		SObjPtr& operator *= (const SObjPtr& obj);
+		template<typename T>
+		SObjPtr& operator *= (const T& val) {
+			if (isNum()) number() *= val;
+			return *this;
+		}
+		SObjPtr& operator /= (const SObjPtr& obj);
+		template<typename T>
+		SObjPtr& operator /= (const T& val) {
+			if (isNum()) number() /= val;
+			return *this;
+		}
+		SObjPtr& operator %= (const SObjPtr& obj);
+		template<typename T>
+		SObjPtr& operator %= (const T& val) {
+			if (isNum()) number() %= val;
+			return *this;
+		}
+		SObjPtr& operator++();
+		SObjPtr& operator--();
+		SObjPtr operator-() const;
+
+		SObjPtr operator+(const char* s) const;
+		SObjPtr operator+(const ::std::string& s) const;
+		SObjPtr operator+(const String& s) const;
+		SObjPtr operator+(const SString& s) const;
+		SObjPtr operator+(const SObjPtr& obj) const;
+		template<typename T>
+		SObjPtr operator+(T val) const {
+			if (isNum()) return number() + val;
+			throw SException(ERR_INFO, SLIB_CAST_ERROR, T(_ptr), CAST_TEXT(, T(number)));
+		}
+		SObjPtr operator-(const SObjPtr& obj) const;
+		template<typename T>
+		SObjPtr operator-(T val) const {
+			if (isNum()) return number() - val;
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
+		SObjPtr operator*(int i) const;
+		SObjPtr operator*(size_t s) const;
+		template<typename T>
+		SObjPtr operator*(T val) const {
+			if (isNum()) return number() * val;
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
+		SObjPtr operator*(const SObjPtr& obj) const;
+		template<typename T>
+		SObjPtr operator/(T val) const {
+			if (isNum()) return number() / val;
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
+		SObjPtr operator/(const SObjPtr& obj) const;
+		template<typename T>
+		SObjPtr operator%(T val) const {
+			if (isNum()) return number() % val;
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
+		SObjPtr operator%(const SObjPtr& obj) const;
+
+		SObject* ptr();
+		const SObject* ptr() const;
+		SObject* operator->() const;
+		SObject& operator*();
+		const SObject& operator*() const;
+
+		void share();
+		void release();
+		void copyTo(SObjPtr& ptr) const;
+		void moveTo(SObjPtr& ptr);
+		void clone(const slib::SObjPtr& obj);
+		void discard();
+		void swap(SObjPtr& ptr);
+
+		SObjPtr& operator[](int idx);
+		const SObjPtr& operator[](int idx) const;
+		SObjPtr& operator[](const char* key);
+		const SObjPtr& operator[](const char* key) const;
+		SObjPtr& operator[](const ::std::string& key);
+		const SObjPtr& operator[](const ::std::string& key) const;
+		SObjPtr& operator[](const String& key);
+		const SObjPtr& operator[](const String& key) const;
+		SObjPtr& operator[](const SString& key);
+		const SObjPtr& operator[](const SString& key) const;
+		SObjPtr& operator[](const SObjPtr& obj);
+		const SObjPtr& operator[](const SObjPtr& obj) const;
+
+		SIterator begin();
+		SCIterator begin() const;
+		SIterator end();
+		SCIterator end() const;
+
+		static SObjPtr toSObj(const String& s);
+
         static sobj import(sobj info);
         void load(sobj info);
         void save(sobj info);
@@ -460,18 +463,42 @@ namespace slib {
 		const SText& text() const;
 		sio::SFile& file();
 		const sio::SFile& file() const;
-		template<class Return, class... Args>
-        SFunction<Return, Args...> &func() {
+		template<class... Args>
+        SFunction<sobj(Args...)> &func() {
             if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-            if (isFunc()) return *dynamic_cast<SFunction<Return, Args...> *>(_ptr);
+            if (isFunc()) return *dynamic_cast<SFunction<sobj(Args...)> *>(_ptr);
             throw SException(ERR_INFO, SLIB_CAST_ERROR);
         }
-		template<class Return, class... Args>
-        const SFunction<Return, Args...> &func() const {
+		template<class... Args>
+        const SFunction<sobj(Args...)> &func() const {
             if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-            if (isFunc()) return *dynamic_cast<SFunction<Return, Args...> *>(_ptr);
+            if (isFunc()) return *dynamic_cast<SFunction<sobj(Args...)> *>(_ptr);
             throw SException(ERR_INFO, SLIB_CAST_ERROR);
         }
+		template<class... Args>
+		SFunction<int(Args...)>& funci() {
+			if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+			if (isFunc()) return *dynamic_cast<SFunction<int(Args...)>*>(_ptr);
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
+		template<class... Args>
+		const SFunction<int(Args...)>& funci() const {
+			if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+			if (isFunc()) return *dynamic_cast<SFunction<int(Args...)>*>(_ptr);
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
+		template<class... Args>
+		SFunction<void(Args...)>& funcv() {
+			if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+			if (isFunc()) return *dynamic_cast<SFunction<void(Args...)>*>(_ptr);
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
+		template<class... Args>
+		const SFunction<void(Args...)>& funcv() const {
+			if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+			if (isFunc()) return *dynamic_cast<SFunction<void(Args...)>*>(_ptr);
+			throw SException(ERR_INFO, SLIB_CAST_ERROR);
+		}
         SColumn &column();
         const SColumn &column() const;
         STable &table();
@@ -517,11 +544,19 @@ namespace slib {
         operator float() const;
         operator double() const;
         operator const char *() const;
+		/*
 		template<class Return, class... Args>
 		Return operator()(Args... args) {
 			if (isFunc()) func<Return, Args...>()(args...);
 		}
+		*/
+		template<class... Args>
+		sobj operator()(Args... args) {
+			if (isFunc()) return func<Args...>()(args...);
+			throw SException(ERR_INFO);
+		}
 
+		sobj clone() const;
         //compare
         bool operator < (const SObjPtr &obj) const;
         template<typename T>
@@ -560,11 +595,9 @@ namespace slib {
             else throw SException(ERR_INFO, SLIB_CAST_ERROR);
         }
     };
-    extern String operator+(const char *s, const SObjPtr &obj);
-    extern String operator+(const ::std::string &s, const SObjPtr &obj);
-    
-    extern bool operator<(const int &i, const SObjPtr &obj);
-    
+	extern SLIB_DLL String operator+(const char* s, const SObjPtr& obj);
+	extern SLIB_DLL String operator+(const ::std::string& s, const SObjPtr& obj);
+	extern SLIB_DLL bool operator<(const int& i, const SObjPtr& obj);
     
     template<class Cls, OBJ_TYPE T>
     class SLIB_DLL SClsPtr : public SObjPtr {
@@ -722,6 +755,4 @@ namespace slib {
         bool operator >=(const SCIterator &sit) const;
     };
 }
-
-
 #endif

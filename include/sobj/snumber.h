@@ -84,7 +84,6 @@ namespace slib {
         SNumber operator--(int) const;
         SNumber operator-() const;
         SNumber abs() const;
-        
 		SNumber operator+(const sbyte& num) const;
 		SNumber operator+(const subyte& num) const;
 		SNumber operator+(const sshort& num) const;
@@ -111,7 +110,6 @@ namespace slib {
 		SNumber operator+(const scomp& num) const;
         SNumber operator+(const SNumber &num) const;
         String operator+(const char *s);
-        
 		SNumber operator-(const sbyte& num) const;
 		SNumber operator-(const subyte& num) const;
 		SNumber operator-(const sshort& num) const;
@@ -187,9 +185,7 @@ namespace slib {
 		SNumber operator/(const sfrac& num) const;
 		SNumber operator/(const scomp& num) const;
 		SNumber operator/(const SNumber& num) const;
-		
 		sinteger quot(const SNumber& num) const;
-
 		SNumber operator%(const sbyte& num) const;
 		SNumber operator%(const subyte& num) const;
 		SNumber operator%(const sshort& num) const;
@@ -215,26 +211,13 @@ namespace slib {
 		SNumber operator%(const sfrac& num) const;
 		SNumber operator%(const scomp& num) const;
 		SNumber operator%(const SNumber& num) const;
-        
-        //variable access
         subyte type() const;
         void *ptr() const;
-        
-        //type conversion
         void setType(subyte type);
-        
-        //Round
         String precised(size_t s, smath::ROUND round = DEFAULT) const;
-        
-        //override
         String getClass() const;
         String toString() const;
         SObject *clone() const;
-        
-        //Wide character
-        String toWideString() const;
-        
-        //cast
         bool boolean() const;
         sbyte byteValue() const;
         subyte ubyteValue() const;
@@ -254,7 +237,6 @@ namespace slib {
         sreal real() const;
         sfrac fraction() const;
         scomp complex() const;
-        
         operator bool() const;
         operator sbyte() const;
         operator subyte() const;
@@ -280,10 +262,6 @@ namespace slib {
         operator double() const;
         operator sfrac() const;
         operator scomp() const;
-        
-        //operator const char *() const;
-        
-        //compare
         bool operator<(const sobj &obj) const;
         bool operator<(const SNumber &sn) const;
         template<typename T>
@@ -331,8 +309,6 @@ namespace slib {
 #endif
 	extern inline SNumber operator+(float& num1, const SNumber& num2) { return SNumber(num1) += num2; };
 	extern inline SNumber operator+(double& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	//extern inline SNumber operator+(sfrac& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	//extern inline SNumber operator+(scomp& num1, const SNumber& num2) { return SNumber(num1) += num2; };
 	extern inline SNumber operator-(sbyte& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator-(subyte& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator-(sshort& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
@@ -355,8 +331,6 @@ namespace slib {
 #endif
 	extern inline SNumber operator-(float& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator-(double& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	//extern inline SNumber operator-(sfrac& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	//extern inline SNumber operator-(scomp& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator*(sbyte& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(subyte& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(sshort& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
@@ -379,8 +353,6 @@ namespace slib {
 #endif
 	extern inline SNumber operator*(float& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(double& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
-	//extern inline SNumber operator*(sfrac& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
-	//extern inline SNumber operator*(scomp& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator/(sbyte& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(subyte& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(sshort& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
@@ -403,8 +375,6 @@ namespace slib {
 #endif
 	extern inline SNumber operator/(float& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator/(double& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
-	//extern inline SNumber operator/(sfrac& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
-	//extern inline SNumber operator/(scomp& num1, const SNumber& num2) { return SNumber(num1) /= num2; };
 	extern inline SNumber operator%(sbyte& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(subyte& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(sshort& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
@@ -427,12 +397,7 @@ namespace slib {
 #endif
 	extern inline SNumber operator%(float& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(double& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
-	//extern inline SNumber operator%(sfrac& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
-	//extern inline SNumber operator%(scomp& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
-
-
-	extern String operator+(const char *s, const SNumber &num);
-   
+	extern SLIB_DLL String operator+(const char *s, const SNumber &num);
     template<typename T>
     extern bool operator<(const T &val, const SNumber &num) { return SNumber(val) < num; }
     template<typename T>

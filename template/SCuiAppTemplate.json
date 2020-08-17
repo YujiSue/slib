@@ -14,7 +14,7 @@
 		{
 			"require": [$REQUIRED_OPTION_LIST]
 		},
-		$COMMANDS_IF_MULTI_COMMAND_APP
+		$COMMAND_LIST
 	},
 	"option": 
 	{
@@ -22,9 +22,10 @@
 		{
 			"short": $OPT_SHORT,
 			"type", $OPT_TYPE,
+			"default", $OPT_VALUE,
 			"caption": $OPT_CAPTION,
 			"description": $OPT_DESCRIPTION
 		},
-		$OPTION_LIST_IF_NEEDED
+		$OPTION_LIST
 	}
 }

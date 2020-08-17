@@ -4,9 +4,7 @@
 #include "sobj.h"
 
 #ifndef SBIOINFO_DLL
-#if defined(USE_SBIOINFO_DLL)
-#define SBIOINFO_DLL __declspec(dllimport)
-#elif defined(_WINDLL)
+#if defined(_WINDLL)
 #define SBIOINFO_DLL __declspec(dllexport)
 #else
 #define SBIOINFO_DLL  

@@ -39,14 +39,17 @@ SAppException::SAppException(const char* f, sint l, const char* func, sint e, co
 SAppException::~SAppException() {}
 
 inline String codeStr(sint code) {
+	/*
 	if (code & SLIB_LOG_CODE) return "log";
 	else if (code & SLIB_LAUNCH_CODE) return "launched";
 	else if (code & SLIB_TERMINATE_CODE) return "terminated";
 	else if (code & SLIB_ERROR_CODE) return "error";
 	else if (code & SLIB_WARNING_CODE) return "warning";
+	*/
+	return "";
 }
 log_data::log_data(sint c, const char* s) {
-	date = SDate(SDate::YMDHMS);
+	date = SDate(slib::sstyle::YMDHMS);
 	code = c;
 	msg = s;
 }
@@ -64,9 +67,9 @@ void SLogger::close() {
 }
 void SLogger::log(sint code, const char* msg) {
 	_lock.lock();
-	SDate date(SDate::YMDHMS);
+	SDate date(slib::sstyle::YMDHMS);
 	if (_file.isOpened()) {
-		_file << date.toString() << "[" << codeStr(code) << "]" << String::TAB << msg << NEW_LINE;
+		_file << date.toString() << "[" << codeStr(code) << "]" << TAB << msg << NEW_LINE;
 		_file.flush();
 	}
 	else _data.add(log_data(code, msg));

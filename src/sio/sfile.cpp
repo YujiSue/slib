@@ -6,7 +6,7 @@ using namespace slib;
 using namespace slib::sio;
 
 inline void _decode(String &str) {
-	if (str.isQuoted()) str.transform(DELETE_QUOTE);
+	if (str.isQuoted()) str.transform(slib::sstyle::DELETE_QUOTE);
 #if defined(WIN32_OS) || defined(WIN64_OS)
 	if (str.empty()) str = "C:" + PATH_SEPARATOR;
 	if (str.match(R(/ ^ [A - Z][:] / ))) return;
@@ -226,7 +226,7 @@ void SFile::select(const char *name) {
 	else _path += PATH_SEPARATOR + str;
 	_mode = 0;
 }
-int filecopy(SFile &src, SFile dest) {
+inline int filecopy(SFile &src, SFile dest) {
     try {
         if (src.isOpened()) src.setOffset(0);
         else src.open(nullptr, sio::READ);
@@ -545,7 +545,7 @@ void SFile::readData(SData &dat, size_t size) {
     dat.resize(size);
     _stream.read((char *)dat.ptr(), size);
 }
-inline void objRead(sio::SFile* file, sobj& obj); 
+inline void objRead(sio::SFile* file, sobj& obj);
 inline void numRead(sio::SFile* file, sobj& num) {
 	subyte tmp;
 	file->readUByte(tmp);
@@ -632,7 +632,7 @@ inline void dictRead(sio::SFile* file, sobj& dict) {
 	file->readUInt(tmp);
 	dict = SDictionary();
 	if (tmp == 0) return;
-	sforin(i, 0, tmp) {
+	sforin(i, (suint)0, tmp) {
 		file->readUInt(len);
 		String key;
 		sobj val;
@@ -745,9 +745,9 @@ inline void strWrite(sio::SFile* file, const SString& str) {
 }
 inline void dateWrite(sio::SFile* file, const SDate& date) {
 	file->writeInt((sint)DATE_OBJ);
-	file->writeUInt(date.format().length());
-	file->writeString(date.format());
-	file->writeUInt(date.toString().length());
+	file->writeUInt(strlen(slib::sstyle::ISO8601));
+	file->writeChars(slib::sstyle::ISO8601);
+	file->writeUInt(date.toString(slib::sstyle::ISO8601).length());
 	file->writeString(date.toString());
 }
 inline void datWrite(sio::SFile* file, const SData& dat) {

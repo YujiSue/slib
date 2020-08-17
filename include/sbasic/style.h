@@ -1,12 +1,29 @@
-#ifndef SLIB_STYLE_H
+﻿#ifndef SLIB_STYLE_H
 #define SLIB_STYLE_H
 
 #include "sconfig.h"
 
 namespace slib {
     namespace sstyle {
-        
-        //Text style
+		//String style
+		constexpr subyte TRIMMING = 0x01;
+		constexpr subyte SINGLE_QUOTE = 0x02;
+		constexpr subyte DOUBLE_QUOTE = 0x04;
+		constexpr subyte DELETE_QUOTE = 0x08;
+		constexpr subyte UPPER_CASE = 0x10;
+		constexpr subyte LOWER_CASE = 0x20;
+		constexpr subyte FULL_WIDTH = 0x40;
+		constexpr subyte HALF_WIDTH = 0x80;
+		//Date style
+		const char ISO8601[21] = "YYYY-MM-DDTHH:mm:ssZ";
+		const char YMD[13] = "YYYY/MM/DD";
+		const char YMD_J[13] = u8"号年月日";
+		const char HMS[10] = "HH:mm:ss";
+		const char HMS_J[10] = u8"時分秒";
+		const char YMDHMS[20] = "YYYY/MM/DD HH:mm:ss";
+		const char YMDHMS_J[25] = u8"号年月日　時分秒";
+		const char EMAIL[32] = "WWW, DD MMM YYYY HH:mm:ss Z (z)";
+		//Text style
         constexpr sushort PLAIN = 0x0001;
         constexpr sushort BOLD = 0x0002;
         constexpr sushort ITALIC = 0x0004;

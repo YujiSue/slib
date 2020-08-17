@@ -6,16 +6,15 @@
 #include "sbasic/mapiter.h"
 #include "sbasic/exception.h"
 
+#define ii(X,Y) slib::kvpair<sinteger, sinteger>((X),(Y))
+#define ki(X,Y) slib::kvpair<slib::String, suinteger>((X),(Y))
+#define ks(X,Y) slib::kvpair<slib::String, slib::String>((X),(Y))
+
+#define sorder slib::Map<sinteger, sinteger>
+#define sindex slib::Map<slib::String, suinteger>
+#define sattribute slib::Map<slib::String, slib::String>
+
 namespace slib {
-
-#define ii(X,Y) kvpair<sinteger, sinteger>((X),(Y))
-#define ki(X,Y) kvpair<String, suinteger>((X),(Y))
-#define ks(X,Y) kvpair<String, String>((X),(Y))
-
-#define sorder Map<sinteger, sinteger>
-#define sindex Map<String, suinteger>
-#define sattribute Map<String, String>
-
     template<class Key, class Val>
     class Map {
     public:

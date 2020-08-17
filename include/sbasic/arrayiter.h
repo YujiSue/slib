@@ -3,11 +3,10 @@
 
 #include "sconfig.h"
 
-namespace slib {
-	#define sarr_iter SArrayIterator
-    #define sarr_citer SArrayCIterator
+#define sarr_iter slib::SArrayIterator
+#define sarr_citer slib::SArrayCIterator
 
-    //SArrayIterator<T>
+namespace slib {
     template<typename T>
     class SArrayIterator {
 		template <typename T_, class M>
@@ -52,7 +51,7 @@ namespace slib {
         SArrayIterator<T> &operator-=(std::ptrdiff_t diff);
         SArrayIterator<T> operator+(std::ptrdiff_t diff);
         SArrayIterator<T> operator-(std::ptrdiff_t diff);
-        int operator-(const SArrayIterator<T> it) const;
+        sinteger operator-(const SArrayIterator<T> it) const;
         void swap(SArrayIterator<T> it1, SArrayIterator<T> it2);
         bool operator<(const SArrayIterator<T> &it) const;
         bool operator<=(const SArrayIterator<T> &it) const;
@@ -62,7 +61,6 @@ namespace slib {
         bool operator!=(const SArrayIterator<T> &it) const;
     };
     
-    //SArrayCIterator<T>
     template<typename T>
     class SArrayCIterator {
 		template <typename T_, class M>
@@ -106,7 +104,7 @@ namespace slib {
         SArrayCIterator<T> &operator-=(std::ptrdiff_t diff);
         SArrayCIterator<T> operator+(std::ptrdiff_t diff);
         SArrayCIterator<T> operator-(std::ptrdiff_t diff);
-        int operator-(const SArrayCIterator<T> it) const;
+		sinteger operator-(const SArrayCIterator<T> it) const;
         void swap(SArrayCIterator<T> it1, SArrayCIterator<T> it2);
         bool operator<(const SArrayCIterator<T> &it) const;
         bool operator<=(const SArrayCIterator<T> &it) const;
@@ -126,45 +124,45 @@ namespace slib {
     template<typename T>
     SArrayIterator<T> &SArrayIterator<T>::operator=(const SArrayIterator<T> &it) { _ptr = it._ptr; return *this; }
     template<typename T>
-    T &SArrayIterator<T>::operator*() { return *_ptr; }
+	T &SArrayIterator<T>::operator*() { return *_ptr; }
     template<typename T>
-    T *SArrayIterator<T>::operator->() { return _ptr; }
+	T *SArrayIterator<T>::operator->() { return _ptr; }
     template<typename T>
-    T &SArrayIterator<T>::operator[](std::ptrdiff_t diff) { return *(_ptr+diff); }
+	T &SArrayIterator<T>::operator[](std::ptrdiff_t diff) { return *(_ptr+diff); }
     template<typename T>
-    SArrayIterator<T> &SArrayIterator<T>::operator++() { ++_ptr; return *this; }
+	SArrayIterator<T> &SArrayIterator<T>::operator++() { ++_ptr; return *this; }
     template<typename T>
-    SArrayIterator<T> SArrayIterator<T>::operator++(int) { return SArrayIterator<T>(_ptr+1); }
+	SArrayIterator<T> SArrayIterator<T>::operator++(int) { return SArrayIterator<T>(_ptr+1); }
     template<typename T>
-    SArrayIterator<T> &SArrayIterator<T>::operator--() { --_ptr; return *this; }
+	SArrayIterator<T> &SArrayIterator<T>::operator--() { --_ptr; return *this; }
     template<typename T>
-    SArrayIterator<T> SArrayIterator<T>::operator--(int) { return iterator(_ptr-1); }
+	SArrayIterator<T> SArrayIterator<T>::operator--(int) { return iterator(_ptr-1); }
     template<typename T>
-    SArrayIterator<T> &SArrayIterator<T>::operator+=(std::ptrdiff_t diff) { _ptr += diff; return *this; }
+	SArrayIterator<T> &SArrayIterator<T>::operator+=(std::ptrdiff_t diff) { _ptr += diff; return *this; }
     template<typename T>
-    SArrayIterator<T> &SArrayIterator<T>::operator-=(std::ptrdiff_t diff) { _ptr -= diff; return *this; }
+	SArrayIterator<T> &SArrayIterator<T>::operator-=(std::ptrdiff_t diff) { _ptr -= diff; return *this; }
     template<typename T>
-    SArrayIterator<T> SArrayIterator<T>::operator+(std::ptrdiff_t diff) { return SArrayIterator<T>(_ptr+diff); }
+	SArrayIterator<T> SArrayIterator<T>::operator+(std::ptrdiff_t diff) { return SArrayIterator<T>(_ptr+diff); }
     template<typename T>
-    SArrayIterator<T> SArrayIterator<T>::operator-(std::ptrdiff_t diff) { return SArrayIterator<T>(_ptr-diff); }
+	SArrayIterator<T> SArrayIterator<T>::operator-(std::ptrdiff_t diff) { return SArrayIterator<T>(_ptr-diff); }
     template<typename T>
-    int SArrayIterator<T>::operator-(const SArrayIterator<T> it) const { return _ptr-it._ptr; }
+	sinteger SArrayIterator<T>::operator-(const SArrayIterator<T> it) const { return _ptr-it._ptr; }
     template<typename T>
 	void SArrayIterator<T>::swap(SArrayIterator<T> it1, SArrayIterator<T> it2) {
 		auto temp = *it1._ptr; *it1._ptr = *it2._ptr; *it2._ptr = temp;
     }
     template<typename T>
-    bool SArrayIterator<T>::operator<(const SArrayIterator<T> &it) const { return _ptr < it._ptr; }
+	bool SArrayIterator<T>::operator<(const SArrayIterator<T> &it) const { return _ptr < it._ptr; }
     template<typename T>
-    bool SArrayIterator<T>::operator<=(const SArrayIterator<T> &it) const { return _ptr <= it._ptr; }
+	bool SArrayIterator<T>::operator<=(const SArrayIterator<T> &it) const { return _ptr <= it._ptr; }
     template<typename T>
-    bool SArrayIterator<T>::operator>(const SArrayIterator<T> &it) const { return  it < *this; }
+	bool SArrayIterator<T>::operator>(const SArrayIterator<T> &it) const { return  it < *this; }
     template<typename T>
-    bool SArrayIterator<T>::operator>=(const SArrayIterator<T> &it) const { return it <= *this; }
+	bool SArrayIterator<T>::operator>=(const SArrayIterator<T> &it) const { return it <= *this; }
     template<typename T>
-    bool SArrayIterator<T>::operator==(const SArrayIterator<T> &it) const { return _ptr == it._ptr; }
+	bool SArrayIterator<T>::operator==(const SArrayIterator<T> &it) const { return _ptr == it._ptr; }
     template<typename T>
-    bool SArrayIterator<T>::operator!=(const SArrayIterator<T> &it) const { return _ptr != it._ptr; }
+	bool SArrayIterator<T>::operator!=(const SArrayIterator<T> &it) const { return _ptr != it._ptr; }
     
     /*============================================================*/
     template<typename T>
@@ -176,44 +174,44 @@ namespace slib {
     template<typename T>
     SArrayCIterator<T> &SArrayCIterator<T>::operator=(const SArrayCIterator<T> &it) { _ptr = it._ptr; return *this; }
     template<typename T>
-    const T &SArrayCIterator<T>::operator*() { return *_ptr; }
+	const T &SArrayCIterator<T>::operator*() { return *_ptr; }
     template<typename T>
-    const T *SArrayCIterator<T>::operator->() { return _ptr; }
+	const T *SArrayCIterator<T>::operator->() { return _ptr; }
     template<typename T>
-    const T &SArrayCIterator<T>::operator[](std::ptrdiff_t diff) { return *(_ptr+diff); }
+	const T &SArrayCIterator<T>::operator[](std::ptrdiff_t diff) { return *(_ptr+diff); }
     template<typename T>
-    SArrayCIterator<T> &SArrayCIterator<T>::operator++() { ++_ptr; return *this; }
+	SArrayCIterator<T> &SArrayCIterator<T>::operator++() { ++_ptr; return *this; }
     template<typename T>
-    SArrayCIterator<T> SArrayCIterator<T>::operator++(int) { return SArrayCIterator(_ptr+1); }
+	SArrayCIterator<T> SArrayCIterator<T>::operator++(int) { return SArrayCIterator(_ptr+1); }
     template<typename T>
-    SArrayCIterator<T> &SArrayCIterator<T>::operator--() { --_ptr; return *this; }
+	SArrayCIterator<T> &SArrayCIterator<T>::operator--() { --_ptr; return *this; }
     template<typename T>
-    SArrayCIterator<T>SArrayCIterator<T>::operator--(int) { return SArrayCIterator(_ptr-1); }
+	SArrayCIterator<T>SArrayCIterator<T>::operator--(int) { return SArrayCIterator(_ptr-1); }
     template<typename T>
-    SArrayCIterator<T> &SArrayCIterator<T>::operator+=(std::ptrdiff_t diff) { _ptr += diff; return *this; }
+	SArrayCIterator<T> &SArrayCIterator<T>::operator+=(std::ptrdiff_t diff) { _ptr += diff; return *this; }
     template<typename T>
-    SArrayCIterator<T> &SArrayCIterator<T>::operator-=(std::ptrdiff_t diff) { _ptr -= diff; return *this; }
+	SArrayCIterator<T> &SArrayCIterator<T>::operator-=(std::ptrdiff_t diff) { _ptr -= diff; return *this; }
     template<typename T>
-    SArrayCIterator<T> SArrayCIterator<T>::operator+(std::ptrdiff_t diff) { return SArrayCIterator(_ptr+diff); }
+	SArrayCIterator<T> SArrayCIterator<T>::operator+(std::ptrdiff_t diff) { return SArrayCIterator(_ptr+diff); }
     template<typename T>
-    SArrayCIterator<T> SArrayCIterator<T>::operator-(std::ptrdiff_t diff) { return SArrayCIterator(_ptr-diff); }
+	SArrayCIterator<T> SArrayCIterator<T>::operator-(std::ptrdiff_t diff) { return SArrayCIterator(_ptr-diff); }
     template<typename T>
-    int SArrayCIterator<T>::operator-(const SArrayCIterator<T> it) const { return _ptr-it._ptr; }
+	sinteger SArrayCIterator<T>::operator-(const SArrayCIterator<T> it) const { return _ptr-it._ptr; }
     template<typename T>
-    void SArrayCIterator<T>::swap(SArrayCIterator<T> it1, SArrayCIterator<T> it2) {
+	void SArrayCIterator<T>::swap(SArrayCIterator<T> it1, SArrayCIterator<T> it2) {
 		auto temp = *it1._ptr; *it1._ptr = *it2._ptr; *it2._ptr = temp;
     }
     template<typename T>
-    bool SArrayCIterator<T>::operator<(const SArrayCIterator<T> &it) const { return _ptr < it._ptr; }
+	bool SArrayCIterator<T>::operator<(const SArrayCIterator<T> &it) const { return _ptr < it._ptr; }
     template<typename T>
-    bool SArrayCIterator<T>::operator<=(const SArrayCIterator<T> &it) const { return _ptr <= it._ptr; }
+	bool SArrayCIterator<T>::operator<=(const SArrayCIterator<T> &it) const { return _ptr <= it._ptr; }
     template<typename T>
-    bool SArrayCIterator<T>::operator>(const SArrayCIterator<T> &it) const { return  it < *this; }
+	bool SArrayCIterator<T>::operator>(const SArrayCIterator<T> &it) const { return  it < *this; }
     template<typename T>
-    bool SArrayCIterator<T>::operator>=(const SArrayCIterator<T> &it) const { return it <= *this; }
+	bool SArrayCIterator<T>::operator>=(const SArrayCIterator<T> &it) const { return it <= *this; }
     template<typename T>
-    bool SArrayCIterator<T>::operator==(const SArrayCIterator<T> &it) const { return _ptr == it._ptr; }
+	bool SArrayCIterator<T>::operator==(const SArrayCIterator<T> &it) const { return _ptr == it._ptr; }
     template<typename T>
-    bool SArrayCIterator<T>::operator!=(const SArrayCIterator<T> &it) const { return _ptr != it._ptr; }
+	bool SArrayCIterator<T>::operator!=(const SArrayCIterator<T> &it) const { return _ptr != it._ptr; }
 }
 #endif

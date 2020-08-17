@@ -12,10 +12,12 @@ SCanvas::SCanvas(size_t w, size_t h, const char *name, const SColor &col) : SDoc
     _type = sshape::GROUP;
     _title = name;
     _background = col;
-    _frame.width = w; _frame.height = h;
+	_size = v2f(w, h);
+    _frame = sareaf(0, 0, w, h);
 }
 SCanvas::SCanvas(const SCanvas &canvas) : SDocument<SFigure>(canvas) {
     _background = canvas._background;
+	_size = canvas._size;
 	_frame = canvas._frame;
 }
 SCanvas::~SCanvas() {}
@@ -48,11 +50,11 @@ void SCanvas::save(const char *path) {
 size_t SCanvas::width() const { return _size.x; }
 size_t SCanvas::height() const { return _size.y; }
 v2i SCanvas::size() const { return _size; }
-sarea SCanvas::frame() const { return _frame; }
+sareaf SCanvas::frame() const { return _frame; }
 const SColor &SCanvas::background() const { return _background; }
 void SCanvas::resize(size_t w, size_t h) { _size = v2i(w, h); }
 void SCanvas::setBackGround(const SColor &col) { _background = col; }
-void SCanvas::setFrame(sarea area) { _frame = area; }
+void SCanvas::setFrame(sareaf area) { _frame = area; }
 
 void SCanvas::setPaint(const SPaint& paint) { _paint = paint; }
 /*
@@ -69,7 +71,7 @@ void drawArc();
 void drawPict(float x, float y, const char* s);
 void drawText(float x, float y, const char* s);
 */
-void SCanvas::addFigure(sfig fig) { _root.addFigure(fig); }
+void SCanvas::drawFigure(sfig fig) { _root.addFigure(fig); }
 String SCanvas::getClass() const { return "canvas"; }
 String SCanvas::toString() const {
     auto str = getClass()<<"("<<width()<<","<<height()<<","<<") {";

@@ -72,7 +72,7 @@ const SPaint& SFigure::painter() const { return _paint; }
 const SBrush& SFigure::brush() const { return _paint.brush; }
 const SStroke& SFigure::stroke() const { return _paint.stroke; }
 
-void SFigure::setOrigin(smath::sgeom::ORIGIN ori) { _origin = ori; }
+void SFigure::setOrigin(sgeom::ORIGIN ori) { _origin = ori; }
 void SFigure::setScale(v2f v) { _trans.scale = v; }
 void SFigure::setTranslate(v2f v) { _trans.translate = v; }
 void SFigure::setSkew(v2f v) { _trans.skew = v; }
@@ -84,13 +84,13 @@ void SFigure::setStrokeColor(const SColor &c) { _paint.stroke.color = c; }
 void SFigure::setStrokeInterval(const intarray &a) { _paint.stroke.interval = a; }
 void SFigure::setStroke(const SStroke &s) { _paint.stroke = s; }
 void SFigure::setFillColor(const SColor &c) {
-    if (c.isClear()) _paint.brush.type = sstyle::FILL_NONE;
-    else _paint.brush.type = sstyle::FILL_UNIFORM;
+    if (c.isClear()) _paint.brush.type = slib::sstyle::FILL_NONE;
+    else _paint.brush.type = slib::sstyle::FILL_UNIFORM;
     _paint.brush.color = c;
 }
 void SFigure::setFillColor(const SGradient &g) {
-    if (g.coordinate()&sgeom::XYZ) _paint.brush.type = sstyle::LINEAR_GRAD;
-    else if (g.coordinate()&sgeom::POLAR) _paint.brush.type = sstyle::RADIAL_GRAD;
+    if (g.coordinate()&sgeom::XYZ) _paint.brush.type = slib::sstyle::LINEAR_GRAD;
+    else if (g.coordinate()&sgeom::POLAR) _paint.brush.type = slib::sstyle::RADIAL_GRAD;
     _paint.brush.color = g;
 }
 void SFigure::setBrush(const SBrush &b) { _paint.brush = b; }

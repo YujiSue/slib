@@ -94,7 +94,7 @@ namespace slib {
             void moveTo(void *ptr);
             void swap(SImage &img);
             
-            void toMatrix(smath::smat<subyte> &mat);
+            void toMatrix(smatub &mat);
             
             String getClass() const;
             String toString() const;

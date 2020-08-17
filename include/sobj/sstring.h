@@ -27,7 +27,7 @@ namespace slib {
 	class SLIB_DLL SString : public SObject, public String {
         friend SChar;
     protected:
-		SObjPtr _char;
+		sobj _char;
         
     public:
         SString();
@@ -198,21 +198,15 @@ namespace slib {
         SString &operator<<(const SNumber &n);
 		SString& operator<<(const sio::SFile& n);
         SString &operator<<(const sobj &obj);
-        
         SString &operator*=(const int & num);
         SString &operator*=(const size_t & num);
         SString operator*(const int &num) const;
         SString operator*(const size_t & num) const;
-        
-        //IO
         void load(const char *path);
         void save(const char *path);
-        
-	sobj& u8char(int idx = 0);
-	const sobj& u8char(int idx = 0) const;
-
-        //Override
-        String getClass() const;
+		sobj& charAt(int idx = 0);
+		const sobj& charAt(int idx = 0) const;
+		String getClass() const;
         String toString() const;
         SObject *clone() const;
         
@@ -232,45 +226,16 @@ namespace slib {
         bool operator!=(const sobj &s) const;
         bool operator!=(const SString &s) const;
     };
-    extern SString operator+(const char &c, const SString &s);
-    extern SString operator+(const SChar &c, const SString &s);
-    extern SString operator+(const char *s1, const SString &s2);
-    extern SString operator+(const std::string &s1, const SString &s2);
-    extern SString operator+(const int &i, const SString &s);
-    extern SString operator+(const sinteger &i, const SString &s);
-    extern SString operator+(const size_t &u, const SString &s);
-    extern SString operator+(const float &f, const SString &s);
-    extern SString operator+(const sreal &r, const SString &s);
-    extern SString operator+(const bool &b, const SString &s);
-    
-    template<typename T, class M>
-    extern String toString(const Array<T, M> &array, const char *sep = ",") {
-        String str;
-        if (!array.empty()) sforeach(array) str<<E_<<sep;
-        if (!str.empty()) str.resize(str.length()-strlen(sep));
-        return str;
-    }
-    template<typename T, size_t S, class M>
-    extern String toString(const FixedArray<T, S, M> &array, const char *sep = ",") {
-        String str;
-        if (!array.empty()) sforeach(array) str<<E_<<sep;
-        if (!str.empty()) str.resize(str.length()-strlen(sep));
-        return str;
-    }
-    template<typename T, class M>
-    extern String toString(const BiArray<T, M> &array, const char *sep = ",") {
-        String str;
-        if (!array.empty()) sforeach(array) str<<E_<<sep;
-        if (!str.empty()) str.resize(str.length()-strlen(sep));
-        return str;
-    }
-    template<class Key, class Val>
-    extern String toString(const Map<Key, Val> &map, const char *sep = ";", const char *part = "=") {
-        String str;
-        if (!map.empty()) sforeach(map) str<<E_.key<<part<<E_.value<<sep;
-        if (!str.empty()) str.resize(str.length()-strlen(sep));
-        return str;
-    }
+    extern SLIB_DLL SString operator+(const char &c, const SString &s);
+    extern SLIB_DLL SString operator+(const SChar &c, const SString &s);
+    extern SLIB_DLL SString operator+(const char *s1, const SString &s2);
+    extern SLIB_DLL SString operator+(const std::string &s1, const SString &s2);
+    extern SLIB_DLL SString operator+(const int &i, const SString &s);
+    extern SLIB_DLL SString operator+(const sinteger &i, const SString &s);
+    extern SLIB_DLL SString operator+(const size_t &u, const SString &s);
+    extern SLIB_DLL SString operator+(const float &f, const SString &s);
+    extern SLIB_DLL SString operator+(const sreal &r, const SString &s);
+    extern SLIB_DLL SString operator+(const bool &b, const SString &s);
 }
 
 namespace std {

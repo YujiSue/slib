@@ -165,7 +165,8 @@ namespace slib {
                 sbam::voffset offset;
                 sushort ori_length;
                 sint block_length;
-                subyte *ori_data, *bam_data, *current;
+				ubytearray ori_data, bam_data;
+                subyte /**ori_data, *bam_data,*/ *current;
                 
             public:
                 bgzf_dat();

@@ -20,7 +20,7 @@ namespace slib {
             
         public:
             SStroke();
-            SStroke(sushort t, float w = 1.0, const SColor &col = SColor::BLACK);
+            SStroke(sushort t, float w = 1.0, const SColor &col = color::BLACK);
             SStroke(sobj obj);
             SStroke(const SStroke &stroke);
             ~SStroke();
@@ -31,14 +31,14 @@ namespace slib {
         class SLIB_DLL SBrush {
         public:
 			sushort type;
-            scolor color;
+			scolor color;
             
         public:
             static sushort toBrushStyle(const String &style);
             
         public:
             SBrush();
-            SBrush(sushort t, const SColor &col = SColor::WHITE);
+            SBrush(sushort t, const SColor &col = color::WHITE);
             SBrush(const SColor& col);
             SBrush(const SBrush &brush);
 			SBrush(const sobj& obj);

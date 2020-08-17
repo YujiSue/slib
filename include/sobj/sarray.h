@@ -3,8 +3,7 @@
 
 #include "sobj/sobject.h"
 
-namespace slib {
-    
+namespace slib {    
     class SLIB_DLL SArray : public SObject, public Array<SObjPtr> {
     public:
         SArray();
@@ -18,21 +17,14 @@ namespace slib {
 		SArray(SArray&& array);
         SArray(const SArray &array);
         ~SArray();
-        
         SArray &operator = (const SArray &array);
-        
-        //IO
         void load(const char *path);
         void save(const char *path);
-        
         SArray subarray(size_t off, size_t len = -1) const;
         SArray subarray(sarr_citer<SObjPtr> beg, sarr_citer<SObjPtr> end) const;
         SArray subarray(srange range) const;
-        
         size_t search(const char *que, size_t offset = 0) const;
-        
         void sortby(const char *key, slib::ORDER order = ASC);
-        
         String getClass() const;
         String toString() const;
         SObject *clone() const;

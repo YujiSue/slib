@@ -148,9 +148,9 @@ inline void _write(SFile &file, sxnode node) {
 		(node->attribute["version"] ? " version=" + String::dquot(node->attribute["version"]) : "") <<
 		(node->attribute["encoding"] ? " encoding=" + String::dquot(node->attribute["encoding"]) : "") << "?>" << NEW_LINE;
 	else if (node->type == xml::CDATA_NODE)
-		file << String::TAB * l << "<![CDATA[" << node->content << "]]>" << NEW_LINE;
+		file << TAB * l << "<![CDATA[" << node->content << "]]>" << NEW_LINE;
 	else if (node->type == xml::COMMENT_NODE)
-		file << String::TAB * l << "<!--" << node->content << "-->" << NEW_LINE;
+		file << TAB * l << "<!--" << node->content << "-->" << NEW_LINE;
 	else if (node->type & xml::DOCTYPE_NODE) {
 		file << String("<!DOCTYPE ") << node->tag << " ";
 		if (node->type == xml::DOCTYPE_PUB_NODE)
@@ -165,7 +165,7 @@ inline void _write(SFile &file, sxnode node) {
 		}
 	}
 	else if (node->type != xml::HIDDEN_TAG) {
-		file << String::TAB * l << "<" << node->tag;
+		file << TAB * l << "<" << node->tag;
 		if (!node->attribute.empty()) {
 			auto keys = node->attribute.hasKey("_key") ? node->attribute["_key"].split(",") : node->attribute.keyset();
 			sforeach(keys) {
@@ -180,7 +180,7 @@ inline void _write(SFile &file, sxnode node) {
 			if (node->childCount()) {
 				file << NEW_LINE;
 				sforeach(node->children()) _write(file, E_);
-				file << String::TAB * l;
+				file << TAB * l;
 			}
 			else {
 				String tmp = node->content;

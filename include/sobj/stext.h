@@ -5,40 +5,40 @@
 #include "smedia/sgraphic.h"
 
 namespace slib {
-	const String PLAIN_TXT_TAG = String::ESC + "[0m";
-	const String BOLD_TXT_TAG = String::ESC + "[1m";
-	const String ITALIC_TXT_TAG = String::ESC + "[3m";
-	const String UNDERLINE_TXT_TAG = String::ESC + "[4m";
-	const String BLACK_TXT_TAG = String::ESC + "[30m";
-	const String RED_TXT_TAG = String::ESC + "[31m";
-	const String GREEN_TXT_TAG = String::ESC + "[32m";
-	const String YELLOW_TXT_TAG = String::ESC + "[33m";
-	const String BLUE_TXT_TAG = String::ESC + "[34m";
-	const String MAGENTA_TXT_TAG = String::ESC + "[35m";
-	const String CYAN_TXT_TAG = String::ESC + "[36m";	
-	const String WHITE_TXT_TAG = String::ESC + "[37m";
-	const String DEFAULT_COLOR_TXT_TAG = String::ESC + "[39m";
-	const String BLACK_TXTBG_TAG = String::ESC + "[40m";
-	const String RED_TXTBG_TAG = String::ESC + "[41m";
-	const String GREEN_TXTBG_TAG = String::ESC + "[42m";
-	const String YELLOW_TXTBG_TAG = String::ESC + "[43m";
-	const String BLUE_TXTBG_TAG = String::ESC + "[44m";
-	const String MAGENTA_TXTBG_TAG = String::ESC + "[45m";
-	const String CYAN_TXTBG_TAG = String::ESC + "[46m";
-	const String WHITE_TXTBG_TAG = String::ESC + "[47m";
-	const String DEFAULT_COLOR_TXTBG_TAG = String::ESC + "[47m";
-	const String DEFAULT_TXT_TAG = String::ESC + "[0m" + String::ESC + "[39m" + String::ESC + "[49m";
+	const String PLAIN_TXT_TAG = ESC + "[0m";
+	const String BOLD_TXT_TAG = ESC + "[1m";
+	const String ITALIC_TXT_TAG = ESC + "[3m";
+	const String UNDERLINE_TXT_TAG = ESC + "[4m";
+	const String BLACK_TXT_TAG = ESC + "[30m";
+	const String RED_TXT_TAG = ESC + "[31m";
+	const String GREEN_TXT_TAG = ESC + "[32m";
+	const String YELLOW_TXT_TAG = ESC + "[33m";
+	const String BLUE_TXT_TAG = ESC + "[34m";
+	const String MAGENTA_TXT_TAG = ESC + "[35m";
+	const String CYAN_TXT_TAG = ESC + "[36m";	
+	const String WHITE_TXT_TAG = ESC + "[37m";
+	const String DEFAULT_COLOR_TXT_TAG = ESC + "[39m";
+	const String BLACK_TXTBG_TAG = ESC + "[40m";
+	const String RED_TXTBG_TAG = ESC + "[41m";
+	const String GREEN_TXTBG_TAG = ESC + "[42m";
+	const String YELLOW_TXTBG_TAG = ESC + "[43m";
+	const String BLUE_TXTBG_TAG = ESC + "[44m";
+	const String MAGENTA_TXTBG_TAG = ESC + "[45m";
+	const String CYAN_TXTBG_TAG = ESC + "[46m";
+	const String WHITE_TXTBG_TAG = ESC + "[47m";
+	const String DEFAULT_COLOR_TXTBG_TAG = ESC + "[47m";
+	const String DEFAULT_TXT_TAG = ESC + "[0m" + ESC + "[39m" + ESC + "[49m";
 
     class SLIB_DLL SText;
 
-	struct text_style {
+	struct SLIB_DLL text_style {
 		suint type;
         String font, ruby;
         float size, weight;
         smedia::SColor color, background;
         
 		text_style(int t = sstyle::PLAIN, const char *f = "Arial", float s = 10.0, smedia::SColor c = "black", smedia::SColor b = "clear");
-		text_style(const sobj &obj);
+		text_style(SDictionary &dict);
 		text_style(const text_style&style);
         ~text_style();
 		text_style& operator=(const text_style& s);
@@ -55,7 +55,9 @@ namespace slib {
         
     public:
         SText();
-        SText(const String &s, const sobj& a = snull);
+		SText(const char* s);
+		SText(const char* s, SDictionary &&a);
+		SText(sobj obj);
         SText(const SText &text);
         ~SText();
         
@@ -101,7 +103,7 @@ namespace slib {
         void setSize(srange range, const float &size);
         void setColor(srange range, const smedia::SColor &col);
         void setBGColor(srange range, const smedia::SColor &col);
-        void setAttribute(srange range, const sobj &attr);
+        void setAttribute(srange range, sobj attr);
         
         const char *cstr() const;
 		String& string();
@@ -112,8 +114,8 @@ namespace slib {
         SObject *clone() const;
     };
     
-#define SBoldText(X) SText((X), { kv("type", sstyle::BOLD) })
-#define SItalicText(X) SText((X), { kv("type", sstyle::ITALIC) })
+#define SBoldText(X) SText((X), { kv("type", slib::sstyle::BOLD) })
+#define SItalicText(X) SText((X), { kv("type", slib::sstyle::ITALIC) })
 #define SColorText(C, X) SText((X), { kv("color", (C)) })
     
 }

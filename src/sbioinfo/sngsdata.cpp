@@ -15,7 +15,7 @@ summary_data::summary_data() {
 }
 summary_data::~summary_data() {}
 suinteger summary_data::total() {
-	if (target.empty()) return smath::sstat::sum(reflen);
+	if (target.empty()) return sstat::sum(reflen);
 	else {
 		suinteger sum = 0;
 		sforeach(target) sum += E_.length(true);

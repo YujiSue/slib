@@ -87,14 +87,13 @@ prefix("slib"), file(f), line(l), function(func), err(e) {
 SException::~SException() {}
 
 sint SException::error() { return err; }
-String SException::toString() const {
+String SException::toString(bool debug) const {
 	String err_str = String(prefix) << " error! [#" << err << "]: " <<
-		message << NEW_LINE << "> "<< description;
-#ifdef _DEBUG
-	err_str << NEW_LINE << " in {" << function << "}" << NEW_LINE << "@" << file << " (l." << line << ")";
-#endif
+		message << NEW_LINE << "> " << description;
+	if (debug)
+		err_str << NEW_LINE << " @ '" << function << "'" << NEW_LINE << " in {" << file << "} (l." << line << ")";
 	return err_str;
 }
-void SException::print() const {
-	std::cout << SColorText("red", toString()) << std::endl;
+void SException::print(bool debug) const {
+	std::cout << SColorText("red", toString(debug)) << std::endl;
 }

@@ -131,9 +131,9 @@ String sbam::readinfo::toString() {
 	String str, seq(seq_length, '\0'), qstr(seq_length, '\0');
 	sseq::ddecode2(sequence.ptr(), 0, seq_length, (subyte*)&seq[0]);
 	sforin(i, 0, qual.size()) qstr[i] = qual[i] + 33;
-	str << name << String::TAB << String(flag) << String::TAB << pos.idx << String::TAB << pos.begin + 1 << String::TAB <<
-		(int)mapq << String::TAB << cigars.toString() << String::TAB << (int)next_refid << String::TAB << (int)next_pos << String::TAB <<
-		seq_length << String::TAB << seq << String::TAB << qstr;
+	str << name << TAB << String(flag) << TAB << pos.idx << TAB << pos.begin + 1 << TAB <<
+		(int)mapq << TAB << cigars.toString() << TAB << (int)next_refid << TAB << (int)next_pos << TAB <<
+		seq_length << TAB << seq << TAB << qstr;
     return str;
 }
 bool sbam::readinfo::operator<(const sbam::readinfo &ri) const { return pos < ri.pos; }
@@ -209,8 +209,8 @@ inline int bgzf_uncompress(void *dest, void *ori, sushort &length) {
 }
 sbam::bgzf_dat::bgzf_dat() { init(); }
 sbam::bgzf_dat::~bgzf_dat() {
-    free(ori_data);
-    free(bam_data);
+    //free(ori_data);
+    //free(bam_data);
 }
 void sbam::bgzf_dat::init() {
     memset(_magic, 0, 16);
@@ -218,22 +218,28 @@ void sbam::bgzf_dat::init() {
     offset = 0;
     ori_length = 0;
     block_length = 0;
-    ori_data = (subyte *)malloc(BGZF_MAX_BLOCK_SIZE);
-    bam_data = (subyte *)malloc(BGZF_MAX_BLOCK_SIZE);
-    current = bam_data;
+	ori_data.reserve(BGZF_MAX_BLOCK_SIZE + 1);
+	bam_data.reserve(BGZF_MAX_BLOCK_SIZE + 1);
+    //ori_data = (subyte *)malloc(BGZF_MAX_BLOCK_SIZE);
+    //bam_data = (subyte *)malloc(BGZF_MAX_BLOCK_SIZE);
+    current = bam_data.ptr();
 }
 void sbam::bgzf_dat::load(SBamFile *bam) {
     offset.file_offset = bam->offset();
     offset.block_offset = 0;
-    ori_length = 0; block_length = 0; current = bam_data;
+    ori_length = 0; block_length = 0; current = bam_data.ptr();
     if (bam->eof() || offset.file_offset == bam->size()) return;
     bam->readBytes(_magic, 16);
     if(memcmp(GZ_MAGIC, _magic, 16) != 0)
         throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, _magic, "BGZF");
     bam->readUShort(ori_length);
-    bam->readBytes(ori_data, ori_length-21);
+	ori_data.resize(ori_length - 25);
+	//bam->readBytes(ori_data, ori_length-21);
+	bam->readBytes(ori_data.ptr(), ori_length - 25);
+	bam->readInt(block_length);
     bam->readInt(block_length);
-    result = bgzf_uncompress(bam_data, ori_data, ori_length);
+	SCode::expandTo(ori_data, bam_data, BGZF_MAX_BLOCK_SIZE, -15, Z_FINISH);
+    //result = bgzf_uncompress(bam_data, ori_data, ori_length);
 }
 void sbam::bgzf_dat::setOffset(sushort boff) {
     offset.block_offset = boff;

@@ -44,6 +44,8 @@ namespace slib {
         Char &operator=(const SObjPtr &obj);
         Char &operator+=(int p);
         Char &operator-=(int p);
+		Char operator+(int p);
+		Char operator-(int p);
         Char &operator ++();
         Char &operator --();
         

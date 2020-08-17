@@ -8,7 +8,6 @@ SJson::SJson(sio::SFile& file) : sobj() { load(file); }
 SJson::SJson(const sobj &obj) : sobj(obj) {}
 SJson::SJson(const SJson &js) : sobj() { js.copyTo(*this); }
 SJson::~SJson() {}
-
 SJson &SJson::operator=(const sobj &obj) {
     *static_cast<sobj *>(this) = obj;
     return *this;
@@ -16,7 +15,6 @@ SJson &SJson::operator=(const sobj &obj) {
 SJson &SJson::operator=(const SJson &js) {
     js.copyTo(*this); return *this;
 }
-
 inline String jsArrayString(const SArray &array) {
     String str = "[";
     if (array.empty()) str+="]";
@@ -55,10 +53,8 @@ String SJson::jsString(const sobj &obj) {
     else if (obj.isDict()) return jsDictString(obj);
     return String::dquot(obj);
 }
-
 inline sobj toArray(int &offset, const char *s);
 inline sobj toDict(int &offset, const char *s);
-
 inline sobj toArray(int &offset, const char *s) {
     sarray array;
     bool sq = false, dq = false;
@@ -149,7 +145,7 @@ inline sobj toDict(int &offset, const char *s) {
                             key.resize(len);
                             memcpy(&key[0], &s[offset-len], len);
                             key.trimming();
-                            if (key.isQuoted()) key.transform(DELETE_QUOTE);
+                            if (key.isQuoted()) key.transform(slib::sstyle::DELETE_QUOTE);
                             len = 0;
                         }
                         k = false;
@@ -224,7 +220,6 @@ inline sobj toDict(int &offset, const char *s) {
     }
     return dict;
 }
-
 inline sobj jsArray(String &str) {
     int offset = 1;
     str.trimming();
@@ -237,23 +232,20 @@ inline sobj jsDict(String &str) {
     if(!str.empty() && str[0] == '{') return toDict(offset, &str[0]);
     return sobj();
 }
-
 sobj SJson::jsObj(const char *s) {
     auto str = String::trim(s);
     if (str.empty()) return snull;
     else if (str[0] == '[') return jsArray(str);
     else if (str[0] == '{') return jsDict(str);
-    else if (str.isQuoted()) return str.transformed(DELETE_QUOTE);
+    else if (str.isQuoted()) return str.transformed(slib::sstyle::DELETE_QUOTE);
     else if (str.equal(R(/null/))) return snull;
     return str.number();
 }
-
 void SJson::load(const char *path) {
     SString json;
     json.load(path);
     parse(json);
 }
-
 inline void writeObj(sio::SFile &file, const sobj &obj, sint layer) {
 	if (obj.isArray()) {
 		file << "[";
@@ -265,7 +257,7 @@ inline void writeObj(sio::SFile &file, const sobj &obj, sint layer) {
 				if (i < obj.size() - 1) file << "," << NEW_LINE;
 				else file << NEW_LINE;
 			}
-			file << String::TAB * layer << "]";
+			file << TAB * layer << "]";
 		}
 		file.flush();
 	}
@@ -276,25 +268,23 @@ inline void writeObj(sio::SFile &file, const sobj &obj, sint layer) {
 			file << NEW_LINE;
 			auto keys = obj.keyset();
 			sforeachi(keys) {
-				file << String::TAB * (layer+1) << String::dquot(keys[i]) << ":";
+				file << TAB * (layer+1) << String::dquot(keys[i]) << ":";
 				if (obj[keys[i]].isArray()) writeObj(file, obj[keys[i]], layer + 1);
 				else if (obj[keys[i]].isDict()) writeObj(file, obj[keys[i]], layer + 1);
 				else writeObj(file, obj[keys[i]], 0);
 				if (i < keys.size() - 1) file << "," << NEW_LINE;
 				else file << NEW_LINE;
 			}
-			file << String::TAB * layer << "}";
+			file << TAB * layer << "}";
 		}
 		file.flush();
 	}
-	else file << String::TAB * layer << SJson::jsString(obj);
+	else file << TAB * layer << SJson::jsString(obj);
 }
-
 void SJson::save(const char *path) {
     sio::SFile file(path, sio::CREATE);
     sint layer = 0; 
 	writeObj(file, *this, layer);
 }
-
 void SJson::parse(const char *s) { *this = SJson::jsObj(s); }
 String SJson::toString() { return SJson::jsString(*this); }

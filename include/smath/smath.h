@@ -5,6 +5,5 @@
 #include "smath/comp.h"
 #include "smath/geom.h"
 #include "smath/stat.h"
-#include "smath/snumeric.h"
 
 #endif

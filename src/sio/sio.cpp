@@ -26,31 +26,3 @@ slib::sio::SIOException::SIOException(const char* f, sint l, const char* func, s
 	}
 }
 slib::sio::SIOException::~SIOException() {}
-
-slib::String slib::sio::currentPath() {
-	slib::String path;
-#if defined(MAC_OS) || defined(UNIX_OS) || defined(LINUX_OS)
-    SSystem::exec("pwd", path);
-#else
-	slib::SSystem::exec("cd", path);
-	path = slib::String::toUTF8(path);
-#endif
-    path.trimming();
-    return path;
-}
-bool slib::sio::fileExist(const char *p) {
-    int res;
-#if defined(WIN32_OS)
-	struct _stat32 buf;
-	res = _stat32(p, &buf);
-	return !res;
-#elif defined(WIN64_OS)
-    struct _stat64 buf;
-    res = _stat64(p, &buf);
-    return !res;
-#else
-    struct stat buf;
-    res = stat(p, &buf);
-#endif
-    return !res;
-}

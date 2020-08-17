@@ -14,8 +14,14 @@ namespace slib {
 	class Array;
 	template<typename T>
 	class CArray;
+	template<typename T, size_t S, class M>
+	class FixedArray;
+	template<typename T, class M>
+	class BiArray;
 	template<class Key, class Val>
 	class Map;
+	template<typename T>
+	class Region;
     class SLIB_DLL String;
     class SLIB_DLL SNumber;
     class SLIB_DLL SString;
@@ -25,25 +31,7 @@ namespace slib {
 	namespace sio {
 		class SLIB_DLL SFile;
 	}
-
-	constexpr subyte TRIMMING = 0x01;
-	constexpr subyte SINGLE_QUOTE = 0x02;
-	constexpr subyte DOUBLE_QUOTE = 0x04;
-	constexpr subyte DELETE_QUOTE = 0x08;
-	constexpr subyte TO_UPPER = 0x10;
-	constexpr subyte TO_LOWER = 0x20;
-	constexpr subyte TO_WIDE = 0x40;
-	constexpr subyte TO_NARROW = 0x80;
-
-	constexpr subyte EXACT_MATCH = 0x00;
-	constexpr subyte BAGIN_MATCH = 0x01;
-	constexpr subyte END_MATCH = 0x02;
-	constexpr subyte CONTAIN_QUE = 0x03;
-
-	constexpr char BASIC_LALPHABET[27] = "abcdefghijklmnopqrstuvwxyz";
-	constexpr char BASIC_UALPHABET[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	constexpr char HEX_STR[17] = "0123456789ABCDEF";
-
+	
     class SLIB_DLL Regex {
     private:
         std::regex _rgx;
@@ -62,27 +50,11 @@ namespace slib {
         String replace(const char *s, const char *alt) const;
         String rearrange(const char *s, const CArray<sint> &order) const;
     };
-    
-#ifdef WIN_OS
-#define NEW_LINE String::CRLF
-#else    
-#define NEW_LINE String::LF   
-#endif
-    
+
     class SLIB_DLL String {
         friend Char;
         
     public:
-        static const String SPACE;
-        static const String TAB;
-        static const String LF;
-        static const String CR;
-        static const String CRLF;
-        static const String BS;
-        static const String SQUOT;
-        static const String DQUOT;
-		static const String ESC;
-        
         static String trim(const char *s);
         static String squot(const char *s);
         static String dquot(const char *s);
@@ -366,7 +338,7 @@ namespace slib {
         //UTF-8
         size_t charCount() const;
         size_t charIndex(size_t idx) const;
-        Char charAt(size_t idx) const;
+        Char u8charAt(size_t idx) const;
         String strAt(size_t idx) const;
         
         SUtf8Iterator ubegin();
@@ -409,6 +381,7 @@ namespace slib {
         suinteger uinteger() const;
         sreal real() const;
         SNumber number() const;
+		
 #if defined(WIN32_OS) || defined(WIN64_OS)
 		std::wstring unicode() const;
 		String localize() const;
@@ -453,24 +426,60 @@ namespace slib {
         bool operator != (const String &s) const;
         bool operator != (const SString &s) const;
     };
-    extern SLIB_DLL String operator+(const char &c, const String &s);
-    extern SLIB_DLL String operator+(const char *s1, const String &s2);
-    extern SLIB_DLL String operator+(const std::string &s1, const String &s2);
+	extern SLIB_DLL String operator+(const char& c, const String& s);
+	extern SLIB_DLL String operator+(const char* s1, const String& s2);
+	extern SLIB_DLL String operator+(const std::string& s1, const String& s2);
+	
+	template<typename T, class M>
+	extern String toString(const Array<T, M>& array, const char* sep = ",") {
+		String str;
+		if (!array.empty()) sforeach(array) str << E_ << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<typename T, size_t S, class M>
+	extern String toString(const FixedArray<T, S, M>& array, const char* sep = ",") {
+		String str;
+		if (!array.empty()) sforeach(array) str << E_ << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<typename T, class M>
+	extern String toString(const BiArray<T, M>& array, const char* sep = ",") {
+		String str;
+		if (!array.empty()) sforeach(array) str << E_ << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<class Key, class Val>
+	extern String toString(const Map<Key, Val>& map, const char* sep = ";", const char* part = "=") {
+		String str;
+		if (!map.empty()) sforeach(map) str << E_.key << part << E_.value << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<typename T>
+	extern String toString(const Region<T>& reg) {
+		String str;
+		if (!reg.empty()) sforeach(reg) str << "(" << E_.begin << "," << E_.end << "),";
+		if (!str.empty()) str.resize(str.length() - 1);
+		return str;
+	}
 }
 
 namespace std {
-    template<>
-    struct hash<slib::Char> {
-        size_t operator()(const slib::Char &c) const {
-            return hash<std::string>{}(c.toStr());
-        }
-    };
-    template<>
-    struct hash<slib::String> {
-        size_t operator()(const slib::String &s) const {
-            return hash<std::string>{}(s.toStr());
-        }
-    };
+	template<>
+	struct hash<slib::Char> {
+		size_t operator()(const slib::Char& c) const {
+			return hash<std::string>{}(c.toStr());
+		}
+	};
+	template<>
+	struct hash<slib::String> {
+		size_t operator()(const slib::String& s) const {
+			return hash<std::string>{}(s.toStr());
+		}
+	};
 }
 
 #endif

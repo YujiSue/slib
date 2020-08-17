@@ -24,7 +24,7 @@ namespace slib {
         const static suint CENTRAL_DIR_SIG;
         const static suint CENTRAL_DIR_END_SIG;
         
-        struct localFileHeader {
+        struct SLIB_DLL localFileHeader {
             sushort ver, flag, method, time, date, flen, elen;
             suint sig, crc, csize, rsize;
             String name;
@@ -32,12 +32,12 @@ namespace slib {
             localFileHeader();
             ~localFileHeader();
         };
-        struct dataDescriptor {
+        struct SLIB_DLL dataDescriptor {
             suint sig, crc, csize, rsize;
             dataDescriptor();
             ~dataDescriptor();
         };
-        struct centralDir {
+        struct SLIB_DLL centralDir {
             sushort ver, mver, flag, method, time, date, flen, elen, clen, disk, iattr;
             suint sig, crc, csize, rsize, eattr, offset;
             String name, comment;
@@ -46,7 +46,7 @@ namespace slib {
             ~centralDir();
             suint size();
         };
-        struct centralDirEnd {
+        struct SLIB_DLL centralDirEnd {
             sushort num, disk, record, sum, clen;
             suint sig, size, offset;
             String comment;
@@ -70,7 +70,7 @@ namespace slib {
         static void archive(sio::SFile &ori, const char *dest = nullptr, const char *encrypt = nullptr);
         static void expand(sio::SFile &ori, const char *dest = nullptr, const char *decrypt = nullptr);
     };
-    
+
     class SLIB_DLL SCode {
     public:
         static void urlEncode(String &str);
@@ -87,7 +87,8 @@ namespace slib {
 		static void decodeBASE64(const String &base, String& ori);
 		static void decodeBASE64(const char *base, void *ori, const size_t &size);
         
-        static void expand(ubytearray &bytes);
+		static void expandTo(ubytearray& ori, ubytearray &dest, size_t cap = -1, sint bits = 31, sint flush = Z_NO_FLUSH);
+        static void expand(ubytearray &bytes, size_t cap = -1, sint bits = 31, sint flush = Z_NO_FLUSH);
         static void compress(ubytearray &bytes);
         
     };

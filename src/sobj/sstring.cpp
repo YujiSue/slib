@@ -286,12 +286,12 @@ void SString::save(const char *path) {
     sio::SFile file(path, sio::CREATE);
     file<<(*this);
 }
-sobj& SString::u8char(int idx) { 
-	_char.character() = charAt(idx);
+sobj& SString::charAt(int idx) { 
+	_char.character() = u8charAt(idx);
 	return _char;
 }
-const sobj& SString::u8char(int idx) const {
-	const_cast<SChar &>(_char.character()) = charAt(idx);
+const sobj& SString::charAt(int idx) const {
+	const_cast<SChar &>(_char.character()) = u8charAt(idx);
 	return _char;
 }
 String SString::getClass() const { return "string"; }
@@ -332,11 +332,3 @@ SString slib::operator+(const size_t &u, const SString &s) { return SString(u)+=
 SString slib::operator+(const float &f, const SString &s) { return SString(f)+=s; }
 SString slib::operator+(const double &r, const SString &s) { return SString(r)+=s; }
 SString slib::operator+(const bool &b, const SString &s) { return SString(b)+=s; }
-String slib::operator+(const char *s, const sobj &obj) {
-    if (obj.isStr()) return String(s) += obj.string();
-    else return String(s) += obj->toString();
-}
-String slib::operator+(const std::string &s, const sobj &obj) {
-    if (obj.isStr()) return String(s) += obj.string();
-    else return String(s) += obj->toString();
-}

@@ -70,16 +70,6 @@ String Regex::rearrange(const char *s, const CArray<sint> &order) const {
     else  return String(std::regex_replace(s, _rgx, regexOrder(order).cstr(), std::regex_constants::format_first_only));
 }
 
-const String String::SPACE = " ";
-const String String::TAB = "\t";
-const String String::LF = "\n";
-const String String::CR = "\r";
-const String String::CRLF = "\r\n";
-const String String::BS = "\\";
-const String String::SQUOT = "\'";
-const String String::DQUOT = "\"";
-const String String::ESC = String(1, (char)27);
-
 String String::trim(const char *s) {
     String str;
     if (s) {
@@ -114,13 +104,13 @@ String String::dequot(const char *s) {
 String String::upper(const char *s) {
     if (!s) return "";
     String str(s);
-    str.transform(TO_UPPER);
+    str.transform(slib::sstyle::UPPER_CASE);
     return str;
 }
 String String::lower(const char *s) {
     if (!s) return "";
     String str(s);
-    str.transform(TO_LOWER);
+    str.transform(slib::sstyle::LOWER_CASE);
     return str;
 }
 String String::enclose(const char *s, const char *c1, const char *c2) {
@@ -477,7 +467,6 @@ String String::operator+(const std::string &s) const { return String(*this) += s
 String String::operator+(const String &s) const { return String(*this) += s; }
 String String::operator+(const SString &s) const { return String(*this) += s; }
 String String::operator+(SObjPtr obj) const { return String(*this) += obj; }
-
 String &String::operator<<(bool b) { *this += b?"true":"false"; return *this; }
 String &String::operator<<(int i) { *this += std::to_string(i); return *this; }
 String &String::operator<<(unsigned int ui) { *this += std::to_string(ui); return *this; }
@@ -501,7 +490,7 @@ String &String::operator<<(sbyte i) { *this += std::to_string(i); return *this; 
 String &String::operator<<(subyte ui) { *this += std::to_string(ui); return *this; }
 String &String::operator<<(sshort i) { *this += std::to_string(i); return *this; }
 String &String::operator<<(sushort ui) { *this += std::to_string(ui); return *this; }
-String &String::operator<<(char c) { return (*this) += c; }
+String& String::operator<<(char c) { this->add(c); return (*this); }
 String &String::operator<<(const char *s) { return (*this) += s; }
 String &String::operator<<(const std::string &s) { return (*this) += s; }
 String &String::operator<<(const String &s) { return (*this) += s; }
@@ -524,10 +513,11 @@ String &String::operator*=(size_t num) { return (*this) *= (int)num; }
 String String::operator*(int num) const { return String(*this) *= num; }
 String String::operator*(size_t num) const { return String(*this) *= (int)num; }
 bool String::isNumeric() const {
-    return equal(R(/[+-]*\\d+/)) || equal(R(/0x[0-9a-fA-F]+/)) ||
-    equal(R(/nan/i)) || equal(R(/[+-]*inf/i)) || equal(R(/[+-]*infinity/i)) ||
-    equal(R(/[+-]*\\d+\\.\\d+/i)) || equal(R(/[+-]*\\d+[eE][+-]*\\d+/)) ||
-    equal(R(/[+-]*\\d+\\/\\d+/)) || equal(R(/[+-]*[0-9.]*[+-]*[0-9.]+i/));
+    return equal(R(/true|yes/i)) || equal(R(/false|no/i)) ||
+		equal(R(/[+-]*\\d+/)) || equal(R(/0x[0-9a-fA-F]+/)) ||
+		equal(R(/nan/i)) || equal(R(/[+-]*inf/i)) || equal(R(/[+-]*infinity/i)) ||
+		equal(R(/[+-]*\\d+\\.\\d+/i)) || equal(R(/[+-]*\\d+[eE][+-]*\\d+/)) ||
+		equal(R(/[+-]*\\d+\\/\\d+/)) || equal(R(/[+-]*[0-9.]*[+-]*[0-9.]+i/));
 }
 bool String::isQuoted() const {
     auto ins = _cinstance();
@@ -701,8 +691,8 @@ void String::remove(size_t off, size_t len) {
         resize(ins.second-len);
     }
 }
-void String::remove(const srange &rng) { remove(rng.begin, rng.end-rng.begin); }
-void String::replace(const srange &rng, const char *alt) { replace(rng.begin, rng.end-rng.begin, alt); }
+void String::remove(const srange& rng) { remove(rng.begin, (sinteger)rng.end - rng.begin); }
+void String::replace(const srange &rng, const char *alt) { replace(rng.begin, (sinteger)rng.end - rng.begin, alt); }
 void String::replace(size_t off, size_t len, const char *alt) {
     if (alt) {
         auto ins = _instance();
@@ -755,7 +745,7 @@ void String::clip(size_t off, size_t len) {
         resize(len);
     }
 }
-void String::clip(const srange &rng) { clip(rng.begin, rng.end-rng.begin); }
+void String::clip(const srange &rng) { clip(rng.begin, (sinteger)rng.end-rng.begin); }
 void String::fill(size_t s, char fill, bool head) {
     auto tmp = size();
     if (tmp < s) {
@@ -777,21 +767,21 @@ void String::trimming() {
 }
 void String::transform(subyte trans) {
     auto ins = _instance();
-    auto beg = ins.first, end = &ins.first[ins.second];
-    if (trans&DELETE_QUOTE) { ++beg; --end; }
+    auto beg = ins.first, en = &ins.first[ins.second];
+    if (trans& slib::sstyle::DELETE_QUOTE) { ++beg; --en; }
     if (ins.first < beg) remove(0, beg-ins.first);
-    resize(end-beg);
-    if (trans&SINGLE_QUOTE) { insert(0, "\'"); append("\'"); }
-    if (trans&DOUBLE_QUOTE) { insert(0, "\""); append("\""); }
-    if (trans&TO_UPPER)
-        std::transform(this->begin(), this->end(), begin(), toupper);
-    else if (trans&TO_LOWER)
-        std::transform(this->begin(), this->end(), begin(), tolower);
-    if (trans&TO_WIDE) {
+	resize(en - beg);
+    if (trans& slib::sstyle::SINGLE_QUOTE) { insert(0, "\'"); append("\'"); }
+    if (trans& slib::sstyle::DOUBLE_QUOTE) { insert(0, "\""); append("\""); }
+    if (trans& slib::sstyle::UPPER_CASE)
+        std::transform(begin(), end(), begin(), toupper);
+    else if (trans& slib::sstyle::LOWER_CASE)
+        std::transform(begin(), end(), begin(), tolower);
+    if (trans& slib::sstyle::FULL_WIDTH) {
 		String tmp = String::wide(cstr());
 		this->swap(tmp);
     }
-    else if (trans&TO_NARROW) {
+    else if (trans& slib::sstyle::HALF_WIDTH) {
 		String tmp = String::narrow(cstr());
 		this->swap(tmp);
     }
@@ -849,7 +839,7 @@ String String::transformed(uint8_t trans) const {
 }
 size_t String::charCount() const { size_t count = 0; if (!empty()) { sforeachc(*this) ++count; } return count; }
 size_t String::charIndex(size_t idx) const { return (ubegin()+idx)->index(); }
-Char String::charAt(size_t idx) const { return *(ubegin()+idx); }
+Char String::u8charAt(size_t idx) const { return *(ubegin()+idx); }
 String String::strAt(size_t idx) const { return (ubegin()+idx)->toStr(); }
 SUtf8Iterator String::ubegin() { return SUtf8Iterator(this, ptr()); }
 SUtf8CIterator String::ubegin() const { return SUtf8CIterator(this, ptr()); }
@@ -1121,12 +1111,12 @@ SNumber String::number() const {
         else return SNumber(INFINITY);
     }
     else if (equal(R(/[+-]*\\d+\\.\\d+/i)) ||
-             equal(R(/[+-]*\\d+[eE][+-]*\\d+/))) {
+             equal(R(/[+-]*\\d+\\.*\\d*[eE][+-]*\\d+/))) {
         return SNumber(atof(cstr()));
     }
     //Boolean
-    else if (equal(R(/true|yes/i))) return SNumber(true);
-    else if (equal(R(/false|no/i)))  return SNumber(false);
+    else if (equal(R(/TRUE|YES/))) return SNumber(true);
+    else if (equal(R(/FALSE|NO/)))  return SNumber(false);
     //Fraction
     else if (equal(R(/[+-]*\\d+\\/\\d+/))) return SNumber(sfrac(cstr()));
     //Complex
