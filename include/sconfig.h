@@ -175,9 +175,10 @@ namespace slib {
 #define NEXT_ ++it
 #define PREV_ --it
 #define INDEX_(X) (it-(X).begin())
-
 #define MAX_(X, Y) (X)<(Y)?(Y):(X)
 #define MIN_(X, Y) (X)<(Y)?(X):(Y)
+
+
 
 #define sforeach(V) for(auto it=(V).begin();it<(V).end();++it)
 #define srforeach(V) for(auto it=(V).end()-1;(V).begin()<=it;--it)

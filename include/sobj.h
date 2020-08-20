@@ -1,6 +1,8 @@
 #ifndef SLIB_SOBJ_H
 #define SLIB_SOBJ_H
 
+#define SOBJ_VERSION 1.0.0
+
 #include "sbasic/sbasic.h"
 #include "sobj/snumber.h"
 #include "sobj/sstring.h"

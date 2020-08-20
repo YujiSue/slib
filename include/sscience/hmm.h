@@ -99,6 +99,8 @@ namespace slib {
 			}
 		}
 		inline void searchPath(sint &output, svecd &prev, svecd &current, sveci &track, svecd &tmp, smatd& emission, smatd& transition, bool logp) {
+			current.resize(emission.row);
+			track.resize(emission.row);
 			sforin(s, 0, emission.row) {
 				tmp.reset(0);
 				sforin(p, 0, emission.row) {
@@ -125,13 +127,15 @@ namespace slib {
 				prob[i] = emission[i][output];
 			}
 		}
-		extern void Viterbi(sveci& state, sveci& observation, smatd& emission, smatd& transition, bool logp, bool off) {
+		extern void Viterbi(sveci& state, sveci& observation, smatd& emission, smatd& transition, bool logp=true, bool off=true) {
 			state.resize(observation.size());
 			svecd tmp(emission.row);
 			svdvec prob;
 			svivec track;
 			if (off) {
 				prob.resize(observation.size());
+				prob[0] = svecd(emission.row);
+				prob[0][0] = 1.0;
 				track.resize(observation.size());
 				auto pit = prob.begin() + 1;
 				auto tit = track.begin();

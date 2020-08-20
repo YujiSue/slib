@@ -19,7 +19,7 @@ namespace slib {
 		friend class UArray;
 		template <typename T_, class M>
 		friend class BiArray;
-		template<typename T_, class Ptr, class Container>
+		template<class T_, typename Child>
 		friend class Node;
 
 		friend class SLIB_DLL SArray;
@@ -73,7 +73,7 @@ namespace slib {
 		friend class UArray;
 		template <typename T_, class M>
 		friend class BiArray;
-		template<typename T_, class Ptr, class Container>
+		template<class T_, typename Child>
 		friend class Node;
 		friend class SLIB_DLL SArray;
 		friend class SLIB_DLL SData;

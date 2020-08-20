@@ -313,12 +313,6 @@ namespace slib {
 			std::function<void(sint, svecd&)> makeKnot = openUniKnot) {
 			svecd knot(vec.size() + 3);
 			makeKnot(2, knot);
-			
-			
-			sforeach(knot) std::cout << E_ << ",";
-			std::cout << knot << std::endl;
-
-
 			_bspline2(vec, curve, knot);
 		}
 		extern inline void bspline3(v2dvec& vec, v2dvec& curve, svecd& knot) {

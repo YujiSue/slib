@@ -53,7 +53,7 @@ namespace slib {
         void swap(Pointer &ptr);
         bool isNull() const;
         operator bool() const;
-        operator T *() const;
+		operator T* () const;
 		bool operator<(const Pointer& p) const;
 		bool operator==(const Pointer& p) const;
     };

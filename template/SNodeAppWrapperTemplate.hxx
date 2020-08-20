@@ -1,4 +1,3 @@
-#include "node/node_api.h"
 #include "sapp/snodeapp.h"
 
 using namespace slib;

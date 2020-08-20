@@ -46,6 +46,7 @@ namespace slib {
 		SCycleIterator operator -(std::ptrdiff_t diff);
 		int operator -(SCycleIterator cit);
 		int index() const;
+		pointer ptr();
 		void swap(SCycleIterator cit1, SCycleIterator cit2);
 		bool operator ==(const SCycleIterator& cit) const;
 		bool operator !=(const SCycleIterator& cit) const;
@@ -90,6 +91,7 @@ namespace slib {
 		SCycleCIterator operator -(std::ptrdiff_t diff);
 		int operator -(SCycleCIterator cit);
 		int index() const;
+		pointer ptr();
 		void swap(SCycleCIterator cit1, SCycleCIterator cit2);
 		bool operator ==(const SCycleCIterator& cit) const;
 		bool operator !=(const SCycleCIterator& cit) const;
@@ -101,7 +103,7 @@ namespace slib {
 
 	/*============================================================*/
 	template<typename T>
-	inline void SCycleIterator<T>::_adjust(sint i) {
+	void SCycleIterator<T>::_adjust(sint i) {
 		recurring(i, _size);
 		_ptr += i - _current;
 		_current = i;
@@ -120,60 +122,62 @@ namespace slib {
 		return *this;
 	}
 	template<typename T>
-	inline T& SCycleIterator<T>::operator *() { return *_ptr; }
+	T& SCycleIterator<T>::operator *() { return *_ptr; }
 	template<typename T>
-	inline T* SCycleIterator<T>::operator ->() { return _ptr; }
+	T* SCycleIterator<T>::operator ->() { return _ptr; }
 	template<typename T>
-	inline T& SCycleIterator<T>::operator[](std::ptrdiff_t diff) { _adjust(_current + diff); return *_ptr; }
+	T& SCycleIterator<T>::operator[](std::ptrdiff_t diff) { _adjust(_current + diff); return *_ptr; }
 	template<typename T>
-	inline SCycleIterator<T>& SCycleIterator<T>::operator ++() { _adjust(_current + 1); return *this; }
+	SCycleIterator<T>& SCycleIterator<T>::operator ++() { _adjust(_current + 1); return *this; }
 	template<typename T>
-	inline SCycleIterator<T> SCycleIterator<T>::operator ++(int i) { _adjust(_current + i); return *this; }
+	SCycleIterator<T> SCycleIterator<T>::operator ++(int i) { _adjust(_current + i); return *this; }
 	template<typename T>
-	inline SCycleIterator<T>& SCycleIterator<T>::operator --() { _adjust(_current - 1); return *this; }
+	SCycleIterator<T>& SCycleIterator<T>::operator --() { _adjust(_current - 1); return *this; }
 	template<typename T>
-	inline SCycleIterator<T> SCycleIterator<T>::operator --(int i) { _adjust(_current - i); return *this; }
+	SCycleIterator<T> SCycleIterator<T>::operator --(int i) { _adjust(_current - i); return *this; }
 	template<typename T>
-	inline SCycleIterator<T>& SCycleIterator<T>::operator +=(std::ptrdiff_t diff) {
+	SCycleIterator<T>& SCycleIterator<T>::operator +=(std::ptrdiff_t diff) {
 		if (_size == diff) return *this;
 		else _adjust(_current + diff);
 		return *this;
 	}
 	template<typename T>
-	inline SCycleIterator<T>& SCycleIterator<T>::operator -=(std::ptrdiff_t diff) {
+	SCycleIterator<T>& SCycleIterator<T>::operator -=(std::ptrdiff_t diff) {
 		if (_size == diff) return *this;
 		else _adjust(_current - diff);
 		return *this;
 	}
 	template<typename T>
-	inline SCycleIterator<T> SCycleIterator<T>::operator +(std::ptrdiff_t diff) { SCycleIterator<T> cit = *this; return cit += diff; }
+	SCycleIterator<T> SCycleIterator<T>::operator +(std::ptrdiff_t diff) { SCycleIterator<T> cit = *this; return cit += diff; }
 	template<typename T>
-	inline SCycleIterator<T> SCycleIterator<T>::operator -(std::ptrdiff_t diff) { SCycleIterator<T> cit = *this; return cit -= diff; }
+	SCycleIterator<T> SCycleIterator<T>::operator -(std::ptrdiff_t diff) { SCycleIterator<T> cit = *this; return cit -= diff; }
 	template<typename T>
-	inline int SCycleIterator<T>::operator -(SCycleIterator<T> cit) {
+	int SCycleIterator<T>::operator -(SCycleIterator<T> cit) {
 		if (_current < cit._current)
 			return _current + _size - cit._current;
 		else return _current - cit._current;
 	}
 	template<typename T>
-	inline int SCycleIterator<T>::index() const { return _current; }
+	int SCycleIterator<T>::index() const { return _current; }
 	template<typename T>
-	inline void SCycleIterator<T>::swap(SCycleIterator<T> cit1, SCycleIterator<T> cit2) { T temp = *cit1; *cit1 = *cit2; *cit2 = temp; }
+	T *SCycleIterator<T>::ptr() { return _ptr; }
 	template<typename T>
-	inline bool SCycleIterator<T>::operator ==(const SCycleIterator<T>& cit) const { return _ptr == cit._ptr; }
+	void SCycleIterator<T>::swap(SCycleIterator<T> cit1, SCycleIterator<T> cit2) { T temp = *cit1; *cit1 = *cit2; *cit2 = temp; }
 	template<typename T>
-	inline bool SCycleIterator<T>::operator !=(const SCycleIterator<T>& cit) const { return !(*this == cit); }
+	bool SCycleIterator<T>::operator ==(const SCycleIterator<T>& cit) const { return _ptr == cit._ptr; }
 	template<typename T>
-	inline bool SCycleIterator<T>::operator <(const SCycleIterator<T>& cit) const { return true; }
+	bool SCycleIterator<T>::operator !=(const SCycleIterator<T>& cit) const { return !(*this == cit); }
 	template<typename T>
-	inline bool SCycleIterator<T>::operator <=(const SCycleIterator<T>& cit) const { return true; }
+	bool SCycleIterator<T>::operator <(const SCycleIterator<T>& cit) const { return true; }
 	template<typename T>
-	inline bool SCycleIterator<T>::operator >(const SCycleIterator<T>& cit) const { return true; }
+	bool SCycleIterator<T>::operator <=(const SCycleIterator<T>& cit) const { return true; }
 	template<typename T>
-	inline bool SCycleIterator<T>::operator >=(const SCycleIterator<T>& cit) const { return true; }
+	bool SCycleIterator<T>::operator >(const SCycleIterator<T>& cit) const { return true; }
+	template<typename T>
+	bool SCycleIterator<T>::operator >=(const SCycleIterator<T>& cit) const { return true; }
 
 	template<typename T>
-	inline void SCycleCIterator<T>::_adjust(int i) {
+	void SCycleCIterator<T>::_adjust(int i) {
 		recurring(i, _size);
 		_ptr += i - _current;
 		_current = i;
@@ -192,58 +196,60 @@ namespace slib {
 		return *this;
 	}
 	template<typename T>
-	inline const T& SCycleCIterator<T>::operator *() const { return *_ptr; }
+	const T& SCycleCIterator<T>::operator *() const { return *_ptr; }
 	template<typename T>
-	inline const T* SCycleCIterator<T>::operator ->() const { return _ptr; }
+	const T* SCycleCIterator<T>::operator ->() const { return _ptr; }
 	template<typename T>
-	inline const T& SCycleCIterator<T>::operator[](std::ptrdiff_t diff) const { _adjust(_current + diff); return *_ptr; }
+	const T& SCycleCIterator<T>::operator[](std::ptrdiff_t diff) const { _adjust(_current + diff); return *_ptr; }
 	template<typename T>
-	inline SCycleCIterator<T>& SCycleCIterator<T>::operator ++() { _adjust(_current + 1); return *this; }
+	SCycleCIterator<T>& SCycleCIterator<T>::operator ++() { _adjust(_current + 1); return *this; }
 	template<typename T>
-	inline SCycleCIterator<T> SCycleCIterator<T>::operator ++(int i) { _adjust(_current + i); return *this; }
+	SCycleCIterator<T> SCycleCIterator<T>::operator ++(int i) { _adjust(_current + i); return *this; }
 	template<typename T>
-	inline SCycleCIterator<T>& SCycleCIterator<T>::operator --() { _adjust(_current - 1); return *this; }
+	SCycleCIterator<T>& SCycleCIterator<T>::operator --() { _adjust(_current - 1); return *this; }
 	template<typename T>
-	inline SCycleCIterator<T> SCycleCIterator<T>::operator --(int i) { _adjust(_current - i); return *this; }
+	SCycleCIterator<T> SCycleCIterator<T>::operator --(int i) { _adjust(_current - i); return *this; }
 	template<typename T>
-	inline SCycleCIterator<T>& SCycleCIterator<T>::operator +=(std::ptrdiff_t diff) {
+	SCycleCIterator<T>& SCycleCIterator<T>::operator +=(std::ptrdiff_t diff) {
 		if (_size == diff) return *this;
 		else _adjust(_current + diff);
 		return *this;
 	}
 	template<typename T>
-	inline SCycleCIterator<T>& SCycleCIterator<T>::operator -=(std::ptrdiff_t diff) {
+	SCycleCIterator<T>& SCycleCIterator<T>::operator -=(std::ptrdiff_t diff) {
 		if (_size == diff) return *this;
 		else _adjust(_current - diff);
 		return *this;
 	}
 	template<typename T>
-	inline SCycleCIterator<T> SCycleCIterator<T>::operator +(std::ptrdiff_t diff) { SCycleCIterator<T> cit = *this; return cit += diff; }
+	SCycleCIterator<T> SCycleCIterator<T>::operator +(std::ptrdiff_t diff) { SCycleCIterator<T> cit = *this; return cit += diff; }
 	template<typename T>
-	inline SCycleCIterator<T> SCycleCIterator<T>::operator -(std::ptrdiff_t diff) { SCycleCIterator<T> cit = *this; return cit -= diff; }
+	SCycleCIterator<T> SCycleCIterator<T>::operator -(std::ptrdiff_t diff) { SCycleCIterator<T> cit = *this; return cit -= diff; }
 	template<typename T>
-	inline int SCycleCIterator<T>::operator -(SCycleCIterator<T> cit) {
+	int SCycleCIterator<T>::operator -(SCycleCIterator<T> cit) {
 		if (_current < cit._current)
 			return _current + _size - cit._current;
 		else return _current - cit._current;
 	}
 	template<typename T>
-	inline int SCycleCIterator<T>::index() const { return _current; }
+	int SCycleCIterator<T>::index() const { return _current; }
 	template<typename T>
-	inline void SCycleCIterator<T>::swap(SCycleCIterator<T> cit1, SCycleCIterator<T> cit2) {
+	const T* SCycleCIterator<T>::ptr() { return _ptr; }
+	template<typename T>
+	void SCycleCIterator<T>::swap(SCycleCIterator<T> cit1, SCycleCIterator<T> cit2) {
 		T temp = *cit1; *cit1 = *cit2; *cit2 = temp;
 	}
 	template<typename T>
-	inline bool SCycleCIterator<T>::operator ==(const SCycleCIterator<T>& cit) const { return _ptr == cit._ptr; }
+	bool SCycleCIterator<T>::operator ==(const SCycleCIterator<T>& cit) const { return _ptr == cit._ptr; }
 	template<typename T>
-	inline bool SCycleCIterator<T>::operator !=(const SCycleCIterator<T>& cit) const { return !(*this == cit); }
+	bool SCycleCIterator<T>::operator !=(const SCycleCIterator<T>& cit) const { return !(*this == cit); }
 	template<typename T>
-	inline bool SCycleCIterator<T>::operator <(const SCycleCIterator<T>& cit) const { return true; }
+	bool SCycleCIterator<T>::operator <(const SCycleCIterator<T>& cit) const { return true; }
 	template<typename T>
-	inline bool SCycleCIterator<T>::operator <=(const SCycleCIterator<T>& cit) const { return true; }
+	bool SCycleCIterator<T>::operator <=(const SCycleCIterator<T>& cit) const { return true; }
 	template<typename T>
-	inline bool SCycleCIterator<T>::operator >(const SCycleCIterator<T>& cit) const { return true; }
+	bool SCycleCIterator<T>::operator >(const SCycleCIterator<T>& cit) const { return true; }
 	template<typename T>
-	inline bool SCycleCIterator<T>::operator >=(const SCycleCIterator<T>& cit) const { return true; }
+	bool SCycleCIterator<T>::operator >=(const SCycleCIterator<T>& cit) const { return true; }
 }
 #endif

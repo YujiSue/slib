@@ -44,7 +44,7 @@ namespace slib {
         T *ptr() const;
         T *ptr(size_t idx) const;
         
-        scyc_iter <T> begin();
+        scyc_iter<T> begin();
         scyc_citer<T> begin() const;
 		scyc_iter<T> end();
 		scyc_citer<T> end() const;
@@ -100,8 +100,6 @@ namespace slib {
         T pick();
         void clear();
         void reset(const T &val);
-        
-        void sort(Comparer comp=sortAsc<T>);
         void copy(const T *ptr, size_t s);
         void copyTo(CycleArray &array);
         void moveTo(CycleArray &array);
@@ -121,18 +119,18 @@ namespace slib {
     };
     /*============================================================*/
 	template <typename T, class M>
-	size_t BiArray<T, M>::_remain() const {
+	size_t <T, M>::_remain() const {
 		return _begin + _capacity - _end;
 	}
     template <typename T, class M>
-    void BiArray<T, M>::_expandHead(size_t s) {
+    void <T, M>::_expandHead(size_t s) {
 		auto cap = _capacity;
 		auto remain = _remain();
 		while (cap <= s) cap <<= 1;
 		reserve(cap, cap - remain - size());
     }
     template <typename T, class M>
-    void BiArray<T, M>::_expandTail(size_t s) {
+    void <T, M>::_expandTail(size_t s) {
         auto cap = _capacity;
 		while (cap <= s) cap <<= 1;
         reserve(cap, offset());
@@ -142,20 +140,22 @@ namespace slib {
     template <typename T, class M>
 	CycleArray<T, M>::CycleArray(size_t s) : CycleArray() { if (s) resize(s); }
     template <typename T, class M>
-	CycleArray<T, M>::CycleArray(size_t s, const T &val) : CycleArray(s) {
+	<T, M>::CycleArray(size_t s, const T &val) : CycleArray(s) {
 		if (s) {
+
+
 			auto p = _off;
 			while (p < _end) { M::assign(p, val); ++p; }
 		}
     }
     template <typename T, class M>
-    BiArray<T, M>::BiArray(std::initializer_list<T> li) : BiArray(li.size()) {
+    <T, M>::BiArray(std::initializer_list<T> li) : BiArray(li.size()) {
         auto p = _off;
         auto it = li.begin();
 		while (p < _end) { M::assign(p, E_); ++p; NEXT_; }
     }
     template <typename T, class M>
-    BiArray<T, M>::BiArray(BiArray<T> &&barray) : BiArray() {
+    <T, M>::BiArray(BiArray<T> &&barray) : BiArray() {
         _capacity = barray._capacity;
         _begin = barray._begin;
         _end = barray._end;
@@ -163,7 +163,7 @@ namespace slib {
         barray.discard();
     }
     template <typename T, class M>
-    BiArray<T, M>::BiArray(const BiArray<T> &barray) : BiArray() {
+    <T, M>::BiArray(const BiArray<T> &barray) : BiArray() {
         if (!barray.empty()) {
             resize(barray.size());
 			auto p = _off, p_ = barray._off;
@@ -171,9 +171,9 @@ namespace slib {
         }
     }
     template <typename T, class M>
-    BiArray<T, M>::~BiArray() { release(); }
+	CycleArray<T, M>::~CycleArray() { release(); }
     template <typename T, class M>
-    BiArray<T, M> &BiArray<T, M>::operator = (BiArray &&barray) {
+    <T, M> &BiArray<T, M>::operator = (BiArray &&barray) {
         release();
         _capacity = barray._capacity;
         _begin = barray._begin;
@@ -183,7 +183,7 @@ namespace slib {
         return (*this);
     }
     template <typename T, class M>
-    BiArray<T, M> &BiArray<T, M>::operator = (const BiArray<T, M> &barray) {
+    <T, M> &BiArray<T, M>::operator = (const BiArray<T, M> &barray) {
         clear();
         auto s = barray.size();
         if(s) {
@@ -194,72 +194,72 @@ namespace slib {
         return (*this);
     }
     template <typename T, class M>
-    T &BiArray<T, M>::operator[] (int idx) { return at(idx); }
+    T & CycleArray<T, M>::operator[] (int idx) { return at(idx); }
     template <typename T, class M>
-    const T &BiArray<T, M>::operator[] (int idx) const { return at(idx); }
+    const T & CycleArray<T, M>::operator[] (int idx) const { return at(idx); }
     template <typename T, class M>
-    const T &BiArray<T, M>::at(int idx) const {
-		auto p = idx < 0 ? _end + idx : _off + idx;
-		if (p < _off || _end <= p)
-			throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(p - _begin).c_str(), RANGE_TEXT(offset(), size()));
-        return *p;
-    }
+    const T & CycleArray<T, M>::at(int idx) const { return *(begin() + idx); }
     template <typename T, class M>
-    T &BiArray<T, M>::at(int idx) {
-		auto p = idx < 0 ? _end + idx : _off + idx;
-		if (p < _off || _end <= p)
-			throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(p - _begin).c_str(), RANGE_TEXT(offset(), size()));
-        return *p;
-    }
+    T & CycleArray<T, M>::at(int idx) { return *(begin() + idx); }
     template <typename T, class M>
-    T &BiArray<T, M>::first() { return at(0); }
+    T & CycleArray<T, M>::first() { return at(0); }
     template <typename T, class M>
-    const T &BiArray<T, M>::first() const { return at(0); }
+    const T & CycleArray<T, M>::first() const { return at(0); }
     template <typename T, class M>
-    T &BiArray<T, M>::last() { return at(-1); }
+    T & CycleArray<T, M>::last() { return at(-1); }
     template <typename T, class M>
-    const T &BiArray<T, M>::last() const { return at(-1); }
+    const T & CycleArray<T, M>::last() const { return at(-1); }
     template <typename T, class M>
-    T *BiArray<T, M>::ptr() const { return _off; }
+    T * CycleArray<T, M>::ptr() const { return _off; }
     template <typename T, class M>
-    T *BiArray<T, M>::ptr(size_t idx) const { return _off+idx; }
+    T * CycleArray<T, M>::ptr(size_t idx) const { return (begin()+idx).ptr(); }
     template <typename T, class M>
-    sarr_iter<T> BiArray<T, M>::begin() { return sarr_iter<T>(_off); }
+    scyc_iter<T> CycleArray<T, M>::begin() { return scyc_iter<T>(_off, (int)offset(), _capacity); }
     template <typename T, class M>
-    sarr_citer<T> BiArray<T, M>::begin() const { return sarr_citer<T>(_off); }
+	scyc_citer<T> CycleArray<T, M>::begin() const { return scyc_citer<T>(_off, (int)offset(), _capacity); }
     template <typename T, class M>
-    sarr_iter<T> BiArray<T, M>::end() { return sarr_iter<T>(_end); }
+	scyc_iter<T> CycleArray<T, M>::end() { return scyc_iter<T>(_end, _end - _begin, _capacity); }
     template <typename T, class M>
-    sarr_citer<T> BiArray<T, M>::end() const { return sarr_citer<T>(_end); }
+	scyc_citer<T> CycleArray<T, M>::end() const { return scyc_citer<T>(_end, _end - _begin, _capacity); }
     template <typename T, class M>
-    BiArray<T, M> BiArray<T, M>::subarray(size_t off, size_t len) const {
+	CycleArray<T, M> CycleArray<T, M>::subarray(size_t off, size_t len) const {
 		return subarray(begin() + off, begin() + off + len);
     }
     template <typename T, class M>
-    BiArray<T, M> BiArray<T, M>::subarray(sarr_citer<T> beg, sarr_citer<T> end) const {
-        auto b = beg._ptr, e = end._ptr;
-        if (_end <= b) return BiArray();
-        if (_end <= e) e = _end;
-		BiArray array(e - b);
-        auto p = array._off;
-        while(b < e) { M::assign(p, *b); ++p; ++b; }
+	CycleArray<T, M> CycleArray<T, M>::subarray(scyc_citer<T> beg, scyc_citer<T> end) const {
+		CycleArray<T, M> array;
+		do {
+			array.add(*beg);
+			++beg;
+		} while (beg != end);
         return array;
     }
     template <typename T, class M>
-    BiArray<T, M> BiArray<T, M>::subarray(srange range) const {
+	CycleArray<T, M> CycleArray<T, M>::subarray(srange range) const {
 		return subarray(begin() + range.begin, begin() + range.end);
     }
     template <typename T, class M>
-    bool BiArray<T, M>::empty() const { return _off == _end; }
+    bool CycleArray<T, M>::empty() const { return _off == _end; }
+	template <typename T, class M>
+	size_t CycleArray<T, M>::size() const { return _size; }
+	template <typename T, class M>
+	size_t CycleArray<T, M>::capacity() const { return _capacity; }
+	template <typename T, class M>
+	size_t CycleArray<T, M>::offset() const { return _off - _begin; }
     template <typename T, class M>
-    size_t BiArray<T, M>::size() const { return _end - _off; }
-    template <typename T, class M>
-    size_t BiArray<T, M>::capacity() const { return _capacity; }
-    template <typename T, class M>
-    size_t BiArray<T, M>::offset() const { return _off-_begin; }
-    template <typename T, class M>
-    void BiArray<T, M>::setOffset(size_t off) {
+    void CycleArray<T, M>::setOffset(size_t off) {
 		auto p = _begin + off;
+		if (_off < _end) {
+			if (_off < p) { M::release(_off, p - _off); _off = p; }
+			else if (p < _off) { M::init(p, _off - p); _off = p; }
+		}
+		else if(_end < _off) {
+			if (_off < p) { M::release(_off, p - _off); _off = p; }
+
+
+
+		}
+
 		if (_end <= p) throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 		if (p < _off) { M::init(p, _off - p); _off = p; }
 		else if (_off < p) { M::release(_off, p - _off); _off = p; }
@@ -386,15 +386,15 @@ namespace slib {
         return sarr_iter<T>(b);
     }
     template <typename T, class M>
-    sarr_iter<T> BiArray<T, M>::remove(srange range) {
+	scyc_iter<T> CycleArray<T, M>::remove(srange range) {
 		return remove(begin() + range.begin, begin() + range.end);
     }
     template <typename T, class M>
-    sarr_iter<T> BiArray<T, M>::remove(size_t off, size_t len) {
+	scyc_iter<T> CycleArray<T, M>::remove(size_t off, size_t len) {
 		return remove(begin() + off, begin() + off + len);
     }
     template <typename T, class M>
-    sarr_iter<T> BiArray<T, M>::removeAt(size_t idx) { return remove(idx, 1); }
+    scyc_iter<T> CycleArray<T, M>::removeAt(size_t idx) { return remove(idx, 1); }
     template <typename T, class M>
     void BiArray<T, M>::trim(size_t s) {
 		if (_end <= _off + s) s = _end - _off;
@@ -426,17 +426,16 @@ namespace slib {
         else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     }
     template <typename T, class M>
-    void BiArray<T, M>::clear() { resize(0); }
+    void CycleArray<T, M>::clear() { resize(0); }
     template <typename T, class M>
-    void BiArray<T, M>::reset(const T &val) {
+    void CycleArray<T, M>::reset(const T &val) {
         if (!empty()) {
-            M::release(_off, size());
-			auto p = _off;
-			while (p < _end) { M::assign(p, val); ++p; }
+			sfortill(it, begin(), end()) {
+				M::release(it.ptr(), size());
+				M::assign(it.ptr(), val);
+			}
         }
     }
-    template <typename T, class M>
-    void BiArray<T, M>::sort(Comparer comp) { std::sort(begin(), end(), comp); }
     template <typename T, class M>
     void BiArray<T, M>::copy(const T *ptr, size_t s) {
         clear(); resize(s);
@@ -530,9 +529,16 @@ namespace slib {
         }
     }
     template <typename T, class M>
-    void BiArray<T, M>::release() {
+    void CycleArray<T, M>::release() {
         if (_begin) {
-            if (_off < _end) M::release(_off, _end-_off);
+			if (_size) {
+				if (_off < _end) M::release(_off, _end - _off);
+				else {
+					M::release(_off, _begin + _capacity - _off);
+					M::release(_begin, _end - _begin);
+				}
+
+			}
             M::dealloc(_begin);
         }
         discard();
@@ -543,25 +549,20 @@ namespace slib {
     }
     template <typename T, class M>
     bool CycleArray<T, M>::operator < (const BiArray &array) const {
-        if (size() != array.size()) return size() < array.size();
-        if (!empty()) {
-            auto it_ = array.begin();
-            sforeach(*this) {
-                if (!(E_ == (*it_))) return E_ < (*it_); else ++it_;
-            }
-        }
+		if (size() != array.size()) return size() < array.size();
+		sforeach2(*this, array) {
+			if (!(E1_ == E2_)) return E1_ < E2_;
+		}
+		return false;
         return false;
     }
     template <typename T, class M>
-    bool CycleArray<T, M>::operator == (const BiArray &array) const {
-        if (size() != array.size()) return false;
-        if (!empty()) {
-            auto it_ = array.begin();
-            sforeach(*this) {
-                if (!(E_ == (*it_))) return false; else ++it_;
-            }
-        }
-        return true;
+    bool CycleArray<T, M>::operator == (const CycleArray &array) const {
+		if (size() != array.size()) return false;
+		sforeach2(*this, array) {
+			if (!(E1_ == E2_)) return false;
+		}
+		return true;
     }
 }
 

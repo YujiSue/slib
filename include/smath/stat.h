@@ -29,7 +29,7 @@ namespace slib {
 		}
 		template<typename T, class M>
 		extern inline sint argmax(const sla::SVector<T, M>& vec) {
-			return maxi(vec.begin(), vec.end());
+			return argmax(vec.begin(), vec.end());
 		}
 		template<typename T>
 		extern inline T maxv(T* val, size_t s) {

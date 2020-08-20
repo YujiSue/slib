@@ -5,7 +5,7 @@
 #include "sbasic/list.h"
 
 namespace slib {
-	template<class Elem, typename Child = Elem>
+	template<class Elem, typename Child = sptr<Elem>>
 	class Node {
 	protected:
 		Elem* _parent;
@@ -41,18 +41,18 @@ namespace slib {
 		sli_iter<Child> insertChild(size_t idx, const Child& node);
 		sli_iter<Child> insertChild(sli_iter<Child> iter, const Child& node);
 		void setChild(size_t idx, const Child& node);
-		void set(sli_iter<Child> iter, const Child& node);
+		void setChild(sli_iter<Child> iter, const Child& node);
 		sli_iter<Child> removeChildAt(size_t idx);
 		sli_iter<Child> removeChild(sli_iter<Child> iter);
 		sli_iter<Child> removeChild(const Child& node);
-		void moveChildTo(sli_iter<Child> iter);
+		void moveChildTo(Elem& node, size_t idx);
 		void clearChildren();
 	};
 
 	template<class Elem, typename Child>
 	Node<Elem, Child>::Node() : _parent(nullptr) {}
 	template<class Elem, typename Child>
-	Node<Elem, Child>::Node(const Node<Elem, Child>& node) : SObject() {
+	Node<Elem, Child>::Node(const Node<Elem, Child>& node) {
 		_parent = node._parent;
 		_children = node._children;
 	}
@@ -93,13 +93,13 @@ namespace slib {
 	template<class Elem, typename Child>
 	const List<Child>& Node<Elem, Child>::children() const { return _children; }
 	template<class Elem, typename Child>
-	Elem& Node<Elem, Child>::child(int idx) { return _children[idx]; }
+	Elem& Node<Elem, Child>::child(int idx) { return *_children[idx]; }
 	template<class Elem, typename Child>
-	const Elem& Node<Elem, Child>::child(int idx) const { return _children[idx]; }
+	const Elem& Node<Elem, Child>::child(int idx) const { return *_children[idx]; }
 	template<class Elem, typename Child>
-	Elem& Node<Elem, Child>::operator[](int idx) { return _children[idx]; }
+	Elem& Node<Elem, Child>::operator[](int idx) { return *_children[idx]; }
 	template<class Elem, typename Child>
-	const Elem& Node<Elem, Child>::operator[](int idx) const { return _children[idx]; }
+	const Elem& Node<Elem, Child>::operator[](int idx) const { return *_children[idx]; }
 	template<class Elem, typename Child>
 	sli_iter<Child> Node<Elem, Child>::begin() { return _children.begin(); }
 	template<class Elem, typename Child>
@@ -113,7 +113,7 @@ namespace slib {
 		if (!_parent) return 0;
 		size_t i = 0;
 		sforeach(_parent->_children) {
-			if (E_.ptr() == (SObject*)this) return i;
+			if (E_.ptr() == dynamic_cast<const Elem *>(this)) return i;
 			++i;
 		}
 		return NOT_FOUND;
@@ -122,7 +122,7 @@ namespace slib {
 	size_t Node<Elem, Child>::layer() const {
 		size_t l = 0;
 		auto ptr = _parent;
-		while (ptr != nullptr) {
+		while (ptr) {
 			++l;
 			ptr = ptr->_parent;
 		}
@@ -143,50 +143,52 @@ namespace slib {
 	template<class Elem, typename Child>
 	void Node<Elem, Child>::addChild(const Child& node) {
 		_children.add(node);
-		(_children.last()).setParent(dynamic_cast<Elem*>(this));
+		(_children.last())->setParent(dynamic_cast<Elem*>(this));
 	}
 	template<class Elem, typename Child>
 	sli_iter<Child> Node<Elem, Child>::insertChild(size_t idx, const Child& node) {
 		auto it = _children.insert(idx, node);
-		E_->setParent(dynamic_cast<Cls*>(this));
+		E_->setParent(dynamic_cast<Elem*>(this));
 		return it;
 	}
 	template<class Elem, typename Child>
 	sli_iter<Child> Node<Elem, Child>::insertChild(sli_iter<Child> iter, const Child& node) {
 		auto it = _children.insert(iter, node);
-		E_->setParent(dynamic_cast<Cls*>(this));
+		E_->setParent(dynamic_cast<Elem*>(this));
 		return it;
 	}
 	template<class Elem, typename Child>
-	void setChild(size_t idx, const Child& node) {
+	void Node<Elem, Child>::setChild(size_t idx, const Child& node) {
 		auto it = _children.begin() + idx;
 		E_ = node;
-		E_->setParent(dynamic_cast<Cls*>(this));
+		E_->setParent(dynamic_cast<Elem*>(this));
 	}
 	template<class Elem, typename Child>
-	void set(sli_iter<Child> iter, const Child& node) {
-		*iter = node;
-		(*iter)->setParent(dynamic_cast<Cls*>(this));
+	void Node<Elem, Child>::setChild(sli_iter<Child> it, const Child& node) {
+		*it = node;
+		(*it)->setParent(dynamic_cast<Elem*>(this));
 	}
 	template<class Elem, typename Child>
-	sli_iter<Child> removeChildAt(size_t idx) {
+	sli_iter<Child> Node<Elem, Child>::removeChildAt(size_t idx) {
 		return _children.removeAt(idx);
 	}
 	template<class Elem, typename Child>
-	sli_iter<Child> removeChild(sli_iter<Child> iter) {
-		return _children.remove(iter, iter + 1);
+	sli_iter<Child> Node<Elem, Child>::removeChild(sli_iter<Child> it) {
+		return _children.remove(it, it + 1);
 	}
 	template<class Elem, typename Child>
-	sli_iter<Child> removeChild(const Child& node) {
+	sli_iter<Child> Node<Elem, Child>::removeChild(const Child& node) {
 		sforeach(_children) { if (&E_ == &node) return _children.remove(it, it + 1); }
 		return end();
 	}
 	template<class Elem, typename Child>
-	void moveChildTo(sli_iter<Child> it) {
-		if (isRoot() || (*iter)->isRoot()) throw SException(ERR_INFO, SLIB_EXEC_ERROR);
-		auto node = _parent->begin() + index();
-		(*iter)->parent()->insertChild(iter, *node);
-		_parent->removeChild(node);
+	void Node<Elem, Child>::moveChildTo(Elem& node, size_t idx) {
+		if (isRoot()) throw SException(ERR_INFO, SLIB_EXEC_ERROR);
+		auto par = _parent;
+		auto current = _parent->begin() + index();
+		if (node.isLeaf()) node.addChild(*current);
+		else node.insertChild(idx, *current);
+		par->removeChild(current);
 	}
 	template<class Elem, typename Child>
 	void Node<Elem, Child>::clearChildren() { _children.clear(); }
