@@ -6,6 +6,7 @@
 #include "smath/comp.h"
 #include "sbasic/array.h"
 #include "sbasic/cyciter.h"
+#include "sbasic/string.h"
 
 #define svec2d slib::sla::SVector2D
 #define svec3d slib::sla::SVector3D
@@ -1352,13 +1353,13 @@ namespace slib {
 		}
         template<typename T, class M>
         SMatrix<T, M> SMatrix<T, M>::submat(int roff, int coff, int rnum, int cnum) {
-            smat m(rnum, cnum);
+            SMatrix<T, M> m(rnum, cnum);
             sforin(r, 0, rnum) { sforin(c, 0, cnum) m.at(r, c) = at(roff+r, coff+c); }
             return m;
         }
         template<typename T, class M>
         SMatrix<T, M> SMatrix<T, M>::transpose() {
-            smat m(col, row);
+            SMatrix<T, M> m(col, row);
             sforin(r, 0, row) { sforin(c, 0, col) m[c][r] = at(r, c); }
             return m;
         }

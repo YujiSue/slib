@@ -1,9 +1,75 @@
-#include "sobj.h"
+
 #include "Test.h"
 
 using namespace slib;
 
+void test::RangeTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Range Test" << NEW_LINE << std::endl;
+	srange r1;
+	srange r2(1, 10);
+	srange r3(-1, 1);
+	srangef rf1;
+	srangef rf2(-10.0f, 10.0f);
+	sranged rd(1.0, 3.1415926);
+
+	std::cout << r1 << std::endl; // 0 , 0
+	std::cout << r2.length() << ":" << r2.length(true) << std::endl; //9 : 10
+	std::cout << (r2.include(r1) ? "true" : "false") << std::endl; //false
+	r2.shift(-5);
+	std::cout << r2 << std::endl; //-4 , 5
+	std::cout << (r2.include(r1) ? "true" : "false") << std::endl; //true
+	std::cout << (r2.overlap(r3) ? "true" : "false") << std::endl; //true
+	r3.expand(10);
+	std::cout << r3 << std::endl; //-1 , 11
+	r1 = r2.merged(r3);
+	std::cout << r1 << std::endl; // -4 , 11
+	r1 = r2.conjunctioned(r3);
+	std::cout << r1 << std::endl; // -1 , 5
+	r2.conjunction(r3);
+	std::cout << (r1 == r2 ? "true" : "false") << std::endl; //true
+	std::cout << (rf1 == rf2 ? "true" : "false") << std::endl; //false
+	std::cout << (rf1 < rf2 ? "true" : "false") << std::endl; //false
+	std::cout << (0.0 < rd ? "true" : "false") << std::endl; //true
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+};
+void test::AreaTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Area Test" << NEW_LINE << std::endl;
+	sarea a1(0, 1, 2, 3);
+	sarea a2(a1);
+	sarea a3(-1, 1, 2, 2);
+
+	std::cout << a1 << std::endl; // 0, 1, 2, 3
+	std::cout << a2.area() << std::endl; //6
+	std::cout << (a1.include(-1, -1) ? "true" : "false") << std::endl; //false
+	std::cout << (a2.overlap(a3) ? "true" : "false") << std::endl; //true
+	std::cout << (a3.include(0, 0) ? "true" : "false") << std::endl; //false
+	a2.merge(a3);
+	std::cout << a2 << std::endl; //-1, 1, 3, 3
+	std::cout << a1.conjunction(a3) << std::endl; //0, 1, 1, 2
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+}
+void test::ZoneTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Zone Test" << NEW_LINE << std::endl;
+	szone z1(0, 1, 2, 3, 4, 5);
+	szone z2(z1);
+	szone z3(-2, -1, 0, 3, 3, 3);
+
+	std::cout << z1 << std::endl; // 0, 1, 2, 3, 4, 5
+	std::cout << z2.volume() << std::endl; //60
+	std::cout << (z1.include(0, 0, 0) ? "true" : "false") << std::endl; //false
+	std::cout << (z2.overlap(z3) ? "true" : "false") << std::endl; //true
+	std::cout << (z3.include(0, 0, 0) ? "true" : "false") << std::endl; //true
+	z2.merge(z3);
+	std::cout << z2 << std::endl; //-2, -1, 0, 5, 6. 7
+	std::cout << z1.conjunction(z3) << std::endl; //0, 1, 2, 1, 1, 1 
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+}
 void test::MemoryTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Memory Test" << NEW_LINE << std::endl;
 	char *str;
 	const char *str1 = "abcdefg";
 	const char *str2 = "xyz";
@@ -18,47 +84,24 @@ void test::MemoryTest() {
 	std::cout << str << std::endl; // xyzabcdefg
 	CMemory<char>::release(&str[6], 11);
 	std::cout << str << std::endl; // xyzabc
-
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }
-void test::RangeTest() {
-	srange r1;
-	srange r2(1, 10);
-	srange r3(-1, 1);
-	srangef rf1;
-	srangef rf2(-10.0f, 10.0f);
-	sranged rd(1.0, 3.1415926);
-
-	std::cout << r1.begin << "," << r1.end << std::endl; // 0 , 0
-	std::cout << r2.length() << ":" << r2.length(true) << std::endl; //9 : 10
-	std::cout << (r2.include(r1) ? "true" : "false") << std::endl; //false
-	r2.shift(-5);
-	std::cout << r2.begin << "," << r2.end << std::endl; //-4 , 5
-	std::cout << (r2.include(r1) ? "true" : "false") << std::endl; //true
-	std::cout << (r2.overlap(r3) ? "true" : "false") << std::endl; //true
-	r3.expand(10);
-	std::cout << r3.begin << "," << r3.end << std::endl; //-1 , 11
-	r1 = r2.merged(r3);
-	std::cout << r1.begin << "," << r1.end << std::endl; // -4 , 11
-	r1 = r2.conjunctioned(r3);
-	std::cout << r1.begin << "," << r1.end << std::endl; // -1 , 5
-	r2.conjunction(r3);
-	std::cout << (r1 == r2 ? "true" : "false") << std::endl; //true
-	std::cout << (rf1 == rf2 ? "true" : "false") << std::endl; //false
-	std::cout << (rf1 < rf2 ? "true" : "false") << std::endl; //false
-	std::cout << (0.0 < rd ? "true" : "false") << std::endl; //true
-};
 void test::PtrTest() {
-	sptr<int> ptr1 = 1; 
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Ptr Test" << NEW_LINE << std::endl;
+	sptr<int> ptr1 = 1;
 	sptr<int> ptr2(ptr1);
 	sptr<int> ptr3;
 	{
 		sptr<int> ptr4 = 100;
 		ptr3 = ptr4;
 	}
-	std::cout << *ptr1 << ":" << *ptr2 << ":" << *ptr3 << std::endl;
+	std::cout << *ptr1 << ":" << *ptr2 << ":" << *ptr3 << std::endl; // 1:1:100
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }
-
 void test::ArrayTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Array Test" << NEW_LINE << std::endl;
 	slib::Array<sint> ia1 = { 1, 2, 3, 4, 5 };
 	slib::Array<sint> ia2;
 	ia2.reserve(10);
@@ -71,8 +114,7 @@ void test::ArrayTest() {
 	slib::Array<sint> ia3 = { 7, 8, 9, 10 };
 	ia1.add(6);
 	ia1.append(ia3);
-	sforeach(ia1) { std::cout << E_ << " "; }
-	std::cout << std::endl; // 1 2 3 4 5 6 7 8 9 10
+	std::cout << ia1 << std::endl; // 1 2 3 4 5 6 7 8 9 10
 	std::cout << (sinteger)ia1.ptr() << "-" << (sinteger)ia1.ptr(ia1.size()) << std::endl; // X - X+0x28
 	ia2.clear();
 	std::cout << ia2.size() << std::endl; // 0
@@ -83,23 +125,23 @@ void test::ArrayTest() {
 	ia1_.moveTo(ia2);
 	std::cout << ia2.size() << std::endl; // 3
 	std::cout << ia1_.size() << std::endl; // 0
-	sforeach(ia2) { std::cout << E_ << " "; }
-	std::cout << std::endl; // 7 8 9
+	std::cout << ia2 << std::endl; // 7 8 9
 	ia2.reset(0);
-	sforeach(ia2) { std::cout << E_ << " "; }
-	std::cout << std::endl; // 0 0 0
+	std::cout << ia2 << std::endl; // 0 0 0
 	ia3.copyTo(ia2);
-	sforeach(ia2) { std::cout << E_ << " "; }
-	std::cout << std::endl; // 7 8 9
+	std::cout << ia2 << std::endl; // 7 8 9
 	ia1.set(0, 0);
 	ia1.exchange(1, 8);
 	ia1.insert(3, -1);
+	std::cout << ia1 << std::endl;
 	ia1.remove(5, 2);
-	sforeach(ia1) { std::cout << E_ << " "; }
-	std::cout << std::endl; // 0 9 3 -1 4 7 8 2 10 
+	std::cout << ia1 << std::endl; // 0 9 3 -1 4 7 8 2 10 
 	ia1.sort();
-	sforeach(ia1) { std::cout << E_ << " "; }
-	std::cout << std::endl; // -1 0 2 3 4 7 8 9 10 
+	std::cout << ia1 << std::endl; // -1 0 2 3 4 7 8 9 10 
+	auto it1 = ia1.begin() + 3;
+	it1 = ia1.remove(it1, it1 + 2);
+	std::cout << ia1 << std::endl; // -1 0 2 3 4 7 8 9 10 
+	std::cout << *it1 << std::endl; //7
 	ia3.resize(8);
 	ia3[0] = 3;
 	ia3[1] = 1;
@@ -114,8 +156,7 @@ void test::ArrayTest() {
 	std::cout << ia3.rfind(1) << std::endl; // 3
 	std::cout << ia3.find(0) << std::endl; // -1
 	ia3.swap(ia1);
-	sforeach(ia1) { std::cout << E_ << " "; }
-	std::cout << std::endl; // 3 1 4 1 5 9 2 6
+	std::cout << ia1 << std::endl; // 3 1 4 1 5 9 2 6
 	try {
 		std::cout << ia1[20] << std::endl;
 	}
@@ -123,7 +164,6 @@ void test::ArrayTest() {
 	stringarray sa1 = { u8"色は", u8"匂へど", u8"散りぬるを" };
 	sa1.erase(u8"匂へど");
 	std::cout << sa1 << std::endl; 
-
 
 	slib::BiArray<sint> ba1 = { 1, 2, 3, 4, 5 };
 	slib::BiArray<sint> ba2;
@@ -189,9 +229,46 @@ void test::ArrayTest() {
 		std::cout << ba1[20] << std::endl;
 	}
 	catch (SException ex) { ex.print(); }
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }
-
+void test::RegionTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Region Test" << NEW_LINE << std::endl;
+	sregion r1 = { srange(1, 2), srange(3, 4), srange(5, 6),srange(11, 20), srange(101, 200) };
+	std::cout << r1.length(true) << std::endl; //116
+	std::cout << r1.range() << std::endl; //1, 200
+	sregion r2(r1);
+	sregion r3 = { srange(5, 15), srange(51, 60) };
+	std::cout << (r1.include(15) ? "true" : "false") << std::endl; //true
+	std::cout << (r1.include(srange(15, 20)) ? "true" : "false") << std::endl; //true
+	std::cout << (r1.overlap(srange(31, 40)) ? "true" : "false") << std::endl; //false
+	std::cout << (r1.overlap(r3) ? "true" : "false") << std::endl; //true
+	std::cout << r1.subregion(srange(15, 120)) << std::endl; //(15,20),(101,120)
+	r2.shift(-10);
+	std::cout << r2 << std::endl;//(-9,-8),(-7,-6),(-5,-4),(1,10),(91,190)
+	r2.expand(0, 10);
+	std::cout << r2 << std::endl;//(-9,-8),(-7,-6),(-5,-4),(11,20),(101,200)
+	r2.merge(srange(5, 30));
+	std::cout << r2 << std::endl;//(-9,-8),(-7,-6),(-5,-4),(5,30),(101,200)
+	r2.merge(r3);
+	std::cout << r2 << std::endl;//(-9,-8),(-7,-6),(-5,-4),(5,30),(51,60),(101,200)
+	r2.conjunction(srange(0, 100));
+	std::cout << r2 << std::endl;//(5,30),(51,60)
+	r1.exclude(srange(10, 150));
+	std::cout << r1 << std::endl;//(1,2),(3,4),(5,6),(151,200)
+	std::cout << r1.find(6) << std::endl;//(2, 2)
+	std::cout << r1.find(srange(2, 5)) << std::endl;//(0, 2)
+	std::cout << complement(srange(0, 300), r1) << std::endl; // (0,0),(7,150),(201,300)
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+}
 void test::ListTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "List Test" << NEW_LINE << std::endl;
+	slib::List<sint> l0;
+	l0.add(10);
+	std::cout << l0[0] << std::endl;
+	std::cout << l0.last() << std::endl;
+
 	slib::List<sint> l1 = { 1, 2, 3, 4, 5 };
 	slib::List<sint> l2;
 	l2.reserve(10);
@@ -261,9 +338,11 @@ void test::ListTest() {
 		std::cout << l1[20] << std::endl;
 	}
 	catch (SException ex) { ex.print(); }
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }
-
 void test::MapTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Map Test" << NEW_LINE << std::endl;
 	slib::Map<String, sint> m1 = { kvpair<String, sint>("a", 1),  kvpair<String, sint>("b", 2),  kvpair<String, sint>("c", 3) };
 	slib::Map<String, sint> m2;
 	m2.reserve(10);
@@ -306,21 +385,118 @@ void test::MapTest() {
 	m4.insert(kvpair<sint, sint>(5, 5));
 	m4.insert(kvpair<sint, sint>(6, 6));
 	std::cout << m4 << std::endl;
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }
-
+void test::SetTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Set Test" << NEW_LINE << std::endl;
+	Set<int, double, const char*> set1(4, 2.5, "10");
+	std::cout << set1.getValue<0>() * set1.getValue<1>() * String(set1.getValue<2>()).intValue() << std::endl;
+	set1.setValue<1>(0.15);
+	std::cout << set1.getValue<0>() * set1.getValue<1>() * String(set1.getValue<2>()).intValue() << std::endl;
+	Set<int, double, const char*> set2 = set1;
+	std::cout << set1.getValue<0>() << "," << set1.getValue<1>() << "," << set1.getValue<2>() << std::endl;
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+}
 void test::CharTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Char Test" << NEW_LINE << std::endl;
 	std::cout << String(u8"Size of utf-8 char. あ = ") << (int)Char::u8size(u8"あ") << std::endl;
 	std::cout << String(u8"'あ' is wide?") << (Char::isWide(u8"あ")?"true":"false") << std::endl;
 	std::cout << String(u8"'あ' is narrow?") << (Char::isNarrow(u8"あ")?"true":"false") << std::endl;
 	std::cout << String(u8"'５' is numeric?") << (Char::isNumeric(u8"５") ? "true" : "false") << std::endl;
 	
 	String s1 = u8"爾天神之命以布斗麻邇爾ト相而詔之";
-	auto c = s1.charAt(3);
+	auto c = s1.u8charAt(3);
 	std::cout << c << std::endl;
-	std::cout << c+3 << std::endl;
+	std::cout << c + 3 << std::endl;
 	std::cout << c.index() << std::endl;
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }
-
 void test::StringTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "String Test" << NEW_LINE << std::endl;
 
+
+
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+}
+void test::TimeTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Time Test" << NEW_LINE << std::endl;
+	std::cout << (Time::isLeapYear(1900) ? "true" : "false") << std::endl; //false
+	std::cout << (Time::isLeapYear(2000) ? "true" : "false") << std::endl; //true
+	//For Japanese
+	std::cout << slocale::JPYear(2000).first << slocale::JPYear(2000).second << S(年) << std::endl; //平成１２年
+	std::cout << S(西暦) << slocale::ADYear(u8"昭和", 20) << S(年) << std::endl; //西暦1945年
+	
+	Time t1;
+	Time t2("1Y2M3D");
+	Time t3("３年６ヶ月");
+	Time t4("１２時間５０分");
+	Time t5("10h30m45s");
+
+	std::cout << t3.toString() << std::endl;
+	std::cout << (t2+t3).toString() << std::endl;
+	std::cout << (t4-t5).toString() << std::endl;
+	std::cout << t5.toJString() << std::endl;
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+}
+class TestNode : public Node<TestNode> {
+public:
+	String nodeid;
+	TestNode() {}
+	TestNode(const char *s) : nodeid(s) {}
+};
+void test::NodeTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Node Test" << NEW_LINE << std::endl;
+	TestNode root("root"),
+		node1("node1"),
+		node2("node1-1"),
+		node3("node2"),
+		node4("node3");
+
+	root.addChild(node1);
+	root[0].addChild(node2);
+	root.addChild(node3);
+	root.addChild(node4);
+
+	std::cout << root.childCount() << std::endl;
+	std::cout << root[0].nodeid << std::endl;
+	std::cout << (root[0].isLeaf() ? "leaf" : "stem") << std::endl;
+	std::cout << root[0][0].layer() << std::endl;
+	std::cout << (root[1].isLeaf() ? "leaf" : "stem") << std::endl;
+	std::cout << root[2].index() << std::endl;
+
+	TestNode node5("node1-0");
+	std::cout << root[0][0].nodeid << "=>";
+	root[0].insertChild(0, node5);
+	std::cout << root[0][0].nodeid << "," << root[0][1].nodeid << "=>";
+	TestNode node6("node1-1'");
+	root[0].setChild(1, node6);
+	std::cout << root[0][0].nodeid << "," << root[0][1].nodeid << std::endl;
+	std::cout << root[1].nodeid << "=>";
+	root.removeChildAt(1);
+	std::cout << root[1].nodeid << std::endl;
+	root[1].moveChildTo(root[0][0], 0);
+	std::cout << root[0][0].childCount() << std::endl;
+	std::cout << root[0][0][0].nodeid << std::endl;
+	std::cout << root[0][0][0].address() << std::endl;
+	std::cout << root.childCount() << "=>";
+	root.clearChildren();
+	std::cout << root.childCount() << std::endl;
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
+}
+void test::ExceptionTest() {
+	std::cout << String("*") * 50 << std::endl;
+	std::cout << "Exception Test" << NEW_LINE << std::endl;
+	try {
+		sptr<int> p;
+		std::cout << *p << std::endl;
+	}
+	catch (SException e) {
+		EXPORT_MSG(e);
+	}
+	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }

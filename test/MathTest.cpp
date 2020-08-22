@@ -26,9 +26,6 @@ void test::CalcTest() {
 	std::cout << "kronecker delta(1, 1)=" << smath::kdelta(1, 1) << std::endl;
 	std::cout << "radian of 45=" << smath::deg2rad(45) << std::endl;
 	std::cout << "degree of 1.57=" << smath::rad2deg(1.57) << std::endl;
-	std::cout << "sigmoid(1.2)=" << smath::sigmoid(1.2) << std::endl;
-	std::cout << "splus(0.7)=" << smath::splus(0.7) << std::endl;
-	std::cout << "relu(-0.3)=" << smath::relu(-0.3) << std::endl;
 	std::cout << "Random number test..." << std::endl;
 	smath::SRandom rand;
 	std::cout << "Int. Uni. in [1, 10]=" << rand.iruni(1, 10) << std::endl;
@@ -49,40 +46,33 @@ void test::CalcTest() {
 }
 void test::FracTest() {
 	sfrac f1(2, 3);
-	sfrac f2(v2i(3, 4));
-	sfrac f3(7.0/13.0);
-	sfrac f4("123/456");
-	sfrac f5;
+	sfrac f2(7.0/13.0);
+	sfrac f3("123/456");
+	sfrac f4;
 	f1 = f1.reciprocal();
 	std::cout << f1 << std::endl;
-	f5 = f1 - 1;
-	std::cout << f5 << std::endl;
-	f2 += f1;
-	std::cout << f2 << ":" << f2.quotient() << "," << f2.remainder() << std::endl;
-	std::cout << f3 << std::endl;
+	f4 = f1 - 1;
 	std::cout << f4 << std::endl;
-	std::cout << f3 * f4 << std::endl;
-	std::cout << f3 / f5 << std::endl;
+	f3 += f1;
 	std::cout << f2 << std::endl;
-	std::cout << (f1+f2+f3+f4+f5).precised(2) << std::endl;
+	std::cout << f4 << std::endl;
+	std::cout << f2 * f3 << std::endl;
+	std::cout << f2 / f4 << std::endl;
+	std::cout << (f1+f2+f3+f4).rounded(2) << std::endl;
 }
 void test::ComplexTest() {
 	scomp c1(1.f, 1.f);
-	scomp c2(v2f(-1.f, 1.f));
-	scomp c3("1.2345-6.789i");
-	scomp c4 = c1 - c2;
+	scomp c2("1.2345-6.789i");
+	scomp c3 = c1 - c2;
 	std::cout << c1 + c2 << std::endl;
 	std::cout << c2 * c3 << std::endl;
-	std::cout << c3 / c4 << std::endl;
+	std::cout << c2 / c3 << std::endl;
 	std::cout << c3.conjugated() << std::endl;
-	std::cout << c1.distance() << std::endl;
+	std::cout << c1.absolute() << std::endl;
 	std::cout << c1.argument() << std::endl;
-	std::cout << (c3 / c4).precised(2) << std::endl;
+	std::cout << (c1 / c3).rounded(2) << std::endl;
 }
-void test::LinearAlgebraTest() {
-	v2i v1(1, 1);
-
-}
+void test::LinearAlgebraTest() {}
 void test::GeometryTest() {}
 void test::StatisticTest() {}
 

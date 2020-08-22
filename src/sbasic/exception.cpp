@@ -3,7 +3,14 @@
 #include "sio/sio.h"
 
 using namespace slib;
-
+#ifdef WIN_OS
+extern "C" {
+	auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD mode = 0;
+	auto console_get = GetConsoleMode(handle, &mode);
+	auto console_set = SetConsoleMode(handle, mode|ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+}
+#endif
 SException::SException(const char *f, sint l, const char *func, sint e, const char *target, const char *note) :
 prefix("slib"), file(f), line(l), function(func), err(e) {
     switch (err) {

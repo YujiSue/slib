@@ -1,0 +1,24 @@
+{
+  "name": "test",
+  "version": "0.3.11",
+  "description": "Node app test",
+  "private": true,
+  "main": "app.js",
+  "scripts": {
+    "start": "node app",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yuji Suehiro <yuji.sue@gmail.com> (https://yujisue.github.io/)",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "morgan": "^1.10.0",
+    "pug": "^3.0.0",
+    "serve-favicon": "^2.5.0",
+    "socket.io": "^2.3.0"
+  }
+}

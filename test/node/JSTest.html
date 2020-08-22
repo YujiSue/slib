@@ -1,0 +1,112 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="../../css/sui-basic.css">
+        <link id="main-thema" rel="stylesheet" type="text/css" href="../../css/sui-simple.css">
+        <script type="text/javascript" src="../../js/platform.js"></script>
+        <script type="text/javascript" src="../../js/socket.io.js"></script>
+        <script type="text/javascript" src="../../js/sui-locale.js"></script>
+        <script type="text/javascript" src="../../js/sui.js"></script>
+        <script type="text/javascript" src="../../js/sui-app.js"></script>
+        <script type="text/javascript" src="../../js/sui-test.js"></script>
+        <style>
+            #home-menu { color:green }
+            #home-menu:hover { color:darkgreen; background-color: transparent; }
+            #lang-menu { color:red }
+            #lang-menu:hover { color:darkred; background-color: transparent; }
+            #account-menu { color:blue }
+            #account-menu:hover { color:navy; background-color: transparent; }
+        </style>
+        <title>UITest</title>
+    </head>
+    <body>
+        <script>
+            
+            var cookie = new SCookie({path:"/",age:1000});
+            var rootView = sview({
+                element: document.body,
+                locale: cookie.cookieAt('lang')?cookie.cookieAt('lang'):'en',
+                layout: sborder()    
+            });
+            var appmenu = smenu({id:'app-menu',items:[
+                {style:S_LABEL,label:'About'}
+            ]});        
+            var langmenu = smenu({
+                id:'lang-menu',
+                style:S_SELECT,
+                items:[
+                    {style:S_TOGGLE|S_LABEL,state:true,label:SupportedLocale[0],action:changeLocale},
+                    {style:S_TOGGLE|S_LABEL,label:SupportedLocale[1],action:changeLocale}
+                ]
+            });    
+            var menubar = smenubar({items:[
+                {style:S_ICON,id:'home-menu',icon:'icon:home',expand:BOTTOM,submenu:appmenu},
+                {type:'space'},
+                {style:S_ICON,id:'lang-menu',icon:'icon:font_download',tooltip:'Set language',expand:BOTTOM,submenu:langmenu,class:['red']},
+                {style:S_ICON,id:'account-menu',icon:'icon:account_circle',tooltip:'Account information',expand:BOTTOM,class:['blue']},
+            ]});
+            function showOSInfo() { const dlg = new SDialog({mode:ALERT_DIALOG,message:OS}); dlg.show(); }
+            var toolbar = stoolbar();
+            var tool1 = CLIENT_ENV&PC_DEVICE?stool({icon:'icon:laptop',label:'PC',action:showOSInfo}):stool({icon:'icon:phone_iphone',label:'mobile',action:showOSInfo});
+            var tool2 = stool({icon:'icon:help',label:'help'});
+            toolbar.addItem(sspace()).addItem(tool1).addItem(tool2).addItem(sspace());
+            var content = scardview({direction:HORIZONTAL});
+            var box = sbox('box');
+            var exview = sexview();
+            var splitview = ssplitview(HORIZONTAL,{
+                width:100,
+                height:100,
+                primary:sview({height:'100%',background:{color:"red"}}),
+                secondary:sview({height:'100%',background:{color:"blue"}})
+            });
+            var webview = swebview({src:'https://www.google.com'});
+            var imgview = simgview({src:'./img/logo.png'});
+            var treeview = streeview();
+            var tnode1 = streenode({label:'node1'});
+            var tnode11 = streenode({label:'node1-1'});
+            tnode1.addNode(tnode11);
+            var tnode2 = streenode({label:'node2'});
+            treeview.root.addNode(tnode1).addNode(tnode2);
+            var table = stable({
+                columns:[{label:'col1',sort:true},{label:'col2',mode:'check'},{label:'col3',mode:'select',items:[{label:'item1'},{label:'item2'}]}],
+                data:[[1,true,1],['a',false,2]]
+            });
+            var dialog = sdialog();
+            dialog.frame.add(slabel('This is dialog.', {color:'white'}));
+            var label = slabel('label');
+            var link = slink('link','');
+            var tfield = stextfield({placeholder:'textfield'});
+            var tarea = stextarea({value:'text'});
+            var button = sbutton({label:'button',action:function(e){dialog.show();}});
+            var check = scheck({label:'check', state:true});
+            var radio1 = sradio({name:'test-radio',label:'radio1'});
+            var radio2 = sradio({name:'test-radio',label:'radio2'});
+            var selector = sselect({items:[sselitem({label:'item1'}),sselitem({label:'item2'})]});
+            var slider = sslider({value:30});
+            var fileio = sfileio({action:setFileName});
+            var filelabel = slabel('');
+            function setFileName() {filelabel.setText(fileio.files[0].name)};
+            var current = 100; 
+            var progress=sprogress({direction:HORIZONTAL,value:current});
+            function countdown() {
+                current--;
+                progress.setValue(current);
+                if (current==0) timer.stop(); 
+            }
+            var timer = stimer(1000,countdown,100);
+            content.add(box).add(exview).add(splitview).add(webview).add(imgview)
+            .add(treeview).add(table)
+            .add(label).add(link).add(tfield).add(tarea)
+            .add(button).add(check).add(radio1).add(radio2).add(selector).add(slider).add(fileio).add(filelabel);
+            rootView.add(menubar,'north').add(toolbar,'north').add(content,'center').add(progress,'south');
+                    
+            document.addEventListener('DOMContentLoaded',function(e){
+                timer.start();
+            });
+            function changeLocale() {
+                rootView.setLocale(SupportedLocale[langmenu.selectedIndex()]); 
+                cookie.setCookie('lang',SupportedLocale[langmenu.selectedIndex()]);
+            };
+        </script>
+    </body>
+</html>

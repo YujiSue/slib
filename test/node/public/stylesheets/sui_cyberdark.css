@@ -1,0 +1,83 @@
+body {
+    background: #1F1F1F;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 12px;
+}
+.app-menu {
+    padding: 0px 5px 0px 5px;
+    margin-bottom: 10px;
+    background: linear-gradient(#2F2F2F, #202020, #2F2F2F);
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+.menu-item {
+    color: white;
+    padding: 2px 10px 2px 10px;
+    border-bottom-width: 3px;
+    border-bottom-style: groove;
+    border-bottom-color: rgba(0, 0, 0, 0);
+}
+.menu-item:hover {
+    border-bottom-color: #A0D0FF;
+}
+.menu-item.selected {
+    color: #A0D0FF;
+    text-shadow: 0px 1px 10px rgba(225, 240, 255, 1);
+    
+}
+.menu {
+    padding: 5px;
+    display: inline-block;
+    position: fixed;
+    z-index: 1;
+    background: #4F4F4F;
+    box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+.app-tool {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.app-tool .tool-icon {
+    width: 36px;
+    font-size: 36px;
+}
+.app-tool .tool-item {
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 2px;
+    border-style: ridge;
+    border-width: 0.5px;
+    border-color: gray;
+    border-radius: 8px;
+
+    background: linear-gradient(#DFDFDF, #AFAFAF);
+}
+.app-tool .tool-item:hover {
+    background: linear-gradient(#A0A0A0, #D0D0D0);
+}
+.app-tool .tool-item.selected {
+    background: linear-gradient(#A0A0A0, #D0D0D0);
+}
+.app-view {
+    padding: 10px;
+}
+
+.box {
+    display: inline-block;
+    border-radius: 5px;
+}
+.tab-view {
+    background-color: white;
+}
+.tab-header {
+    padding: 2px, 5px, 2px, 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: lightgray;
+    color: dimgray;
+}
+.tab-header.selected {
+    background-color: ivory;
+    color: black;
+}

@@ -1,0 +1,404 @@
+/**/
+html {
+    font-size: 16px;
+    padding: 0px;
+    width: 100%;
+    height:100%;
+    font-feature-settings: "palt" 1;
+}
+@media screen and (max-width: 960px) {
+    html {
+        font-size: 14px;
+    }
+}
+@media screen and (max-width: 840px) {
+    html {
+        font-size: 12px;
+    }
+}
+@media screen and (max-width: 720px) {
+    html {
+        font-size: 10px;
+    }
+}
+body {
+    margin: 0px;
+    width: 100%;
+    height: 100%;
+}
+pre {
+    padding: 0;
+    margin: 0;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: none;
+}
+/* ui container */
+.sview {
+    display: block;
+}
+.spanel {
+    display: inline-block;
+}
+.sframe {
+    position: absolute;
+    z-index: 1;
+}
+.frame-main {
+    min-width: 120px;
+    border-width: 0.5px;
+    border-style: solid;
+    border-color: lightgray;
+    box-shadow: 3px 3px 5px 1px rgba(0, 0, 0, 0.1);
+}
+.frame-header {
+    height: 20px;
+    border-bottom: 1px solid dimgray;
+}
+.column-label {
+    cursor: default;
+}
+.column-sorter .asc{
+    cursor: pointer;
+}
+.column-sorter .desc{
+    cursor: pointer;
+}
+.cell-default{
+    cursor: default;
+}
+.cell-default.editing {
+    cursor: text;
+    border: 1px groove dimgray;
+}
+.cwrotator {
+    cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M15.55 5.55L11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42l1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/></svg>') 12 12, auto;
+}
+
+.tnode-icon {
+    width: 1em;
+}
+.tree-children {
+    padding-left: 1em;
+}
+.column-label {
+    font-size:1rem;
+}
+.column-sorter {
+    font-size:0.5rem;
+}
+/* dialog */
+.sscreen {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 120%;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+}
+.sscreen.modal {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.75);
+    pointer-events: initial;
+}
+.sscreen.sdialog {
+    display: none;
+    opacity: 0;
+}
+.sscreen.sdialog.show {
+    display: block;
+    opacity: 1;
+}
+/* split view */
+.ssplitter.horizontal {
+    cursor: col-resize;
+}
+.ssplitter.vertical {
+    cursor: row-resize;
+}
+.split-secondary {
+    flex: auto;
+}
+
+
+.slabel {
+    display: inline-block;
+}
+/*google icon font*/
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(font/MaterialIcons-Regular.eot); /* For IE6-8 */
+    src: local('Material Icons'),
+      local('MaterialIcons-Regular'),
+      url(font/MaterialIcons-Regular.woff2) format('woff2'),
+      url(font/MaterialIcons-Regular.woff) format('woff'),
+      url(font/MaterialIcons-Regular.ttf) format('truetype');
+}
+.sicon {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+    /* Support for Firefox. */
+    -moz-font-feature-settings: 'liga';
+    -moz-osx-font-smoothing: grayscale;
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+/* menu */
+.smenu {
+    position: fixed;
+}
+
+/* layout */
+.halign-center {
+    text-align: center;
+}
+
+.column-layout {
+    column-count: auto;
+}
+.flow-layout {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+}
+.flow-layout.horizontal {
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+}
+.flow-layout.horizontal.reverse {
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: reverse;
+    -ms-flex-direction: row-reverse;
+    -webkit-flex-direction: row-reverse;
+    flex-direction: row-reverse;
+}
+.flow-layout.vertical {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+.flow-layout.vertical.reverse {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: reverse;
+    -ms-flex-direction: column-reverse;
+    -webkit-flex-direction: column-reverse;
+    flex-direction: column-reverse;
+}
+.flow-layout .auto {
+    display: inline-block;
+    -webkit-flex: auto;
+    flex: auto;
+}
+.flow-layout.align-center {
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+}
+.flow-layout.halign-center {
+    -webkit-align-items: center;
+    align-items: center;
+}
+.flow-layout.halign-left {
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
+}
+.flow-layout.halign-right {
+    -webkit-align-items: flex-end;
+    align-items: flex-end;
+}
+.flow-layout.valign-center {
+    -webkit-justify-content: center;
+    justify-content: center;
+}
+.flow-layout.valign-top {
+    -webkit-justify-content: start;
+    justify-content: start;
+}
+.flow-layout.valign-bottom {
+    -webkit-justify-content: end;
+    justify-content: end;
+}
+.card-layout {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    align-items: baseline;
+}
+.card-layout.horizontal {
+    -webkit-box-orient: horizontal;
+  	-webkit-box-direction: normal;
+  	-ms-flex-direction: row;
+  	flex-direction: row;
+    -ms-flex-wrap: wrap;
+  	flex-wrap: wrap;
+}
+.card-layout.horizontal.reverse {
+    -webkit-box-orient: horizontal;
+  	-webkit-box-direction: reverse;
+  	-ms-flex-direction: row-reverse;
+  	flex-direction: row-reverse;
+    -ms-flex-wrap: wrap;
+  	flex-wrap: wrap;
+}
+.card-layout.vertical {
+    -webkit-box-orient: vertical;
+  	-webkit-box-direction: normal;
+  	-ms-flex-direction: column;
+  	flex-direction: column;
+    -ms-flex-wrap: wrap;
+  	flex-wrap: wrap;
+}
+.card-layout.vertical.reverse {
+    -webkit-box-orient: vertical;
+  	-webkit-box-direction: reverse;
+  	-ms-flex-direction: column-reverse;
+  	flex-direction: column-reverse;
+    -ms-flex-wrap: wrap;
+  	flex-wrap: wrap;
+}
+.card-layout .auto {
+    display: inline-block;
+    flex: auto;
+}
+.card-layout.align-center {
+    justify-content: center;
+    align-items: center;
+}
+.card-layout.halign-center {
+    align-items: center;
+}
+.card-layout.valign-center {
+    justify-content: center;
+}
+.border-layout {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+.border-layout .north {
+    display: block;
+}
+.border-layout .south {
+    display: block;
+}
+.border-layout .med {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex: auto;
+    flex: auto;
+}
+.border-layout .west {
+    display: block;
+}
+.border-layout .east {
+    display: block;
+}
+.border-layout .center {
+    display: block;
+    flex-grow: 2;
+}
+.grid-layout {
+    display: grid;
+}
+
+/* color */
+.red {color: red;}
+.blue {color: blue;}
+.green {color: green;}
+.indigo {color: purple;}
+.orange {color: orange;}
+.magenta {color: magenta}
+.cyan {color:cyan}
+.lime {color:lime;}
+.violet {color: violet;}
+.yellow {color: yellow;}
+.darkred {color:darkred}
+.navy {color:navy;}
+.darkgreen {color: darkgreen}
+.indigo {color: indigo;}
+.brown {color: brown;}
+.gray {color:darkgrey;}
+/* text style */
+.bold {font-weight: bold;}
+.italic {font-style: italic;}
+.under-line {
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+}
+.sup {
+    vertical-align: super;
+    font-size: 0.6rem;
+}
+.sub {
+    vertical-align: sub;
+    font-size: 0.6rem;
+}
+.vtext {
+    writing-mode: vertical-rl;
+    -moz-writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    -o-writing-mode: vertical-rl;
+}
+/* geometric */
+.rotate90 {
+    transform: rotate(90deg);
+}
+.rotate180 {
+    transform: rotate(180deg);
+}
+.rotate270 {
+    transform: rotate(-90deg);
+}
+/* event */
+.unresponsible {
+    pointer-events: none;
+}
+.unselectable {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}

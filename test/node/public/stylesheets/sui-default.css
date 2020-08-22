@@ -1,0 +1,141 @@
+.smenu-bar {
+    background: linear-gradient(white, lightgray);
+    padding: 2px 5px 2px 5px;
+}
+.smenu-item {
+    padding: 2px 5px 2px 5px;
+    color: black;
+}
+.smenu-item:hover {
+    background-color: blue;
+    color: white;
+}
+.smenu-item .menu-toggle {
+    width: 1rem;
+}
+.smenu-item .menu-icon {
+    font-size: 1.5rem;
+}
+.smenu-item .menu-label {
+    font-size: 0.8rem;
+}
+.smenu {
+    background-color: white;
+    border: 0.25px solid lightgray;
+    box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.1);
+    z-index: 1;
+}
+.tree-header:hover {
+    background-color: lightgray;
+}
+.stool-bar {
+    background: linear-gradient(lightgray, gray);
+}
+.stool-item {
+    background: lightgray;
+    border: 0.5px solid gray;
+}
+.stool-item:hover {
+    background: gray;
+}
+.stool-item .tool-icon {
+    font-size: 2rem;
+}
+.stool-item .tool-label {
+    font-size: 0.8rem;
+}
+.ssplitter.horizontal {
+    width: 3px;
+    background-color: gray;
+}
+.ssplitter.vertical {
+    height: 3px;
+    background-color: gray;
+}
+.sframe .frame-content {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+}
+.sprogress.horizontal {
+    height: 1rem;
+    padding: 1px;
+    background: linear-gradient(lightgray, white);
+    border: 0.5px double gray;
+    box-shadow: 2px 2px 3px 2px rgba(0,0,0,0.1);
+}
+.sprogress.vertical {
+    width: 1rem;
+    padding: 1px;
+    background: linear-gradient(lightgray, white);
+    border: 0.5px double gray;
+    box-shadow: 2px 2px 3px 2px rgba(0,0,0,0.1);
+}
+.sprogress.horizontal .prog-indicator{
+    height: 100%;
+    background: linear-gradient(skyblue, royalblue);
+}
+.sprogress.vertical .prog-indicator{
+    width: 100%;
+    background: linear-gradient(skyblue, royalblue);
+}
+
+.sframe .frame-header {
+    padding: 2px;
+    background-color: darkgray;
+}
+.sframe .frame-closer {
+    width: 20px;
+    height: 20px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M5,5L15,15M5,15L15,5" stroke="black" stroke-width="2" fill="none"/></svg>');
+}
+.sframe .frame-closer:hover {
+    background-color: dimgray;
+}
+.sframe .frame-maximizer {
+    width: 20px;
+    height: 20px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect x="5" y="5" width="10" height="10" stroke="black" stroke-width="2" fill="none"/></svg>');
+}
+.sframe .frame-maximizer:hover {
+    background-color: dimgray;
+}
+.sframe .frame-minimizer {
+    width: 20px;
+    height: 20px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M5,9L15,9" stroke="black" stroke-width="2" fill="none"/></svg>');
+}
+.sframe .frame-minimizer:hover {
+    background-color: dimgray;
+}
+.fl-label {
+    padding: 0.2rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    background: lightgray;
+    border: 0.5px solid dimgray;
+}
+
+/*app default*/
+.app-about {
+    font-size: 0.75rem;
+    padding: 5px;
+    background: rgba(255,255,255,1.0);
+    box-shadow: 0px 0px 5px 2px rgba(255,255,255,0.75);
+}
+.app-about .upper-panel {
+    margin-bottom: 5px;
+}
+.app-about .lower-panel {
+    text-align: right;
+}
+.app-about .app-icon{
+    width: 96px;
+    margin-right: 5px;
+}
+.app-about .app-name{
+    width: 200px;
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 5px;  
+}

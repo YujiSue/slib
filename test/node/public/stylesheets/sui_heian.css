@@ -1,0 +1,72 @@
+.system-font {
+    font-family: serif;
+    font-size: 12px;
+    color: black;
+}
+
+.menu-bar {
+
+}
+.menu {
+    padding: 5px;
+    display: inline-block;
+    position: fixed;
+    z-index: 1;
+    background: #FEFEFE;
+    border-color: #AFAFAF;
+    border-style: solid;
+    border-width: 0.5px;
+    box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.1);
+}
+.menu-item {
+    color: initial;
+}
+
+.app-tool {
+    padding-left: 10px;
+    padding-right: 10px;
+    background: ;
+}
+.app-tool .tool-icon {
+    width: 36px;
+    font-size: 36px;
+}
+.app-tool .tool-item {
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 2px;
+    border-style: ridge;
+    border-width: 0.5px;
+    border-color: gray;
+    border-radius: 8px;
+
+    background: linear-gradient(#DFDFDF, #AFAFAF);
+}
+.app-tool .tool-item:hover {
+    background: linear-gradient(#A0A0A0, #D0D0D0);
+}
+.app-tool .tool-item.selected {
+    background: linear-gradient(#A0A0A0, #D0D0D0);
+}
+.app-view {
+    padding: 10px;
+}
+
+.box {
+    display: inline-block;
+    border-radius: 5px;
+}
+.tab-view {
+    background-color: white;
+}
+.tab-header {
+    padding: 2px, 5px, 2px, 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: lightgray;
+    color: dimgray;
+}
+.tab-header.selected {
+    background-color: ivory;
+    color: black;
+}

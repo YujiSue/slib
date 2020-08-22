@@ -4,13 +4,16 @@
 using namespace slib;
 void test::SXmlTest() {
 	SArray array = {
-		1, 2.71828, "abc", u8"あいう", new SDate(SDate::YMD), V({ 10, "xyz" })
+		1, 2.71828, "abc", u8"あいう", new SDate(slib::sstyle::YMD), V({ 10, "xyz" })
 	};
 	SDictionary dict = {
 		kv("int", 100), kv("real", 1.732), kv("str", u8"ひふみ")
 	};
-	array.save(sio::currentPath() + PATH_SEPARATOR + u8"配列.plist");
-	dict.save(sio::currentPath() + PATH_SEPARATOR + u8"辞書.plist");
+	try {
+		array.save(sio::currentPath() + PATH_SEPARATOR + u8"配列.plist");
+		dict.save(sio::currentPath() + PATH_SEPARATOR + u8"辞書.plist");
+	}
+	catch (SIOException ie) { ie.print(); }
 }
 
 void test::SDBTest() {
@@ -18,7 +21,7 @@ void test::SDBTest() {
 		std::cout << sql::orderQue({
 			kv("ID", ASC), kv("START", DESC)
 			}) << std::endl;
-		std::cout << sql::limitQue(10, 5) << std::endl;
+		std::cout << sql::limit(10, 5) << std::endl;
 		std::cout << sql::listQue({
 			1, 3, 5, 7, 9
 			}) << std::endl;

@@ -1,0 +1,8 @@
+extends layout
+block load
+  script(src="/javascripts/sui-test.js")
+block content
+  script.
+    document.addEventListener("DOMContentLoaded", function(e) {
+      var app = new TestApp();
+    });

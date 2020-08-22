@@ -1,0 +1,201 @@
+html {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.sbox {
+    border-radius: 5px;
+}
+
+
+
+
+
+
+.stext-field .slabel {
+    margin-right: 10px;
+}
+.sexview {
+    padding: 10px;
+}
+.sexview-content {
+    margin-top: 5px;
+    margin-left: 20px;
+}
+.sexview-title {
+    font-size: 12px;
+}
+.sexview-expander {
+    cursor: pointer;
+    width: 16px;
+}
+.sexview-expander.horizontal {
+    height: 12px;
+    margin-right: 5px;
+}
+.sexview-expander.vertical {
+    width: 12px;
+    margin-bottom: 5px;
+}
+
+
+.smenu-item {
+    color: black;
+}
+.smenu-item:hover {
+    color: white;
+    background: linear-gradient(#7F7FFF, #0F0FFF);
+}
+.smenu-item.active {
+    color: white;
+    background: linear-gradient(#7F7FFF, #0F0FFF);
+}
+.smenu-item .menu-icon {
+    border-width: 0px;
+    padding: 2px;
+    width: 16px;
+    height: 16px;
+}
+.smenu-item .menu-label {
+    padding: 2px;
+    margin: 0px 5px 0px 5px;
+}
+.smenu-item .menu-modify {
+    padding: 2px;
+    margin-right: 5px;
+}
+.smenu .separator {
+    border-color: gray;
+    margin: 0px 5px 0px 5px;
+}
+.smenu-bar {
+    background: linear-gradient(#FFFFFF, #F0F0F0);
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
+}
+.smenu {
+    display: none;
+    background-color: #FFFFFF;
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    z-index: 1;
+}
+.smenu.show {
+    display: none;
+}
+.smenu-item {
+    color: flex;
+}
+.stool-bar {
+    background: linear-gradient(#E0E0E0, #C0C0C0);
+}
+.tool-icon {
+    margin: 1px;
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+}
+.tool-label {
+    font-size: 10px;
+}
+.stool-item {
+    margin: 5px;
+    cursor: pointer;
+    text-align: center;
+    border: solid 0.5px #A0A0A0;
+    border-radius: 6px;
+    background: linear-gradient(#F0F0F0, #D0D0D0);
+}
+.stool-item.active {
+    background: linear-gradient(#C0C0C0, #D0D0D0);
+}
+.stool-item.selected {
+    background: linear-gradient(#C0C0C0, #D0D0D0);
+}
+.stool-item .tool-view {
+    border-right-style: solid;
+    border-right-width: 0.5px;
+    border-right-color: dimgray;
+}
+.stool-item .tool-view.selected {
+    background: linear-gradient(#C0C0C0, #D0D0D0);
+}
+.stool-item .tool-selector {
+    margin: 4px;
+}
+.stool-item .tool-selector:hover {
+    background: linear-gradient(#C0C0C0, #D0D0D0);
+}
+ol li {
+    margin: 5px 20px 5px 5px;
+    font-size: 12px;
+}
+
+.stab-view {
+    background-color: white;
+}
+.stabview-header {
+    background: linear-gradient(#C0C0C0, #B0B0B0);
+}
+.stab-header {
+    flex-grow: 1;
+    text-align: center;
+    min-width: 100px;
+    padding: 5px;
+    border-top-style: none;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    border-right-style: solid;
+    border-width: 0.5px;
+    border-color: dimgray;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background: linear-gradient(#B0B0B0, #A0A0A0);
+    color: black;
+}
+.stab-title {
+    font-size: 12px;
+}
+.stab-closer {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0);
+}
+.stab-closer:hover {
+    
+    color: black;
+}
+.stab-header.selected {
+    background: linear-gradient(#C0C0C0, #B0B0B0);
+    box-shadow: 0px 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+.sfame {
+    opacity: 0;
+    
+}
+.stree-view {
+    border-style: solid;
+    border-color: darkgray;
+    border-width: 1px;
+}
+.stree-header:hover {
+    background-color: #F0F0FF;
+}
+.stree-node .stree-icon {
+    width: 16px;
+}
+.stree-node .stree-label {
+    font-size: 12px;
+    margin-right: 20px;
+}
+.stable {
+    border-collapse: collapse;
+}
+.table-header {
+    background: linear-gradient(white, rgb(240, 240, 240), white);
+}
+.stable-cell {
+    text-align: center;
+}
+.stable-column {
+    border-right: 0.5px solid gray;
+}
+.stable-column:nth-child(1) {
+    border-left: 0.5px solid gray;
+}
