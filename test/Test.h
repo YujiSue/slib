@@ -2,6 +2,9 @@
 #define SLIB_TEST_H
 
 #include "sobj.h"
+#include "sapp/sapp.h"
+#include "sapp/scuiapp.h"
+#include "sapp/snodeapp.h"
 
 #define BASIC_TEST
 #ifndef BASIC_TEST
@@ -21,6 +24,7 @@
 #define NODE_TEST
 #define EXCEPTION_TEST
 #endif
+
 #define SOBJ_TEST
 #ifndef SOBJ_TEST
 #define SOBJECT_TEST
@@ -36,22 +40,23 @@
 #define SIO_TEST
 #define SNET_TEST
 #endif
-
+/*
 #define SUTIL_TEST
 #ifndef SUTIL_TEST
+#define CODE_TEST
 #define DB_TEST
 #define THREAD_TEST
 #define PROCESS_TEST
 #define JSON_TEST
 #define XML_TEST
 #endif
+*/
 
 
+#define APP_TEST
 
+//#define MATH_TEST
 
-#define MATH_TEST
-
-//#define APP_TEST 1
 //#define CV_TEST
 
 
@@ -119,4 +124,13 @@ namespace test {
 namespace test{
 	//extern void SBSeqTest();
 }
+namespace test {
+	extern void SPlugInAppTest();
+	extern void SCUIAppTest();
+}
+
+namespace test {
+	extern void SNodeJSAppTest();
+}
+
 #endif

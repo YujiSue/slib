@@ -7,11 +7,29 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+global.os = null;
+if(process.platform==='darwin') global.os = 'macOS';
+if(process.platform==='win32') global.os = 'winOS';
+if(process.platform==='linux') global.os = 'linuxOS';
+/* Native addon test */
+var addon = null;
+if(global.os==='macOS') addon = require('./native-addon/mac/NodeAppTest.node');
+if(global.os==='winOS') addon = require('./native-addon/win/NodeAppTest.node');
+if(global.os==='linux') addon = require('./native-addon/linux/NodeAppTest.node');
+var plugin = new addon.NodeAppTest();
+console.log('NodeAppTest::TestNum\t'+plugin.TestNum(100));
+console.log('NodeAppTest::TestStr\t'+plugin.TestStr('abc','xyz'));
+console.log('NodeAppTest::TestArrayI\t'+plugin.TestArrayI([10,3.14,'def']));
+console.log('NodeAppTest::TestArrayO\t'+JSON.stringify(plugin.TestArrayO(20,2.71828,'uvw')));
+console.log('NodeAppTest::TestObjI\t'+plugin.TestObjI({key1:10,key2:3.14,key3:'def'}));
+console.log('NodeAppTest::TestObjO\t'+JSON.stringify(plugin.TestObjO('key4',20,'key5',2.71828,'key6','uvw')));
+/*********************/
 var app = express();
 var server = require('http').createServer(app);
-//var io = require('socket.io')(server);
+var io = require('socket.io')(server);
+var preprocess = require('./routes/preprocess');
 var routes = require('./routes/index');
-// view engine setup
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 //app.use(favicon(__dirname + '/public/favicon.ico'));
@@ -25,7 +43,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
-app.use('/', routes);
+app.use('/', preprocess, routes);
 app.use(function (req, res, next) {
 	console.log(req.connection.remoteAddress);
     var err = new Error('Not Found');
@@ -39,7 +57,13 @@ app.use(function (err, req, res, next) {
         error: {}
     });
 });
-//app.set('socketio', io);
+/*
+io.on('connection', function(socket){
+    console.log('socket connected');
+  });
+*/
+
+app.set('socketio', io);
 app.set('port', process.env.PORT || 3000);
 server.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + server.address().port);

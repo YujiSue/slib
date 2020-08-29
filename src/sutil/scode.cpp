@@ -4,15 +4,44 @@
 using namespace slib;
 using namespace slib::sio;
 
-suint SChecker::crc32(subyte* byte, size_t size) {
+suint SHash::crc32(ubytearray& data) {
 	suint val = 0;
-	val = crc32_z(val, static_cast<const Bytef*>(byte), size);
+	val = crc32_z(val, static_cast<const Bytef*>(data.ptr()), data.size());
 	return val;
 }
-bool SChecker::crc32check(subyte* byte, size_t size, suint &ref) {
-	return SChecker::crc32(byte, size) == ref;
+bool SHash::crc32check(ubytearray& data, suint &ref) {
+	return SHash::crc32(data) == ref;
 }
-
+void SHash::md5(String& data, ubytearray& digest) {
+	digest.resize(16);
+	MD5_CTX context;
+	MD5Init(&context);
+	MD5Update(&context, (unsigned char *)data.cstr(), data.size());
+	MD5Final(&digest[0], &context);
+}
+void SHash::md5(ubytearray& data, ubytearray& digest) {
+	digest.resize(16);
+	MD5_CTX context;
+	MD5Init(&context);
+	MD5Update(&context, data.ptr(), data.size());
+	MD5Final(&digest[0], &context);
+}
+void SHash::md5Str(String& data, String& str) {
+	MD5_CTX context;
+	unsigned char digest[16];
+	MD5Init(&context);
+	MD5Update(&context, (unsigned char*)data.cstr(), data.size());
+	MD5Final(&digest[0], &context);
+	sforin(i, 0, 16) { str += SNumber::toHex(digest[i]); }
+}
+void SHash::md5Str(ubytearray& data, String& str) {
+	MD5_CTX context;
+	unsigned char digest[16];
+	MD5Init(&context);
+	MD5Update(&context, data.ptr(), data.size());
+	MD5Final(&digest[0], &context);
+	sforin(i, 0, 16) { str += SNumber::toHex(digest[i]); }
+}
 const suint SZip::LOCAL_FILE_HEADER_SIG = 0x04034B50;
 const suint SZip::DATA_DESCRIPTOR_SIG = 0x08074B50;
 const suint SZip::CENTRAL_DIR_SIG = 0x02014B50;

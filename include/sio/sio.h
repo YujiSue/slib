@@ -14,6 +14,12 @@
 extern "C" {
 #include "zlib/zlib.h"
 }
+#define INIT_DEFAULT_IO(X) auto IO_=slib::sio::siostream(X);
+#define SET_STDIO_MODE IO_.setStdMode();
+#define SET_FILEIO_MODE(X) IO_.setPath(X);
+#define SRead(X) IO_.read(X)
+#define SReadBytes(X) IO_.input(X)
+#define SPrint(...) IO_.output(__VA_ARGS__)
 
 namespace slib {
     namespace sio {
@@ -67,7 +73,6 @@ namespace slib {
 			SDictionary& params;
 			_EXPAND_ARGS(params, args...);
 		}
-
 
         class SLIB_DLL SFile;
         #define filearray Array<slib::sio::SFile>
@@ -163,5 +168,7 @@ namespace slib {
     template<class Return, class... Args>
 	extern inline std::ostream& operator<<(std::ostream& os, const SFunction<Return(Args...)>& func) { return os << func.toString(); }
 	extern inline std::ostream& operator<<(std::ostream& os, const SObjPtr& obj) { return os << obj.toString(); }
+
+
 }
 #endif

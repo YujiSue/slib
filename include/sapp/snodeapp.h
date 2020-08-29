@@ -21,7 +21,7 @@ namespace slib {
 
 			static bool nodeInstalled();
 			static bool ngypInstalled();
-			static void installNode();
+			//static void installNode();
 			static void installNGyp();
 			
 			static JS_OBJ_TYPE jsType(napi_env env, napi_value val);
@@ -32,12 +32,10 @@ namespace slib {
 			static napi_value jsuint(napi_env env, unsigned int ui);
 			static napi_value jslong(napi_env env, sint i);
 			static napi_value jsreal(napi_env env, double d);
-			static napi_value jsnum(napi_env env, SNumber& n);
+			static napi_value jsnum(napi_env env, const SNumber& n);
 			static napi_value jsstr(napi_env env, const char* s);
-			static napi_value jsarray(napi_env env, SArray& array);
-			static napi_value jsarray(napi_env env, intarray& array);
-			static napi_value jsarray(napi_env env, stringarray& array);
-			static napi_value jsdict(napi_env env, SDictionary& dict);
+			static napi_value jsarray(napi_env env, const SArray& array);
+			static napi_value jsdict(napi_env env, const SDictionary& dict);
 			static napi_value jsobj(napi_env env, sobj obj);
 			static bool toBool(napi_env env, napi_value val);
 			static int toInt(napi_env env, napi_value val);

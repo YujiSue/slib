@@ -6,17 +6,20 @@
 #include "sio/sfile.h"
 extern "C" {
     #include "zlib/zlib.h"
+	#include "md5/md5.h"
 }
 
 namespace slib {
 
-	class SLIB_DLL SChecker {
-    public:
-		static suint crc32(subyte* byte, size_t size);
-        static bool crc32check(subyte *byte, size_t size, suint &ref);
-
-    };
-    
+	class SLIB_DLL SHash {
+	public:
+		static suint crc32(ubytearray& data);
+		static bool crc32check(ubytearray& data, suint& ref);
+		static void md5(String& data, ubytearray& digest);
+		static void md5(ubytearray &data, ubytearray &digest);
+		static void md5Str(String& data, String& str);
+		static void md5Str(ubytearray& data, String &str);
+	};
     class SLIB_DLL SZip {
     public:
         const static suint LOCAL_FILE_HEADER_SIG;

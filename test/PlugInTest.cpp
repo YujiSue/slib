@@ -2,7 +2,8 @@
 #include "sapp/sapp.h"
 
 using namespace slib;
-
-splugin dlltest(int i, double d, String s) {
-	return i * d * s.intValue();
+extern "C" {
+	splugin dlltest(int i, double d, String s) {
+		return i * d * s.intValue();
+	}
 }

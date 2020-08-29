@@ -205,7 +205,7 @@ namespace slib {
 			bool isRGB() const;
 			bool isCMYK() const;
 			bool isGradient() const;
-			void convert(sushort t/*, COLOR_SPACE_CONVERTER conv */);
+			void convert(sushort t);
 
 			virtual String getClass() const;
 			virtual String toString() const;

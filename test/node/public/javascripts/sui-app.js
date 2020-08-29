@@ -1,17 +1,27 @@
-var APP_INSTANCE=null;
-var APP_PREF=new SCookie();
-var APP_THEMA=APP_PREF.cookieAt('thema')?APP_PREF.cookieAt('thema'):'/stylesheets/sui-default.css';
-document.getElementById('main-thema').href=APP_THEMA;
-var APP_LANG=APP_PREF.cookieAt('lang')?APP_PREF.cookieAt('lang'):'en';
-var APP_ROOT=null;
-var APP_SCOKET=null;
+var SAPP_INSTANCE=null;
+var SAPP_USER=null;
+var SAPP_PREF=new SCookie();
+var SAPP_THEMA=SAPP_PREF.cookieAt('thema')?SAPP_PREF.cookieAt('thema'):'/stylesheets/sui-default.css';
+document.getElementById('main-thema').href=SAPP_THEMA;
+var SAPP_LANG=SAPP_PREF.cookieAt('lang')?SAPP_PREF.cookieAt('lang'):'en';
+var SAPP_ROOT=null;
+var SAPP_CONNECT=new SConnect();
+var SAPP_SOCKET=null;
+var SAPP_ABOUT=null;
 var LANG_MENU=smenu({id:'lang-menu', style:S_SELECT});
-for(var l in SupportedLocale) {LANG_MENU.addItem({style:S_TOGGLE|S_LABEL,state:APP_LANG===l,label:l,action:changeLocale})}
-function changeLocale() {
-    if(APP_ROOT) APP_ROOT.setLocale(SupportedLocale[LANG_MENU.selectedIndex()]); 
-    APP_PREF.setCookie('lang',SupportedLocale[LANG_MENU.selectedIndex()]);
+for(var l in SupportedLocale) {LANG_MENU.addItem({style:S_TOGGLE|S_LABEL,state:SAPP_LANG===l,label:l,action:changeLocale})}
+function changeThema(t) {
+    SAPP_THEMA = t;
+    document.getElementById('main-thema').href=SAPP_THEMA;
 };
-
+function changeLocale() {
+    SAPP_LANG=SupportedLocale[LANG_MENU.selectedIndex()];
+    if(SAPP_ROOT) SAPP_ROOT.setLocale(SAPP_LANG); 
+    SAPP_PREF.setCookie('lang',SAPP_LANG);
+};
+function checkUser() {
+    
+}
 function uiprop(i) {
     var prop={};
     if (i.I) prop.id=i.I;
@@ -26,11 +36,17 @@ function uiprop(i) {
         else if (i.L==='G'&&i.G) prop.layout=sgrid(i.G);
     }
     if (i.A!=undefined&&i.A!=null) prop.available=i.A;
+    if (i.X) prop.expand=i.X;
     if (i.a) prop.action=i.a;
     if (i.e) prop.event=i.e;
     if (i.c&&0<i.c.length) prop.class=i.c;
+    if (i.i) prop.icon=i.i;
+    if (i.k) prop.shortcut=i.k;
     if (i.l) prop.locale=i.l;
+    if (i.p) prop.placeholder=i.p;
     if (i.s) prop.style=i.s;
+    if (i.t) prop.label=i.t;
+    if (i.v) prop.value=i.v;
     if (i.x) prop.x=i.x;
     if (i.y) prop.y=i.y;
     if (i.z) prop.z=i.z;
@@ -39,69 +55,76 @@ function uiprop(i) {
     
     return prop;
 };
+function arrangeUI(uis) {
+    for(var a in APP_UI.arrange) {
+        const children = APP_UI.arrange[a];
+        if(children instanceof Array) {
+            for(var c=0;c<children.length;c++) {
+                if(children[c] instanceof String) uis[a].add(uis[children[c]]);
+                else uis[a].add(children[c]);
+            } 
+        }
+        else {
+            for(var l in children) {
+                for(var c=0;c<children[l].length;c++) uis[a].add(uis[children[l][c]],l);
+            }
+        }
+    }
+};
 function makeUI() {
-    var uis=[];
-    for(var u=0;u<APP_UI.uis.length;u++) {
-        const info=APP_UI.uis[u];
-        const cls=info.C;
+    var uis={};
+    for(var u in APP_UI.elements) {
+        const info=APP_UI.elements[u];
+        info.I = u;
+        const ui=info.UI;
         info.prop=uiprop(info);
-        if (cls==='E') uis.push(suic(info.prop));
-        else if (cls==='V') uis.push(sview(info.prop));
-        else if (cls==='P') uis.push(spanel(info.prop));
-        //else if (cls==='Fr') uis.push(spanel(info.prop));
-        //else if (cls==='W') uis.push(spanel(info.prop));
-        
-        else if (cls==='Bx') uis.push(sbox(info.Ti,info.prop));
-        else if (cls==='ExV') uis.push(sexview(info.prop));
-        else if (cls==='TbV') ui=new STabView(info.prop);
-        else if (cls==='Li') uis.push(slist(info.prop));
-        else if (cls==='LV') uis.push(sliview(info.prop));
-        else if (cls==='CV') uis.push(scardview(info.prop));
+        if (ui==='E') uis[u]=suic(info.prop);
+        else if (ui==='V') uis[u]=sview(info.prop);
+        else if (ui==='P') uis[u]=spanel(info.prop);
+        //else if (ui==='Fr') uis[u]=sframe(info.prop));
+        //else if (ui==='W') uis[u]=swindow(info.prop));
+        else if (ui==='Bx') uis[u]=sbox(info.Ti,info.prop);
+        else if (ui==='ExV') uis[u]=sexview(info.prop);
+        else if (ui==='TbV') uis[u]=new STabView(info.prop);
+        else if (ui==='Li') uis[u]=slist(info.prop);
+        else if (ui==='LV') uis[u]=sliview(info.prop);
+        else if (ui==='CV') uis[u]=scardview(info.prop);
     
-        else if (cls==='Im') uis.push(simgview(info.prop));
-        else if (cls==='Wb') uis.push(swebview(info.prop));
+        else if (ui==='Im') uis[u]=simgview(info.prop);
+        else if (ui==='Wb') uis[u]=swebview(info.prop);
     
-        else if (cls==='Mi') uis.push(smenuitem(info.prop));
-        else if (cls==='M') uis.push(smenu(info.prop));
-        else if (cls==='Mb') uis.push(smenubar(info.prop));
+        else if (ui==='Mi') {
+            if(info.S) info.prop.submenu = uis[info.S];
+            uis[u]=smenuitem(info.prop);
+        }
+        else if (ui==='M') uis[u]=smenu(info.prop);
+        else if (ui==='Mb') uis[u]=smenubar(info.prop);
+        else if (ui==='TI') uis[u]=stoolitem(info.prop);
+        else if (ui==='TB') uis[u]=stoolbar(info.prop);
 
-        else if (cls==='Fr') uis.push(sform({method:info.M,action:info.V}));
-        else if (cls==='I') uis.push(sicon(info.V,info.prop));
-        else if (cls==='L') uis.push(slabel(info.V,info.prop));
-        else if (cls==='LL') uis.push(slink(info.T,info.V,info.prop));
-        else if (cls==='In') {
-            if(info.V) info.prop.value=info.V;
-            uis.push(sinput(info.S,info.prop));
-        }
-        else if (cls==='TF') uis.push(stextfield(info.Ti,info.V,info.prop));
+        else if (ui==='F') uis[u]=sform({method:info.M,action:info.V});
+        else if (ui==='I') uis[u]=sicon(info.T,info.prop);
+        else if (ui==='L') uis[u]=slabel(info.T,info.prop);
+        else if (ui==='LL') uis[u]=slink(info.T,info.V,info.prop);
+        else if (ui==='In') uis[u]=sinput(info.M,info.prop);
+        else if (ui==='TF') uis[u]=stextfield(info.prop);
     
-        else if (cls==='B') {
-            if(info.T) info.prop.label=info.T;
-            uis.push(sbutton(info.prop));
-        }
-        else if (cls==='CB') uis.push(scheck(info.prop));
-        else if (cls==='RB') uis.push(sradio(info.prop));
-        else if (cls==='SEL') uis.push(sselect(info.prop));
-        else if (cls==='SL') uis.push(sslider(info.prop));
-        else if (cls==='FL') uis.push(new SFileLoader(info.prop));
-        else if (cls==='DP') ui=new SDatePicker(info.prop);
-        else if (cls==='CP') ui=new SColorPicker(info.prop);
+        else if (ui==='B') uis[u]=sbutton(info.prop);
+        else if (ui==='CB') uis[u]=scheck(info.prop);
+        else if (ui==='RB') uis[u]=sradio(info.prop);
+        else if (ui==='SEL') uis[u]=sselect(info.prop);
+        else if (ui==='SL') uis[u]=sslider(info.prop);
+        else if (ui==='FL') uis[u]=new SFileLoader(info.prop);
+        else if (ui==='DP') uis[u]=new SDatePicker(info.prop);
+        else if (ui==='CP') uis[u]=new SColorPicker(info.prop);
         
-        else if (cls==='Bar') uis.push(sbar(info.D));
-        else if (cls==='SP') uis.push(sspace());
+        else if (ui==='Bar') uis[u]=sbar(info.D);
+        else if (ui==='SP') uis[u]=sspace();
     }
     arrangeUI(uis);
     return uis;
 };
-function arrangeUI(u) {
-    for(var i=0;i<APP_UI.arrange.length;i++) {
-        const a=APP_UI.arrange[i]
-        for(var j=1;j<a.length;j++) {
-            const c=a[j];
-            u[0].add(u[c.i],c.l);
-        }
-    }
-};
+
 function makeAboutPane() {
 
     return sdialog({
@@ -181,23 +204,32 @@ SPrefPane.prototype={
     }
 };
 function SApp() {
-    APP_INSTANCE=this;
+    SAPP_INSTANCE=this;
     this.uis = makeUI();
-    APP_ROOT = this.uis[0];
-    document.body.appendChild(APP_ROOT.node);
-    APP_ABOUT = makeAboutPane(APP_INFO);
+    SAPP_ROOT = this.uis.root;
+    document.body.appendChild(SAPP_ROOT.node);
+    SAPP_ABOUT = makeAboutPane(APP_INFO);
+    SAPP_ROOT.add(SAPP_ABOUT.screen,'center');
+
+
+    SAPP_SOCKET = io();
+    SAPP_SOCKET.on('notify',function(msg) {
+        console.log(msg);
+    });
+    SAPP_SOCKET.emit('sender','socket test');
+
     this.prefPane=null;
 };
 SApp.prototype={
     showAbout: function() {
-        if(APP_ABOUT) APP_ABOUT.show();
+        if(SAPP_ABOUT) SAPP_ABOUT.show();
     },
     showPref: function() {
         this.prefPane.show(true);
     },
     setLang: function(l) {
-        APP_LANG = l;
-        if (APP_ROOT) APP_ROOT.setLocale(APP_LANG);
+        SAPP_LANG = l;
+        if (SAPP_ROOT) SAPP_ROOT.setLocale(SAPP_LANG);
     },
     setThema: function(t) {
         document.getElementById('main-thema').href=t;

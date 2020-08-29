@@ -32,9 +32,6 @@
 				'$HOME\\AppData\\Local\\slib\\lib\\static\\snodeapp.lib',
 				$LIBRARY_PATHS
 			],
-			'defines': [
-				'LOAD_STATIC_LIB',
-			],
 			'msvs_settings': { 
 			  'VCCLCompilerTool': {
 			    'AdditionalOptions': [

@@ -42,20 +42,26 @@ sbyte Char::toNum(const char *s) {
     return s[0];
 }
 String Char::wideChar(char c) {
-    if (0x20 < (int)c && (int)c < 0x7F) {
-        String str(3, '\0');
-		str[0] = 0xEF; str[1] = 0xBC; str[2] = c + 0x60;
+	String str(3, '\0');
+    if (0x20 < (int)c && (int)c < 0x60) {
+        str[0] = 0xEF; str[1] = 0xBC; str[2] = c + 0x60;
         return str;
     }
+	else if (0x5F < (int)c && (int)c < 0x7F) {
+		str[0] = 0xEF; str[1] = 0xBD; str[2] = c + 0x20;
+		return str;
+	}
     else return String(1, c);
 }
 char Char::narrowChar(const char *s) {
     size_t len = Char::u8size(s);
     if (len == 1) return s[0];
     const subyte *p = reinterpret_cast<const subyte *>(s);
-	if (len == 3 && 0x80 < p[2] && p[2] < 0x9F)
-		return (char)(0x20 + (p[2] - 0x80));
-    else throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "s");
+	if (len == 3) {
+		if (p[1] == 0xBC && 0x80 < p[2] && p[2] < 0xC0) return (char)(p[2] - 0x60);
+		if (p[1] == 0xBD && 0x7F < p[2] && p[2] < 0x9F) return (char)(p[2] - 0x20);
+	}
+	throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "s");
 }
 
 Char::Char() : _ptr(nullptr), _str(nullptr) {}

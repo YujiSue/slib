@@ -174,7 +174,12 @@ table {
 .halign-center {
     text-align: center;
 }
-
+.halign-lef {
+    text-align: left;
+}
+.halign-right {
+    text-align: right;
+}
 .column-layout {
     column-count: auto;
 }
@@ -361,6 +366,9 @@ table {
 .indigo {color: indigo;}
 .brown {color: brown;}
 .gray {color:darkgrey;}
+.white {color:white;}
+.blask {color:black;}
+.clear {opacity: 0.0;}
 /* text style */
 .bold {font-weight: bold;}
 .italic {font-style: italic;}

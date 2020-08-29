@@ -59,8 +59,7 @@ namespace slib {
         
         #define SAPP_EXECTED 0x0AFF
         
-        
-        class SAPP_DLL SAppException : public SException {
+		class SAPP_DLL SAppException : public SException {
         public:
             SAppException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
             ~SAppException();
@@ -101,7 +100,7 @@ namespace slib {
 
 #ifndef splugin
 #ifdef _WINDLL
-#define splugin extern "C" int
+#define splugin extern __declspec(dllexport) int
 #else
 #define splugin extern int
 #endif
@@ -109,7 +108,11 @@ namespace slib {
 		
 		template<typename... Args>
 		class SPlugIn {
-			typedef int (*Func)(Args...);
+#ifdef WIN_OS
+			typedef int(CALLBACK* Func)(Args...);
+#else 
+			typedef int(*Func)(Args...);
+#endif
 		private:
 			Func _func;
 

@@ -406,7 +406,12 @@ void test::CharTest() {
 	std::cout << String(u8"'あ' is narrow?") << (Char::isNarrow(u8"あ")?"true":"false") << std::endl;
 	std::cout << String(u8"'５' is numeric?") << (Char::isNumeric(u8"５") ? "true" : "false") << std::endl;
 	
-	String s1 = u8"爾天神之命以布斗麻邇爾ト相而詔之";
+	std::cout << Char::wideChar('5') << std::endl;
+	std::cout << Char::wideChar('a') << std::endl;
+	std::cout << Char::narrowChar("３") << std::endl;
+	std::cout << Char::narrowChar("Ｇ") << std::endl;
+
+	String s1 = u8"木花之佐久夜毘売";
 	auto c = s1.u8charAt(3);
 	std::cout << c << std::endl;
 	std::cout << c + 3 << std::endl;
@@ -417,7 +422,125 @@ void test::StringTest() {
 	std::cout << String("*") * 50 << std::endl;
 	std::cout << "String Test" << NEW_LINE << std::endl;
 
+	String s0 = "\t abcdef\n";
 
+	std::cout << s0 << std::endl;
+	s0 = String::trim(s0);
+	std::cout << s0 << std::endl;
+	std::cout << String::squot(s0) << std::endl;
+	std::cout << String::dquot(s0) << std::endl;
+	s0 = String::upper(s0);
+	std::cout << s0 << std::endl;
+	s0 = String::lower(s0);
+	std::cout << s0 << std::endl;
+	s0 = String::wide(s0);
+	std::cout << s0 << std::endl;
+	s0 = String::narrow(s0);
+	s0 = String::enclose(s0, "<", ">");
+	std::cout << s0 << std::endl;
+	std::cout << String::dequot(s0) << std::endl;
+
+	ubytearray a1 = { 0x43, 0x4F, 0x32 };
+	String s1(100);
+	String s2(3.14);
+	String s3("abc");
+	String s4 = S(子丑寅卯辰巳午未申酉戌亥);
+
+	std::cout << (s1.isNumeric()?"true":"false") << std::endl;
+	std::cout << (s2.isNumeric() ? "true" : "false") << std::endl;
+	std::cout << (s3.isNumeric() ? "true" : "false") << std::endl;
+
+	std::cout << s3.size() << std::endl;
+	std::cout << s3.length() << std::endl;
+	std::cout << s1[0] << std::endl;
+	std::cout << s2[1] << std::endl;
+	std::cout << s3[2] << std::endl;
+
+	std::cout << (s3 + 1.414) << std::endl;
+	std::cout << s1.integer() + 1.732 << std::endl;
+	std::cout << s2.doubleValue() + 2.71828 << std::endl;
+	s1.fill(10, ' ', true);
+	std::cout << s1 << std::endl;
+	std::cout << s2.filled(10, '0') << std::endl;
+	s1.trimming();
+	std::cout << s1 << std::endl;
+
+	std::cout << s4.size() << std::endl;
+	std::cout << s4.length() << std::endl;
+	std::cout << s4.charCount() << std::endl;
+	std::cout << s4.u8charAt(2) << std::endl;
+	std::cout << s4.charIndex(2) << std::endl;
+
+	String s5;
+	s5.interpret(a1.ptr(), a1.size());
+	std::cout << s5 << std::endl;
+	s5.add('"');
+	s5.insert(0, "\"");
+	std::cout << s5 << std::endl;
+	std::cout << (s5.isQuoted()?"true":"false") << std::endl;
+
+	String s6 = "abc";
+	s6 *= 5;
+	std::cout << s6 << std::endl;
+	s6.append(String("xyz") * 5);
+	std::cout << s6 << std::endl;
+	s6.remove(8, 10);
+	std::cout << s6 << std::endl;
+	std::cout << s6.count("a") << ":" << s6.count("b") << ":" << s6.count("c") << ":" << s6.count("x") << ":" << s6.count("y") << ":" << s6.count("z") << std::endl;
+	std::cout << (s6.beginWith("ab")?"true":"false") << std::endl;
+	std::cout << (s6.beginWith("yz") ? "true" : "false") << std::endl;
+	std::cout << (s6.endWith("ab") ? "true" : "false") << std::endl;
+	std::cout << (s6.endWith("yz") ? "true" : "false") << std::endl;
+	
+
+	String s7 =
+		S(Twas brillig, and the slithy toves)
+		+ LF +
+		S(Did gyre and gimble in the wabe;)
+		+ CR +
+		S(All mimsy were the borogoves, )
+		+ CRLF +
+		S(And the mome raths outgrabe.);
+	std::cout << s7.splitline() << std::endl;
+	
+		
+
+	/*
+
+	void replace(size_t off, size_t len, const char* alt);
+	void replace(const srange & rng, const char* alt);
+	void replace(const char* ori, const char* alt);
+	void replace(const Regex & rgx, const char* alt);
+	void rearrange(const Regex & rgx, const CArray<sint> & order);
+	
+	void clip(size_t off, size_t len = -1);
+	void clip(const srange & rng);
+
+	void transform(subyte trans);
+
+	String substring(size_t off, size_t len = -1) const;
+	String substring(const srange & range) const;
+	String replaced(const char* ori, const char* alt) const;
+	String replaced(const Regex & rgx, const char* alt) const;
+	String rearranged(const Regex & rgx, const CArray<sint> & order) const;
+	
+	String transformed(subyte trans) const;
+
+
+	bool contain(const char* que, size_t offset = 0) const;
+	bool match(const Regex & rgx, size_t offset = 0) const;
+	bool equal(const Regex & rgx) const;
+
+	size_t find(const char* que, size_t offset = 0) const;
+	size_t rfind(const char* que, size_t offset = 0) const;
+	CArray<size_t> search(const char* que, size_t offset = 0) const;
+	CArray<size_t> search(const Regex & rgx, size_t offset = 0) const;
+	Array<String, SMemory<String>> matched(const Regex & rgx, size_t offset = 0) const;
+	Array<String, SMemory<String>> split(const char* sep, bool trim = true) const;
+	Array<String, SMemory<String>> split(const Regex & rgx) const;
+	Map<String, String> parse(const char* sep, const char* part, bool trim = true) const;
+
+	*/
 
 	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }

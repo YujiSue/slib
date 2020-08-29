@@ -2,8 +2,9 @@
 #define SLIB_SNET_H
 
 // Require libcurl
-
+extern "C" {
 #include "curl/curl.h"
+}
 #include "sobj.h"
 #include "sio/sio.h"
 #include "sutil/scode.h"
@@ -47,5 +48,4 @@ namespace slib {
             void connect(const SDictionary &dict);
         };
 }
-
 #endif

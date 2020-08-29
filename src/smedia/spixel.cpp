@@ -105,9 +105,7 @@ bool SPixel::operator==(const SPixel &px) const { return _data == px._data; }
 SPixelIterator::SPixelIterator(subyte t, subyte *p) : px(t, p) {}
 SPixelIterator::SPixelIterator(const SPixelIterator &it) : px(it.px) {}
 SPixelIterator::~SPixelIterator() {}
-SPixelIterator& SPixelIterator::operator=(const SPixelIterator &it) {
-    px = it.px; return *this;
-}
+SPixelIterator& SPixelIterator::operator=(const SPixelIterator &it) { px = it.px; return *this; }
 SPixel &SPixelIterator::operator *() { return px; }
 SPixel *SPixelIterator::operator ->() { return &px; }
 SPixel &SPixelIterator::operator [](std::ptrdiff_t diff) { sforin(i, 0, diff) ++px; return px; }
@@ -131,9 +129,7 @@ bool SPixelIterator::operator !=(const SPixelIterator &it) const { return px.ptr
 SPixelCIterator::SPixelCIterator(subyte t, const subyte *p) : px(t, const_cast<subyte *>(p)) {}
 SPixelCIterator::SPixelCIterator(const SPixelCIterator &it) : px(it.px) {}
 SPixelCIterator::~SPixelCIterator() {}
-SPixelCIterator &SPixelCIterator::operator=(const SPixelCIterator &it) {
-    px = it.px; return *this;
-}
+SPixelCIterator &SPixelCIterator::operator=(const SPixelCIterator &it) { px = it.px; return *this; }
 const SPixel &SPixelCIterator::operator *() { return px; }
 const SPixel *SPixelCIterator::operator ->() { return &px; }
 const SPixel &SPixelCIterator::operator [](std::ptrdiff_t diff) { sforin(i, 0, diff) ++px; return px; }

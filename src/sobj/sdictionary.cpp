@@ -87,6 +87,29 @@ SMapIterator<String, sobj> SDictionary::search(const char *que) {
     }
     return end();
 }
+void SDictionary::combine(const SDictionary& dic) {
+	sforeach(dic) set(E_.key, E_.value);
+}
+inline void _merge(SDictionary &d1, const SDictionary &d2) {
+	sforeach(d2) {
+		if (d1[E_.key]) {
+			auto& v1 = d1[E_.key];
+			auto& v2 = E_.value;
+			if (v1.isArray()) {
+				if (v2.isArray()) {
+					sforeach_(vit, v2) {
+						if (v1.find(*vit) == NOT_FOUND) v1.add(*vit);
+					}
+				}
+				else v1.add(v2);
+			}
+			else if (v1.isDict() && v2.isDict()) _merge(v1.dict(), v2.dict());
+			else v1 = v2;
+		}
+		else d1[E_.key] = E_.value;
+	}
+}
+void SDictionary::merge(const SDictionary& dic) { _merge(*this, dic); }
 SArray SDictionary::lump(const stringarray &keys) {
     SArray array;
     sforeach(keys) array.add(at(E_));

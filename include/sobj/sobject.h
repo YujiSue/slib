@@ -45,8 +45,8 @@ namespace slib {
 
     } OBJ_TYPE;
     
-    #define sobj SObjPtr
-    #define scobj SClsPtr
+    #define sobj slib::SObjPtr
+    #define scobj slib::SClsPtr
     
     class SLIB_DLL SObjPtr;
     template<class Cls, OBJ_TYPE T=NULL_OBJ>
@@ -106,7 +106,7 @@ namespace slib {
     };
     
     #define snull sobj()
-    #define kv(X,Y) kvpair<String, SObjPtr>((X), V(Y))
+    #define kv(X,Y) slib::kvpair<slib::String, slib::SObjPtr>((X), V(Y))
 
     class SLIB_DLL SObject {
     protected:

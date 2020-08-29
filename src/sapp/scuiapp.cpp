@@ -210,13 +210,13 @@ int SCuiApp::init(int argc, const char** argv) {
 		};
 		app_option["info"] = {
 			kv("short", "I"),
-			kv("description","Show app information."),
+			kv("description","Show information."),
 			kv("type", "exec"),
 			kv("func", SFunction<int(SDictionary&, const sobj&)>(showInfo))
 		};
 		app_option["version"] = {
 			kv("short", "V"),
-			kv("description","Show app version."),
+			kv("description","Show version."),
 			kv("type", "exec"),
 			kv("func", SFunction<int(SDictionary&, const sobj&)>(showVer))
 		};

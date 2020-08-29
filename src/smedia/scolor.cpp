@@ -352,6 +352,7 @@ bool SColor::isMono() const { return channel() == 1; }
 bool SColor::hasAlpha() const { return isRGB() && (channel() == 4); }
 bool SColor::isRGB() const { return colorSpace(_type) == RGB_SPACE; }
 bool SColor::isCMYK() const { return colorSpace(_type) == CMYK_SPACE; }
+bool SColor::isGradient() const { return bpp() != _data.size(); }
 void SColor::convert(sushort t) {
 	if (_type == t) return;
 	if (isRGB()) {

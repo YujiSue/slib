@@ -88,15 +88,15 @@ function propOverride(p,o){
 function encodeForm(d){
     var params=[];
     for(var k in d){
-        params.push(encodeURIComponent(k)+'='+encodeURIComponent(d.k));
+        params.push(encodeURIComponent(k)+'='+encodeURIComponent(d[k]));
     }
     return params.join('&').replace(/%20/g,'+');
 }
 async function useHash(t,f) {
-    const e = new TextEncoder().encode(t);
-    const d = await crypto.subtle.digest('SHA-256',e);
-    const a = Array.from(new Uint8Array(d));
-    const s = a.map(b=>b.toString(16).padStart(2,'0')).join('');
+    const e=new TextEncoder().encode(t);
+    const d=await crypto.subtle.digest('SHA-256',e);
+    const a=Array.from(new Uint8Array(d));
+    const s=a.map(b=>b.toString(16).padStart(2,'0')).join('');
     if(f) f(s);
 }
 function instanceOfID(i,s){if(!s){s=document;} const e=s.getElementById(i); if(e){return e.sui;} else return null;};
@@ -107,7 +107,7 @@ function inRange(x,y,s){
 function menuRoot(sui){
     
 }
-function parseIcon(s) {
+function parseIcon(s,c) {
     if (s.startsWith('icon:')) return sicon(s.substring(5),{class:['unselectable','unresponsible']});
     else if(s.startsWith('image:')) return simgview({src:s.substring(6),class:['unselectable','unresponsible']});
     else return slabel(s,{class:['unselectable','unresponsible']});
@@ -125,10 +125,10 @@ SSocket.prototype={
     send: function(d){this.socket.emit(this.connectID,d);},
     setResponse:function(r){this.response=r;}
 };
-function SAjax() {};
-SAjax.prototype={
+function SConnect() {};
+SConnect.prototype={
     get: async function(p) {
-        p=propOverride({url:'',type:'',next:null,error:null});
+        p=propOverride(p,{url:'',type:'',next:null,error:null});
         const xhr=new XMLHttpRequest();
         xhr.open('GET',p.url);
         xhr.responseType=p.type;
@@ -141,11 +141,11 @@ SAjax.prototype={
         }
     },
     post: async function(p) {
-        p=propOverride({url:'',type:'',data:null,next:null,error:null});
+        p=propOverride(p,{url:'',data:null,next:null,error:null});
         var xhr=new XMLHttpRequest();
         xhr.open('POST',p.url);
-        xhr.setRequestHeader('Content-Type',p.type);
-        xhr.send(p.data);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(encodeForm(p.data));
         xhr.onreadystatechange=function() {
             if (this.readyState===XMLHttpRequest.DONE) {
                 if (xhr.status===200&&p.next) p.next(xhr.response);
@@ -182,6 +182,16 @@ function SPOST(u,t,d) {
         }
     });
 };
+function SDownloader(n,b) {
+    const u=URL.createObjectURL(b);
+    const a=document.createElement("a");
+    document.body.appendChild(a);
+    a.download=n;
+    a.href=u;
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(u);
+};
 function SCookie(p) {
     p=propOverride(p,{samesite:'lax',secure:true,path:null,age:null,expires:null});
     if(p.samesite) document.cookie='samesite='+p.samesite;
@@ -214,7 +224,6 @@ SCookie.prototype={
     setExpire:function(d) {document.cookie='expires='+d},
     clear:function(){document.cookie='max-age=-1';}
 };
-
 function SShortCut(s,a){
     this.key=s.key;
     this.mask=s.mask;
@@ -351,14 +360,32 @@ document.addEventListener('click',function(e){
     if(e.target&&e.target.sui) SMOUSE_STATE.source=e.target.sui;
     if(e.target) {
         if(e.target.sui) {
-
+            if(CURRENT_MENU) {
+                if (e.target.sui != CURRENT_MENU) CURRENT_MENU.close();
+            }
+        }
+        else {
+            if(CURRENT_MENU) CURRENT_MENU.close();
+        }
+    }
+    else {
+        if(CURRENT_MENU) CURRENT_MENU.close();
+    }
+});
+document.addEventListener('touchstart',function(e){
+    if(e.target&&e.target.sui) SMOUSE_STATE.source=e.target.sui;
+    if(e.target) {
+        if(e.target.sui) {
+            if(CURRENT_MENU) {
+                if (e.target.sui != CURRENT_MENU) CURRENT_MENU.close();
+            }
         }
         else {
             if(CURRENT_MENU) { CURRENT_MENU.close(); }
         }
     }
     else {
-        if(CURRENT_MENU) { CURRENT_MENU.closes(); }
+        if(CURRENT_MENU) { CURRENT_MENU.close(); }
     }
 });
 document.addEventListener('drag',function(e) {
@@ -718,7 +745,7 @@ SUIComponent.prototype={
     },
     setHorizontalAlign:function(align){this.node.style.textAlign=align; return this;},
     setVerticalAlign:function(align){ this.node.style.verticalAlign=align; return this;},
-    setCursor:function(cursor){this.node.style.cursor=cursor;},
+    setCursor:function(cursor){this.node.style.cursor=cursor; return this;},
     setX:function(x){
         if(typeof(x)==='number') this.node.style.left=x+'px';
         else this.node.style.left=x;
@@ -1348,12 +1375,14 @@ SImageView.prototype=Object.create(SUIComponent.prototype, {
 });
 SImageView.prototype.constructor=SImageView;
 
+function SSvgCanvas(p) {
 
-function SGraphics(p) {
+}
+function SFigure(p) {
     if (p == null) p={};
     SUIComponent.call(this,'svg',p);
 };
-SGraphics.prototype=Object.create(SUIComponent.prototype, {
+SFigure.prototype=Object.create(SUIComponent.prototype, {
     initNode:{
         value:function(p){
             SUIComponent.prototype.initNode.apply(this, [ p ]);
@@ -1362,14 +1391,14 @@ SGraphics.prototype=Object.create(SUIComponent.prototype, {
         }
     }
 });
-SGraphics.prototype.constructor=SGraphics;
+SFigure.prototype.constructor=SFigure;
 
-function SDRawer(p) {
+function SCanvas(p) {
     p=propOverride(p,{width:640,height:480});
     this.context=null;
     SUIComponent.call(this,'canvas',p);
 };
-SDRawer.prototype=Object.create(SUIComponent.prototype, {
+SCanvas.prototype=Object.create(SUIComponent.prototype, {
     initNode:{
         value:function(p){
             SUIComponent.prototype.initNode.apply(this, [ p ]);
@@ -1392,13 +1421,31 @@ SDRawer.prototype=Object.create(SUIComponent.prototype, {
     }},
     path:{value:function(x,y){this.context.beginPath();}},
     moveTo:{value:function(x,y){this.context.moveTo(x,y);}},
-    lineTo:{value:function(){}},
-    curveTo:{value:function(){}},
-    closePath:{value:function(f){if(f) this.context.fill();}},
+    lineTo:{value:function(x,y){this.context.lineTo(x,y);}},
+    curveTo:{value:function(rx,ry,x,y){this.context.quadraticCurveTo(rx,ry,x,y);}},
+    curveTo:{value:function(rx1,ry1,rx2,ry2,x,y){this.context.bezierCurveTo(rx1,ry1,rx2,ry2,x,y);}},
+    closePath:{value:function(){this.context.closePath();}},
+    drawPath:{value:function(){this.context.stroke();}},
+    fillPath:{value:function(){this.context.fill();}},
+    arc:{value:function(x,y,r,s,e,d) {this.context.arc(x,y,r,s,e,d);}},
     drawRect: {value:function(x,y,w,h,p) {
         if(p) this.setPainter(p);
         this.context.fillRect(x,y,w,h);
-        this.context.fillRect(x,y,w,h);
+        this.context.strokeRect(x,y,w,h);
+    }},
+    drawRoundRect: {value:function(x,y,w,h,r){
+        this.context.beginPath();
+        this.context.moveTo(x,y+r);
+        this.context.lineTo(x,y+h-r);
+        this.context.arcTo(x,y+h,x+r,y+h,r);
+        this.context.lineTo(x+w-r,y+h);
+        this.context.arcTo(x + width, y + height, x + width, y + height - radius, radius);
+        this.context.lineTo(x + width, y + radius);
+        this.context.arcTo(x + width, y, x + width - radius, y, radius);
+        this.context.lineTo(x + radius, y);
+        this.context.arcTo(x, y, x, y + radius, radius);
+        this.context.fill();
+        this.context.stroke();
     }},
     drawEllipse: {value:function(x,y,w,h,t,p) {
         if(p) this.setPainter(p);
@@ -1412,16 +1459,19 @@ SDRawer.prototype=Object.create(SUIComponent.prototype, {
         if(p) this.setPainter(p);
 
     }},
+    erase: {value:function(x,y,w,h) {
+        this.context.clearRect(x,y,w,h);
+    }}
 
 });
-SDRawer.prototype.constructor=SDRawer;
+SCanvas.prototype.constructor=SCanvas;
 
 function SListItem(p){p=propOverride(p,{content:null});SUIComponent.call(this,'li',p);};
 SListItem.prototype=Object.create(SUIComponent.prototype,{
     initNode:{value:function(p){
         SUIComponent.prototype.initNode.apply(this,[p]);
         this.setSuiID('listitem').setMainClass('sli-item');
-        if(p.content) this.node.innerHTML = p.content;
+        if(p.content) this.node.innerHTML=p.content;
     }}
 });
 SListItem.prototype.constructor=SListItem;
@@ -2012,16 +2062,19 @@ SMenu.prototype=Object.create(SUIComponent.prototype, {
                 if (l===RIGHT) this.setX(u.X()+u.width());
                 else this.setX(u.X()-this.width());
             }
+            CURRENT_MENU = this;
+            this.active = true;
     }},
     hide: {
         value: function() {
             document.body.removeChild(this.node);
             CURRENT_MENU=null;
+            this.active = false;
         }},
     close: {
         value: function() {
             if(this.trigger&&this.trigger.active) this.trigger.setActive(false);
-            else this.hide();
+            this.hide();
         }
     },
     selectItem: {
@@ -2148,9 +2201,13 @@ SToolItem.prototype=Object.create(SUIComponent.prototype, {
                 if (p.mode&S_SELECT) p.submenu.setMode(S_SELECT);
             }
             this.node.onclick=function(e) {
-                event.stopPropagation();
+                e.stopPropagation();
+                if (Cls.hasClass('unavailable')) return;
                 if (p.mode&S_TOGGLE) Cls.setState(!Cls.state);
-                else if (Cls.submenu) Cls.submenu.showAt(Cls,p.expand);
+                else if (Cls.submenu) {
+                    if (Cls.submenu.active) Cls.submenu.hide();
+                    else Cls.submenu.showAt(Cls,p.expand);
+                }
                 if (Cls.action) Cls.action(e);
             };
         }
@@ -2159,8 +2216,18 @@ SToolItem.prototype=Object.create(SUIComponent.prototype, {
         this.state=s;
         if (this.state) this.addClass('active');
         else this.removeClass('active');
+        return this;
     }},
-    setAction: { value: function(a) { this.action=a; return this; }}
+    setAvailable: { value: function(a) {
+        if(a) this.removeClass('unavailable');
+        else this.addClass('unavailable');
+        return this;
+    }},
+    setAction: { value: function(a) { this.action=a; return this; }},
+    setLocale: {value:function(l){
+        SUIComponent.prototype.setLocale.apply(this,[l]);
+        if (this.submenu) this.submenu.setLocale(l);
+    }}
 });
 SToolItem.prototype.constructor=SToolItem;
 function SToolBar(p) {
@@ -2317,7 +2384,7 @@ STextEditor.prototype=Object.create(SUIComponent.prototype, {
 });
 STextEditor.prototype.constructor=STextEditor;
 function SButton(p){
-    p=propOverride(p,{label:'',state:false,available:true,action:null,style:DEFAULT});
+    p=propOverride(p,{label:'',icon:null,state:false,available:true,action:null,style:DEFAULT});
     if(p.style) SUIComponent.call(this,'div',p);
     else SUIComponent.call(this,'button',p);
 };
@@ -2329,7 +2396,7 @@ SButton.prototype=Object.create(SUIComponent.prototype,{
         .setState(p.state)
         .setAction(p.action);
         if(p.style===S_ICON){
-            this.image=simgview({src:p.src,alt:p.alt,class:['button-image','unresponsible']});
+            this.image=parseIcon(p.icon).addClass('button-image');
             this.setMainClass('simg-button').add(this.image);
             this.node.onclick=function(e){if(Cls.action){Cls.action(e);}};
         }

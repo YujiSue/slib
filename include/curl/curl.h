@@ -1,5 +1,5 @@
-#ifndef __CURL_CURL_H
-#define __CURL_CURL_H
+#ifndef CURLINC_CURL_H
+#define CURLINC_CURL_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -34,8 +34,8 @@
 #define CURL_STRICTER
 #endif
 
-#include "curlver.h"         /* libcurl version defines   */
-#include "system.h"          /* determine things run-time */
+#include "curl/curlver.h"         /* libcurl version defines   */
+#include "curl/system.h"          /* determine things run-time */
 
 /*
  * Define WIN32 when build target is Win32 API
@@ -113,14 +113,15 @@ typedef void CURLSH;
  */
 
 #ifdef CURL_STATICLIB
-#  define CURL_EXTERN
+#define CURL_EXTERN
 #elif defined(WIN32) || defined(__SYMBIAN32__) || \
      (__has_declspec_attribute(dllexport) && \
       __has_declspec_attribute(dllimport))
 #  if defined(BUILDING_LIBCURL)
 #    define CURL_EXTERN  __declspec(dllexport)
 #  else
-#    define CURL_EXTERN  __declspec(dllimport)
+//#    define CURL_EXTERN  __declspec(dllimport)
+#define CURL_EXTERN
 #  endif
 #elif defined(BUILDING_LIBCURL) && defined(CURL_HIDDEN_SYMBOLS)
 #  define CURL_EXTERN CURL_EXTERN_SYMBOL
@@ -600,6 +601,8 @@ typedef enum {
                                     */
   CURLE_RECURSIVE_API_CALL,      /* 93 - an api function was called from
                                     inside a callback */
+  CURLE_AUTH_ERROR,              /* 94 - an authentication function returned an
+                                    error */
   CURL_LAST /* never use! */
 } CURLcode;
 
@@ -883,7 +886,7 @@ typedef enum {
 
 /* CURLALTSVC_* are bits for the CURLOPT_ALTSVC_CTRL option */
 #define CURLALTSVC_IMMEDIATELY  (1<<0)
-#define CURLALTSVC_ALTUSED      (1<<1)
+
 #define CURLALTSVC_READONLYFILE (1<<2)
 #define CURLALTSVC_H1           (1<<3)
 #define CURLALTSVC_H2           (1<<4)
@@ -919,10 +922,6 @@ typedef enum {
 #define CURLPROTO_SMB    (1<<26)
 #define CURLPROTO_SMBS   (1<<27)
 #define CURLPROTO_ALL    (~0) /* enable everything */
-
-/* bitmask defines for CURLOPT_H3 */
-#define CURLH3_DIRECT (1<<0) /* go QUIC + HTTP/3 directly to the given host +
-                                port */
 
 /* long may be 32 or 64 bits, but we should never depend on anything else
    but 32 */
@@ -1926,8 +1925,8 @@ typedef enum {
   /* maximum age of a connection to consider it for reuse (in seconds) */
   CINIT(MAXAGE_CONN, LONG, 288),
 
-  /* Bitmask to control HTTP/3 behavior. See CURLH3_* */
-  CINIT(H3, LONG, 289),
+  /* SASL authorisation identity */
+  CINIT(SASL_AUTHZID, STRINGPOINT, 289),
 
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
@@ -1982,7 +1981,8 @@ enum {
   CURL_HTTP_VERSION_2TLS, /* use version 2 for HTTPS, version 1.1 for HTTP */
   CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE,  /* please use HTTP 2 without HTTP/1.1
                                            Upgrade */
-
+  CURL_HTTP_VERSION_3 = 30, /* Makes use of explicit HTTP/3 without fallback.
+                               Use CURLOPT_ALTSVC to enable HTTP/3 upgrade */
   CURL_HTTP_VERSION_LAST /* *ILLEGAL* http version */
 };
 
@@ -2618,8 +2618,9 @@ typedef enum {
   CURLINFO_STARTTRANSFER_TIME_T = CURLINFO_OFF_T + 54,
   CURLINFO_REDIRECT_TIME_T  = CURLINFO_OFF_T + 55,
   CURLINFO_APPCONNECT_TIME_T = CURLINFO_OFF_T + 56,
+  CURLINFO_RETRY_AFTER      = CURLINFO_OFF_T + 57,
 
-  CURLINFO_LASTONE          = 56
+  CURLINFO_LASTONE          = 57
 } CURLINFO;
 
 /* CURLINFO_RESPONSE_CODE is the new name for the option previously known as
@@ -2764,7 +2765,8 @@ typedef struct {
   unsigned int nghttp2_ver_num; /* Numeric nghttp2 version
                                    (MAJOR << 16) | (MINOR << 8) | PATCH */
   const char *nghttp2_version; /* human readable string. */
-
+  const char *quic_version;    /* human readable quic (+ HTTP/3) library +
+                                  version or NULL */
 } curl_version_info_data;
 
 #define CURL_VERSION_IPV6         (1<<0)  /* IPv6-enabled */
@@ -2798,6 +2800,8 @@ typedef struct {
 #define CURL_VERSION_BROTLI       (1<<23) /* Brotli features are present. */
 #define CURL_VERSION_ALTSVC       (1<<24) /* Alt-Svc handling built-in */
 #define CURL_VERSION_HTTP3        (1<<25) /* HTTP3 support built-in */
+
+#define CURL_VERSION_ESNI         (1<<26) /* ESNI support */
 
  /*
  * NAME curl_version_info()
@@ -2878,4 +2882,4 @@ CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 #endif /* __STDC__ >= 1 */
 #endif /* gcc >= 4.3 && !__cplusplus */
 
-#endif /* __CURL_CURL_H */
+#endif /* CURLINC_CURL_H */

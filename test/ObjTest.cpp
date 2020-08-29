@@ -214,8 +214,11 @@ void test::SFileTest() {
 }
 void test::SNetTest() {
 	std::cout << String("*") * 50 << std::endl;
-
-
+	String str;
+	SNetWork net;
+	net.http("https://yujisue.github.io/", true);
+	net.data.trans(str);
+	std::cout << str << std::endl;
 
 	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }

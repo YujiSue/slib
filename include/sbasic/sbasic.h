@@ -73,8 +73,17 @@ namespace slib {
 	extern inline std::ostream& operator<<(std::ostream& os, const List<T>& list) { return os << toString(list); }
 	template<class Key, class Val>
 	extern inline std::ostream& operator<<(std::ostream& os, const Map<Key, Val>& map) { return os << toString(map); }
-	template <typename T>
-	extern std::ostream& operator<<(std::ostream& os, const Region<T>& reg) { return os << toString(reg); }
+	template<typename T>
+	extern inline std::ostream& operator<<(std::ostream& os, const Region<T>& reg) { return os << toString(reg); }
+	extern inline std::istream& operator>>(std::istream& is, ubytearray& array) {
+		is.seekg(0, std::ios::end);
+		size_t size = is.tellg();
+		is.clear();
+		is.seekg(0);
+		array.resize(size);
+		is.read((char *)array.ptr(), size);
+		return is;
+	}
 }
 
 

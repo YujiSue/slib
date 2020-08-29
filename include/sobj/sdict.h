@@ -41,6 +41,8 @@ namespace slib {
         void load(const char *path);
         void save(const char *path);
         smap_iter<String, slib::SObjPtr> search(const char *que);
+		void combine(const SDictionary& dic);
+		void merge(const SDictionary& dic);
         SArray lump(const stringarray &keys);
         String getClass() const;
         String toString() const;

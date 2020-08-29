@@ -17,9 +17,7 @@ bool SNodeUtil::ngypInstalled() {
 	SSystem::exec("node-gyp -v", result);
 	return result.equal(R(/ ^ v[0 - 9] + .[0 - 9] + .[0 - 9] / ));
 }
-void SNodeUtil::installNode() {
-	
-}
+//void SNodeUtil::installNode() {}
 void SNodeUtil::installNGyp() {
 	SSystem::exec("npm install -g node-gyp");
 }
@@ -94,7 +92,7 @@ napi_value SNodeUtil::jsreal(napi_env env, double d) {
 	if (st != napi_ok) napi_throw_error(env, NULL, "");
 	return val;
 }
-napi_value SNodeUtil::jsnum(napi_env env, SNumber& n) {
+napi_value SNodeUtil::jsnum(napi_env env, const SNumber& n) {
 	napi_value val;
 	switch (n.type()) {
 	case SNumber::INTEGER:
@@ -122,7 +120,7 @@ napi_value SNodeUtil::jsstr(napi_env env, const char* s) {
 	if (st != napi_ok) napi_throw_error(env, NULL, "");
 	return val;
 }
-napi_value SNodeUtil::jsarray(napi_env env, SArray& array) {
+napi_value SNodeUtil::jsarray(napi_env env, const SArray& array) {
 	napi_status st = napi_generic_failure;
 	napi_value val;
 	st = napi_create_array_with_length(env, array.size(), &val);
@@ -134,31 +132,7 @@ napi_value SNodeUtil::jsarray(napi_env env, SArray& array) {
 	}
 	return val;
 }
-napi_value SNodeUtil::jsarray(napi_env env, intarray& array) {
-	napi_status st = napi_generic_failure;
-	napi_value val;
-	st = napi_create_array_with_length(env, array.size(), &val);
-	if (st != napi_ok) napi_throw_error(env, "jsarray", "JSArray create error.");
-	if (!array.empty()) {
-		sforeachi(array) {
-			st = napi_set_element(env, val, i, SNodeUtil::jsobj(env, array[i]));
-		}
-	}
-	return val;
-}
-napi_value SNodeUtil::jsarray(napi_env env, stringarray& array) {
-	napi_status st = napi_generic_failure;
-	napi_value val;
-	st = napi_create_array_with_length(env, array.size(), &val);
-	if (st != napi_ok) napi_throw_error(env, "jsarray", "JSArray create error.");
-	if (!array.empty()) {
-		sforeachi(array) {
-			st = napi_set_element(env, val, i, SNodeUtil::jsobj(env, array[i]));
-		}
-	}
-	return val;
-}
-napi_value SNodeUtil::jsdict(napi_env env, SDictionary& dict) {
+napi_value SNodeUtil::jsdict(napi_env env, const SDictionary& dict) {
 	napi_status st = napi_generic_failure;
 	napi_value val;
 	st = napi_create_object(env, &val);

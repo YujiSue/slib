@@ -8,13 +8,13 @@ using namespace slib;
 String SNumber::toBinary(subyte b) {
 	String str(8, 0);
 	srforin(i, 0, 8) {
-		str[i] = slib::HEX_STR[(b & 0x01)];
+		str[i] = slib::HEX_[(b & 0x01)];
 		b >>= 1;
 	}
 	return str;
 }
-String SNumber::toOct(subyte b) { return String(slib::HEX_STR[(b >> 6) & 0x07]) + slib::HEX_STR[((b >> 3) & 0x07)] + slib::HEX_STR[(b & 0x07)]; }
-String SNumber::toHex(subyte b) { return String(slib::HEX_STR[(b >> 4) & 0x0F]) + slib::HEX_STR[(b & 0x0F)]; }
+String SNumber::toOct(subyte b) { return String(slib::HEX_[(b >> 6) & 0x07]) + slib::HEX_[((b >> 3) & 0x07)] + slib::HEX_[(b & 0x07)]; }
+String SNumber::toHex(subyte b) { return String(slib::HEX_[(b >> 4) & 0x0F]) + slib::HEX_[(b & 0x0F)]; }
 SNumber SNumber::toNumber(const char *s) { return String(s).number(); }
 SNumber::SNumber() : _type(SNumber::INTEGER) { _value._i = 0; }
 SNumber::SNumber(char c) : _type(SNumber::INTEGER) { _value._i = (sbyte)c; }

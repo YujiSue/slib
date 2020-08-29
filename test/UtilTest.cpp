@@ -2,6 +2,18 @@
 #include "sobj.h"
 
 using namespace slib;
+void test::SCodeTest() {
+	String test1 = u8"じゅげむじゅげむ五行のすりきれ海砂利水魚の水行松";
+	String res;
+	ubytearray test2(test1.size());
+	memcpy(test2.ptr(), test1.cstr(), test1.size());
+	std::cout << SHash::crc32(test2) << std::endl;
+	SHash::md5Str(test1, res);
+	std::cout << String::lower(res) << std::endl;
+
+
+}
+
 void test::SXmlTest() {
 	SArray array = {
 		1, 2.71828, "abc", u8"あいう", new SDate(slib::sstyle::YMD), V({ 10, "xyz" })

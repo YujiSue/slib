@@ -170,6 +170,27 @@ namespace slib {
 
 		extern inline std::ostream& operator<<(std::ostream& os, const sio::SFile& file) { return os << file.path(); }
 
+		class SLIB_DLL siostream {
+			sbyte _mode;
+			sio::SFile _file;
+		public:
+			siostream(int i);
+			siostream(const char* s);
+			~siostream();
+			void setStdMode();
+			void setPath(const char* s);
+			void read(slib::String& s);
+			void input(ubytearray& a);
+			void _output();
+			template<class First, class... Args>
+			void _output(First& f, Args&... args) {
+				if (_mode) _file << f;
+				else std::cout << f;
+				output(args...);
+			}
+			template<class... Args>
+			void output(Args... args) { _output(args...); }
+		};
     }
 }
 #endif
