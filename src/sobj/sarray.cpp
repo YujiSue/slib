@@ -113,8 +113,8 @@ String SArray::toString() const {
     sforeach(*this) {
         if(E_.isNull()) str += "null,";
         else if(E_.isNum()) str += E_+",";
-        else if(E_.isArray()) str += "{"+E_+"},";
-        else if(E_.isDict()) str += "{"+E_+"},";
+        else if(E_.isArray()) str += E_.toString() + ",";
+        else if(E_.isDict()) str += E_.toString() + ",";
         else {
             dat = E_;
             if(dat.contain("\"")) dat.replace("\"", "\\\"");

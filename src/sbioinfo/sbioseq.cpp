@@ -167,6 +167,7 @@ void SBioSeq::recode(subyte c, ubytearray &seq, size_t off, size_t len, bool dir
             default:
                 break;
         }
+
     }
 }
 void SBioSeq::convert(sushort t) {
@@ -250,6 +251,18 @@ String SBioSeq::raw(size_t off, size_t len, bool dir) const {
             }
         }
     }
+	if (dir) {
+		switch (seqtype()) {
+		case DNA_SEQ:
+			sseq::dcomp(seq);
+			break;
+		case RNA_SEQ:
+			sseq::rcomp(seq);
+			break;
+		default:
+			break;
+		}
+	}
     return seq;
 }
 void SBioSeq::circulate() { _type |= CIRCULAR; }

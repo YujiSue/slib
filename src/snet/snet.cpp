@@ -24,14 +24,8 @@ size_t slib::writeCallback(void *buf, size_t size, size_t nmemb, void *ptr) {
     return block;
 }
 
-SNetWork::SNetWork() {
-    curl_global_init(CURL_GLOBAL_ALL);
-}
-
-SNetWork::~SNetWork() {
-    curl_global_cleanup();
-}
-
+SNetWork::SNetWork() { curl_global_init(CURL_GLOBAL_ALL); }
+SNetWork::~SNetWork() { curl_global_cleanup(); }
 void SNetWork::http(const char *url, bool ssl, const char *cookie, const char *post) {
     _curl = curl_easy_init();
     data.clear();
@@ -57,11 +51,9 @@ void SNetWork::http(const char *url, bool ssl, const char *cookie, const char *p
     curl_easy_cleanup(_curl);
 	curl_global_cleanup();
 }
-
 void SNetWork::ftp(const char *url, bool ssl, const char *info) {
     // Not supported yet.
 }
-
 void SNetWork::connect(const SDictionary &dict) {
     _curl = curl_easy_init();
     data.clear();

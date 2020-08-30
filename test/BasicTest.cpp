@@ -491,8 +491,29 @@ void test::StringTest() {
 	std::cout << (s6.beginWith("yz") ? "true" : "false") << std::endl;
 	std::cout << (s6.endWith("ab") ? "true" : "false") << std::endl;
 	std::cout << (s6.endWith("yz") ? "true" : "false") << std::endl;
-	
-
+	s6.replace(11, 3, "def");
+	std::cout << s6 << std::endl;
+	s6.replace("xyz", "123");
+	std::cout << s6 << std::endl;
+	std::cout << s6.substring(2, 10) << std::endl;
+	std::cout << s6 << std::endl;
+	std::cout << (s6.contain("ab") ? "true" : "false") << std::endl;
+	std::cout << (s6.contain("xy") ? "true" : "false") << std::endl;
+	std::cout << s6.search("1") << std::endl;
+	std::cout << s6.split("1") << std::endl;
+	std::cout << s6.find("a") << std::endl;
+	std::cout << s6.find("1") << std::endl;
+	std::cout << s6.rfind("a") << std::endl;
+	std::cout << s6.rfind("1") << std::endl;
+	std::cout << s6 << std::endl;
+	std::cout << (s6.match(REG(/\\d{3}/))?"true":"false") << std::endl;
+	std::cout << s6.search(REG(/[a-z]{1}[0-9]{1}/g)) << std::endl;
+	s6.replace(REG(/\\d{3}/g), "456");
+	std::cout << s6 << std::endl;
+	s6.clip(16);
+	std::cout << s6 << std::endl;
+	std::cout << (s6.equal(REG(/\\d+/)) ? "true" : "false") << std::endl;
+	std::cout << (s6.equal(REG(/[a-z]+/)) ? "true" : "false") << std::endl;
 	String s7 =
 		S(Twas brillig, and the slithy toves)
 		+ LF +
@@ -501,47 +522,16 @@ void test::StringTest() {
 		S(All mimsy were the borogoves, )
 		+ CRLF +
 		S(And the mome raths outgrabe.);
-	std::cout << s7.splitline() << std::endl;
-	
-		
-
-	/*
-
-	void replace(size_t off, size_t len, const char* alt);
-	void replace(const srange & rng, const char* alt);
-	void replace(const char* ori, const char* alt);
-	void replace(const Regex & rgx, const char* alt);
-	void rearrange(const Regex & rgx, const CArray<sint> & order);
-	
-	void clip(size_t off, size_t len = -1);
-	void clip(const srange & rng);
-
-	void transform(subyte trans);
-
-	String substring(size_t off, size_t len = -1) const;
-	String substring(const srange & range) const;
-	String replaced(const char* ori, const char* alt) const;
-	String replaced(const Regex & rgx, const char* alt) const;
-	String rearranged(const Regex & rgx, const CArray<sint> & order) const;
-	
-	String transformed(subyte trans) const;
-
-
-	bool contain(const char* que, size_t offset = 0) const;
-	bool match(const Regex & rgx, size_t offset = 0) const;
-	bool equal(const Regex & rgx) const;
-
-	size_t find(const char* que, size_t offset = 0) const;
-	size_t rfind(const char* que, size_t offset = 0) const;
-	CArray<size_t> search(const char* que, size_t offset = 0) const;
-	CArray<size_t> search(const Regex & rgx, size_t offset = 0) const;
-	Array<String, SMemory<String>> matched(const Regex & rgx, size_t offset = 0) const;
-	Array<String, SMemory<String>> split(const char* sep, bool trim = true) const;
-	Array<String, SMemory<String>> split(const Regex & rgx) const;
-	Map<String, String> parse(const char* sep, const char* part, bool trim = true) const;
-
-	*/
-
+	std::cout << toString(s7.splitline(), " = ") << std::endl;
+	String s8 =
+		"Edmund:Why brand they us with base?"
+		+ NEW_LINE +
+		"Hamlet:Could not, with all their quantity of love, make up my sum."
+		+ NEW_LINE +
+		"Macbeth:Life's but a walking shadow, a poor player."
+		+ NEW_LINE +
+		"Puck:Lord, what fools these mortals be!";
+	std::cout << toString(s8.parse(NEW_LINE,":")) << std::endl;
 	std::cout << NEW_LINE << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::TimeTest() {

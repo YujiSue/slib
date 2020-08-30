@@ -22,37 +22,56 @@ function changeLocale() {
 function checkUser() {
     
 }
-function uiprop(i) {
+function uiprop(i,p) {
     var prop={};
-    if (i.I) prop.id=i.I;
-    if (i.N) prop.name=i.N;
-    if (i.E) prop.element=i.E;
-    if (i.L) {
-        if (i.L==='HF') prop.layout=sflow(HORIZONTAL);
-        else if (i.L==='VF') prop.layout=sflow(VERTICAL);
-        else if (i.L==='HC') prop.layout=scard(HORIZONTAL);
-        else if (i.L==='VC') prop.layout=scard(VERTICAL);
-        else if (i.L==='B') prop.layout=sborder();
-        else if (i.L==='G'&&i.G) prop.layout=sgrid(i.G);
+    if (i.I) prop.id=i;
+    if (p.N) prop.name=p.N;
+    if (p.C) prop.class=p.C;
+    if (p.E) prop.element=p.E;
+    if (p.L) {
+        if (p.L==='HF') prop.layout=sflow(HORIZONTAL);
+        else if (p.L==='VF') prop.layout=sflow(VERTICAL);
+        else if (p.L==='HC') prop.layout=scard(HORIZONTAL);
+        else if (p.L==='VC') prop.layout=scard(VERTICAL);
+        else if (p.L==='B') prop.layout=sborder();
+        else if (p.L==='G'&&p.G) prop.layout=sgrid(p.G);
     }
-    if (i.A!=undefined&&i.A!=null) prop.available=i.A;
-    if (i.X) prop.expand=i.X;
-    if (i.a) prop.action=i.a;
-    if (i.e) prop.event=i.e;
-    if (i.c&&0<i.c.length) prop.class=i.c;
-    if (i.i) prop.icon=i.i;
-    if (i.k) prop.shortcut=i.k;
-    if (i.l) prop.locale=i.l;
-    if (i.p) prop.placeholder=i.p;
-    if (i.s) prop.style=i.s;
-    if (i.t) prop.label=i.t;
-    if (i.v) prop.value=i.v;
-    if (i.x) prop.x=i.x;
-    if (i.y) prop.y=i.y;
-    if (i.z) prop.z=i.z;
-    if (i.w) prop.width=i.w;
-    if (i.h) prop.height=i.h;
-    
+    if (p.D) prop.display=p.D;
+    if (p.P) prop.position=p.P;
+    if (p.B) prop.background=p.B;
+    if (p.S) {
+        prop.minw=p.S[0][0];prop.maxw=p.S[0][1];
+        prop.minh=p.S[1][0];prop.maxh=p.S[1][1];
+    }
+    if (p.A) {
+        for(k in p.A) {
+            if(K==='sel') prop.selectable=p.A[k];
+            if(K==='ed') prop.editable=p.A[k];
+            if(K==='re') prop.resizable=p.A[k];
+            if(K==='drg') prop.draggable=p.A[k];
+            if(K==='mov') prop.movable=p.A[k];
+        }
+    }
+    if (p.a) prop.action=p.a;
+    if (p.e) prop.event=p.e;
+    if (p.l) prop.locale=p.l;
+    if (p.k) prop.shortcut=p.k;
+    if (p.f) prop.font=p.f;
+    if (p.s) prop.style=p.s;
+    if (p.m) prop.mode=p.m;
+    if (p.d) prop.direction=p.d;
+    if (p.o) prop.expand=p.o;
+    if (p.c) prop.cursor=p.c;
+    if (p.v) prop.visible=p.v;
+    if (p.u) prop.available=p.u;
+    if (p.p) prop.placeholder=p.p;
+    if (p.r) prop.required=p.r;
+    if (p.x) prop.x=p.x;
+    if (p.y) prop.y=p.y;
+    if (p.z) prop.z=p.z;
+    if (p.w) prop.width=p.w;
+    if (p.h) prop.height=p.h;
+    if (p.i) prop.icon=p.i;
     return prop;
 };
 function arrangeUI(uis) {
@@ -60,13 +79,16 @@ function arrangeUI(uis) {
         const children = APP_UI.arrange[a];
         if(children instanceof Array) {
             for(var c=0;c<children.length;c++) {
-                if(children[c] instanceof String) uis[a].add(uis[children[c]]);
+                if(typeof children[c]==='string') uis[a].add(uis[children[c]]);
                 else uis[a].add(children[c]);
             } 
         }
         else {
             for(var l in children) {
-                for(var c=0;c<children[l].length;c++) uis[a].add(uis[children[l][c]],l);
+                for(var c=0;c<children[l].length;c++) {
+                    if(typeof children[l][c]==='string') uis[a].add(uis[children[l][c]],l);
+                    else uis[a].add(children[l][c],l);
+                }
             }
         }
     }
@@ -75,15 +97,14 @@ function makeUI() {
     var uis={};
     for(var u in APP_UI.elements) {
         const info=APP_UI.elements[u];
-        info.I = u;
         const ui=info.UI;
-        info.prop=uiprop(info);
-        if (ui==='E') uis[u]=suic(info.prop);
+        info.prop=uiprop(u,info);
+        if (ui==='E') uis[u]=suic(info.T,info.prop);
         else if (ui==='V') uis[u]=sview(info.prop);
         else if (ui==='P') uis[u]=spanel(info.prop);
         //else if (ui==='Fr') uis[u]=sframe(info.prop));
         //else if (ui==='W') uis[u]=swindow(info.prop));
-        else if (ui==='Bx') uis[u]=sbox(info.Ti,info.prop);
+        else if (ui==='Bx') uis[u]=sbox(info.T,info.prop);
         else if (ui==='ExV') uis[u]=sexview(info.prop);
         else if (ui==='TbV') uis[u]=new STabView(info.prop);
         else if (ui==='Li') uis[u]=slist(info.prop);
@@ -94,7 +115,7 @@ function makeUI() {
         else if (ui==='Wb') uis[u]=swebview(info.prop);
     
         else if (ui==='Mi') {
-            if(info.S) info.prop.submenu = uis[info.S];
+            if(info.M) info.prop.submenu = uis[info.M];
             uis[u]=smenuitem(info.prop);
         }
         else if (ui==='M') uis[u]=smenu(info.prop);
@@ -102,11 +123,11 @@ function makeUI() {
         else if (ui==='TI') uis[u]=stoolitem(info.prop);
         else if (ui==='TB') uis[u]=stoolbar(info.prop);
 
-        else if (ui==='F') uis[u]=sform({method:info.M,action:info.V});
-        else if (ui==='I') uis[u]=sicon(info.T,info.prop);
+        else if (ui==='F') uis[u]=sform({method:info.O,action:info.V});
+        else if (ui==='I') uis[u]=sicon(info.O,info.prop);
         else if (ui==='L') uis[u]=slabel(info.T,info.prop);
         else if (ui==='LL') uis[u]=slink(info.T,info.V,info.prop);
-        else if (ui==='In') uis[u]=sinput(info.M,info.prop);
+        else if (ui==='In') uis[u]=sinput(info.O,info.prop);
         else if (ui==='TF') uis[u]=stextfield(info.prop);
     
         else if (ui==='B') uis[u]=sbutton(info.prop);
@@ -118,7 +139,7 @@ function makeUI() {
         else if (ui==='DP') uis[u]=new SDatePicker(info.prop);
         else if (ui==='CP') uis[u]=new SColorPicker(info.prop);
         
-        else if (ui==='Bar') uis[u]=sbar(info.D);
+        else if (ui==='Bar') uis[u]=sbar(info.d);
         else if (ui==='SP') uis[u]=sspace();
     }
     arrangeUI(uis);

@@ -67,7 +67,7 @@ double sbiutil::scoreVal(double v) { return exp(v * logf(10.0) / -10.0); }
 double sbiutil::phredVal(double v) { return -10.0*(log(v)/log(10.0)); }
 sbpos::sbpos() : idx(-1), srange(), dir(false) {}
 sbpos::sbpos(sint i, sint b, sint e, bool d) : idx(i), srange(b, e), dir(d) {}
-sbpos::sbpos(const char *s, const sindex *namei) { set(s, namei); }
+sbpos::sbpos(const char *s, const sindex *namei) : sbpos() { set(s, namei); }
 sbpos::sbpos(const sbpos &p) : idx(p.idx), srange(p), dir(p.dir) {}
 sbpos::~sbpos() {}
 sbpos &sbpos::operator = (const sbpos &p) {

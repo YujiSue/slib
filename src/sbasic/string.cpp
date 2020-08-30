@@ -25,7 +25,7 @@ Regex::Regex(const char *s) {
     _rgx = std::regex(s_.substring(1, end-1), constant);
 }
 Regex::~Regex() {}
-bool Regex::match(const char *s) const { return std::regex_search(s, _rgx); }
+bool Regex::match(const char *s) const { std::cmatch m; std::regex_search(s, m, _rgx); return m.size(); }
 bool Regex::equal(const char *s) const { return std::regex_match(s, _rgx); }
 void Regex::search(CArray<size_t> &array, const char *s, const char *e) const {
     if (_global) {
@@ -919,13 +919,12 @@ stringarray String::split(const char *sep, bool trim) const {
     if (sep) {
         auto len = strlen(sep);
         if (len) {
-            bool sq = false, dq = false;
+            bool dq = false;
             auto ins = _cinstance();
             auto off = 0, pos = 0;
             while (off < ins.second) {
-                if (*ins.first == '\'' && !dq) sq = !sq;
-                else if (*ins.first == '\"' && !sq) dq = !dq;
-                else if (*ins.first == sep[0] && !sq && !dq && off+len <= ins.second) {
+                if (*ins.first == '\"') dq = !dq;
+                else if (*ins.first == sep[0] && !dq && off+len <= ins.second) {
                     if (!memcmp(ins.first, sep, len)) {
                         addsubstr(*this, array, pos, off, trim);
                         pos = off+len; off += len-1; ins.first += len-1;
@@ -941,13 +940,12 @@ stringarray String::split(const char *sep, bool trim) const {
 stringarray String::splitline(bool trim) const {
     stringarray array;
     if(empty()) return array;
-    bool sq = false, dq = false;
+    bool dq = false;
     auto ins = _cinstance();
     auto off = 0, pos = 0;
     while (off < ins.second) {
-        if (*ins.first == '\'' && !dq) sq = !sq;
-        else if (*ins.first == '\"' && !sq) dq = !dq;
-        else if ((*ins.first == '\n' || *ins.first == '\r') && !sq && !dq) {
+        if (*ins.first == '\"') dq = !dq;
+        else if ((*ins.first == '\n' || *ins.first == '\r') && !dq) {
             addsubstr(*this, array, pos, off, trim);
             if (off < ins.second-1 && *ins.first == '\r' && *(ins.first+1) == '\n') {
                 pos = off+2; ++off; ++ins.first;
@@ -970,9 +968,9 @@ Map<String, String> String::parse(const char *sep, const char *part, bool trim) 
     size_t pos, len;
     stringarray array = split(sep, trim);
     sforeach(array) {
-        len = it->size();
+        len = E_.size();
         if (!len) continue;
-        pos = it->find(part);
+        pos = E_.find(part);
         if (!pos || pos == NOT_FOUND) key = "key";
         else key = E_.substring(0, pos);
         pos+=strlen(part);
@@ -982,7 +980,7 @@ Map<String, String> String::parse(const char *sep, const char *part, bool trim) 
             while (pos < len && Char::isWSChar(E_[len-1])) --len;
         }
         if (pos == len) attr[key] = "";
-        else attr[key] = it->substring(pos, len-pos);
+        else attr[key] = E_.substring(pos, len-pos);
     }
     return attr;
 }

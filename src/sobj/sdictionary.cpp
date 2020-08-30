@@ -122,9 +122,9 @@ String SDictionary::toString() const {
     sforeach(*this) {
         str += it->key+":";
         if(it->value.isNull()) str += "null,";
-        else if(it->value.isNum()) str += it->value.toString()+",";
-        else if(it->value.isArray()) str += "{"+it->value.toString()+"},";
-        else if(it->value.isDict()) str += "{"+it->value.toString()+"},";
+        else if(it->value.isNum()) str += E_.value.toString()+",";
+        else if(it->value.isArray()) str += E_.value.toString()+",";
+        else if(it->value.isDict()) str += E_.value.toString() + ",";
         else {
             dat = it->value.toString();
             if(dat.contain("\"")) dat.replace("\"", "\\\"");

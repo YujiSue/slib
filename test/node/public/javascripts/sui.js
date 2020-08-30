@@ -1965,12 +1965,22 @@ SMenuItem.prototype=Object.create(SUIComponent.prototype, {
                 if(Cls.action) Cls.action(e);
             }
             this.node.onmouseover=function(e) {
-                
-                
+                if(Cls.submenu) {
+                    if(Cls.parent.suiid==='menubar'&&Cls.parent.active){
+                        CURRENT_MENU.setActive(false);
+                        Cls.setActive(true);
+                        CURRENT_MENU=Cls.submenu;
+                    }
+                }
             }
             this.node.onmouseout=function(e) {
-                
-                
+                if(Cls.submenu&&Cls.active) {
+                    if(Cls.parent.suiid==='menubar'){
+                        CURRENT_MENU.setActive(false);
+                        Cls.setActive(true);
+                        CURRENT_MENU=Cls.submenu;
+                    }
+                }
             }
         }
     },
@@ -2013,7 +2023,7 @@ SMenuItem.prototype=Object.create(SUIComponent.prototype, {
         if(this.submenu) this.submenu.setLocale(l);
     }},
     showMenu: { value: function() {
-        if (this.submenu) this.submenu.show(this); }
+        if (this.submenu) this.submenu.showAt(this,this.expand); }
     },
     hideMenu: { value: function() { 
         if (this.submenu) this.submenu.hide(); }
@@ -2067,7 +2077,7 @@ SMenu.prototype=Object.create(SUIComponent.prototype, {
     }},
     hide: {
         value: function() {
-            document.body.removeChild(this.node);
+            this.remove();
             CURRENT_MENU=null;
             this.active = false;
         }},

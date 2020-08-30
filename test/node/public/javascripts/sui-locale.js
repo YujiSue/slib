@@ -1,9 +1,9 @@
 var SupportedLocale=['en','ja'];
 var LOCAL_LABEL={
-    'app-about':{en:'About',ja:'このアプリについて'},
-    'app-name':{en:'App Name',ja:'アプリ名'},
+    'about-app':{en:'About',ja:'このアプリについて'},
     'app-developer':{en:'App Developer',ja:'アプリ作成者'},
     'develop-date':{en:'Date',ja:'作成日'},
+    preference:{en:'Preference',ja:'設定'},
     license:{en:'License',ja:'ライセンス'},
     lang:{en:'Language',ja:'言語'},
     ja:{en:'Japanese',ja:'日本語'},
