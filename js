@@ -1,1 +1,1 @@
-./test/node/public/javascripts
+/test/node/public/javascripts
