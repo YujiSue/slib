@@ -1,4 +1,4 @@
-#include "sbioinfo/sbioinfo.h"
+#include "sbioinfo.h"
 #include "Test.h"
 
 using namespace slib;

@@ -1,11 +1,11 @@
-#include "sapp/sapp.h"
+#include "sapp/sappbasic.h"
 
 using namespace slib;
 using namespace slib::sapp;
 
-SAppException::SAppException(const char* f, sint l, const char* func, sint e, const char* target, const char* note) 
-	: SException(f, l, func, e, target, note) { 
-	prefix = "sapp"; 
+SAppException::SAppException(const char* f, sint l, const char* func, sint e, const char* target, const char* note)
+	: SException(f, l, func, e, target, note) {
+	prefix = "sapp";
 	switch (e) {
 	case INSUFFICIENT_ARGS_ERROR:
 	{
@@ -77,11 +77,11 @@ void SLogger::log(sint code, const char* msg) {
 }
 
 SApp::SApp() {}
-SApp::SApp(const char *path) : SApp() {
-    try { profile.load(path); }
+SApp::SApp(const char* path) : SApp() {
+	try { profile.load(path); }
 	catch (sio::SIOException ie) { ie.print(); }
 }
-SApp::SApp(SDictionary &&prof) : SApp() {
-    profile.swap(prof);
+SApp::SApp(SDictionary&& prof) : SApp() {
+	profile.swap(prof);
 }
 SApp::~SApp() {}

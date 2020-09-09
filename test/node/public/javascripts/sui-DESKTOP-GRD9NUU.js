@@ -73,10 +73,10 @@ if (platform){
     if(os_str.indexOf("windows") !== -1) CLIENT_ENV=PC_DEVICE|WINDOWS_DEVICE;
     else if(os_str.indexOf("mac") !== -1) CLIENT_ENV=PC_DEVICE|APPLE_DEVICE;
     else if(os_str.indexOf("android") !== -1) CLIENT_ENV=MOBILE_DEVICE|LINUX_DEVICE;
-    else if(os_str.indexOf("ios") !== -1) CLIENT_ENV=MOBILE_DEVICE|APPLE_DEVICE;
+    else if(os_str.indexOf("ios") !== -1) CLIENT_ENV=MOBILE_DEVICE|APPLE_DEVICE;    
 }
 if(!String.prototype.startsWith){String.prototype.startsWith=function(s,p){return this.substr((p||0),s.length)===s;};}
-if(!String.prototype.endsWith){String.prototype.endsWith=function(s,p){return this.substr(this.length-s.length-(p||0),s.length)===s;};}
+if(!String.prototype.endsWith){String.prototype.endsWith=function(s,p){return this.substr(this.length-s.length-(p||0),s.length)===s;};}    
 function codedString(s){return PARSER.parseFromString(s,"text/html").body.innerText;};
 function propOverride(p,o){if(!p){p=o;}else{for(var k in o){if(Object.keys(p).indexOf(k)==-1) p[k]=o[k];}} return p;};
 function encodeForm(d){var params=[];for(var k in d){params.push(encodeURIComponent(k)+'='+encodeURIComponent(d[k]));} return params.join('&').replace(/%20/g,'+');};
@@ -93,7 +93,7 @@ function inRange(x,y,s){
     return false;
 };
 function menuRoot(sui){
-
+    
 };
 function parseIcon(s,c) {
     if (s.startsWith('icon:')) return sicon(s.substring(5),{class:['unselectable','unresponsible']});
@@ -240,7 +240,6 @@ var SKEY_EVENTLISTENER={down:[],pressed:[],up:[]};
 var SC_MANAGER=new SShortCutManager();
 var SKEY_STATE={source:null,pushed:false,mask:0,key:''};
 document.addEventListener('keydown', function(e){
-    console.log(e);
     if (e.target&&e.target.sui) SKEY_STATE.source=e.target.sui;
     SKEY_STATE.pushed=true;
     if (e.altKey) SKEY_STATE.mask|=ALT_MASK;
@@ -359,17 +358,17 @@ document.addEventListener('dragend', function(e) {
 
 });
 document.addEventListener('dragover', function(e) {
-
+    
 });
 document.addEventListener('dragenter', function(e) {
-
+    
 });
 document.addEventListener('dragleave', function(e) {
-
+    
 });
 document.addEventListener('drop',function(e) {
     event.preventDefault();
-
+    
 });
 function slayout(a){return new SLayout(a);};
 function scolumn(a){return new SColumnLayout(a);};
@@ -425,7 +424,7 @@ function sselect(a){return new SSelector(a);};
 function sslider(a){return new SSlider(a);};
 function sfileio(a){return new SFileLoader(a);};
 function sprogress(a){return new SProgress(a);};
-function stimer(a,b,c){return new STimer(a,b,c);};
+function stimer(a,b,c){return new STimer(a,b,c);};    
 
 function SLayout(t){this.type=t;this.C=undefined;};
 SLayout.prototype={
@@ -510,7 +509,7 @@ SBorderLayout.prototype.constructor=SBorderLayout;
 function SGridLayout(r,c,a){SLayout.call(this,'grid');
     this.rows=[];
     this.columns=[];
-    this.areas=[];
+    this.areas=[]; 
     for(var i=0;i<r.length;i++){
         if(typeof(r[i])==='number'){
             if(r[i]===0) this.rows.push('auto');
@@ -668,7 +667,7 @@ SUIComponent.prototype={
         this.components.splice(idx,0,ui);
         if(this.layout != undefined){
             /*
-
+            
             */
             this.layout.append(idx,ui.node,loc);
        }
@@ -688,20 +687,20 @@ SUIComponent.prototype={
         return this;
     },
     setMargin:function(margin){
-        this.node.style.marginTop=margin[0]+'px';
-        this.node.style.marginRight=margin[1]+'px';
-        this.node.style.marginBottom=margin[2]+'px';
-        this.node.style.marginLeft=margin[3]+'px';
+        this.node.style.marginTop=margin[0]+'px'; 
+        this.node.style.marginRight=margin[1]+'px'; 
+        this.node.style.marginBottom=margin[2]+'px'; 
+        this.node.style.marginLeft=margin[3]+'px'; 
     },
     setMarginT:function(margin){this.node.style.marginTop=margin;},
     setMarginB:function(margin){this.node.style.marginBottom=margin;},
     setMarginL:function(margin){this.node.style.marginLeft=margin;},
     setMarginR:function(margin){this.node.style.marginRight=margin;},
     setPadding:function(padding){
-        this.node.style.paddingTop=padding[0]+'px';
-        this.node.style.paddingRight=padding[1]+'px';
-        this.node.style.paddingBottom=padding[2]+'px';
-        this.node.style.paddingLeft=padding[3]+'px';
+        this.node.style.paddingTop=padding[0]+'px'; 
+        this.node.style.paddingRight=padding[1]+'px'; 
+        this.node.style.paddingBottom=padding[2]+'px'; 
+        this.node.style.paddingLeft=padding[3]+'px'; 
     },
     setHorizontalAlign:function(align){this.node.style.textAlign=align; return this;},
     setVerticalAlign:function(align){ this.node.style.verticalAlign=align; return this;},
@@ -723,7 +722,7 @@ SUIComponent.prototype={
         return this;
     },
     setYr:function(y){
-        if(typeof(y)==='number') this.node.style.bottom=y+'px';
+        if(typeof(y)==='number') this.node.style.bottom=y+'px'; 
         else this.node.style.bottom=y;
         return this;
     },
@@ -731,32 +730,32 @@ SUIComponent.prototype={
     setZ:function(z){this.node.style.zIndex=z; return this;},
     setPosition:function(pos){this.node.style.position=pos; return this;},
     setWidth:function(w){
-        if(typeof(w) == 'number') this.node.style.width=w + 'px';
+        if(typeof(w) == 'number') this.node.style.width=w + 'px'; 
         else this.node.style.width=w;
         return this;
     },
     setMinWidth:function(w){
-        if(typeof(w) == 'number') this.node.style.minWidth=w + 'px';
+        if(typeof(w) == 'number') this.node.style.minWidth=w + 'px'; 
         else this.node.style.minWidth=w;
         return this;
     },
     setMaxWidth:function(w){
-        if(typeof(w) == 'number') this.node.style.maxWidth=w + 'px';
+        if(typeof(w) == 'number') this.node.style.maxWidth=w + 'px'; 
         else this.node.style.maxWidth=w;
         return this;
     },
     setHeight:function(h){
-        if(typeof(h) == 'number') this.node.style.height=h + 'px';
+        if(typeof(h) == 'number') this.node.style.height=h + 'px'; 
         else this.node.style.height=h;
         return this;
     },
     setMinHeight:function(h){
-        if(typeof(h) == 'number') this.node.style.minHeight=h + 'px';
+        if(typeof(h) == 'number') this.node.style.minHeight=h + 'px'; 
         else this.node.style.minHeight=h;
         return this;
     },
     setMaxHeight:function(h){
-        if(typeof(h) == 'number') this.node.style.maxHeight=h + 'px';
+        if(typeof(h) == 'number') this.node.style.maxHeight=h + 'px'; 
         else this.node.style.maxHeight=h;
         return this;
     },
@@ -822,7 +821,7 @@ SUIComponent.prototype={
                     else this.node.style.fontStyle=element;
                }
            }
-        }
+        } 
         if(font.size != undefined) this.node.style.fontSize=font.size;
         return this;
     },
@@ -855,7 +854,7 @@ function SBar(d,p){p=propOverride(p,{style:'solid',width:1,color:'dimgray'});
 };
 SBar.prototype=Object.create(SUIComponent.prototype,{
     initNode:{value:function(p){
-        SUIComponent.prototype.initNode.apply(this,[p]);
+        SUIComponent.prototype.initNode.apply(this,[p]); 
         this.setSuiID('separator').setMainClass('sseparator');
    }},
 });
@@ -871,7 +870,7 @@ SView.prototype.constructor=SView;
 function SPanel(p){p=propOverride(p,{});SUIComponent.call(this,'div',p);};
 SPanel.prototype=Object.create(SUIComponent.prototype, {
     initNode:{value:function(p) {
-        SUIComponent.prototype.initNode.apply(this,[p]);
+        SUIComponent.prototype.initNode.apply(this,[p]); 
         this.setSuiID('panel').setMainClass('spane;');
     }}
 });
@@ -896,7 +895,7 @@ SFrame.prototype=Object.create(SUIComponent.prototype, {
                         ['r3','d4','d4','d4','r4']
                     ]
                 )
-            }]);
+            }]); 
             const Cls=this;
             this.current=[0,0];
             this.hdrag=p.hdrag;
@@ -937,7 +936,7 @@ SFrame.prototype=Object.create(SUIComponent.prototype, {
             this.mbuttonPane.add(this.minimizer).add(this.maximizer);
             if(p.header===NONE) this.header.setVisible(false);
             else {
-
+                
 
                 if(!p.close) this.closer.setAvailable(false);
                 if(!p.minimize) this.minimizer.setAvailable(false);
@@ -971,7 +970,7 @@ SWindow.prototype=Object.create(SUIComponent.prototype, {
                 class:['window-header']
             });
             this.title=slabel(title,{class:['window-title','unresponsible','unselectable']});
-
+            
             this.content=sview();
 
 
@@ -1135,9 +1134,9 @@ STab.prototype=Object.create(SUIComponent.prototype, {
             };
             this.closer=spanel({class:['tab-closer']});
             this.closer.node.onclick=function(e) {
-                e.stoppagation();
-                Cls.parent.close(Cls);
-            }
+                e.stoppagation(); 
+                Cls.parent.close(Cls); 
+            } 
             if(p.close) this.closer.setVisible(false);
             this.setSuiID('tab')
             .setMainClass('stab')
@@ -1485,7 +1484,7 @@ SList.prototype=Object.create(SUIComponent.prototype,{
             if(p.items.length){
                 for (var i in p.items){
                     if(i.suiid) this.add(i);
-                    else this.add(slistitem(i));
+                    else this.add(slistitem(i)); 
                 }
             }
         }
@@ -1529,18 +1528,18 @@ var SCellRenderer={
         if(p.value) c.componentAt(0).node.innerHTML=p.value;
         c.componentAt(0).setMainClass('cell-default');
         c.componentAt(0).node.ondblclick=function(e){
-            c.componentAt(0).node.contentEditable=true;
+            c.componentAt(0).node.contentEditable=true; 
             c.componentAt(0).addClass('editing');
         };
         c.componentAt(0).node.onblur=function(e){
-            c.componentAt(0).node.contentEditable=false;
+            c.componentAt(0).node.contentEditable=false; 
             c.componentAt(0).removeClass('editing');
         };
     },
     setValue:function(c,v) {c.componentAt(0).node.innerHTML=v;},
     getValue:function(c) {return c.componentAt(0).node.innerHTML;},
     setEditable:function(c,e) {
-        c.componentAt(0).node.contentEditable=e;
+        c.componentAt(0).node.contentEditable=e; 
         if(e) c.componentAt(0).addClass('editing');
         else c.componentAt(0).removeClass('editing');
     }
@@ -1557,7 +1556,7 @@ var SCheckCellRenderer={
     setValue:function(c,v) {c.componentAt(0).setState(v);},
     getValue:function(c) {return c.componentAt(0).state;},
     setEditable:function(c,e) {
-        c.componentAt(0).setAvailable(e);
+        c.componentAt(0).setAvailable(e); 
     }
 };
 var SRadioCellRenderer={
@@ -1572,7 +1571,7 @@ var SRadioCellRenderer={
     setValue:function(c,v) {c.componentAt(0).setState(v);},
     getValue:function(c) {return c.componentAt(0).state;},
     setEditable:function(c,e) {
-        c.componentAt(0).setAvailable(e);
+        c.componentAt(0).setAvailable(e); 
     }
 }
 var SSelectCellRenderer={
@@ -1584,7 +1583,7 @@ var SSelectCellRenderer={
     setValue:function(c,v) {c.componentAt(0).selectAt(v);},
     getValue:function(c) {return c.componentAt(0).selected.value();},
     setEditable:function(c,e) {
-        c.componentAt(0).setAvailable(e);
+        c.componentAt(0).setAvailable(e); 
     }
 }
 function STableColumn(t,p){
@@ -1713,7 +1712,7 @@ STable.prototype=Object.create(SUIComponent.prototype,{
             .add(this.header)
             .add(this.body)
             .add(this.footer);
-
+            
         }
     },
     columnAt:{value:function(i){return this.columns[i];}},
@@ -1818,7 +1817,7 @@ STreeNode.prototype=Object.create(SUIComponent.prototype,{
             else if(this.style===FILE_TREE){
                 this.setMainClass('sfile-node');
                 if(p.icons) this.icons=[parseIcon(p.icons[0]),parseIcon(p.icons[1]),parseIcon(p.icons[2])];
-                else this.icons=[parseIcon('icon:insert_drive_file'),parseIcon('icon:folder'),parseIcon('icon:folder_open')];
+                else this.icons=[parseIcon('icon:insert_drive_file'),parseIcon('icon:folder'),parseIcon('icon:folder_open')];     
             }
             if(this.leaf) this.toggle.add(this.icons[0]);
             this.title=sview({layout:sflow(HORIZONTAL),class:['tree-header']});
@@ -1886,7 +1885,7 @@ STreeView.prototype=Object.create(SUIComponent.prototype,{
         }
         else return;
     }},
-    setRoot:{value:function(root){
+    setRoot:{value:function(root){ 
         this.root=root;
         this.update();
         return this;
@@ -1927,7 +1926,7 @@ SMenuItem.prototype=Object.create(SUIComponent.prototype, {
                 var sc=new SShortCut(p.shortcut,p.action);
                 SC_MANAGER.register(sc);
                 this.modify=slabel(sc.toString(),{class:['menu-shortcut','unselectable','unresponsible']});
-            }
+            } 
             else this.modify=slabel('');
             this.action=p.action;
             if (!(p.style&S_TOGGLE)) this.toggle.setVisible(false);
@@ -2056,7 +2055,7 @@ SMenu.prototype=Object.create(SUIComponent.prototype, {
             .setItems(p.items);
         }
     },
-    showAt: {
+    showAt: { 
         value: function(u,l) {
             document.body.appendChild(this.node);
             if(l===BOTTOM||l===TOP) {
@@ -2172,10 +2171,10 @@ SMenuBar.prototype=Object.create(SUIComponent.prototype, {
 });
 SMenuBar.prototype.constructor=SMenuBar;
 {//menu
-
-
-
-
+    
+    
+    
+    
     function SToolItem(p) {
         p=propOverride(p,{style:S_ICON|S_LABEL,mode:S_BUTTON,icon:'',label:'item',state:false,action:null,submenu:null,direction:VERTICAL,expand:BOTTOM});
         this.mode=p.mode;
@@ -2265,19 +2264,19 @@ SMenuBar.prototype.constructor=SMenuBar;
                 }
             }
         },
-        addItem: { value: function(i) {
+        addItem: { value: function(i) { 
             if (i.suiid) this.add(i);
             else {
                 if(i.type==='space') this.add(sspace());
                 else if(i.type==='bar') this.add(sbar(this.direction==HORIZONTAL?VERTICAL:HORIZONTAL));
-                else this.add(stbitem(i));
+                else this.add(stbitem(i)); 
             }
             return this;
         }},
-        show: { value: function() {
+        show: { value: function() { 
             this.removeClass('hide');
         }},
-        hide: { value: function() {
+        hide: { value: function() { 
             this.addClass('hide');
         }}
     });
@@ -2553,7 +2552,7 @@ SSlider.prototype=Object.create(SUIComponent.prototype, {
     setMax:{value:function(m) {this.input.node.max=m; return this;}},
     current:{value:function() {return this.input.node.value;}},
     setValue:{value:function(v) {
-        this.input.node.value=v;
+        this.input.node.value=v; 
         this.input.node.caption=v;
         return this;
     }},
@@ -2635,7 +2634,7 @@ SLabel.prototype=Object.create(SUIComponent.prototype, {
     setText:{value:function(t) {
         this.txt=t;
         if (this.isLocalized()&&localizable(this.locale,t)) this.node.innerHTML=LOCAL_LABEL[t][this.locale];
-        else this.node.innerHTML=t;
+        else this.node.innerHTML=t; 
         return this;
     }},
     setLocale:{value:function(l){SUIComponent.prototype.setLocale.apply(this,[l]); this.setText(this.txt); return this;}}
@@ -2677,7 +2676,7 @@ SIcon.prototype=Object.create(SUIComponent.prototype, {
 SIcon.prototype.constructor=SIcon;
 function SProgress(p) {
     p=propOverride(p,{min:0,max:100,value:0,direction:HORIZONTAL,repaint:null});
-    this.direction=p.direction;
+    this.direction=p.direction;    
     SUIComponent.call(this,'div',p);
 };
 SProgress.prototype=Object.create(SUIComponent.prototype, {
@@ -2708,7 +2707,7 @@ SProgress.prototype=Object.create(SUIComponent.prototype, {
                 .add(this.indicator);
                 break;
             }
-        }
+        }        
     }},
     getValue:{value:function() {return current;}},
     setValue:{value: function(v) {

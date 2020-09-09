@@ -15,21 +15,21 @@ var APP_UI = {
         menu02:{UI:'M'},
         menu03:{UI:'M'},
         menu04:{UI:'M'},
-        menuitem01:{UI:'Mi',s:S_ICON,i:'icon:menu',t:'menu',X:BOTTOM,S:'menu01'},
-        menuitem02:{UI:'Mi',s:S_LABEL,t:'file',X:BOTTOM,S:'menu02'},
-        menuitem03:{UI:'Mi',s:S_LABEL,t:'edit',X:BOTTOM,S:'menu03'},
-        menuitem04:{UI:'Mi',t:'about-app',},
-        menuitem05:{UI:'Mi',t:'preference',X:RIGHT,S:'menu04'},
-        menuitem06:{UI:'Mi',t:'lang',X:RIGHT,S:LANG_MENU},
-        menuitem07:{UI:'Mi',t:'thema',X:RIGHT},
-        menuitem08:{UI:'Mi',t:'new',k:{mask:DEFAULT_CMD_MASK,key:'n'}},
-        menuitem09:{UI:'Mi',t:'open',k:{mask:DEFAULT_CMD_MASK,key:'o'}},
-        menuitem10:{UI:'Mi',t:'close',k:{mask:DEFAULT_CMD_MASK,key:'o'}},
+        menuitem01:{UI:'Mi',s:S_ICON,I:'icon:menu',T:'menu',o:BOTTOM,M:'menu01'},
+        menuitem02:{UI:'Mi',s:S_LABEL,T:'file',o:BOTTOM,M:'menu02'},
+        menuitem03:{UI:'Mi',s:S_LABEL,T:'edit',o:BOTTOM,M:'menu03'},
+        menuitem04:{UI:'Mi',T:'about-app',a:event01},
+        menuitem05:{UI:'Mi',T:'preference',o:RIGHT,M:'menu04'},
+        menuitem06:{UI:'Mi',T:'lang',o:RIGHT,M:LANG_MENU},
+        menuitem07:{UI:'Mi',T:'thema',o:RIGHT},
+        menuitem08:{UI:'Mi',T:'new',k:{mask:DEFAULT_CMD_MASK,key:'n'},a:event02},
+        menuitem09:{UI:'Mi',T:'open',k:{mask:DEFAULT_CMD_MASK,key:'o'}},
+        menuitem10:{UI:'Mi',T:'close',k:{mask:DEFAULT_CMD_MASK,key:'o'}},
 
         toolbar1:{UI:'TB'},
-        toolitem01:{UI:'TI',i:'icon:home',t:'tool1',a:event04},
-        toolitem02:{UI:'TI',i:'',t:'tool2'},
-        toolitem03:{UI:'TI',i:'',t:'tool3'},
+        toolitem01:{UI:'TI',I:'icon:home',T:'tool1',a:event04},
+        toolitem02:{UI:'TI',I:'',T:'tool2'},
+        toolitem03:{UI:'TI',I:'',T:'tool3'},
 
         tabview01:{UI:'TbV'},
 
@@ -40,8 +40,8 @@ var APP_UI = {
         label05:{UI:'L',T:'unsel-label',c:['unselectable']},
         label06:{UI:'L',T:'event-label',e:[{type:'click',func:event04}]},
         link01:{UI:'LL',T:'link',V:'javascript:void(0);',e:[{type:'click',func:event02}]},
-        button01:{UI:'B',t:'button',a:event01},
-        button02:{UI:'B',s:S_ICON,i:'icon:image'},
+        button01:{UI:'B',T:'button',a:event01},
+        button02:{UI:'B',s:S_ICON,I:'icon:image'},
         button03:{UI:'B',s:S_TOGGLE},
         button04:{UI:'B',s:S_TOGGLE},
         field01:{UI:'TF',p:'text'},
@@ -58,7 +58,8 @@ var APP_UI = {
     },
 };
 function event01(e){SAPP_INSTANCE.showAbout();};
-function event02(e){SAPP_CONNECT.get({
+function event02(e){};
+function event05(e){SAPP_CONNECT.get({
     url:'./api',
     type:'json',
     next:function(data) {instanceOfID('field01').setValue(data.msg);}

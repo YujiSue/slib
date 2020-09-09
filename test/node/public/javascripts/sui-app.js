@@ -1,33 +1,33 @@
 var SAPP_INSTANCE=null;
 var SAPP_USER=null;
 var SAPP_PREF=new SCookie();
-var SAPP_THEMA=SAPP_PREF.cookieAt('thema')?SAPP_PREF.cookieAt('thema'):'/stylesheets/sui-default.css';
-document.getElementById('main-thema').href=SAPP_THEMA;
-var SAPP_LANG=SAPP_PREF.cookieAt('lang')?SAPP_PREF.cookieAt('lang'):'en';
+var SAPP_THEMA=SAPP_PREF.at('thema')?SAPP_PREF.at('thema'):'/stylesheets/sui-default.css';
+var SAPP_LANG=SAPP_PREF.at('lang')?SAPP_PREF.at('lang'):'ja';
 var SAPP_ROOT=null;
 var SAPP_CONNECT=new SConnect();
 var SAPP_SOCKET=null;
 var SAPP_ABOUT=null;
-var LANG_MENU=smenu({id:'lang-menu', style:S_SELECT});
-for(var l in SupportedLocale) {LANG_MENU.addItem({style:S_TOGGLE|S_LABEL,state:SAPP_LANG===l,label:l,action:changeLocale})}
+var LANG_MENU=smenu({id:'lang-menu',expand:RIGHT,style:S_SELECT,selected:SupportedLocale.indexOf(SAPP_LANG)});
+for(var l=0;l<SupportedLocale.length;l++) {LANG_MENU.addItem({style:S_TOGGLE|S_LABEL,state:SAPP_LANG===SupportedLocale[l],label:SupportedLocale[l],action:changeLocale})}
 function changeThema(t) {
     SAPP_THEMA = t;
     document.getElementById('main-thema').href=SAPP_THEMA;
 };
 function changeLocale() {
     SAPP_LANG=SupportedLocale[LANG_MENU.selectedIndex()];
-    if(SAPP_ROOT) SAPP_ROOT.setLocale(SAPP_LANG); 
-    SAPP_PREF.setCookie('lang',SAPP_LANG);
+    if(SAPP_ROOT) SAPP_ROOT.setLocale(SAPP_LANG);
+    SAPP_PREF.set('lang',SAPP_LANG);
 };
 function checkUser() {
-    
+
 }
 function uiprop(i,p) {
     var prop={};
-    if (i.I) prop.id=i;
+    prop.id=i;
     if (p.N) prop.name=p.N;
     if (p.C) prop.class=p.C;
     if (p.E) prop.element=p.E;
+    if (p.F) prop.components=p.F;
     if (p.L) {
         if (p.L==='HF') prop.layout=sflow(HORIZONTAL);
         else if (p.L==='VF') prop.layout=sflow(VERTICAL);
@@ -43,6 +43,10 @@ function uiprop(i,p) {
         prop.minw=p.S[0][0];prop.maxw=p.S[0][1];
         prop.minh=p.S[1][0];prop.maxh=p.S[1][1];
     }
+    if (p.I) prop.icon=p.I;
+    if (p.T) prop.label=p.T;
+    if (p.M) prop.submenu=p.M;
+    if (p.U) prop.src=p.U;
     if (p.A) {
         for(k in p.A) {
             if(K==='sel') prop.selectable=p.A[k];
@@ -81,7 +85,7 @@ function arrangeUI(uis) {
             for(var c=0;c<children.length;c++) {
                 if(typeof children[c]==='string') uis[a].add(uis[children[c]]);
                 else uis[a].add(children[c]);
-            } 
+            }
         }
         else {
             for(var l in children) {
@@ -110,12 +114,15 @@ function makeUI() {
         else if (ui==='Li') uis[u]=slist(info.prop);
         else if (ui==='LV') uis[u]=sliview(info.prop);
         else if (ui==='CV') uis[u]=scardview(info.prop);
-    
+
         else if (ui==='Im') uis[u]=simgview(info.prop);
         else if (ui==='Wb') uis[u]=swebview(info.prop);
-    
+
         else if (ui==='Mi') {
-            if(info.M) info.prop.submenu = uis[info.M];
+            if(info.M) {
+                if(typeof(info.M)==='string') info.prop.submenu = uis[info.M];
+                else info.prop.submenu = info.M;
+            }
             uis[u]=smenuitem(info.prop);
         }
         else if (ui==='M') uis[u]=smenu(info.prop);
@@ -129,7 +136,7 @@ function makeUI() {
         else if (ui==='LL') uis[u]=slink(info.T,info.V,info.prop);
         else if (ui==='In') uis[u]=sinput(info.O,info.prop);
         else if (ui==='TF') uis[u]=stextfield(info.prop);
-    
+
         else if (ui==='B') uis[u]=sbutton(info.prop);
         else if (ui==='CB') uis[u]=scheck(info.prop);
         else if (ui==='RB') uis[u]=sradio(info.prop);
@@ -138,100 +145,79 @@ function makeUI() {
         else if (ui==='FL') uis[u]=new SFileLoader(info.prop);
         else if (ui==='DP') uis[u]=new SDatePicker(info.prop);
         else if (ui==='CP') uis[u]=new SColorPicker(info.prop);
-        
+
         else if (ui==='Bar') uis[u]=sbar(info.d);
         else if (ui==='SP') uis[u]=sspace();
     }
     arrangeUI(uis);
     return uis;
 };
-
-function makeAboutPane() {
-
-    return sdialog({
+function makeAbout() {
+    SAPP_ABOUT = sdialog({
         style:GENERIC_DIALOG,
-        layout:sflow(VERTICAL),
-        class:['app-about'],
+        content:{
+            class:['app-about'],
+            layout:sflow(VERTICAL),
+            components:[
+                sview({
+                    class:['upper-panel'],
+                    layout:sflow(HORIZONTAL),
+                    components:[
+                        simgview({src:APP_INFO.icon,class: ['app-icon']}),
+                        spanel({
+                            layout:sflow(VERTICAL),
+                            class:['auto'],
+                            components:[
+                                slabel(APP_INFO.name,{class:['app-name']}),
+                                slabel('ver. '+APP_INFO.version),
+                                slink('Website',APP_INFO.site,{})
+                            ]
+                        })
+                    ]
+                }),
+                sview({
+                    class:['lower-panel'],
+                    components:[slabel(APP_INFO.license+' '+COPYWRITE_CHAR+' '+APP_INFO.develop.substr(0,APP_INFO.develop.indexOf('/'))+' '+APP_INFO.creator,{class:['app-copy']})]
+                })
+            ]
+        }
+    });
+}
+function makePref() {
+    SAPP_PREF_PANE = sdialog({
+        modal: true,
+        class: ['app-pref'],
         components:[
-            sview({
-                class:['upper-panel'],
-                layout:sflow(HORIZONTAL),
+            sform({
+
+            }),
+            spane({
+                layout: sflow(HORIZONTAL),
                 components:[
-                    simgview({src:APP_INFO.icon,class: ['app-icon']}),
-                    spanel({
-                        layout:sflow(VERTICAL),
-                        class:['auto'],
-                        components:[
-                            slabel(APP_INFO.name,{class:['app-name']}),
-                            slabel('ver. '+APP_INFO.version),
-                            slink('Website',APP_INFO.site,{})
-                        ]
-                    })
+                    sspace(),
+                    sbutton({label: 'import', class: ['pref-import']}),
+                    sbutton({label: 'export', class: ['pref-export']}),
+                    sspace(),
+                    sbutton({label: 'cancel', class: ['pref-cancel'], action: function() { SAPP_PREF_PANE.hide(); }}),
+                    sbutton({label: 'save', class: ['pref-save'], action: function() {form.submit(); SAPP_PREF_PANE.hide();}}),
+
 
                 ]
-            }),
-            sview({
-                class:['lower-panel'],
-                components:[slabel(APP_INFO.license+' '+COPYWRITE_CHAR+' '+APP_INFO.develop.substr(0,APP_INFO.develop.indexOf('/'))+' '+APP_INFO.creator,{class:['app-copy']})]
             })
         ]
     });
 }
-function SPrefPane(pref) {
-    var pane=new SDialog({
-        modal: true,
-        class: ['app-pref']
-    });
-    var form=new SForm(pref.form);
-    var items=Array(pref.ui.length);
-    for (var i=0; i < pref.ui.length; i++) {
-        items[i]=makeUI(pref.ui[i]);
-    }
-    rearrange(items, pref.arrange);
-    for (var i=0; i < pref.arrange.length; i++) {
-        form.add(items[pref.arrange[i].parent]);
-    }
-    pane.frame.add(form);
-    var bPane=spane({
-        layout: new SFlowLayout(HORIZONTAL)
-    });
-    var impBtn=sbutton({
-        label: 'import',
-        class: ['pref-import'],
-        available: false
-    });
-    var expBtn=sbutton({
-        label: 'export',
-        class: ['pref-export'],
-        available: false
-    });
-    var cancelBtn=sbutton({
-        label: 'cancel',
-        class: ['pref-cancel'],
-        action: function() { pane.hide(); }
-    });
-    var saveBtn=sbutton({
-        label: 'save',
-        class: ['pref-save'],
-        action: function() {form.submit(); pane.hide();}
-    });
-    bPane.add(impBtn).add(expBtn).add(sspace()).add(cancelBtn).add(saveBtn);
-    pane.frame.add(buttonPane);
-};
-SPrefPane.prototype={
-    show: function(b) {
-        if (b) pane.show();
-        else pane.hide();
-    }
-};
+
+
 function SApp() {
     SAPP_INSTANCE=this;
+    makeAbout();
+    //makePref();
     this.uis = makeUI();
     SAPP_ROOT = this.uis.root;
     document.body.appendChild(SAPP_ROOT.node);
-    SAPP_ABOUT = makeAboutPane(APP_INFO);
-    SAPP_ROOT.add(SAPP_ABOUT.screen,'center');
-
+    SAPP_ROOT.add(SAPP_ABOUT,'center');
+    changeThema(SAPP_THEMA);
 
     SAPP_SOCKET = io();
     SAPP_SOCKET.on('notify',function(msg) {

@@ -46,19 +46,19 @@ void test::CalcTest() {
 }
 void test::FracTest() {
 	sfrac f1(2, 3);
-	sfrac f2(7.0/13.0);
+	sfrac f2(7.0 / 13.0);
 	sfrac f3("123/456");
-	sfrac f4;
+	sfrac f4(0.3333333);
 	f1 = f1.reciprocal();
 	std::cout << f1 << std::endl;
-	f4 = f1 - 1;
+	f4 *= (f1 - 3);
 	std::cout << f4 << std::endl;
 	f3 += f1;
 	std::cout << f2 << std::endl;
-	std::cout << f4 << std::endl;
+	std::cout << f3 << std::endl;
 	std::cout << f2 * f3 << std::endl;
 	std::cout << f2 / f4 << std::endl;
-	std::cout << (f1+f2+f3+f4).rounded(2) << std::endl;
+	std::cout << (-f1 + f2 - f3 + f4).rounded(2) << std::endl;
 }
 void test::ComplexTest() {
 	scomp c1(1.f, 1.f);
@@ -73,7 +73,229 @@ void test::ComplexTest() {
 	std::cout << (c1 / c3).rounded(2) << std::endl;
 }
 void test::LinearAlgebraTest() {}
-void test::GeometryTest() {}
-void test::StatisticTest() {}
+void test::GeometryTest() {
+	std::cout << sgeom::midpoint(v2d(0.0, 0.0), v2d(4.5, 10.5)) << std::endl;
+	std::cout << sgeom::length(v2d(2.0, 3.0)) << std::endl;
+	std::cout << sgeom::distance(v2d(1.0, 1.0), v2d(2.0, 2.0)) << std::endl;
+	std::cout << sgeom::slope(v2d(-3.0, 2.0)) << std::endl;
+	std::cout << smath::rad2deg(sgeom::argument(v2d(cos(smath::PI / 3.0), sin(smath::PI / 3.0)))) << std::endl;
+	std::cout << sgeom::direction(v2d(1.0, 0.0), v2d(0.0, 1.0)) << std::endl;
+	v2d v21(12.3, 45.6);
+	sgeom::normalize(v21);
+	std::cout << v21 << std::endl;
+	std::cout << sgeom::xy2polar(v2d(1.0, 1.0)) << std::endl;
+	std::cout << sgeom::polar2xy(v2d(1.0, 2 * smath::PI / 5.0)) << std::endl;
+	std::cout << sgeom::trans(v2d(0.0, 0.0), v2d(-2.0, -5.0)) << std::endl;
+	std::cout << sgeom::scale(v2d(1.0, 2.0), v2d(0.5, 2.0)) << std::endl;
+	std::cout << sgeom::rotate(v2d(1.0, 1.0), smath::PI / 2.0) << std::endl;
+	std::cout << sgeom::skew(v2d(1.0, 1.0), 2.0, HORIZONTAL) << std::endl;
+	std::cout << sgeom::skew(v2d(1.0, 1.0), 3.0, VERTICAL) << std::endl;
+
+	std::cout << sgeom::length(v3d(1.0, 2.0, 3.0)) << std::endl;
+	std::cout << sgeom::distance(v3d(1.0, 1.0, 1.0), v3d(2.0, 2.0, 2.0)) << std::endl;
+	std::cout << sgeom::azimuth(v3d(-3.0, 2.0, 0.0)) << std::endl;
+	std::cout << sgeom::altitude(v3d(-1.0, 2.0, 2.0)) << std::endl;
+	std::cout << sgeom::direction(v3d(1.0, 2.0, 3.0), v3d(3.0, 2.0, 1.0)) << std::endl;
+	v3d v31(12.3, 45.6, 78.9);
+	sgeom::normalize(v31);
+	std::cout << v31 << std::endl;
+	std::cout << sgeom::xyz2sphere(v3d(1.0, 1.0, 1.0)) << std::endl;
+	std::cout << sgeom::sphere2xyz(v3d(1.0, 2 * smath::PI / 5.0, smath::PI / 2.0)) << std::endl;
+	std::cout << sgeom::xyz2tube(v3d(1.0, 1.0, 1.0)) << std::endl;
+	std::cout << sgeom::tube2xy(v3d(1.0, 2 * smath::PI / 5.0, 0.5)) << std::endl;
+
+	std::cout << sgeom::length(v4d(1.0, 2.0, 3.0, 4.0)) << std::endl;
+	std::cout << sgeom::distance(v4d(1.0, 1.0, 1.0, 1.0), v4d(2.0, 2.0, 2.0, 2.0)) << std::endl;
+	v4d v41(12.3, 45.6, 78.9, 10.0);
+	sgeom::normalize(v41);
+	std::cout << v41 << std::endl;
+
+	std::cout << sgeom::center(saread(1.0, 2.0, 3.0, 4.0)) << std::endl;
+	svecd vd1({ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 });
+	std::cout << sgeom::length(vd1) << std::endl;
+	std::cout << sgeom::distance(vd1, svecd({ -1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0, -9.0 })) << std::endl;
+	std::cout << sgeom::lpnorm(vd1) << std::endl;
+	sgeom::normalize(vd1);
+	std::cout << vd1 << std::endl;
+
+	smath::SRandom rand;
+	v2dvec v2d1;
+	sforin(i, 0, 100) {
+		auto r = 1.0 + rand.rnorm(1.0, 0.1);
+		v2d1.add(r * cos(i * smath::PI / 50.0), r * sin(i * smath::PI / 50.0));
+	}
+	std::cout << sgeom::length(v2d1) << std::endl;
+	v2dvec c1, c2, c3, c4;
+	sgeom::bezier2(v2d(0.0, 0.0), v2d(0.5, 1.0), v2d(1.0, 0.0), c1);
+	std::cout << c1 << std::endl;
+	sgeom::bezier3(v2d(0.0, 0.0), v2d(0.25, 1.0), v2d(0.75, 1.0), v2d(1.0, 0.0), c2);
+	std::cout << c2 << std::endl;
+	std::cout << v2d1 << std::endl;
+	sgeom::bspline2(v2d1, c3);
+	std::cout << c3 << std::endl;
+	sgeom::bspline3(v2d1, c4);
+	std::cout << c4 << std::endl;
+}
+void test::StatisticTest() {
+	svecd v1({ 32, 40, 21, 80, 50, 48, 74, 20, 59, 68 }), v2, v3;
+	std::cout << sstat::argmax(v1) << std::endl;
+	std::cout << sstat::maxv(v1) << std::endl;
+	std::cout << sstat::argmin(v1) << std::endl;
+	std::cout << sstat::minv(v1) << std::endl;
+	std::cout << sstat::sum(v1) << std::endl;
+	std::cout << sstat::average(v1) << std::endl;
+	std::cout << sstat::angaverage(v1) << std::endl;
+	std::cout << sstat::product(v1) << std::endl;
+	sstat::difference(v1, v2);
+	std::cout << v2 << std::endl;
+	sstat::maverage(v1, v3, 3);
+	std::cout << sstat::variance(v1) << std::endl;
+
+
+	std::cout << sstat::stddev(v1) << std::endl;
+	std::cout << sstat::skew(v1) << std::endl;
+	std::cout << sstat::kurtosis(v1) << std::endl;
+	std::cout << sstat::median(v1) << std::endl;
+	std::cout << sstat::quartile(v1) << std::endl;
+	std::cout << sstat::count<double>(v1, [](const double& v) { if (v < 50) return true; else return false; }) << std::endl;
+	/*
+	template<typename T>
+	extern inline double covariance(const sla::SVector<svec2d<T>, RMemory<svec2d<T>>> & vec) {
+			auto sum = sstat::sum(vec);
+			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
+			auto cov = 0;
+			sforeach(vec) cov += ((double)vec.x - ave.x) * ((double)vec.y - ave.y);
+			return cov / vec.size();
+	}
+	template<typename T>
+	extern inline mat2d covmat(const sla::SVector<svec2d<T>, RMemory<svec2d<T>>> & vec) {
+			auto sum = sstat::sum(vec);
+			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
+			mat2d mat;
+			double dx, dy;
+			sforeach(vec) {
+					dx = (double)E_.x - ave.x;
+					dy = (double)E_.y - ave.y;
+					mat.element[0] += dx * dx;
+					mat.element[1] += dx * dy;
+					mat.element[3] += dy * dy;
+			}
+			mat.element[2] = mat.element[1];
+			return mat / vec.size();
+	}
+	template<typename T>
+	extern inline mat3d covmat(const sla::SVector<svec3d<T>, RMemory<svec3d<T>>> & vec) {
+			auto sum = sstat::sum(vec);
+			v3d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size());
+			mat3d mat;
+			double dx, dy, dz;
+			sforeach(vec) {
+					dx = (double)E_.x - ave.x;
+					dy = (double)E_.y - ave.y;
+					dz = (double)E_.z - ave.z;
+					mat.element[0] += dx * dx;
+					mat.element[1] += dx * dy;
+					mat.element[2] += dx * dz;
+					mat.element[4] += dy * dy;
+					mat.element[5] += dy * dz;
+					mat.element[8] += dz * dz;
+			}
+			mat.element[3] = mat.element[1];
+			mat.element[6] = mat.element[2];
+			mat.element[7] = mat.element[5];
+			return mat / vec.size();
+	}
+	template<typename T>
+	extern inline mat4d covmat(const sla::SVector<svec4d<T>, RMemory<svec4d<T>>> & vec) {
+			auto sum = sstat::sum(vec);
+			v4d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size(), (double)sum.w / vec.size());
+			mat4d mat;
+			double dx, dy, dz, dw;
+			sforeach(vec) {
+					dx = (double)E_.x - ave.x;
+					dy = (double)E_.y - ave.y;
+					dz = (double)E_.z - ave.z;
+					dw = (double)E_.w - ave.w;
+					mat.element[0] += dx * dx;
+					mat.element[1] += dx * dy;
+					mat.element[2] += dx * dz;
+					mat.element[3] += dx * dw;
+					mat.element[5] += dy * dy;
+					mat.element[6] += dy * dz;
+					mat.element[7] += dy * dw;
+					mat.element[10] += dz * dz;
+					mat.element[11] += dz * dw;
+					mat.element[15] += dw * dw;
+			}
+			mat.element[4] = mat.element[1];
+			mat.element[8] = mat.element[2];
+			mat.element[9] = mat.element[6];
+			mat.element[12] = mat.element[3];
+			mat.element[13] = mat.element[7];
+			mat.element[14] = mat.element[11];
+			return mat / vec.size();
+	}
+	template<typename T>
+	extern inline sla::SMatrix<T, CMemory<T>> covmat(const sla::SVector<sla::SVector<T, CMemory<T>>> & vec) {
+			auto sum = sstat::sum(vec);
+			auto count = vec.size();
+			auto dim = vec[0].size();
+			svecd ave(dim, 0), diff(dim);
+			sforeach2(vec, ave) E2_ = (double)E1_ / count;
+			smat<T, CMemory<T>> mat(dim, dim, 0);
+			double dx, dy, dz, dw;
+			sforeach(vec) {
+					sforin(d, 0, dim) diff[d] = (double)E_[d] - ave[d];
+					sforin(i, 0, dim) {
+							sforin(j, 0, i + 1) mat[i][j] += diff[i] * diff[j];
+					}
+			}
+			sforin(i, 0, dim) {
+					sforin(j, i + 1, dim) mat[i][j] = mat[j][i];
+			}
+			return mat / dim;
+	}
+	*/
+
+	/*
+	extern inline std::function<double(double)> normFunc(double m = 0.0, double s = 1.0) {
+			return [m, s](double x) {
+					return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
+			};
+	}
+	extern inline double norm(double x, double m = 0.0, double s = 1.0) {
+			return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
+	}
+	extern inline double pnorm(double x, double m = 0.0, double s = 1.0);
+	extern inline double qnorm(double x, double m = 0.0, double s = 1.0);
+
+	extern inline std::function<double(double)> chisqFunc(double x, double n);
+	extern inline double chisq(double x, double n);
+	extern inline double pchisq(double x, double n);
+	extern inline double qchisq(double x, double n);
+	extern inline std::function<double(double)> binomFunc(double m = 0.0, double s = 1.0) {
+			return [m, s](double x) {
+					return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
+			};
+	}
+	extern inline double pbinom(int x, int n, double p) {
+
+	}
+
+
+	extern inline std::function<double(int)> poisFunc(double l) {
+			return [l](int x) {
+					return (pow(l, x) * exp(-l)) / smath::factorial(x);
+			};
+	}
+	extern inline double pois(int x, double l) { return (pow(l, x) * exp(-l)) / smath::factorial(x); }
+	extern inline double ppois(int x, double l);
+	extern inline double qpois(int x, double l);
+
+	extern inline double gammaFunc(double d);
+	extern inline double ibetaFunc(double d, double m, double n);
+	extern inline double betaFunc(double m, double n);
+	*/
+}
 
 #endif

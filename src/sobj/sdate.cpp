@@ -191,8 +191,8 @@ SDate::SDate(const char* s, const char* f) : Time(), _tzone(0), week(0), SObject
 	_parse(s);
 }
 SDate::SDate(const sobj& obj) : Time(), _tzone(0), week(0), SObject() {
-	if (obj.isDate()) *this = obj.date();
-	else *this = SDate(obj.toString(), "auto");
+	 if (obj.isDate()) *this = obj.date();
+        else *this = SDate(obj.toString(), nullptr);
 }
 SDate::SDate(const SDate& date) : Time(date), _tzone(date._tzone), week(date.week), _format(date._format), SObject() {}
 SDate::~SDate() {}
