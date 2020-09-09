@@ -8,15 +8,15 @@ namespace slib {
 		class SDataFrame;
 
 		extern /*SSCI_DLL*/ void PCAAnalysis(SDataFrame &df, const sveci &cols) {
-			svdvec
+			
 
 
 		}
 
-
-		extern void pca(SVector<SVector<T, M>>& vec, svdvec& evec, svecd& eval) {
-			auto mat = ssstat::covmat(vec);
-			SLA::eigen(mat, evec, eval);
+		template<typename T, class M>
+		extern void pca(svec<svec<T, M>>& vec, svdvec& evec, svecd& eval) {
+			auto mat = sstat::covmat(vec);
+			sla::eigen(mat, evec, eval);
 		}
 	}
 }

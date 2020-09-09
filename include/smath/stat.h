@@ -54,7 +54,7 @@ namespace slib {
 		}
 		template<typename T, class M>
 		extern inline T maxv(const sla::SVector<T, M>& vec) {
-			return maxIn(vec.begin(), vec.end());
+			return maxv(vec.begin(), vec.end());
 		}
 		template<typename T>
 		extern inline sint argmin(T* val, size_t s) {
@@ -159,16 +159,16 @@ namespace slib {
 			v2d sum;
 			sforin(it, beg, end) {
 				sum += v2d(cos(E_), sin(E_));
-				ssgeom::normalize(sum);
+				sgeom::normalize(sum);
 			}
-			return ssgeom::argument(sum);
+			return sgeom::argument(sum);
 		}
 		template<typename T>
 		extern inline T angaverage(scyc_citer<T> beg, scyc_citer<T> end) {
 			v2d sum;
 			sfortill(it, beg, end) {
 				sum += v2d(cos(E_), sin(E_));
-				ssgeom::normalize(sum);
+				sgeom::normalize(sum);
 			}
 			return ssgeom::argument(sum);
 		}
@@ -197,38 +197,37 @@ namespace slib {
 			sforin(it, vec.begin(), vec.end() - 1) diff.add(E_NEXT - E_);
 		}
 		template<typename T, class M>
-		extern inline T maverage(const sla::SVector<T, M>& vec, sla::SVector<T, M>& ma, size_t bin, bool imputation = false) {
+		extern inline void maverage(const sla::SVector<T, M>& vec, sla::SVector<T, M>& ma, size_t bin, bool imputation = false) {
 			if (imputation) {
 				auto init = vec.begin(), last = init, end = vec.end();
-				auto sum = initVal<T>();
+				auto s = initVal<T>();
 				sforin(i, 0, bin - 1) {
-					sum += (*last);
-					ma.add(sum / (i + 1));
+					s += (*last);
+					ma.add(s / (i + 1));
 					++last;
 				}
 				while (last < end) {
-					sum += (*last);
-					ma.add(sum / bin);
-					sum -= (*init);
+					s += (*last);
+					ma.add(s / bin);
+					s -= (*init);
 					++init; ++last;
 				}
 				srforin(i, 0, bin - 1) {
-					sum -= (*init);
-					ma.add(sum / (i + 1));
+					s -= (*init);
+					ma.add(s / (i + 1));
 					++init;
 				}
 			}
 			else {
 				auto init = vec.begin(), last = init + bin, end = vec.end();
-				auto sum = sum(init, last - 1);
+				auto s = sum(init, last - 1);
 				while (last < end) {
-					sum += (*last);
-					ma.add(sum / bin);
-					sum -= (*init);
+					s += (*last);
+					ma.add(s / bin);
+					s -= (*init);
 					++init; ++last;
 				}
 			}
-			return ma;
 		}
 		template<size_t Dim, typename T>
 		extern inline T moment(sarr_citer<T> beg, sarr_citer<T> end) {
@@ -381,7 +380,7 @@ namespace slib {
 
 		template<typename T, class M>
 		extern sint count(const sla::SVector<T, M>& vec,
-			std::function<bool(sarr_citer<T> & iter)> condition = [](sarr_citer<T>&) { return true; }) {
+			const std::function<bool(const T&)>& condition = [](const T& v) { return true; }) {
 			sint i = 0;
 			sforeach(vec) {
 				if (condition(E_)) ++i;
@@ -407,9 +406,9 @@ namespace slib {
 
 		/*
 		extern inline std::function<double(double)> binomFunc(double m = 0.0, double s = 1.0) {
-			return [m, s](double x) {
-				return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
-			};
+				return [m, s](double x) {
+						return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
+				};
 		}
 		extern inline double pbinom(int x, int n, double p) {
 

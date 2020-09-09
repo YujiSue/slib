@@ -1,4 +1,4 @@
-﻿#ifndef SLIB_SDATE_H
+#ifndef SLIB_SDATE_H
 #define SLIB_SDATE_H
 
 #include "sbasic/time.h"
@@ -8,16 +8,16 @@ namespace slib {
     class SLIB_DLL SDate : public SObject, public Time {
     public:
     private:
-		void _autoform(const char* s);
+                void _autoform(const char* s);
         void _parse(const String &date);
-        
+
     protected:
-		String _format;
+                String _format;
         subyte _tzone;
 
     public:
         subyte week;
-        
+
     public:
         SDate();
         SDate(const char *s, const char *f = nullptr);
@@ -35,10 +35,11 @@ namespace slib {
         static SDate utc(const char *f = slib::sstyle::ISO8601);
         bool summerTime() const;
         int lag() const;
+                suint uintValue() const;
         String lagStr() const;
         String getClass() const;
         String toString() const;
-		String toString(const char *form) const;
+                String toString(const char *form) const;
         SObject *clone() const;
         bool operator < (const sobj &obj) const;
         bool operator < (const SDate &time) const;

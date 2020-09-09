@@ -1,7 +1,7 @@
 #ifndef SLIB_STHREAD_H
 #define SLIB_STHREAD_H
 
-#include "sbasic/sbasic.h"
+#include "sbasic.h"
 
 namespace slib {
 	class SLIB_DLL SLock {

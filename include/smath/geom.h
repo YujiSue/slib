@@ -63,12 +63,14 @@ namespace slib {
 		extern inline double direction(const v2f& p1, const v2f& p2) { return argument(p2) - argument(p1); }
 		extern inline double direction(const v2d& p1, const v2d& p2) { return argument(p2) - argument(p1); }
 		extern inline void normalize(v2f& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= (float)len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= (float)len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline void normalize(v2d& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline v2f xy2polar(const v2f& xy) { return v2f(length(xy), argument(xy)); }
 		extern inline v2d xy2polar(const v2d& xy) { return v2d(length(xy), argument(xy)); }
@@ -117,12 +119,14 @@ namespace slib {
 		extern inline v2d direction(const v3f& p1, const v3f& p2) { return v2d(azimuth(p2 - p1), altitude(p2 - p1)); }
 		extern inline v2d direction(const v3d& p1, const v3d& p2) { return v2d(azimuth(p2 - p1), altitude(p2 - p1)); }
 		extern inline void normalize(v3f& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline void normalize(v3d& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline double distance(const v3i& p1, const v3i& p2) { return length(p1 - p2); }
 		extern inline double distance(const v3f& p1, const v3f& p2) { return length(p1 - p2); }
@@ -139,12 +143,14 @@ namespace slib {
 		extern inline double length(const v4f& p) { return sqrt(p.x * p.x + p.y * p.y + p.z * p.z + p.w * p.w); }
 		extern inline double length(const v4d& p) { return sqrt(p.x * p.x + p.y * p.y + p.z * p.z + p.w * p.w); }
 		extern inline void normalize(v4f& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline void normalize(v4d& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline double distance(const v4i& p1, const v4i& p2) { return length(p1 - p2); }
 		extern inline double distance(const v4f& p1, const v4f& p2) { return length(p1 - p2); }
@@ -193,12 +199,14 @@ namespace slib {
 			double len = 0.0; sforeach(p) { len += pow(abs(E_), p.size()); } return smath::rootN(len, (int)p.size());
 		}
 		extern inline void normalize(svecf& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "len");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "len");
 		}
 		extern inline void normalize(svecd& p) {
-			auto len = length(p); if (0.0 < abs(len)) p /= len;
-			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "len");
+			auto len = length(p);
+			if (0.0 < abs(len)) p /= len;
+			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "len");
 		}
 
 		extern inline double length(const v2ivec& v) {
@@ -220,55 +228,59 @@ namespace slib {
 		extern inline void BernsteinPolynom(sint n, double d, svecd& vec) {
 			sint i = 0;
 			sforeach(vec) {
-				E_ = (double)smath::combination(n, i) * smath::power(d, i) * smath::power(1 - d, n - i);
+				E_ = (double)smath::combination(n, i) * smath::power(d, i) * smath::power(1 - d, n - i); ++i;
 			}
 		}
 		template<typename T>
-		extern inline void bezier2(svec2d<T>& v1, svec2d<T>& v2, svec2d<T>& v3, v2dvec& curve, sint n = 10) {
+		extern inline void bezier2(const svec2d<T>& v1, const svec2d<T>& v2, const svec2d<T>& v3, v2dvec& curve, sint n = 10) {
 			svecd coeff(3);
 			curve.resize(n + 1);
 			double init = 0.0, d = 1.0 / n;
 			sforeach(curve) {
 				BernsteinPolynom(2, init, coeff);
 				E_ = coeff[0] * v1 + coeff[1] * v2 + coeff[2] * v3;
+				init += d;
 			}
 		}
 		template<typename T>
-		extern inline void bezier2(svec3d<T>& v1, svec3d<T>& v2, svec3d<T>& v3, v3dvec& curve, sint n = 10) {
+		extern inline void bezier2(const svec3d<T>& v1, const svec3d<T>& v2, const svec3d<T>& v3, v3dvec& curve, sint n = 10) {
 			svecd coeff(3);
 			curve.resize(n + 1);
 			double init = 0.0, d = 1.0 / n;
 			sforeach(curve) {
 				BernsteinPolynom(2, init, coeff);
 				E_ = coeff[0] * v1 + coeff[1] * v2 + coeff[2] * v3;
+				init += d;
 			}
 		}
 		template<typename T>
-		extern inline void bezier3(svec2d<T>& v1, svec2d<T>& v2, svec2d<T>& v3, svec2d<T>& v4, v2dvec& curve, sint n = 10) {
+		extern inline void bezier3(const svec2d<T>& v1, const svec2d<T>& v2, const svec2d<T>& v3, const svec2d<T>& v4, v2dvec& curve, sint n = 10) {
 			svecd coeff(4);
 			curve.resize(n + 1);
 			double init = 0.0, d = 1.0 / n;
 			sforeach(curve) {
 				BernsteinPolynom(3, init, coeff);
 				E_ = coeff[0] * v1 + coeff[1] * v2 + coeff[2] * v3 + coeff[3] * v4;
+				init += d;
 			}
 		}
 		template<typename T>
-		extern inline void bezier3(svec3d<T>& v1, svec3d<T>& v2, svec3d<T>& v3, svec3d<T>& v4, v3dvec& curve, sint n = 10) {
+		extern inline void bezier3(const svec3d<T>& v1, const svec3d<T>& v2, const svec3d<T>& v3, const svec3d<T>& v4, v3dvec& curve, sint n = 10) {
 			svecd coeff(4);
 			curve.resize(n + 1);
 			double init = 0.0, d = 1.0 / n;
 			sforeach(curve) {
 				BernsteinPolynom(3, init, coeff);
 				E_ = coeff[0] * v1 + coeff[1] * v2 + coeff[2] * v3 + coeff[3] * v4;
+				init += d;
 			}
 		}
-
-
 		extern inline double BSplineBasis(sint i, sint dim, double k, svecd& knot) {
 			if (dim) {
-				return (k - knot[i]) / (knot[i + dim] - knot[i]) * BSplineBasis(i, dim - 1, k, knot) +
-					(knot[i + dim + 1] - k) / (knot[i + dim + 1] - knot[i + 1]) * BSplineBasis(i + 1, dim - 1, k, knot);
+				double d = 0;
+				if (knot[i + dim] != knot[i]) d += (k - knot[i]) / (knot[i + dim] - knot[i]) * BSplineBasis(i, dim - 1, k, knot);
+				if (knot[i + dim + 1] != knot[i + 1]) d += (knot[i + dim + 1] - k) / (knot[i + dim + 1] - knot[i + 1]) * BSplineBasis(i + 1, dim - 1, k, knot);
+				return d;
 			}
 			else {
 				if (k < knot[i] || knot[i + 1] <= k) return 0;
@@ -303,20 +315,21 @@ namespace slib {
 			bspline(n, vec, curve, knot);
 		}
 		extern inline void _bspline2(v2dvec& vec, v2dvec& curve, svecd& knot) {
-			curve.resize(knot.size());
 			sforeach2(curve, knot) {
 				E1_ = v2d();
-				sforeachi(vec) E1_ += vec[i] * BSplineBasis(i, 2, E2_, knot);
+				sforeachi(vec) {
+					E1_ += vec[i] * BSplineBasis(i, 2, E2_, knot);
+				}
 			}
 		}
 		extern inline void bspline2(v2dvec& vec, v2dvec& curve,
 			std::function<void(sint, svecd&)> makeKnot = openUniKnot) {
 			svecd knot(vec.size() + 3);
+			curve.resize(vec.size());
 			makeKnot(2, knot);
 			_bspline2(vec, curve, knot);
 		}
-		extern inline void bspline3(v2dvec& vec, v2dvec& curve, svecd& knot) {
-			curve.resize(knot.size());
+		extern inline void _bspline3(v2dvec& vec, v2dvec& curve, svecd& knot) {
 			sforeach2(curve, knot) {
 				E1_ = v2d();
 				sforeachi(vec) E1_ += vec[i] * BSplineBasis(i, 3, E2_, knot);
@@ -325,8 +338,9 @@ namespace slib {
 		extern inline void bspline3(v2dvec& vec, v2dvec& curve,
 			std::function<void(sint, svecd&)> makeKnot = openUniKnot) {
 			svecd knot(vec.size() + 4);
+			curve.resize(vec.size());
 			makeKnot(3, knot);
-			bspline3(vec, curve, knot);
+			_bspline3(vec, curve, knot);
 		}
 	}
 }

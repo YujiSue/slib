@@ -6,11 +6,11 @@
 
 namespace slib {
     namespace smath {
-		#define scomp Complex<float>
-		template<typename T>
+                #define scomp Complex<float>
+                template<typename T>
         struct Complex {
             T real, imaginary;
-            
+
             Complex();
             Complex(T r, T i = 0.0);
             Complex(const char *s);
@@ -25,6 +25,7 @@ namespace slib {
             Complex &operator*=(T t);
             Complex &operator/=(const Complex &comp);
             Complex &operator/=(T t);
+                        Complex operator-() const;
             Complex operator+(const Complex &comp) const;
             Complex operator+(T t) const;
             Complex operator-(const Complex &comp) const;
@@ -57,9 +58,9 @@ namespace slib {
         extern inline bool operator<(T t, const Complex<T> &comp) { return Complex<T>(t) < comp; }
         template<typename T>
         extern inline bool operator==(T t, const Complex<T> &comp) { return Complex<T>(t) < comp; }
-        
+
         /*============================================================*/
-        
+
         template<typename T>
         Complex<T>::Complex() : real(0), imaginary(0) {}
         template<typename T>
@@ -87,7 +88,7 @@ namespace slib {
         Complex<T>::Complex(const Complex<T> &comp) : real(comp.real), imaginary(comp.imaginary) {}
         template<typename T>
         Complex<T>::~Complex() {}
-        
+
         template<typename T>
         Complex<T> &Complex<T>::operator=(const Complex<T> &comp) {
             real = comp.real;
@@ -95,42 +96,42 @@ namespace slib {
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator+=(const Complex<T> &comp) {
+                Complex<T> &Complex<T>::operator+=(const Complex<T> &comp) {
             real += comp.real;
             imaginary += comp.imaginary;
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator+=(T t) {
+                Complex<T> &Complex<T>::operator+=(T t) {
             real += t;
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator-=(const Complex<T> &comp) {
+                Complex<T> &Complex<T>::operator-=(const Complex<T> &comp) {
             real -= comp.real;
             imaginary -= comp.imaginary;
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator-=(T t) {
+                Complex<T> &Complex<T>::operator-=(T t) {
             real -= t;
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator*=(const Complex<T> &comp) {
+                Complex<T> &Complex<T>::operator*=(const Complex<T> &comp) {
             float tmp_r = real, tmp_i = imaginary;
             real = tmp_r*comp.real-tmp_i*comp.imaginary;
             imaginary = tmp_r*comp.imaginary+tmp_i*comp.real;
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator*=(T t) {
+                Complex<T> &Complex<T>::operator*=(T t) {
             real *= t;
             imaginary *= t;
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator/=(const Complex<T> &comp) {
+                Complex<T> &Complex<T>::operator/=(const Complex<T> &comp) {
             if (comp.real == 0.f && comp.imaginary == 0.f)
                 throw SMathException(ERR_INFO, DIV_ZERO_ERR, "comp");
             (*this) *= comp.conjugated();
@@ -138,76 +139,78 @@ namespace slib {
             return *this;
         }
         template<typename T>
-		inline Complex<T> &Complex<T>::operator/=(T t) {
+                Complex<T> &Complex<T>::operator/=(T t) {
             if (t == 0.f) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "t");
             real /= t;
             imaginary /= t;
             return *this;
         }
+                template<typename T>
+                Complex<T> Complex<T>::operator-() const { return Complex<T>(-real, -imaginary); }
         template<typename T>
-		inline Complex<T> Complex<T>::operator+(const Complex<T> &comp) const {
-            Complex c(*this);
+                Complex<T> Complex<T>::operator+(const Complex<T> &comp) const {
+                        Complex<T> c(*this);
             return c+=comp;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::operator+(T t) const {
+                Complex<T> Complex<T>::operator+(T t) const {
             Complex<T> c(*this);
             return c+=t;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::operator-(const Complex<T> &comp) const {
+                Complex<T> Complex<T>::operator-(const Complex<T> &comp) const {
             Complex<T> c(*this);
             return c-=comp;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::operator-(T t) const {
+                Complex<T> Complex<T>::operator-(T t) const {
             Complex<T> c(*this);
             return c-=t;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::operator*(const Complex<T> &comp) const {
+                Complex<T> Complex<T>::operator*(const Complex<T> &comp) const {
             Complex<T> c(*this);
             return c*=comp;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::operator*(T t) const {
+                Complex<T> Complex<T>::operator*(T t) const {
             Complex<T> c(*this);
             return c*=t;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::operator/(const Complex<T> &comp) const {
+                Complex<T> Complex<T>::operator/(const Complex<T> &comp) const {
             Complex c(*this);
             return c/=comp;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::operator/(T t) const {
+                Complex<T> Complex<T>::operator/(T t) const {
             Complex c(*this);
             return c/=t;
         }
         template<typename T>
-		inline void Complex<T>::conjugate() {
+                void Complex<T>::conjugate() {
             imaginary *= -1;
         }
         template<typename T>
-		inline Complex<T> Complex<T>::conjugated() const {
+                Complex<T> Complex<T>::conjugated() const {
             Complex comp = *this;
             comp.conjugate();
             return comp;
         }
         template<typename T>
-		inline double Complex<T>::absolute() const { return sqrt((double)real*real+(double)imaginary*imaginary); }
+                double Complex<T>::absolute() const { return sqrt((double)real*real+(double)imaginary*imaginary); }
         template<typename T>
-		inline double Complex<T>::argument() const {
-			auto len = absolute();
-			if (D_EPS < len) return imaginary < 0 ? 2 * smath::PI - acos((double)real / len) : acos((double)real / len);
-			throw SMathException(ERR_INFO, DIV_ZERO_ERR);
-		}
+                double Complex<T>::argument() const {
+                        auto len = absolute();
+                        if (D_EPS < len) return imaginary < 0 ? 2 * smath::PI - acos((double)real / len) : acos((double)real / len);
+                        throw SMathException(ERR_INFO, DIV_ZERO_ERR);
+                }
         template<typename T>
-		inline bool Complex<T>::isImaginary() const { return real == 0.0f; }
+                bool Complex<T>::isImaginary() const { return real == 0.0f; }
         template<typename T>
-		inline bool Complex<T>::isReal() const { return imaginary == 0.0f; }
+                bool Complex<T>::isReal() const { return imaginary == 0.0f; }
         template<typename T>
-		inline String Complex<T>::rounded(size_t size, smath::ROUND rnd) const {
+                String Complex<T>::rounded(size_t size, smath::ROUND rnd) const {
             String str1, str2;
             double tmp1 = real*smath::power(10, size), tmp2 = imaginary*smath::power(10, size);
             switch (rnd) {
@@ -279,21 +282,21 @@ namespace slib {
             else return str1+"+"+str2+"i";
         }
         template<typename T>
-		inline String Complex<T>::toString() const {
+                String Complex<T>::toString() const {
             if (imaginary == 0.f) return String(real);
             else if (imaginary < 0.f) return String(real)+String(imaginary)+"i";
             return String(real)+"+"+String(imaginary)+"i";
         }
         template<typename T>
-		inline bool Complex<T>::operator < (const Complex<T> &c) const {
+                bool Complex<T>::operator < (const Complex<T> &c) const {
             return real < c.real || (real == c.real && imaginary < c.imaginary);
         }
         template<typename T>
-		inline bool Complex<T>::operator == (const Complex<T> &c) const {
+                bool Complex<T>::operator == (const Complex<T> &c) const {
             return real == c.real && imaginary == c.imaginary;
         }
         template<typename T>
-		inline bool Complex<T>::operator != (const Complex<T> &c) const { return !(*this == c); }
+                bool Complex<T>::operator != (const Complex<T> &c) const { return !(*this == c); }
     }
 }
 

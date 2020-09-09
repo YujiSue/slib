@@ -17,7 +17,7 @@ namespace slib {
 		
 		template<typename T, class M>
 		extern inline void euler(svec<T, M> &current, svec<T, M>& next,
-			std::function<void(double, <T, M> &, svec<T, M> &)> &diff,
+			std::function<void(double, svec<T, M> &, svec<T, M> &)> &diff,
 			double &t, double &dt) {svec
 			diff(t, current, next); next *= dt; next += current; t += dt;
 		}

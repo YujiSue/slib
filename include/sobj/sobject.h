@@ -1,7 +1,7 @@
 #ifndef SLIB_SOBJECT_H
 #define SLIB_SOBJECT_H
 
-#include "sbasic/sbasic.h"
+#include "sbasic.h"
 
 namespace slib {
 	using namespace smath;

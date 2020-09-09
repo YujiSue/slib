@@ -1,7 +1,7 @@
 #ifndef SLIB_SMEDIO_H
 #define SLIB_SMEDIO_H
 
-#include "sbasic/sbasic.h"
+#include "sbasic.h"
 #include "sio/sfile.h"
 #include "smedia/smedia.h"
 

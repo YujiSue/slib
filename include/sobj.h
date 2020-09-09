@@ -3,7 +3,7 @@
 
 #define SOBJ_VERSION 1.0.0
 
-#include "sbasic/sbasic.h"
+#include "sbasic.h"
 #include "sobj/snumber.h"
 #include "sobj/sstring.h"
 #include "sobj/sdate.h"
