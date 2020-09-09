@@ -170,7 +170,7 @@ namespace slib {
 				sum += v2d(cos(E_), sin(E_));
 				sgeom::normalize(sum);
 			}
-			return ssgeom::argument(sum);
+			return sgeom::argument(sum);
 		}
 		template<typename T, class M>
 		extern inline T angaverage(const sla::SVector<T, M>& vec) {
