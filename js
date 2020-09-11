@@ -1,1 +1,1 @@
-C:/Users/yujis/OneDrive/ドキュメント/Develop/slib/test/node/public/javascripts
+./test/node/public/javascripts
