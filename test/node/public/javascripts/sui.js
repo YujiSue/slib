@@ -1,4 +1,5 @@
 //Global variables
+MathJax={tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}};
 var PARSER=new DOMParser();
 var CLIENT_ENV=0;
 
@@ -72,21 +73,138 @@ if (platform){
     const os_str=platform.os.toString().toLowerCase();
     if(os_str.indexOf("windows") !== -1) CLIENT_ENV=PC_DEVICE|WINDOWS_DEVICE;
     else if(os_str.indexOf("mac") !== -1) CLIENT_ENV=PC_DEVICE|APPLE_DEVICE;
+    else if(os_str.indexOf("os x") !== -1) CLIENT_ENV=PC_DEVICE|APPLE_DEVICE;
     else if(os_str.indexOf("android") !== -1) CLIENT_ENV=MOBILE_DEVICE|LINUX_DEVICE;
     else if(os_str.indexOf("ios") !== -1) CLIENT_ENV=MOBILE_DEVICE|APPLE_DEVICE;
 }
+if(CLIENT_ENV===MOBILE_DEVICE|APPLE_DEVICE) {
+    (function(DOMParser) {
+        "use strict";
+    
+        var proto = DOMParser.prototype, 
+        nativeParse = proto.parseFromString;
+    
+        // Firefox/Opera/IE throw errors on unsupported types
+        try {
+            // WebKit returns null on unsupported types
+            if ((new DOMParser()).parseFromString("", "text/html")) {
+                // text/html parsing is natively supported
+                return;
+            }
+        } catch (ex) {}
+    
+        proto.parseFromString = function(markup, type) {
+            if (/^\s*text\/html\s*(?:;|$)/i.test(type)) {
+                var doc = document.implementation.createHTMLDocument("");
+                    if (markup.toLowerCase().indexOf('<!doctype') > -1) {
+                        doc.documentElement.innerHTML = markup;
+                    } else {
+                        doc.body.innerHTML = markup;
+                    }
+                return doc;
+            } else {
+                return nativeParse.apply(this, arguments);
+            }
+        };
+    }(DOMParser));
+}
 if(!String.prototype.startsWith){String.prototype.startsWith=function(s,p){return this.substr((p||0),s.length)===s;};}
 if(!String.prototype.endsWith){String.prototype.endsWith=function(s,p){return this.substr(this.length-s.length-(p||0),s.length)===s;};}
+if(!String.prototype.padStart) {
+    String.prototype.padStart = function padStart(targetLength, padString) {
+        targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
+        padString = String(typeof padString !== 'undefined' ? padString : ' ');
+        if (this.length >= targetLength) {
+            return String(this);
+        } else {
+            targetLength = targetLength - this.length;
+            if (targetLength > padString.length) {
+                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+            }
+            return padString.slice(0, targetLength) + String(this);
+        }
+    };
+}
+if(!DOMTokenList.prototype.replace){DOMTokenList.prototype.replace=function(o,n){const v = String(DOMTokenList.value);DOMTokenList.value=v.replace(o,n);};}
+if (typeof TextEncoder === "undefined") {
+    TextEncoder=function TextEncoder(){};
+    TextEncoder.prototype.encode = function encode(str) {
+        "use strict";
+        var Len = str.length, resPos = -1;
+        // The Uint8Array's length must be at least 3x the length of the string because an invalid UTF-16
+        //  takes up the equivelent space of 3 UTF-8 characters to encode it properly. However, Array's
+        //  have an auto expanding length and 1.5x should be just the right balance for most uses.
+        var resArr = typeof Uint8Array === "undefined" ? new Array(Len * 1.5) : new Uint8Array(Len * 3);
+        for (var point=0, nextcode=0, i = 0; i !== Len; ) {
+            point = str.charCodeAt(i), i += 1;
+            if (point >= 0xD800 && point <= 0xDBFF) {
+                if (i === Len) {
+                    resArr[resPos += 1] = 0xef/*0b11101111*/; resArr[resPos += 1] = 0xbf/*0b10111111*/;
+                    resArr[resPos += 1] = 0xbd/*0b10111101*/; break;
+                }
+                // https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+                nextcode = str.charCodeAt(i);
+                if (nextcode >= 0xDC00 && nextcode <= 0xDFFF) {
+                    point = (point - 0xD800) * 0x400 + nextcode - 0xDC00 + 0x10000;
+                    i += 1;
+                    if (point > 0xffff) {
+                        resArr[resPos += 1] = (0x1e/*0b11110*/<<3) | (point>>>18);
+                        resArr[resPos += 1] = (0x2/*0b10*/<<6) | ((point>>>12)&0x3f/*0b00111111*/);
+                        resArr[resPos += 1] = (0x2/*0b10*/<<6) | ((point>>>6)&0x3f/*0b00111111*/);
+                        resArr[resPos += 1] = (0x2/*0b10*/<<6) | (point&0x3f/*0b00111111*/);
+                        continue;
+                    }
+                } else {
+                    resArr[resPos += 1] = 0xef/*0b11101111*/; resArr[resPos += 1] = 0xbf/*0b10111111*/;
+                    resArr[resPos += 1] = 0xbd/*0b10111101*/; continue;
+                }
+            }
+            if (point <= 0x007f) {
+                resArr[resPos += 1] = (0x0/*0b0*/<<7) | point;
+            } else if (point <= 0x07ff) {
+                resArr[resPos += 1] = (0x6/*0b110*/<<5) | (point>>>6);
+                resArr[resPos += 1] = (0x2/*0b10*/<<6)  | (point&0x3f/*0b00111111*/);
+            } else {
+                resArr[resPos += 1] = (0xe/*0b1110*/<<4) | (point>>>12);
+                resArr[resPos += 1] = (0x2/*0b10*/<<6)    | ((point>>>6)&0x3f/*0b00111111*/);
+                resArr[resPos += 1] = (0x2/*0b10*/<<6)    | (point&0x3f/*0b00111111*/);
+            }
+        }
+        if (typeof Uint8Array !== "undefined") return resArr.subarray(0, resPos + 1);
+        // else // IE 6-9
+        resArr.length = resPos + 1; // trim off extra weight
+        return resArr;
+    };
+    TextEncoder.prototype.toString = function(){return "[object TextEncoder]"};
+    try { // Object.defineProperty only works on DOM prototypes in IE8
+        Object.defineProperty(TextEncoder.prototype,"encoding",{
+            get:function(){if(TextEncoder.prototype.isPrototypeOf(this)) return"utf-8";
+                           else throw TypeError("Illegal invocation");}
+        });
+    } catch(e) { /*IE6-8 fallback*/ TextEncoder.prototype.encoding = "utf-8"; }
+    if(typeof Symbol!=="undefined")TextEncoder.prototype[Symbol.toStringTag]="TextEncoder";
+};
 function codedString(s){return PARSER.parseFromString(s,"text/html").body.innerText;};
 function propOverride(p,o){if(!p){p=o;}else{for(var k in o){if(Object.keys(p).indexOf(k)==-1) p[k]=o[k];}} return p;};
 function encodeForm(d){var params=[];for(var k in d){params.push(encodeURIComponent(k)+'='+encodeURIComponent(d[k]));} return params.join('&').replace(/%20/g,'+');};
-async function useHash(t,f) {
-    const e=(new TextEncoder()).encode(t);
-    const d=await crypto.subtle.digest('SHA-256',e);
-    const a=Array.from(new Uint8Array(d));
-    const s=a.map(b=>b.toString(16).padStart(2,'0')).join('');
-    if(f) f(s);
-}
+function useHash(t,f) {
+    const e=new TextEncoder().encode(t);
+    if(crypto.subtle&&crypto.subtle.digest){
+        crypto.subtle.digest('SHA-256',e).then(function(d) {
+            const a=Array.from(new Uint8Array(d));
+            const s=a.map(function(b){b.toString(16).padStart(2,'0')}).join('');
+            if(f) f(s);
+        });
+    }
+    else if(crypto.webkitSubtle) {
+        crypto.webkitSubtle.digest('SHA-256',e).then(function(d) {
+            const a=Array.from(new Uint8Array(d));
+            var s='';
+            for(var i=0;i<a.length;i++){s+=a[i].toString(16).padStart(2,'0');}
+            if(f) f(s);
+        });
+    }
+};
 function instanceOfID(i,s){if(!s){s=document;} const e=s.getElementById(i); if(e){return e.sui;} else return null;};
 function inRange(x,y,s){
     if(s) return x>=s.X()&&x<=(s.X()+s.width())&&y>=s.Y()&&y<=s.Y()+s.height();
@@ -133,7 +251,7 @@ SSocket.prototype={
 };
 function SConnect() {};
 SConnect.prototype={
-    get: async function(p) {
+    get: function(p) {
         p=propOverride(p,{url:'',type:'',next:null,error:null});
         const xhr=new XMLHttpRequest();xhr.open('GET',p.url);xhr.responseType=p.type;xhr.send();
         xhr.onreadystatechange=function() {
@@ -142,7 +260,7 @@ SConnect.prototype={
             }
         }
     },
-    post: async function(p) {
+    post: function(p) {
         p=propOverride(p,{url:'',data:null,next:null,error:null});
         var xhr=new XMLHttpRequest();xhr.open('POST',p.url);xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');xhr.send(encodeForm(p.data));
         xhr.onreadystatechange=function() {
@@ -638,7 +756,7 @@ SUIComponent.prototype={
         }
         return this;
     },
-    setAttribute(a){for(var k in a){this.node.k=a.k;} return this;},
+    setAttribute:function(a){for(var k in a){this.node[k]=a[k];} return this;},
     setAvailable:function(a){this.node.disabled=!a; return this;},
     setMainClass:function(c){this.node.classList.replace(this.node.classList[0],c); return this;},
     setClass:function(c){for (var i=0;i<c.length;i++){this.addClass(c[i]);} return this;},

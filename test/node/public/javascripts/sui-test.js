@@ -31,8 +31,6 @@ var APP_UI = {
         toolitem02:{UI:'TI',I:'',T:'tool2'},
         toolitem03:{UI:'TI',I:'',T:'tool3'},
 
-        tabview01:{UI:'TbV'},
-
         label01:{UI:'L',T:'label'},
         label02:{UI:'L',T:'colored-label',c:['red']},
         label03:{UI:'L',T:'colored-label',c:['blue']},
@@ -45,9 +43,30 @@ var APP_UI = {
         button03:{UI:'B',s:S_TOGGLE},
         button04:{UI:'B',s:S_TOGGLE},
         field01:{UI:'TF',p:'text'},
+
+        view01:{UI:'V',c:['main-view']},
+        view02:{UI:'V'},
+        view03:{UI:'V'},
+        view04:{UI:'V'},
+        view05:{ui:'V',c:['ui-info']},
+        tabview01:{ui:'TbV',c:['main-tabs']},
+        treeview01:{ui:'TrV',c:['ui-list']},
+        
+
+
+        panel01:{ui:'P',c:['SUIPane']},
+        panel02:{ui:'P',c:['SUIPane']},
+        panel03:{ui:'P',c:['SUIPane']},
+        panel04:{ui:'P',c:['SUIPane']},
+
+
     },
     arrange: {
-        root:{north:['menubar1','toolbar1'],center:['label01','link01','button01','button02','field01']},
+        root:{north:['menubar01','toolbar01'],center:['view01'],west:['view02'],east:['view03'],south:['view04']},
+        view01:['tabview01'],
+        view02:['treeview01'],
+
+        //root:{north:['menubar1','toolbar1'],center:['label01','link01','button01','button02','field01']},
         menubar1:['menuitem01','menuitem02','menuitem03'],
         menu01:['menuitem04','menuitem05'],
         menu02:['menuitem08','menuitem09','menuitem10'],

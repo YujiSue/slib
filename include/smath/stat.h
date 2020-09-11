@@ -252,13 +252,13 @@ namespace slib {
 		extern inline T variance(const sla::SVector<T, M>& vec, bool unbiased = false) {
 			return (moment<2, T, M>(vec) - smath::power(average(vec), 2)) / (unbiased ? vec.size() - 1 : vec.size());
 		}
-		template<typename T>
-		extern inline double covariance(const sla::SVector<svec2d<T>, RMemory<svec2d<T>>>& vec) {
-			auto sum = sstat::sum(vec);
-			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
-			auto cov = 0;
-			sforeach(vec) cov += ((double)vec.x - ave.x) * ((double)vec.y - ave.y);
-			return cov / vec.size();
+		template<typename T, class M>
+		extern inline double covariance(const sla::SVector<T, M>& v1, const sla::SVector<T, M>& v2) {
+			if (v1.empty() || v2.empty() || v1.size() != v2.size()) throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR);
+			auto ave1 = sstat::average(v1), ave2 = sstat::average(v2);
+			double cov = 0;
+			sforeach2(v1, v2) cov += ((double)E1_ - ave1) * ((double)E2_ - ave2);
+			return cov / v1.size();
 		}
 		template<typename T>
 		extern inline mat2d covmat(const sla::SVector<svec2d<T>, RMemory<svec2d<T>>>& vec) {
@@ -328,9 +328,9 @@ namespace slib {
 			mat.element[14] = mat.element[11];
 			return mat / vec.size();
 		}
-		template<typename T>
-		extern inline sla::SMatrix<T, CMemory<T>> covmat(const sla::SVector<sla::SVector<T, CMemory<T>>>& vec) {
-			auto sum = sstat::sum(vec);
+		template<typename T, class M>
+		extern inline sla::SMatrix<T, M> covmat(const sla::SVector<sla::SVector<T, M>, SMemory<sla::SVector<T, M>>>& vec) {
+			double sum = sstat::sum(vec);
 			auto count = vec.size();
 			auto dim = vec[0].size();
 			svecd ave(dim, 0), diff(dim);

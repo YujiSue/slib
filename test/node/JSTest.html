@@ -21,7 +21,7 @@
     </head>
     <body>
         <script>
-            
+            useHash('abcdefg',function(res){console.log('hash:'+res)});
             var cookie = new SCookie({path:"/",age:1000});
             var rootView = sview({
                 element: document.body,

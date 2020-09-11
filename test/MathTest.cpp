@@ -158,83 +158,11 @@ void test::StatisticTest() {
 	std::cout << sstat::median(v1) << std::endl;
 	std::cout << sstat::quartile(v1) << std::endl;
 	std::cout << sstat::count<double>(v1, [](const double& v) { if (v < 50) return true; else return false; }) << std::endl;
+	std::cout << sstat::covariance(svecd({1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0}), svecd({10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0}));
+
+
+
 	/*
-	template<typename T>
-	extern inline double covariance(const sla::SVector<svec2d<T>, RMemory<svec2d<T>>> & vec) {
-			auto sum = sstat::sum(vec);
-			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
-			auto cov = 0;
-			sforeach(vec) cov += ((double)vec.x - ave.x) * ((double)vec.y - ave.y);
-			return cov / vec.size();
-	}
-	template<typename T>
-	extern inline mat2d covmat(const sla::SVector<svec2d<T>, RMemory<svec2d<T>>> & vec) {
-			auto sum = sstat::sum(vec);
-			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
-			mat2d mat;
-			double dx, dy;
-			sforeach(vec) {
-					dx = (double)E_.x - ave.x;
-					dy = (double)E_.y - ave.y;
-					mat.element[0] += dx * dx;
-					mat.element[1] += dx * dy;
-					mat.element[3] += dy * dy;
-			}
-			mat.element[2] = mat.element[1];
-			return mat / vec.size();
-	}
-	template<typename T>
-	extern inline mat3d covmat(const sla::SVector<svec3d<T>, RMemory<svec3d<T>>> & vec) {
-			auto sum = sstat::sum(vec);
-			v3d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size());
-			mat3d mat;
-			double dx, dy, dz;
-			sforeach(vec) {
-					dx = (double)E_.x - ave.x;
-					dy = (double)E_.y - ave.y;
-					dz = (double)E_.z - ave.z;
-					mat.element[0] += dx * dx;
-					mat.element[1] += dx * dy;
-					mat.element[2] += dx * dz;
-					mat.element[4] += dy * dy;
-					mat.element[5] += dy * dz;
-					mat.element[8] += dz * dz;
-			}
-			mat.element[3] = mat.element[1];
-			mat.element[6] = mat.element[2];
-			mat.element[7] = mat.element[5];
-			return mat / vec.size();
-	}
-	template<typename T>
-	extern inline mat4d covmat(const sla::SVector<svec4d<T>, RMemory<svec4d<T>>> & vec) {
-			auto sum = sstat::sum(vec);
-			v4d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size(), (double)sum.w / vec.size());
-			mat4d mat;
-			double dx, dy, dz, dw;
-			sforeach(vec) {
-					dx = (double)E_.x - ave.x;
-					dy = (double)E_.y - ave.y;
-					dz = (double)E_.z - ave.z;
-					dw = (double)E_.w - ave.w;
-					mat.element[0] += dx * dx;
-					mat.element[1] += dx * dy;
-					mat.element[2] += dx * dz;
-					mat.element[3] += dx * dw;
-					mat.element[5] += dy * dy;
-					mat.element[6] += dy * dz;
-					mat.element[7] += dy * dw;
-					mat.element[10] += dz * dz;
-					mat.element[11] += dz * dw;
-					mat.element[15] += dw * dw;
-			}
-			mat.element[4] = mat.element[1];
-			mat.element[8] = mat.element[2];
-			mat.element[9] = mat.element[6];
-			mat.element[12] = mat.element[3];
-			mat.element[13] = mat.element[7];
-			mat.element[14] = mat.element[11];
-			return mat / vec.size();
-	}
 	template<typename T>
 	extern inline sla::SMatrix<T, CMemory<T>> covmat(const sla::SVector<sla::SVector<T, CMemory<T>>> & vec) {
 			auto sum = sstat::sum(vec);

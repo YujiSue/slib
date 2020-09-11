@@ -1,167 +1,132 @@
 #include "Test.h"
 
 using namespace slib;
-
-
 int main() {
-        INIT_DEFAULT_IO(0)
-        try{
+	INIT_DEFAULT_IO(0)
+		try {
 #if defined(BASIC_TEST)u8 || defined(RANGE_TEST)
-                        test::RangeTest();
+		test::RangeTest();
 #endif
 #if defined(BASIC_TEST) || defined(AREA_TEST)
-                        test::AreaTest();
+		test::AreaTest();
 #endif
 #if defined(BASIC_TEST) || defined(ZONE_TEST)
-                        test::ZoneTest();
+		test::ZoneTest();
 #endif
 #if defined(BASIC_TEST) || defined(MEM_TEST)
-                        test::MemoryTest();
+		test::MemoryTest();
 #endif
 #if defined(BASIC_TEST) || defined(PTR_TEST)
-                        test::PtrTest();
+		test::PtrTest();
 #endif
 #if defined(BASIC_TEST) || defined(ARRAY_TEST)
-                        test::ArrayTest();
+		test::ArrayTest();
 #endif
 #if defined(BASIC_TEST) || defined(REGION_TEST)
-                        test::RegionTest();
+		test::RegionTest();
 #endif
 #if defined(BASIC_TEST) || defined(LIST_TEST)
-                        test::ListTest();
-
-C:\Users\Yuji\OneDrive\ドキュメント\Develop\slib>git show df32fef75e554a187d035c0ca55c1d8b1c994380
-#include "Test.h"
-
-using namespace slib;
-
-
-int main() {
-        INIT_DEFAULT_IO(0)
-        try{
-#if defined(BASIC_TEST)u8 || defined(RANGE_TEST)
-                        test::RangeTest();
-#endif
-#if defined(BASIC_TEST) || defined(AREA_TEST)
-                        test::AreaTest();
-#endif
-#if defined(BASIC_TEST) || defined(ZONE_TEST)
-                        test::ZoneTest();
-#endif
-#if defined(BASIC_TEST) || defined(MEM_TEST)
-                        test::MemoryTest();
-#endif
-#if defined(BASIC_TEST) || defined(PTR_TEST)
-                        test::PtrTest();
-#endif
-#if defined(BASIC_TEST) || defined(ARRAY_TEST)
-                        test::ArrayTest();
-#endif
-#if defined(BASIC_TEST) || defined(REGION_TEST)
-                        test::RegionTest();
-#endif
-#if defined(BASIC_TEST) || defined(LIST_TEST)
-                        test::ListTest();
+		test::ListTest();
 #endif
 #if defined(BASIC_TEST) || defined(MAP_TEST)
-                        test::MapTest();
+		test::MapTest();
 #endif
 #if defined(BASIC_TEST) || defined(SET_TEST)
-                        test::SetTest();
+		test::SetTest();
 #endif
 #if defined(BASIC_TEST) || defined(CHAR_TEST)
-                        test::CharTest();
+		test::CharTest();
 #endif
 #if defined(BASIC_TEST) || defined(STRING_TEST)
-                        test::StringTest();
+		test::StringTest();
 #endif
 #if defined(BASIC_TEST) || defined(TIME_TEST)
-                        test::TimeTest();
+		test::TimeTest();
 #endif
 #if defined(BASIC_TEST) || defined(NODE_TEST)
-                        test::NodeTest();
+		test::NodeTest();
 #endif
 #if defined(BASIC_TEST) || defined(EXCEPTION_TEST)
-                        test::ExceptionTest();
+		test::ExceptionTest();
 #endif
-        }
-        catch (SException e) {
-                EXPORT_MSG(e);
-        }
-        try {
+	}
+	catch (SException e) {
+		EXPORT_MSG(e);
+	}
+	try {
 #if defined(MATH_TEST) || defined(CALC_TEST)
-                test::CalcTest();
+		test::CalcTest();
 #endif
 #if defined(MATH_TEST) || defined(FRAC_TEST)
-                test::FracTest();
+		test::FracTest();
 #endif
 #if defined(MATH_TEST) || defined(COMP_TEST)
-                test::ComplexTest();
+		test::ComplexTest();
 #endif
 #if defined(MATH_TEST) || defined(LA_TEST)
-                test::LinearAlgebraTest();
+		test::LinearAlgebraTest();
 #endif
 #if defined(MATH_TEST) || defined(GEOM_TEST)
-                test::GeometryTest();
+		test::GeometryTest();
 #endif
 #if defined(MATH_TEST) || defined(STAT_TEST)
-                test::StatisticTest();
+		test::StatisticTest();
 #endif
-        }
-        catch (SMathException e) {
-                EXPORT_MSG(e);
-        }
+	}
+	catch (SMathException e) {
+		EXPORT_MSG(e);
+	}
 
 
 
 
-        try {
+	try {
 #if defined(SOBJ_TEST) || defined(SOBJECT_TEST)
-                test::SObjTest();
+		test::SObjTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SNUMBER_TEST)
-                test::SNumberTest();
+		test::SNumberTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SSTRING_TEST)
-                test::SStringTest();
+		test::SStringTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SDATE_TEST)
-                test::SDateTest();
+		test::SDateTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SDATA_TEST)
-                test::SDataTest();
+		test::SDataTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SARRAY_TEST)
-                test::SArrayTest();
+		test::SArrayTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SDICT_TEST)
-                test::SDictTest();
+		test::SDictTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SFUNC_TEST)
-                test::SFuncTest();
+		test::SFuncTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SVOID_TEST)
-                test::SVoidTest();
+		test::SVoidTest();
 #endif
 #if defined(SOBJ_TEST) || defined(STABLE_TEST)
-                test::STableTest();
+		test::STableTest();
 #endif
 #if defined(SOBJ_TEST) || defined(SNET_TEST)
-                test::SNetTest();
+		test::SNetTest();
 #endif
-        }
-        catch (SException e) {
-                EXPORT_MSG(e);
-        }
+	}
+	catch (SException e) {
+		EXPORT_MSG(e);
+	}
 #ifdef APP_TEST
-        test::SCUIAppTest();
-        //test::SPlugInAppTest();
+	test::SCUIAppTest();
+	//test::SPlugInAppTest();
 
-        {
-                //test::SCodeTest();
-        }
+	{
+		//test::SCodeTest();
+	}
 #endif
-        return 0;
+	return 0;
 }
 #ifdef oldtest
 
@@ -214,7 +179,7 @@ private:
 	String str;
 public:
 	StringNode() {}
-	StringNode(const char *s) : str(s) {}
+	StringNode(const char* s) : str(s) {}
 	~StringNode() {}
 
 };
@@ -257,8 +222,8 @@ struct PlugInTest2 {
 };
 int main_()
 {
-	
-	
+
+
 	/*
 	String s1 = "ATCGAGCAGTGCGATGTTCAGGT";
 	String s2 = "AGCATTGTACGCAGTGCAGACAT";
@@ -402,7 +367,7 @@ int main_()
 	SProcess proc;
 	proc.createChild("Test2.exe");
 	proc.send("o");
-	std::cout << proc.message() <<std::endl;
+	std::cout << proc.message() << std::endl;
 	proc.send(u8"s:於伊邪那岐命、抜所御佩之十拳剣、斬其子迦具土神之頚", false);
 	proc.send("q", false);
 	proc.wait();
@@ -419,78 +384,78 @@ int main_()
 
 
 
-	
 
 
 
 
-	
-	/*
-	TestNode node0(0, nullptr);
-	node0.add(new TestNode(1, "node1"));
-	node0.add(new TestNode(2, "node2"));
-	node0[0]->add(new TestNode(11, "node11"));
-	*/
-	/*
-	snum n1_ = 100;
-	snum n2_ = 3.14;
-	snum n3_ = sfrac(2, 5);
-	snum n4_ = scomp(0.5, 0.5);
-
-	std::cout << HOME_PATH << std::endl;
-	std::cout << SSystem::charCode() << std::endl;
-	sio::SFile file(u8"C:\\Users\\Yuji\\OneDrive\\ドキュメント\\Develop\\test.xlsx");
-	SZip::expand(file);
-	*/
 
 
-	/*
-	sdb::SDataBase hdb(u8"C:\\Users\\yujis\\OneDrive\\ドキュメント\\Develop\\Hayamin\\db\\hayami.db");
-	//std::cout << hdb.tables() << std::endl;
-	auto records = hdb["SAMPLE"].getRecords();
-	sforeach(records) {
-		std::cout << E_["NAME"] << TAB << E_["ATTRIBUTE"] << std::endl;
+/*
+TestNode node0(0, nullptr);
+node0.add(new TestNode(1, "node1"));
+node0.add(new TestNode(2, "node2"));
+node0[0]->add(new TestNode(11, "node11"));
+*/
+/*
+snum n1_ = 100;
+snum n2_ = 3.14;
+snum n3_ = sfrac(2, 5);
+snum n4_ = scomp(0.5, 0.5);
+
+std::cout << HOME_PATH << std::endl;
+std::cout << SSystem::charCode() << std::endl;
+sio::SFile file(u8"C:\\Users\\Yuji\\OneDrive\\ドキュメント\\Develop\\test.xlsx");
+SZip::expand(file);
+*/
+
+
+/*
+sdb::SDataBase hdb(u8"C:\\Users\\yujis\\OneDrive\\ドキュメント\\Develop\\Hayamin\\db\\hayami.db");
+//std::cout << hdb.tables() << std::endl;
+auto records = hdb["SAMPLE"].getRecords();
+sforeach(records) {
+	std::cout << E_["NAME"] << TAB << E_["ATTRIBUTE"] << std::endl;
+}
+*/
+/*
+sdb::SDataBase wdb(u8"C:\\Users\\yujis\\OneDrive\\ドキュメント\\Research\\worm.db");
+//std::cout << hdb.tables() << std::endl;
+auto records = wdb["CHROMOSOME"].getRecords();
+sforeach(records) {
+	std::cout << E_["NAME"] << TAB << E_["LENGTH"] << std::endl;
+}
+
+sio::SFile dir("\\\\160.24.63.106\\share\\iA_article");
+auto list = dir.fileList();
+
+char magic[4];
+
+
+sforeach(list) {
+	std::cout << E_.path() << std::endl;
+	if (E_.path().endWith(".bsm")) {
+		E_.open();
+		E_.readBytes(magic, 4);
+
+
+
+
+		E_.close();
 	}
-	*/
-	/*
-	sdb::SDataBase wdb(u8"C:\\Users\\yujis\\OneDrive\\ドキュメント\\Research\\worm.db");
-	//std::cout << hdb.tables() << std::endl;
-	auto records = wdb["CHROMOSOME"].getRecords();
-	sforeach(records) {
-		std::cout << E_["NAME"] << TAB << E_["LENGTH"] << std::endl;
-	}
-
-	sio::SFile dir("\\\\160.24.63.106\\share\\iA_article");
-	auto list = dir.fileList();
-
-	char magic[4];
+}
 
 
-	sforeach(list) {
-		std::cout << E_.path() << std::endl;
-		if (E_.path().endWith(".bsm")) {
-			E_.open();
-			E_.readBytes(magic, 4);
+*/
+/*
+sstruct<int, int, int> sst;
+std::cout << sst.f << "," << sst.s.f << ":" << sizeof(sst) << std::endl;
 
+for (size_t i = 0; i < 3; ++i) {
+	std::cout << typeid(sarg_element<0, sstruct<int, int, int>>::type).name() << ",";
 
+}
 
-
-			E_.close();
-		}
-	}
-
-
-	*/
-	/*
-	sstruct<int, int, int> sst;
-	std::cout << sst.f << "," << sst.s.f << ":" << sizeof(sst) << std::endl;
-	
-	for (size_t i = 0; i < 3; ++i) {
-		std::cout << typeid(sarg_element<0, sstruct<int, int, int>>::type).name() << ",";
-
-	}
-
-	*/
+*/
 /*
 #ifdef TEXT_TEST
 	SText text1 = SColorText("red", u8"red/赤");

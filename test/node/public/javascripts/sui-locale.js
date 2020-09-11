@@ -40,4 +40,4 @@ var LOCAL_LABEL={
     pref:{en:'Preference',ja:'設定'},
     help:{en:'Help',ja:'ヘルプ'},
 };
-function localizable(l,t){return SupportedLocale.includes(l)&&LOCAL_LABEL[t]!=undefined;};
+function localizable(l,t){return SupportedLocale.indexOf(l)!==-1&&LOCAL_LABEL[t]!=undefined;};
