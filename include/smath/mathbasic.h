@@ -13,33 +13,8 @@ namespace slib {
 
 		class SMathException : public SException {
 		public:
-			SMathException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr) :
-				SException(f, l, func, e, target, note) {
-				prefix = "smath";
-				switch (err) {
-				case DIV_ZERO_ERR:
-				{
-					message = "Divided by zero.";
-					description = TARGET_TEXT(target ? target : "") + u8" is zero.";
-					break;
-				}
-				case UNSIGNED_MINUS_ERR:
-				{
-					message = "Unsigned value error.";
-					description = TARGET_TEXT(target ? target : "") + u8" should be positive.";
-					break;
-				}
-				case DIMENSION_SIZE_ERR:
-				{
-					message = "Dimension size error.";
-					description = TARGET_TEXT(target ? target : "") + u8" " + (note ? note : "");
-					break;
-				}
-				default:
-					break;
-				}
-			}
-			~SMathException() {}
+			SMathException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
+			~SMathException();
 		};
 
 		typedef enum {

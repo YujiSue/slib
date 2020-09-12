@@ -296,7 +296,7 @@ namespace slib {
 		extern inline void openUniKnot(sint d, svecd& knot) {
 			auto it = knot.begin();
 			sforin(i, 0, d + 1) { E_ = 0.0; NEXT_; }
-			auto len = knot.size() - 2 * d + 1;
+			auto len = (sint)knot.size() - 2 * (d + 1);
 			double diff = 1.0 / len;
 			sforin(i, 0, len - 1) { E_ = E_PREV + diff; NEXT_; }
 			sforin(i, 0, d + 1) { E_ = 1.0; NEXT_; }
@@ -317,9 +317,7 @@ namespace slib {
 		extern inline void _bspline2(v2dvec& vec, v2dvec& curve, svecd& knot) {
 			sforeach2(curve, knot) {
 				E1_ = v2d();
-				sforeachi(vec) {
-					E1_ += vec[i] * BSplineBasis(i, 2, E2_, knot);
-				}
+				sforeachi(vec) { E1_ += vec[i] * BSplineBasis(i, 2, E2_, knot); }
 			}
 		}
 		extern inline void bspline2(v2dvec& vec, v2dvec& curve,
@@ -332,7 +330,7 @@ namespace slib {
 		extern inline void _bspline3(v2dvec& vec, v2dvec& curve, svecd& knot) {
 			sforeach2(curve, knot) {
 				E1_ = v2d();
-				sforeachi(vec) E1_ += vec[i] * BSplineBasis(i, 3, E2_, knot);
+				sforeachi(vec) { E1_ += vec[i] * BSplineBasis(i, 3, E2_, knot); }
 			}
 		}
 		extern inline void bspline3(v2dvec& vec, v2dvec& curve,

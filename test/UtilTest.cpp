@@ -3,7 +3,7 @@
 
 using namespace slib;
 void test::SCodeTest() {
-	String test1 = u8"じゅげむじゅげむ五行のすりきれ海砂利水魚の水行松";
+	String test1 = "password";
 	String res;
 	ubytearray test2(test1.size());
 	memcpy(test2.ptr(), test1.cstr(), test1.size());
@@ -16,7 +16,7 @@ void test::SCodeTest() {
 
 void test::SXmlTest() {
 	SArray array = {
-		1, 2.71828, "abc", u8"あいう", new SDate(slib::sstyle::YMD), V({ 10, "xyz" })
+		1, 2.71828, "abc", u8"あいう", SDate(slib::sstyle::YMD), V({ 10, "xyz" })
 	};
 	SDictionary dict = {
 		kv("int", 100), kv("real", 1.732), kv("str", u8"ひふみ")
@@ -30,16 +30,12 @@ void test::SXmlTest() {
 
 void test::SDBTest() {
 	try {
-		std::cout << sql::orderQue({
-			kv("ID", ASC), kv("START", DESC)
-			}) << std::endl;
+		std::cout << sql::orderQue({ kv("ID", ASC), kv("START", DESC) }) << std::endl;
 		std::cout << sql::limit(10, 5) << std::endl;
-		std::cout << sql::listQue({
-			1, 3, 5, 7, 9
-			}) << std::endl;
+		std::cout << sql::listQue({ 1, 3, 5, 7, 9 }) << std::endl;
 		std::cout << sql::caseQue({
-			kv("if", V({ kv("col", "SCORE"), kv("op", ">"), kv("val", 10), kv("res", "CLEAR") })),
-			kv("else", "OUT"),
+			kv("if", V({ kv("col", "SCORE"), kv("op", ">"), kv("val", 10), kv("res", "OK") })),
+			kv("else", "Failure"),
 			kv("as", "JUDGE")
 			}) << std::endl;
 		std::cout << sql::condQue({
@@ -65,7 +61,11 @@ void test::SDBTest() {
 			{
 				scolumn(INTEGER_COLUMN | sql::KEY_COLUMN, "ID"),
 				scolumn(STRING_COLUMN, "NAME"),
-				scolumn(STRING_COLUMN, "VALUE")
+				scolumn(INTEGER_COLUMN, "SCORE"),
+				scolumn(REAL_COLUMN, "STD_SCORE"),
+				scolumn(ARRAY_COLUMN, "BREAKDOWN"),
+				scolumn(DICT_COLUMN, "EVALUATION"),
+				//scolumn(DICT_COLUMN, "EVALUATION"),
 			});
 		db1.createTable({
 			kv("name", "Test2"),
@@ -85,14 +85,17 @@ void test::SDBTest() {
 				})),
 			kv("rows",
 			V({
-					V({ 1, u8"山田", V({ u8"東京", u8"新宿" })}),
-					V({ 2, u8"鈴木", V({ u8"大阪", u8"中央" })})
+					V({ 1, u8"John Smith", V({ u8"東京", u8"新宿" })}),
+					V({ 2, u8"Yamada Taro", V({ u8"大阪", u8"中央" })})
 				}))
 			});
 
 		std::cout << db1.tableCount() << " " << db1.tables() << std::endl;
-		db1["Test1"].addColumn(STRING_COLUMN, "COL");
+		db1["Test1"].addColumn(TEXT_COLUMN, "NOTE");
 		std::cout << db1["Test1"].columnInfo() << std::endl;
+
+
+
 		db1["Test1"].addRecord({ snull, "first", u8"あ", snull });
 		db1["Test1"].addRecord({ kv("NAME", "second"), kv("VALUE", u8"い") });
 		db1["Test1"].getRecordPrepare();

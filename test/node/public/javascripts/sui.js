@@ -35,6 +35,20 @@ const CTRL_CHAR=codedString('&#8963;');
 const SHIFT_CHAR=codedString('&#8679;');
 const OPT_CHAR=codedString('&#8997;');
 
+const COLOR_BLACK='#000000';
+const COLOR_WHITE='#FFFFFF';
+const COLOR_RED='#FF0000';
+const COLOR_GREEN='#00FF00';
+const COLOR_BLUE='#0000FF';
+const COLOR_MAGENTA='#FF00FF';
+const COLOR_YELLOW='#FFFF00';
+const COLOR_CYAN='#00FFFF';
+//const COLOR_GREEN='#00FF00';
+//const COLOR_YELLOW='#FFFF00';
+
+
+
+
 var DEFAULT=0x0000;
 var ORIGINAL=0x0001;
 var S_ICON=0x0001;
@@ -1489,6 +1503,9 @@ SImageView.prototype=Object.create(SUIComponent.prototype, {
 });
 SImageView.prototype.constructor=SImageView;
 
+
+///////////////
+
 function SSvgCanvas(p) {
 
 }
@@ -1579,6 +1596,36 @@ SCanvas.prototype=Object.create(SUIComponent.prototype, {
 
 });
 SCanvas.prototype.constructor=SCanvas;
+
+
+function SColorPicker(p) {
+    if (p == null) p={};
+    SUIComponent.call(this, 'input', p);
+};
+SColorPicker.prototype=Object.create(SUIComponent.prototype, {
+    initNode:{
+        value:function(p) {
+            SUIComponent.prototype.initNode.apply(this, [ p ]);
+            this.className='colorpicker';
+            this.addClass('scolor-picker');
+            this.node.type='color';
+        }
+    }
+});
+SColorPicker.prototype.constructor=SColorPicker;
+function SFileLoader(p) {
+    p=propOverride(p,{id:'sfl',label:'file-select',filter:null,action:null});
+    this.accessible=true;
+    this.files=null;
+    SUIComponent.call(this,'div',p);
+};
+
+
+
+////////////////
+
+
+
 function SListItem(p){p=propOverride(p,{content:null});SUIComponent.call(this,'li',p);};
 SListItem.prototype=Object.create(SUIComponent.prototype,{
     initNode:{value:function(p){
@@ -2699,6 +2746,22 @@ SSlider.prototype=Object.create(SUIComponent.prototype, {
     setAction:{value:function(a) {if(a) this.input.node.onchange=function(e){a(e);}; return this;}}
 });
 SSlider.prototype.constructor=SSlider;
+
+
+
+////
+function SCalender() {
+
+};
+SCalender.prototype=Object.create(SUIComponent.prototype, {
+    initNode:{
+        value:function(p) {
+            SUIComponent.prototype.initNode.apply(this,[{}]);
+        }
+    },
+});
+SCalender.prototype.constructor=SCalender;
+
 function SDatePicker(p) {
     if (p == null) p={};
     p.sclass='datepicker';
@@ -2719,27 +2782,12 @@ SDatePicker.prototype=Object.create(SUIComponent.prototype, {
     setValue:{value:function(val) {this.node.value=val;}}
 });
 SDatePicker.prototype.constructor=SDatePicker;
-function SColorPicker(p) {
-    if (p == null) p={};
-    SUIComponent.call(this, 'input', p);
-};
-SColorPicker.prototype=Object.create(SUIComponent.prototype, {
-    initNode:{
-        value:function(p) {
-            SUIComponent.prototype.initNode.apply(this, [ p ]);
-            this.className='colorpicker';
-            this.addClass('scolor-picker');
-            this.node.type='color';
-        }
-    }
-});
-SColorPicker.prototype.constructor=SColorPicker;
-function SFileLoader(p) {
-    p=propOverride(p,{id:'sfl',label:'file-select',filter:null,action:null});
-    this.accessible=true;
-    this.files=null;
-    SUIComponent.call(this,'div',p);
-};
+////
+
+
+
+
+
 SFileLoader.prototype=Object.create(SUIComponent.prototype, {
     initNode:{
         value:function(p) {

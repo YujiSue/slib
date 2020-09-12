@@ -48,7 +48,6 @@
 #define SIO_TEST
 #define SNET_TEST
 #endif
-/*
 #define SUTIL_TEST
 #ifndef SUTIL_TEST
 #define CODE_TEST
@@ -58,7 +57,6 @@
 #define JSON_TEST
 #define XML_TEST
 #endif
-*/
 
 
 #define APP_TEST

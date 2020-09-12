@@ -416,9 +416,7 @@ namespace slib {
 		*/
 
 		extern inline std::function<double(int)> poisFunc(double l) {
-			return [l](int x) {
-				return (pow(l, x) * exp(-l)) / smath::factorial(x);
-			};
+			return [l](int x) { return (pow(l, x) * exp(-l)) / smath::factorial(x); };
 		}
 		extern inline double pois(int x, double l) { return (pow(l, x) * exp(-l)) / smath::factorial(x); }
 		extern inline double ppois(int x, double l);

@@ -10,7 +10,7 @@ var APP_INFO = {
 var APP_UI = {
     elements: {
         root: {UI:'V',N:'root-view',L:'B',l:SAPP_LANG},
-        menubar1:{UI:'Mb'},
+        menubar01:{UI:'Mb'},
         menu01:{UI:'M'},
         menu02:{UI:'M'},
         menu03:{UI:'M'},
@@ -26,18 +26,27 @@ var APP_UI = {
         menuitem09:{UI:'Mi',T:'open',k:{mask:DEFAULT_CMD_MASK,key:'o'}},
         menuitem10:{UI:'Mi',T:'close',k:{mask:DEFAULT_CMD_MASK,key:'o'}},
 
-        toolbar1:{UI:'TB'},
+        toolbar01:{UI:'TB'},
         toolitem01:{UI:'TI',I:'icon:home',T:'tool1',a:event04},
         toolitem02:{UI:'TI',I:'',T:'tool2'},
         toolitem03:{UI:'TI',I:'',T:'tool3'},
 
         label01:{UI:'L',T:'label'},
-        label02:{UI:'L',T:'colored-label',c:['red']},
-        label03:{UI:'L',T:'colored-label',c:['blue']},
-        label04:{UI:'L',T:'colored-label',c:['green']},
-        label05:{UI:'L',T:'unsel-label',c:['unselectable']},
-        label06:{UI:'L',T:'event-label',e:[{type:'click',func:event04}]},
+        label02:{UI:'L',T:'italic-label',c:['italic']},
+        label03:{UI:'L',T:'bold-label',c:['bold']},
+        label04:{UI:'L',T:'colored-label',c:['red']},
+        label05:{UI:'L',T:'colored-label',c:['orange']},
+        label06:{UI:'L',T:'colored-label',c:['yellow']},
+        label07:{UI:'L',T:'colored-label',c:['green']},
+        label08:{UI:'L',T:'colored-label',c:['blue']},
+        label09:{UI:'L',T:'colored-label',c:['navy']},
+        label10:{UI:'L',T:'colored-label',c:['violet']},
+        label11:{UI:'L',T:'Not selectable label',c:['unselectable']},
+        label12:{UI:'L',T:'Event trigger label',e:[{type:'click',func:event04}]},
+        
         link01:{UI:'LL',T:'link',V:'javascript:void(0);',e:[{type:'click',func:event02}]},
+        
+        
         button01:{UI:'B',T:'button'},
         button02:{UI:'B',s:S_ICON,I:'icon:image'},
         button03:{UI:'B',s:S_TOGGLE},
@@ -51,7 +60,7 @@ var APP_UI = {
         view05:{ui:'V',c:['ui-info']},
         tabview01:{ui:'TbV',c:['main-tabs']},
         treeview01:{ui:'TrV',c:['ui-list']},
-        treenode001:{ui:'Tr'},
+        treenode001:{ui:'Tr',c:['']},
 
 
         panel01:{ui:'P',c:['SUIPane']},

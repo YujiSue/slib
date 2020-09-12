@@ -1640,7 +1640,7 @@ namespace slib {
 					evec[r][r] = tmp1;
 					sforin(c, 0, mat.col) {
 						tmp2 = qmat[c][r] * ratio.y + qmat[c][r] * ratio.x;
-						qmat[c][r + 1] = -1mat[c][r] * ratio.x + qmat[c][r + 1] * ratio.y;
+						qmat[c][r + 1] = qmat[c][r] * ratio.x + qmat[c][r + 1] * ratio.y;
 						qmat[c][r] = tmp2;
 					}
 

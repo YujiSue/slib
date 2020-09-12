@@ -76,10 +76,6 @@ int main() {
 	catch (SMathException e) {
 		EXPORT_MSG(e);
 	}
-
-
-
-
 	try {
 #if defined(SOBJ_TEST) || defined(SOBJECT_TEST)
 		test::SObjTest();
@@ -118,6 +114,15 @@ int main() {
 	catch (SException e) {
 		EXPORT_MSG(e);
 	}
+	try {
+#if defined(SUTIL_TEST) || defined(DB_TEST)
+		test::SDBTest();
+#endif
+	}
+	catch (SException e) {
+		EXPORT_MSG(e);
+	}
+
 #ifdef APP_TEST
 	test::SCUIAppTest();
 	//test::SPlugInAppTest();
