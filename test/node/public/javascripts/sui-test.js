@@ -38,7 +38,7 @@ var APP_UI = {
         label05:{UI:'L',T:'unsel-label',c:['unselectable']},
         label06:{UI:'L',T:'event-label',e:[{type:'click',func:event04}]},
         link01:{UI:'LL',T:'link',V:'javascript:void(0);',e:[{type:'click',func:event02}]},
-        button01:{UI:'B',T:'button',a:event01},
+        button01:{UI:'B',T:'button'},
         button02:{UI:'B',s:S_ICON,I:'icon:image'},
         button03:{UI:'B',s:S_TOGGLE},
         button04:{UI:'B',s:S_TOGGLE},
@@ -51,7 +51,7 @@ var APP_UI = {
         view05:{ui:'V',c:['ui-info']},
         tabview01:{ui:'TbV',c:['main-tabs']},
         treeview01:{ui:'TrV',c:['ui-list']},
-        
+        treenode001:{ui:'Tr'},
 
 
         panel01:{ui:'P',c:['SUIPane']},

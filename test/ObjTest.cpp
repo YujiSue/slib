@@ -108,12 +108,23 @@ void test::SDateTest() {
 	std::cout << "SDate Test" << std::endl;
 	SDate date1;
 	std::cout << "date1:" << date1 << std::endl;
-	date1 += Time("1y");
+	date1 += Time("1Y");
 	std::cout << "date1:" << date1 << std::endl;
 	SDate date2("2000/01/01");
 	std::cout << "date2:" << date2.toString(slib::sstyle::ISO8601) << std::endl;
-	SDate date3(u8"昭和２０年８月１５日");
-	std::cout << "date3:" << date3.toString(slib::sstyle::YMD) << std::endl;
+
+
+
+
+
+
+	SDate jdate1(u8"昭和２０年８月１５日");
+	std::cout << "jdate1:" << jdate1.toString(slib::sstyle::ISO8601) << std::endl;
+	SDate jdate2(u8"平成元年１月８日");
+	std::cout << "jdate2:" << jdate2.toString(slib::sstyle::ISO8601) << std::endl;
+
+
+
 	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::SDataTest() {

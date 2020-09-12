@@ -111,22 +111,17 @@ if(CLIENT_ENV===MOBILE_DEVICE|APPLE_DEVICE) {
 if(!String.prototype.startsWith){String.prototype.startsWith=function(s,p){return this.substr((p||0),s.length)===s;};}
 if(!String.prototype.endsWith){String.prototype.endsWith=function(s,p){return this.substr(this.length-s.length-(p||0),s.length)===s;};}
 if(!String.prototype.padStart) {
-    String.prototype.padStart = function padStart(targetLength, padString) {
-        targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
-        padString = String(typeof padString !== 'undefined' ? padString : ' ');
-        if (this.length >= targetLength) {
-            return String(this);
-        } else {
-            targetLength = targetLength - this.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-            }
-            return padString.slice(0, targetLength) + String(this);
+    String.prototype.padStart=function padStart(l,s) {
+        l=l>>0;s=String(typeof s!=='undefined'?padString:' ');
+        if (this.length>=l){return String(this);}
+        else{
+            l=l-this.length;if (l>s.length){s+=s.repeat(l/s.length);}
+            return s.slice(0,l)+String(this);
         }
     };
 }
-if(!DOMTokenList.prototype.replace){DOMTokenList.prototype.replace=function(o,n){const v = String(DOMTokenList.value);DOMTokenList.value=v.replace(o,n);};}
-if (typeof TextEncoder === "undefined") {
+if(!DOMTokenList.prototype.replace){DOMTokenList.prototype.replace=function(o,n){const v=String(DOMTokenList.value);DOMTokenList.value=v.replace(o,n);};}
+if (typeof TextEncoder==="undefined") {
     TextEncoder=function TextEncoder(){};
     TextEncoder.prototype.encode = function encode(str) {
         "use strict";
@@ -198,8 +193,7 @@ function useHash(t,f) {
     }
     else if(crypto.webkitSubtle) {
         crypto.webkitSubtle.digest('SHA-256',e).then(function(d) {
-            const a=Array.from(new Uint8Array(d));
-            var s='';
+            const a=Array.from(new Uint8Array(d));var s='';
             for(var i=0;i<a.length;i++){s+=a[i].toString(16).padStart(2,'0');}
             if(f) f(s);
         });
@@ -532,6 +526,7 @@ function sform(a){return new SForm(a);};
 function sinput(a,b){return new SInput(a,b);};
 function stextfield(a){return new STextField(a);};
 function stextarea(a){return new STextArea(a);};
+function stextview(a){return new STextView(a);};
 function slabel(a,b){return new SLabel(a,b);};
 function slink(a,b,c){return new SLinkLabel(a,b,c);};
 function sicon(a,b){return new SIcon(a,b);};
@@ -2488,7 +2483,33 @@ STextArea.prototype=Object.create(SUIComponent.prototype, {
     setRequired:{value:function(req) {this.node.required=req; return this;}}
 });
 STextArea.prototype.constructor=STextArea;
-
+function STextView(p) {
+    p=propOverride(p,{value:'',selectable:true,editable:true});
+    SUIComponent.call(this,'p',p);
+};
+STextView.prototype=Object.create(SUIComponent.prototype, {
+    initNode:{
+        value:function(p) {
+            SUIComponent.prototype.initNode.apply(this,[{}]);
+            this.setSuiID('textview')
+            .setMainClass('stext-view')
+            .setValue(p.value)
+            .setSelectable(p.selectable==undefined?true:p.selectable)
+            .setEditable(p.editable==undefined?true:p.editable);
+        }
+    },
+    value:{value:function() {return this.node.innerHTML;}},
+    setValue:{value:function(t) {if (t) this.node.innerHTML=t; return this;}},
+    isSelectable:{value:function() {return !this.hasClass('unselectable');}},
+    setSelectable:{value:function(s) {
+        if (s) this.removeClass('unselectable');
+        else this.addClass('unselectable');
+        return this;
+    }},
+    isEditable:{value:function() {return this.node.contenteditable;}},
+    setEditable:{value:function(e) {this.node.contenteditable=e; return this;}}
+});
+STextView.prototype.constructor=STextView;
 function STextEditor(p) {
 
     SUIComponent.call(this,'pre',p);

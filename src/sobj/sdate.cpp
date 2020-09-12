@@ -8,7 +8,17 @@ using namespace slib;
 inline int yday(sint m, sint d) {
 	return speriod::TOTAL_DAY_OF_MONTH[m] + d;
 }
-
+inline int wday(sint y, sint m, sint d) {
+	sint y_, y_1, y_2, m_, g, w;
+	if (m == 1) { y_ = y - 1; m_ = 13; }
+	else if (m == 2) { y_ = y - 1; m_ = 14; }
+	y_1 = y_ % 100; y_2 = y_ / 100;
+	if (y_ < 1583) g = 6 * y_2 + 5;
+	else g = 5 * y_2 + (y_ / 4);
+	w = d + (26 * (m_ + 1) / 10) + y_1 + (y_1 / 4) + g;
+	w %= 7;
+	return w + 1;
+}
 template<class Iter>
 inline size_t countRepeat(Iter& it, const char& c) {
 	size_t count = 0;
@@ -20,7 +30,7 @@ inline void readSize(String& str, SUtf8CIterator& it, size_t s) {
 }
 inline void readTo(String& str, SUtf8CIterator& it, Char& c) {
 	while (true) {
-		if (E_ == '\0' || E_.toStr() == c.toStr()) break;
+		if (E_ == '\0' || E_.toString() == c.toString()) break;
 		str << E_.toString(); NEXT_;
 	}
 }
@@ -116,9 +126,10 @@ void SDate::_parse(const String& date) {
 		}
 		//Japanese
 		else if (E_ == u8"号") {
-			readSize(tmp, dit, 2); PREV_; --dit;
+			readSize(tmp, dit, 2); --dit;
 			jp = true;
 			year = speriod::ERA_J_YEAR[speriod::ERA_J.find(tmp)];
+			tmp.clear();
 		}
 		else if (E_ == u8"年") {
 			readTo(tmp, dit, E_);
@@ -127,33 +138,41 @@ void SDate::_parse(const String& date) {
 				else Time::year += tmp.transformed(sstyle::HALF_WIDTH).intValue();
 			}
 			else year = tmp.transformed(sstyle::HALF_WIDTH);
+			tmp.clear();
 		}
 		else if (E_ == u8"月") {
 			readTo(tmp, dit, E_);
 			Time::month = tmp.transformed(sstyle::HALF_WIDTH);
+			tmp.clear();
 		}
 		else if (E_ == u8"曜") {
 			readTo(tmp, dit, E_);
 			Time::month = speriod::WEEK_LABEL_J.find(tmp.ubegin()->toStr()) + 1;
+			tmp.clear();
 		}
 		else if (E_ == u8"日") {
 			readTo(tmp, dit, E_);
 			Time::day = tmp.transformed(sstyle::HALF_WIDTH);
+			tmp.clear();
 		}
 		else if (E_ == u8"時") {
 			readTo(tmp, dit, E_);
 			Time::hour = tmp.transformed(sstyle::HALF_WIDTH);
+			tmp.clear();
 		}
 		else if (E_ == u8"分") {
 			readTo(tmp, dit, E_);
 			Time::minute = tmp.transformed(sstyle::HALF_WIDTH);
+			tmp.clear();
 		}
 		else if (E_ == u8"秒") {
 			readTo(tmp, dit, E_);
 			Time::sec = tmp.transformed(sstyle::HALF_WIDTH);
+			tmp.clear();
 		}
 		++dit;
 	}
+	week = wday(year, month, day);
 }
 
 SDate::SDate() : Time(), _tzone(0), week(0), _format(slib::sstyle::ISO8601), SObject() {
@@ -220,69 +239,95 @@ SDate& SDate::operator = (const SDate& date) {
 }
 
 SDate& SDate::operator += (const slib::Time& time) {
-	msec += time.msec;
-	if (msec < 0) { sec -= (-msec) / 1000 + 1; msec = 1000 - ((-msec) % 1000); }
-	else { sec += msec / 1000; msec %= 1000; }
-	sec += time.minute;
-	if (sec < 0) { minute -= (-sec) / 60 + 1; sec = 60 - ((-sec) % 60); }
-	else { minute += sec / 60; sec %= 60; }
-	minute += time.minute;
-	if (minute < 0) { hour -= (-minute) / 60 + 1; minute = 60 - ((-minute) % 60); }
-	else { hour += minute / 60; minute %= 60; }
-	hour += time.hour;
-	if (hour < 0) { day -= (-hour) / 24 + 1; hour = 24 - ((-hour) % 24); }
-	else { day += hour / 24; hour %= 24; }
-	day += time.day;
-	if (day < 0) {
-		while (day < 0) {
-			if (month == 1) { --year; month = 12; }
-			else --month;
-			day += speriod::DAY_OF_MONTH[month - 1];
+	if (time.msec) {
+		msec += time.msec;
+		if (msec < 0) { while (msec < 0) { --sec; msec += 1000; } }
+		while (999 < msec) { ++sec; msec -= 1000; }
+	}
+	if (time.sec) {
+		sec += time.sec;
+		if (sec < 0) { while (sec < 0) { --minute; sec += 60; } }
+		while (59 < sec) { ++minute; sec -= 60; }
+	}
+	if (time.minute) {
+		minute += time.minute;
+		if (minute < 0) { while (minute < 0) { --hour; minute += 60; } }
+		while (59 < minute) { ++hour; minute -= 60; }
+	}
+	if (time.hour) {
+		hour += time.hour;
+		if (hour < 0) { while (hour < 0) { --day; hour += 24; } }
+		while (23 < hour) { ++day; hour -= 24; }
+	}
+	if (time.day) {
+		day += time.day;
+		if (day < 0) { 
+			while (day < 0) {
+				if (month < 1) { --year; month += 12; }
+				--month; day += speriod::DAY_OF_MONTH[month];
+				if (isLeapYear(year) && month == 2) ++day;
+			}
 		}
+		while (true) {
+			if (11 < month) { ++year; month -= 12; }
+			if (isLeapYear(year) && month == 2 && 29 < day) { ++month; day -= 29; }
+			else if (speriod::TOTAL_DAY_OF_MONTH[month] < day) { ++month; day -= speriod::DAY_OF_MONTH[month]; }
+			else break;
+		}
+ 	}
+	if (time.month) {
+		month += time.month;
+		if (month < 0) { while (month < 0) { --year; month += 12; } }
+		while (11 < month) { ++year; month -= 12; }
 	}
-	if (speriod::DAY_OF_MONTH[month - 1] < day) {
-		day -= speriod::DAY_OF_MONTH[month - 1]; ++month;
-		if (12 < month) { ++year; month -= 12; }
-	}
-	week += time.day;
-	if (week < 0) week = 7 - ((-week) % 7); else week %= 7;
-	month += time.month;
-	if (month < 0) { year -= (-month) / 12 + 1; month = 12 - ((-month) % 12); }
-	else { year += month / 12; month %= 12; }
-	year += time.year;
+	if (time.year) year += time.year;
+	week = wday(year, month, day);
 	return *this;
 }
 SDate& SDate::operator -= (const slib::Time& time) {
-	msec -= time.msec;
-	if (msec < 0) { sec -= (-msec) / 1000 + 1; msec = 1000 - ((-msec) % 1000); }
-	else { sec += msec / 1000; msec %= 1000; }
-	sec -= time.minute;
-	if (sec < 0) { minute -= (-sec) / 60 + 1; sec = 60 - ((-sec) % 60); }
-	else { minute += sec / 60; sec %= 60; }
-	minute -= time.minute;
-	if (minute < 0) { hour -= (-minute) / 60 + 1; minute = 60 - ((-minute) % 60); }
-	else { hour += minute / 60; minute %= 60; }
-	hour -= time.hour;
-	if (hour < 0) { day -= (-hour) / 24 + 1; hour = 24 - ((-hour) % 24); }
-	else { day += hour / 24; hour %= 24; }
-	day -= time.day;
-	if (day < 0) {
-		while (day < 0) {
-			if (month == 1) { month = 12; --year; }
-			else --month;
-			day += speriod::DAY_OF_MONTH[month - 1];
+	if (time.msec) {
+		msec -= time.msec;
+		if (msec < 0) { while (msec < 0) { --sec; msec += 1000; } }
+		while (999 < msec) { ++sec; msec -= 1000; }
+	}
+	if (time.sec) {
+		sec -= time.sec;
+		if (sec < 0) { while (sec < 0) { --minute; sec += 60; } }
+		while (59 < sec) { ++minute; sec -= 60; }
+	}
+	if (time.minute) {
+		minute -= time.minute;
+		if (minute < 0) { while (minute < 0) { --hour; minute += 60; } }
+		while (59 < minute) { ++hour; minute -= 60; }
+	}
+	if (time.hour) {
+		hour -= time.hour;
+		if (hour < 0) { while (hour < 0) { --day; hour += 24; } }
+		while (23 < hour) { ++day; hour -= 24; }
+	}
+	if (time.day) {
+		day -= time.day;
+		if (day < 0) {
+			while (day < 0) {
+				if (month < 1) { --year; month += 12; }
+				--month; day += speriod::DAY_OF_MONTH[month];
+				if (isLeapYear(year) && month == 2) ++day;
+			}
+		}
+		while (true) {
+			if (11 < month) { ++year; month -= 12; }
+			if(isLeapYear(year) && month == 2 && 29 < day) { ++month; day -= 29; }
+			else if (speriod::TOTAL_DAY_OF_MONTH[month] < day) { ++month; day -= speriod::DAY_OF_MONTH[month]; }
+			else break;
 		}
 	}
-	if (speriod::DAY_OF_MONTH[month - 1] < day) {
-		day -= speriod::DAY_OF_MONTH[month - 1]; ++month;
-		if (12 < month) { ++year; month -= 12; }
+	if (time.month) {
+		month -= time.month;
+		if (month < 0) { while (month < 0) { --year; month += 12; } }
+		while (11 < month) { ++year; month -= 12; }
 	}
-	week -= time.day;
-	if (week < 0) week = 7 - ((-week) % 7); else week %= 7;
-	month -= time.month;
-	if (month < 0) { year -= (-month) / 12 + 1; month = 12 - ((-month) % 12); }
-	else { year += month / 12; month %= 12; }
-	year -= time.year;
+	if (time.year) year -= time.year;
+	week = wday(year, month, day);
 	return *this;
 }
 
@@ -293,14 +338,19 @@ SDate SDate::operator - (const slib::Time& time) const {
 	return SDate(*this) -= time;
 }
 Time SDate::operator - (const SDate& date) const {
-	slib::Time time;
-	time.msec = msec - date.msec;
-	time.sec = sec - date.sec;
-	time.minute = minute - date.minute;
-	time.hour = hour - date.hour;
-	time.day = day - date.day;
-	time.month = month - date.month;
-	time.year = year - date.year;
+	slib::Time time(*this);
+	if (time.msec < date.msec) { time.msec += 1000; --time.sec; }
+	time.msec -= date.msec;
+	if (time.sec < date.sec) { time.sec += 60; --time.minute; }
+	time.sec -= date.sec;
+	if (time.minute < date.minute) { time.minute += 60; --time.hour; }
+	time.minute -= date.minute;
+	if (time.hour < date.hour) { time.hour += 24; --time.day; }
+	time.hour -= date.hour;
+
+
+
+
 	return time;
 }
 

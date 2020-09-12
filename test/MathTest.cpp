@@ -73,6 +73,28 @@ void test::ComplexTest() {
 	std::cout << (c1 / c3).rounded(2) << std::endl;
 }
 void test::LinearAlgebraTest() {}
+
+extern inline void openUniKnot(sint d, svecd& knot) {
+	auto it = knot.begin();
+	sforin(i, 0, d + 1) { E_ = 0.0; NEXT_; }
+	auto len = knot.size() - 2 * (d + 1);
+	double diff = 1.0 / len;
+	sforin(i, 0, len - 1) { E_ = E_PREV + diff; NEXT_; }
+	sforin(i, 0, d + 1) { E_ = 1.0; NEXT_; }
+	std::cout << knot << std::endl;
+}
+extern inline double BSplineBasis(sint i, sint dim, double k, svecd& knot) {
+	if (dim) {
+		double d = 0;
+		if (knot[i + dim] != knot[i]) d += (k - knot[i]) / (knot[i + dim] - knot[i]) * BSplineBasis(i, dim - 1, k, knot);
+		if (knot[i + dim + 1] != knot[i + 1]) d += (knot[i + dim + 1] - k) / (knot[i + dim + 1] - knot[i + 1]) * BSplineBasis(i + 1, dim - 1, k, knot);
+		return d;
+	}
+	else {
+		if (k < knot[i] || knot[i + 1] <= k) return 0;
+		else return 1;
+	}
+}
 void test::GeometryTest() {
 	std::cout << sgeom::midpoint(v2d(0.0, 0.0), v2d(4.5, 10.5)) << std::endl;
 	std::cout << sgeom::length(v2d(2.0, 3.0)) << std::endl;
@@ -135,6 +157,7 @@ void test::GeometryTest() {
 	std::cout << c3 << std::endl;
 	sgeom::bspline3(v2d1, c4);
 	std::cout << c4 << std::endl;
+
 }
 void test::StatisticTest() {
 	svecd v1({ 32, 40, 21, 80, 50, 48, 74, 20, 59, 68 }), v2, v3;
