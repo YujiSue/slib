@@ -310,6 +310,7 @@ String::String(const std::string &s) : String() {
         _str._ls.str[len] = '\0';
     }
 }
+String::String(std::initializer_list<char> li) : String(li.size(), 0x00) { sforeach2(*this, li) E1_ = E2_; }
 String::String(String &&s) : String() {
     memcpy(&_str, &s._str, sizeof(string));
     memset(&s._str, 0, sizeof(string));

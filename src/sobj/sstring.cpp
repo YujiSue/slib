@@ -74,6 +74,7 @@ SString::SString(const SChar &c) : SObject(), String(c.toStr()), _char(SChar(thi
 SString::SString(const char *s) : SObject(), String(s), _char(SChar(this, cstr())) {}
 SString::SString(const String &s) : SObject(), String(s), _char(SChar(this, cstr())) {}
 SString::SString(const std::string &s) : SObject(), String(s), _char(SChar(this, cstr())) {}
+SString::SString(std::initializer_list<char> li) : SObject(), String(li.size(), 0x00) { sforeach2(*this, li) E1_ = E2_; }
 SString::SString(const sobj &obj) : SString() {
     if (obj.isStr()) *this = obj.string();
     else *this = obj.toString();

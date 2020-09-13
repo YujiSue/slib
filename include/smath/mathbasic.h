@@ -62,6 +62,7 @@ namespace slib {
 		constexpr double D_EPS = DBL_EPSILON;
 		constexpr float F_INF = HUGE_VALF;
 		constexpr double D_INF = HUGE_VAL;
+		constexpr char DEGREE[3] = { (char)0xC2, (char)0xB0, (char)0x00 };
 	}
 }
 

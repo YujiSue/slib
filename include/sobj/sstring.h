@@ -59,6 +59,7 @@ namespace slib {
         SString(const SChar &c);
         SString(const char *s);
         SString(const std::string &s);
+		SString(std::initializer_list<char> li);
         SString(const String &s);
         SString(const sobj &obj);
         SString(const SNumber &sn);

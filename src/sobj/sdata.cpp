@@ -9,22 +9,21 @@ SData::SData(): ubytearray(), SObject() {}
 SData::SData(size_t size, void *dat) : ubytearray(size), SObject() {
     if (dat) ubytearray::copy((subyte *)dat, size);
 }
+/*
 SData::SData(const char *s) : SData(SCode::decodeCharCount(s)) {
     SCode::decodeBASE64(s, (void *)ubytearray::ptr(), ubytearray::size());
 }
-SData::SData(const String &str) : SData(SCode::decodeCharCount(str)) {
-    SCode::decodeBASE64(str, (void *)ubytearray::ptr(), ubytearray::size());
-}
-SData::SData(const SString &str) : SData(SCode::decodeCharCount(str)) {
-    SCode::decodeBASE64(str, (void *)ubytearray::ptr(), ubytearray::size());
-}
+*/
+SData::SData(const char* s) : SData(strlen(s), (void *)s) {}
 SData::SData(const sobj &obj) : SData() {
     if (obj.isDat()) *this = obj.data();
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SData::SData(const SData &data) : SData(data.size(), const_cast<subyte *>(data.ptr())) {}
 SData::~SData() {}
-
+SData& SData::decode(const char* b64) {
+	/**/
+}
 SData &SData::operator = (const SData &dat) {
     clear(); if (!dat.empty()) ubytearray::copy(dat.ptr(), dat.size()); return *this;
 }
@@ -41,7 +40,7 @@ void SData::save(const char *path) {
 }
 void SData::compress() { SCode::compress(*this); }
 void SData::expand() { SCode::expand(*this); }
-void SData::trans(String& str) { 
+void SData::asString(String& str) {
 	if (_capacity) {
 		str.reserve(_capacity);
 		str.interpret(ptr(), size());

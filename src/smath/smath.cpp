@@ -2,7 +2,7 @@
 #include "smath/mathbasic.h"
 #include "smath/calc.h"
 
-slib::smath::SMathException::SMathException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr) :
+slib::smath::SMathException::SMathException(const char* f, sint l, const char* func, sint e, const char* target, const char* note) :
 	slib::SException(f, l, func, e, target, note) {
 	prefix = "smath";
 	switch (err) {

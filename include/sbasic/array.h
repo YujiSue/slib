@@ -48,7 +48,6 @@
 
 namespace slib {
 	class SLIB_DLL String;
-    
     template <typename T, class M=SMemory<T>>
     class Array {
 	public:

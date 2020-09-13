@@ -130,6 +130,7 @@ namespace slib {
 		//String(const wchar_t* ws);
 		//String(const std::wstring &ws);
 #endif
+		String(std::initializer_list<char> li);
         String(const String &s);
         String(String &&s);
         String(const SString &s);

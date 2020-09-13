@@ -350,7 +350,6 @@ Time SDate::operator - (const SDate& date) const {
 
 
 
-
 	return time;
 }
 

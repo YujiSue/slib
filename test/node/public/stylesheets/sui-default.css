@@ -1,44 +1,16 @@
+#app-root {
+    width: 100vw;
+    height: 100vh;
+}
+.north{border-bottom: 0.5px solid gray;}
+.west{border-right: 0.5px solid gray;}
+.east{border-left: 0.5px solid gray;}
+.south{border-top: 0.5px solid gray;}
+
+/*menu*/
 .smenu-bar {
     background: white;
-    box-shadow: 0px 1px 3px 1px rgba(0,0,0,0.1);
-    margin-bottom: 1rem;
-}
-.smenu-item {
-    padding: 0.15rem 0.35rem 0.15rem 0.35rem;
-    color: black;
-}
-.smenu-item:hover {
-    background-color: blue;
-    color: white;
-}
-.smenu-item .menu-toggle {
-    width: 1rem;
-}
-.smenu-item .menu-icon {
-    font-size: 1rem;
-}
-.smenu-item .menu-label {
-    font-size: 0.75rem;
-}
-.smenu-item .menu-expand {
-    font-size: 0.5rem;
-}
-.smenu-item.horizontal .menu-expand {
-    margin-left:1rem;
-    line-height: 1.05rem;
-}
-.smenu-item.vertical .menu-expand {
-    margin-top:1rem;
-    text-align: center;
-}
-.smenu-item .menu-shortcut {
-    font-size: 0.75rem;
-}
-.smenu-item.horizontal .menu-shortcut {
-    margin-left:1rem;
-}
-.smenu-item.vertical .menu-shortcut {
-    margin-top:1rem;
+    border-bottom: 0.25px solid lightgray;
 }
 .smenu {
     background-color: white;
@@ -46,25 +18,81 @@
     box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.1);
     z-index: 1;
 }
-.tree-header:hover {
+.smenu-item {
+    padding: 0.1rem 0.25rem 0.1rem 0.25rem;
+    color: black;
+}
+.smenu-item:hover {
     background-color: lightgray;
 }
+.smenu-item .menu-toggle {
+    width: 1rem;
+}
+.smenu-item .menu-icon {
+    font-size: 1.5rem;
+}
+.smenu-item .menu-label {
+    font-size: 1.0rem;
+}
+.smenu-item .menu-expand {
+    font-size: 0.75rem;
+}
+.smenu-item.horizontal .menu-expand {
+    margin-left:1rem;
+    line-height: 1.1rem;
+}
+.smenu-item.vertical .menu-expand {
+    margin-top:1rem;
+    text-align: center;
+}
+.smenu-item .menu-shortcut {
+    font-size: 1.0rem;
+}
+.smenu-item.horizontal .menu-shortcut {
+    margin-left:1rem;
+}
+.smenu-item.vertical .menu-shortcut {
+    margin-top:1rem;
+}
+/*tool*/
 .stool-bar {
-    background: linear-gradient(lightgray, gray);
+    padding:0.25rem;
+    background-color: lightgray;
 }
 .stool-item {
+    margin:0.25rem;
     background: lightgray;
-    border: 0.5px solid gray;
 }
-.stool-item:hover {
-    background: gray;
-}
+.stool-item.active{background: gray;}
+.stool-item:hover{background: gray;}
 .stool-item .tool-icon {
-    font-size: 2rem;
+    padding: 0.1rem;
+    font-size: 1.75rem;
 }
-.stool-item .tool-label {
-    font-size: 0.8rem;
+.stool-item .tool-label {font-size: 0.75rem;}
+
+/*tree*/
+.stree-view {
+    padding: 0.25rem;
 }
+.stree-node .tree-header .tnode-header:hover {
+    background-color: lightgray;
+}
+.tnode-icon {
+    width: 1em;
+}
+.tree-children {
+    padding-left: 1em;
+}
+
+.column-label {
+    font-size:1rem;
+}
+.column-sorter {
+    font-size:0.5rem;
+}
+
+
 .ssplitter.horizontal {
     width: 3px;
     background-color: gray;
@@ -159,4 +187,8 @@
     text-align: center;
     font-size: 1.8rem;
     margin-bottom: 5px;
+}
+#app-time {
+    padding: 0.1rem 0.25rem 0.1rem 0.25rem;
+    font-size: 1.0rem;
 }

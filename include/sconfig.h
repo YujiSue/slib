@@ -221,10 +221,10 @@ namespace slib {
 
     constexpr size_t NOT_FOUND = -1;
     constexpr size_t SHORT_STRING_CAPACITY = 23;
-	constexpr char alphabet_[27] = "abcdefghijklmnopqrstuvwxyz";
-	constexpr char ALPHABET_[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	constexpr char hex_[17] = "0123456789abcdef";
-	constexpr char HEX_[17] = "0123456789ABCDEF";
+	constexpr char alphabet_str[32] = "abcdefghijklmnopqrstuvwxyz";
+	constexpr char ALPHABET_STR[32] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	constexpr char hex_str[24] = "0123456789abcdef";
+	constexpr char HEX_STR[24] = "0123456789ABCDEF";
 
 #ifdef WIN_OS
 #define NEW_LINE slib::String("\r\n")

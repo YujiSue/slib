@@ -35,18 +35,6 @@ const CTRL_CHAR=codedString('&#8963;');
 const SHIFT_CHAR=codedString('&#8679;');
 const OPT_CHAR=codedString('&#8997;');
 
-const COLOR_BLACK='#000000';
-const COLOR_WHITE='#FFFFFF';
-const COLOR_RED='#FF0000';
-const COLOR_GREEN='#00FF00';
-const COLOR_BLUE='#0000FF';
-const COLOR_MAGENTA='#FF00FF';
-const COLOR_YELLOW='#FFFF00';
-const COLOR_CYAN='#00FFFF';
-//const COLOR_GREEN='#00FF00';
-//const COLOR_YELLOW='#FFFF00';
-
-
 
 
 var DEFAULT=0x0000;
@@ -94,10 +82,8 @@ if (platform){
 if(CLIENT_ENV===MOBILE_DEVICE|APPLE_DEVICE) {
     (function(DOMParser) {
         "use strict";
-    
         var proto = DOMParser.prototype, 
         nativeParse = proto.parseFromString;
-    
         // Firefox/Opera/IE throw errors on unsupported types
         try {
             // WebKit returns null on unsupported types
@@ -106,19 +92,14 @@ if(CLIENT_ENV===MOBILE_DEVICE|APPLE_DEVICE) {
                 return;
             }
         } catch (ex) {}
-    
         proto.parseFromString = function(markup, type) {
             if (/^\s*text\/html\s*(?:;|$)/i.test(type)) {
                 var doc = document.implementation.createHTMLDocument("");
                     if (markup.toLowerCase().indexOf('<!doctype') > -1) {
                         doc.documentElement.innerHTML = markup;
-                    } else {
-                        doc.body.innerHTML = markup;
-                    }
+                    } else { doc.body.innerHTML = markup; }
                 return doc;
-            } else {
-                return nativeParse.apply(this, arguments);
-            }
+            } else { return nativeParse.apply(this, arguments); }
         };
     }(DOMParser));
 }
@@ -127,11 +108,8 @@ if(!String.prototype.endsWith){String.prototype.endsWith=function(s,p){return th
 if(!String.prototype.padStart) {
     String.prototype.padStart=function padStart(l,s) {
         l=l>>0;s=String(typeof s!=='undefined'?padString:' ');
-        if (this.length>=l){return String(this);}
-        else{
-            l=l-this.length;if (l>s.length){s+=s.repeat(l/s.length);}
-            return s.slice(0,l)+String(this);
-        }
+        if(this.length>=l){return String(this);}
+        else{l=l-this.length;if(l>s.length){s+=s.repeat(l/s.length);}return s.slice(0,l)+String(this);}
     };
 }
 if(!DOMTokenList.prototype.replace){DOMTokenList.prototype.replace=function(o,n){const v=String(DOMTokenList.value);DOMTokenList.value=v.replace(o,n);};}
@@ -214,13 +192,14 @@ function useHash(t,f) {
     }
 };
 function instanceOfID(i,s){if(!s){s=document;} const e=s.getElementById(i); if(e){return e.sui;} else return null;};
-function inRange(x,y,s){
-    if(s) return x>=s.X()&&x<=(s.X()+s.width())&&y>=s.Y()&&y<=s.Y()+s.height();
-    return false;
-};
+function inRange(x,y,s){if(s){return x>=s.X()&&x<=(s.X()+s.width())&&y>=s.Y()&&y<=s.Y()+s.height();} return false;};
 function menuRoot(sui){
 
 };
+function parseValue(v) {
+    if (typeof(v)==='number') return v+'px';
+    else if (typeof(v)==='string') return v;
+}
 function parseIcon(s,c) {
     if (s.startsWith('icon:')) return sicon(s.substring(5),{class:['unselectable','unresponsible']});
     else if(s.startsWith('image:')) return simgview({src:s.substring(6),class:['unselectable','unresponsible']});
@@ -257,6 +236,8 @@ SSocket.prototype={
     send: function(d){this.socket.emit(this.connectID,d);},
     setResponse:function(r){this.response=r;}
 };
+
+
 function SConnect() {};
 SConnect.prototype={
     get: function(p) {
@@ -264,7 +245,7 @@ SConnect.prototype={
         const xhr=new XMLHttpRequest();xhr.open('GET',p.url);xhr.responseType=p.type;xhr.send();
         xhr.onreadystatechange=function() {
             if (xhr.readyState===XMLHttpRequest.DONE) {
-                if(xhr.status===200&&p.next){p.next(xhr.response);}else if(p.error){p.error(xhr.status);}
+                if(xhr.status===200&&p.next){p.next(xhr.response);} else if(p.error){p.error(xhr.status);}
             }
         }
     },
@@ -273,7 +254,7 @@ SConnect.prototype={
         var xhr=new XMLHttpRequest();xhr.open('POST',p.url);xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');xhr.send(encodeForm(p.data));
         xhr.onreadystatechange=function() {
             if (this.readyState===XMLHttpRequest.DONE) {
-                if (xhr.status===200&&p.next){p.next(xhr.response);}else if(p.error){p.error(xhr.status);}
+                if (xhr.status===200&&p.next){p.next(xhr.response);} else if(p.error){p.error(xhr.status);}
             }
         }
     }
@@ -282,8 +263,8 @@ function SGET(u,t) {
     return new Promise(function(resolve,reject) {
         var xhr=new XMLHttpRequest();xhr.open('GET',u);xhr.responseType=t;xhr.send();
         xhr.onreadystatechange=function() {
-            if (xhr.readyState===XMLHttpRequest.DONE) {
-                if (xhr.status===200){resolve(xhr.response);}else{reject();}
+            if(xhr.readyState===XMLHttpRequest.DONE) {
+                if(xhr.status===200){resolve(xhr.response);} else{reject();}
             }
         }
     });
@@ -292,8 +273,8 @@ function SPOST(u,t,d) {
     return new Promise(function(resolve,reject) {
         var xhr=new XMLHttpRequest();xhr.open('POST',u);xhr.setRequestHeader('Content-Type',t);xhr.send(d);
         xhr.onreadystatechange=function() {
-            if (this.readyState===XMLHttpRequest.DONE) {
-                if (xhr.status===200){resolve(xhr.response);}else{reject(xhr.status);}
+            if(this.readyState===XMLHttpRequest.DONE) {
+                if(xhr.status===200){resolve(xhr.response);} else{reject(xhr.status);}
             }
         }
     });
@@ -550,7 +531,7 @@ function scheck(a){return new SCheckBox(a);};
 function sselitem(a){return new SSelectItem(a);};
 function sselect(a){return new SSelector(a);};
 function sslider(a){return new SSlider(a);};
-function sfileio(a){return new SFileLoader(a);};
+function sfileloader(a){return new SFileLoader(a);};
 function sprogress(a){return new SProgress(a);};
 function stimer(a,b,c){return new STimer(a,b,c);};
 
@@ -825,10 +806,10 @@ SUIComponent.prototype={
     setMarginL:function(margin){this.node.style.marginLeft=margin;},
     setMarginR:function(margin){this.node.style.marginRight=margin;},
     setPadding:function(padding){
-        this.node.style.paddingTop=padding[0]+'px';
-        this.node.style.paddingRight=padding[1]+'px';
-        this.node.style.paddingBottom=padding[2]+'px';
-        this.node.style.paddingLeft=padding[3]+'px';
+        this.node.style.paddingTop=parseValue(padding[0]);
+        this.node.style.paddingRight=parseValue(padding[1]);
+        this.node.style.paddingBottom=parseValue(padding[2]);
+        this.node.style.paddingLeft=parseValue(padding[3]);
     },
     setHorizontalAlign:function(align){this.node.style.textAlign=align; return this;},
     setVerticalAlign:function(align){ this.node.style.verticalAlign=align; return this;},
@@ -890,37 +871,37 @@ SUIComponent.prototype={
     setSize:function(size){this.node.style.fontSize=size + 'px';},
     setDraggable:function(d){this.node.draggable=d;},
     setBorder:function(border){
-        if(border.style != undefined) this.node.style.borderStyle=border.style;
-        if(border.width != undefined) this.node.style.borderWidth=border.width;
-        if(border.color != undefined) this.node.style.borderColor=border.color;
-        if(border.radius != undefined) this.node.style.borderRadius=border.radius;
-        if(border.top != undefined){
+        if(border.style) this.node.style.borderStyle=border.style;
+        if(border.width) this.node.style.borderWidth=parseValue(border.width);
+        if(border.color) this.node.style.borderColor=border.color;
+        if(border.radius) this.node.style.borderRadius=parseValue(border.radius);
+        if(border.top){
             var tborder=border.top;
-            if(tborder.style != undefined) this.node.style.borderTopStyle=tborder.style;
-            if(tborder.width != undefined) this.node.style.borderTopWidth=tborder.width;
-            if(tborder.color != undefined) this.node.style.borderTopColor=tborder.color;
-            if(tborder.radius != undefined) this.node.style.borderTopRadius=tborder.radius;
+            if(tborder.style) this.node.style.borderTopStyle=tborder.style;
+            if(tborder.width) this.node.style.borderTopWidth=parseValue(tborder.width);
+            if(tborder.color) this.node.style.borderTopColor=tborder.color;
+            if(tborder.radius) this.node.style.borderTopRadius=parseValue(tborder.radius);
        }
-        if(border.bottom != undefined){
+        if(border.bottom){
             var bborder=border.bottom;
-            if(bborder.style != undefined) this.node.style.borderBottomStyle=bborder.style;
-            if(bborder.width != undefined) this.node.style.borderBottomWidth=bborder.width;
-            if(bborder.color != undefined) this.node.style.borderBottomColor=bborder.color;
-            if(bborder.radius != undefined) this.node.style.borderBottomRadius=bborder.radius;
+            if(bborder.style) this.node.style.borderBottomStyle=bborder.style;
+            if(bborder.width) this.node.style.borderBottomWidth=parseValue(bborder.width);
+            if(bborder.color) this.node.style.borderBottomColor=bborder.color;
+            if(bborder.radius) this.node.style.borderBottomRadius=parseValue(bborder.radius);
        }
-        if(border.left != undefined){
+        if(border.left){
             var lborder=border.left;
-            if(lborder.style != undefined) this.node.style.borderLeftStyle=lborder.style;
-            if(lborder.width != undefined) this.node.style.borderLeftWidth=lborder.width;
-            if(lborder.color != undefined) this.node.style.borderLeftColor=lborder.color;
-            if(lborder.radius != undefined) this.node.style.borderLeftRadius=lborder.radius;
+            if(lborder.style) this.node.style.borderLeftStyle=lborder.style;
+            if(lborder.width) this.node.style.borderLeftWidth=parseValue(lborder.width);
+            if(lborder.color) this.node.style.borderLeftColor=lborder.color;
+            if(lborder.radius) this.node.style.borderLeftRadius=parseValue(lborder.radius);
        }
-        if(border.right != undefined){
+        if(border.right){
             var rborder=border.right;
-            if(rborder.style != undefined) this.node.style.borderRightStyle=rborder.style;
-            if(rborder.width != undefined) this.node.style.borderRightidth=rborder.width;
-            if(rborder.color != undefined) this.node.style.borderRightColor=rborder.color;
-            if(rborder.radius != undefined) this.node.style.borderRightRadius=rborder.radius;
+            if(rborder.style) this.node.style.borderRightStyle=rborder.style;
+            if(rborder.width) this.node.style.borderRightidth=parseValue(rborder.width);
+            if(rborder.color) this.node.style.borderRightColor=rborder.color;
+            if(rborder.radius) this.node.style.borderRightRadius=parseValue(rborder.radius);
        }
         return this;
     },
@@ -976,7 +957,7 @@ SSpacer.prototype=Object.create(SUIComponent.prototype,{
         this.setSuiID('spacer').setMainClass('sspacer');
     }}});
 SSpacer.prototype.constructor=SSpacer;
-function SBar(d,p){p=propOverride(p,{style:'solid',width:1,color:'dimgray'});
+function SBar(d,p){p=propOverride(p,{style:'solid',width:0.25,color:'lightgray'});
     if(d===HORIZONTAL) SUIComponent.call(this,'div',{border:{top:p}});
     else SUIComponent.call(this,'div',{border:{left:p}});
 };
@@ -1388,9 +1369,7 @@ SSplitter.prototype=Object.create(SUIComponent.prototype, {
     update: {value: function(e){
         if(this.direction==HORIZONTAL) {
             if(this.primary) {
-                if(this.primary.width()+SMOUSE_STATE.diffX<0) {
-                    this.primary.setWidth(0);
-                }
+                if(this.primary.width()+SMOUSE_STATE.diffX<0) this.primary.setWidth(0);
                 else this.primary.setWidth(this.primary.width()+SMOUSE_STATE.diffX);
             }
             if(this.secondary) {
@@ -1444,14 +1423,8 @@ SSplitView.prototype=Object.create(SView.prototype, {
             .add(this.secondary);
         }
     },
-    setPrimaryView:{value:function(v) {
-        this.primary.clear();
-        this.primary.add(v);
-    }},
-    setSecondaryView:{value:function(v) {
-        this.secondary.clear();
-        this.secondary.add(v);
-    }}
+    setPrimaryView:{value:function(v){this.primary.clear();this.primary.add(v);return this;}},
+    setSecondaryView:{value:function(v){this.secondary.clear();this.secondary.add(v);return this;}}
 });
 SSplitView.prototype.constructor=SSplitView;
 
@@ -1461,14 +1434,11 @@ SWebView.prototype=Object.create(SUIComponent.prototype, {
     initNode:{
         value:function(p) {
             SUIComponent.prototype.initNode.apply(this, [ p ]);
-            this.setSuiID('webview')
-            .setMainClass('swebview')
-            .setAttribute({frameBorder:'0'})
-            .setSource(p.src);
+            this.setSuiID('webview').setMainClass('swebview').setAttribute({frameBorder:'0'}).setSource(p.src);
         }
     },
     source:{value:function(){return this.node.contentWindow.location;}},
-    setSource:{value:function(src){this.node.src=src; return this;}}
+    setSource:{value:function(src){this.node.src=src;return this;}}
 });
 SWebView.prototype.constructor=SWebView;
 function SImageView(p){p=propOverride(p,{src:'',alt:'',width:null,height:null});SUIComponent.call(this,'img',p);};
@@ -1476,30 +1446,17 @@ SImageView.prototype=Object.create(SUIComponent.prototype, {
     initNode:{
         value:function(p) {
             SUIComponent.prototype.initNode.apply(this,[p]);
-            const Cls=this;
-            this.oriWidth=0;
-            this.oriHeight=0;
-            this.image=new Image();
-            this.image.onload=function() {
-                Cls.oriWidth=Cls.image.width;
-                Cls.oriHeight=Cls.image.height;
-            };
-            this.setSuiID('image')
-            .setMainClass('simage')
-            .setSource(p.src)
-            .setAlt(p.alt)
-            .setWidth(p.width)
-            .setHeight(p.height);
+            const Cls=this;this.oriWidth=0;this.oriHeight=0;this.image=new Image();
+            this.image.onload=function(){Cls.oriWidth=Cls.image.width;Cls.oriHeight=Cls.image.height;};
+            this.setSuiID('image').setMainClass('simage').setSource(p.src).setAlt(p.alt).setWidth(p.width).setHeight(p.height);
         }
     },
     source:{value:function(){return this.node.src;}},
-    setSource:{value:function(s){
-        this.image.src=s;this.node.src=s;return this;
-    }},
+    setSource:{value:function(s){this.image.src=s;this.node.src=s;return this;}},
     altText:{value:function(){return this.node.alt;}},
     setAlt:{value:function(t){this.node.alt=t; return this;}},
-    setWidth:{value:function(w){if(w) this.node.width=w; return this;}},
-    setHeight:{value:function(h){if(h) this.node.height=h; return this;}}
+    setWidth:{value:function(w){if(w){this.node.width=w;}return this;}},
+    setHeight:{value:function(h){if(h){this.node.height=h;}return this;}}
 });
 SImageView.prototype.constructor=SImageView;
 
@@ -1613,12 +1570,7 @@ SColorPicker.prototype=Object.create(SUIComponent.prototype, {
     }
 });
 SColorPicker.prototype.constructor=SColorPicker;
-function SFileLoader(p) {
-    p=propOverride(p,{id:'sfl',label:'file-select',filter:null,action:null});
-    this.accessible=true;
-    this.files=null;
-    SUIComponent.call(this,'div',p);
-};
+
 
 
 
@@ -1643,10 +1595,7 @@ SList.prototype=Object.create(SUIComponent.prototype,{
             this.setSuiID('list').setMainClass('slist');
             this.node.style.listStyle=p.prefix;
             if(p.items.length){
-                for (var i in p.items){
-                    if(i.suiid) this.add(i);
-                    else this.add(slistitem(i));
-                }
+                for (var i in p.items){if(i.suiid){this.add(i);} else{this.add(slistitem(i));}}
             }
         }
     }
@@ -1662,7 +1611,7 @@ SListView.prototype=Object.create(SUIComponent.prototype,{
         value:function(p){
             SUIComponent.prototype.initNode.apply(this,[p]);
             this.setSuiID('listview').setMainClass('slist-view');
-            if(p.items.length){for(var i in items){this.add(i);}}
+            if(p.items.length){for(var i=0;i<p.items.length;i++){this.add(p.items[i]);}}
         }
     }
 });
@@ -1677,7 +1626,7 @@ SCardView.prototype=Object.create(SUIComponent.prototype,{
         value:function(p){
             SUIComponent.prototype.initNode.apply(this,[ p ]);
             this.setSuiID('cardview').setMainClass('scard-view');
-            if(p.items.length){for(var i in items){this.add(i);}}
+            if(p.items.length){for(var i=0;i<p.items.length;i++){this.add(p.items[i]);}}
         }
     }
 });
@@ -1731,9 +1680,7 @@ var SRadioCellRenderer={
     },
     setValue:function(c,v) {c.componentAt(0).setState(v);},
     getValue:function(c) {return c.componentAt(0).state;},
-    setEditable:function(c,e) {
-        c.componentAt(0).setAvailable(e);
-    }
+    setEditable:function(c,e) { c.componentAt(0).setAvailable(e); }
 }
 var SSelectCellRenderer={
     render:function(c,p) {
@@ -1743,9 +1690,7 @@ var SSelectCellRenderer={
     },
     setValue:function(c,v) {c.componentAt(0).selectAt(v);},
     getValue:function(c) {return c.componentAt(0).selected.value();},
-    setEditable:function(c,e) {
-        c.componentAt(0).setAvailable(e);
-    }
+    setEditable:function(c,e) { c.componentAt(0).setAvailable(e); }
 }
 function STableColumn(t,p){
     p=propOverride(p,{label:'column',mode:'default',items:null,sort:false,search:false});
@@ -1955,7 +1900,7 @@ STableView.prototype.constructor=STableView;
 
 
 function STreeNode(p){
-    p=propOverride(p,{layout:sflow(VERTICAL),style:NORMAL_TREE,label:'item',leaf:true,state:false,icons:null,children:[]});
+    p=propOverride(p,{layout:sflow(VERTICAL),style:NORMAL_TREE,label:'item',leaf:true,state:false,icon:null,children:[]});
     this.style=p.style;
     this.leaf=p.leaf;
     SUIComponent.call(this,'div',p);
@@ -1968,30 +1913,32 @@ STreeNode.prototype=Object.create(SUIComponent.prototype,{
             this.state=false;
             this.icons=null;
             this.action=p.action;
+            this.hpane=spanel({layout:sflow(HORIZONTAL),class:['tnode-header']});
             this.label=slabel(p.label,{class:['tnode-label','unresponsible','unselectable']});
             this.toggle=sview({class:['tnode-icon','unresponsible','unselectable']});
             if(this.style===NORMAL_TREE){
                 this.setMainClass('stree-node');
-                if(p.icons) this.icons=[parseIcon(p.icons[0]),parseIcon(p.icons[1]),parseIcon(p.icons[2])];
+                if(p.icon) this.icons=[parseIcon(p.icon[0]),parseIcon(p.icon[1]),parseIcon(p.icon[2])];
                 else this.icons=[parseIcon(''),parseIcon(TRI_CHARS[RIGHT]),parseIcon(TRI_CHARS[BOTTOM])];
             }
             else if(this.style===FILE_TREE){
                 this.setMainClass('sfile-node');
-                if(p.icons) this.icons=[parseIcon(p.icons[0]),parseIcon(p.icons[1]),parseIcon(p.icons[2])];
+                if(p.icon) this.icons=[parseIcon(p.icon[0]),parseIcon(p.icon[1]),parseIcon(p.icon[2])];
                 else this.icons=[parseIcon('icon:insert_drive_file'),parseIcon('icon:folder'),parseIcon('icon:folder_open')];
             }
             if(this.leaf) this.toggle.add(this.icons[0]);
+            this.hpane.add(this.toggle).add(this.label);
             this.title=sview({layout:sflow(HORIZONTAL),class:['tree-header']});
-            this.title.add(this.toggle).add(this.label);
+            this.title.add(this.hpane,sspace());
             this.title.node.onclick=function(e){
                if(!Cls.leaf) Cls.setState(!Cls.state);
                if(Cls.action) Cls.action(e);
             }
             this.children=sview({layout:sflow(VERTICAL),class:['tree-children']});
             if(!this.leaf&&p.children.length){
-                for (var c in p.children){
-                    if(c.suiid) this.children.add(streenode(c));
-                    else this.children.add(c);
+                for (var c=0;c<p.children.length;c++){
+                    if(p.children[c].suiid) this.children.add(p.children[c]);
+                    else this.children.add(streenode(p.children[c]));
                 };
             }
             this.setSuiID('treenode')
@@ -2236,7 +2183,7 @@ SMenu.prototype=Object.create(SUIComponent.prototype, {
     }},
     hide: {
         value: function() {
-            this.remove();
+            this.setVisible(false);
             CURRENT_MENU=null;
             this.active = false;
         }},
@@ -2537,7 +2484,7 @@ function STextView(p) {
 STextView.prototype=Object.create(SUIComponent.prototype, {
     initNode:{
         value:function(p) {
-            SUIComponent.prototype.initNode.apply(this,[{}]);
+            SUIComponent.prototype.initNode.apply(this,[p]);
             this.setSuiID('textview')
             .setMainClass('stext-view')
             .setValue(p.value)
@@ -2546,7 +2493,7 @@ STextView.prototype=Object.create(SUIComponent.prototype, {
         }
     },
     value:{value:function() {return this.node.innerHTML;}},
-    setValue:{value:function(t) {if (t) this.node.innerHTML=t; return this;}},
+    setValue:{value:function(t) {this.node.innerHTML=t; return this;}},
     isSelectable:{value:function() {return !this.hasClass('unselectable');}},
     setSelectable:{value:function(s) {
         if (s) this.removeClass('unselectable');
@@ -2787,7 +2734,12 @@ SDatePicker.prototype.constructor=SDatePicker;
 
 
 
-
+function SFileLoader(p) {
+    p=propOverride(p,{id:'sfl',label:'file-select',filter:null,action:null});
+    this.accessible=true;
+    this.files=null;
+    SUIComponent.call(this,'div',p);
+};
 SFileLoader.prototype=Object.create(SUIComponent.prototype, {
     initNode:{
         value:function(p) {
@@ -2811,6 +2763,11 @@ SFileLoader.prototype=Object.create(SUIComponent.prototype, {
     }
 });
 SFileLoader.prototype.constructor=SFileLoader;
+
+
+
+
+
 function SLabel(t,p) {p=propOverride(p,{});SUIComponent.call(this,'span',p);this.setText(t);};
 SLabel.prototype=Object.create(SUIComponent.prototype, {
     initNode:{value:function(p) {
@@ -2862,6 +2819,9 @@ SIcon.prototype=Object.create(SUIComponent.prototype, {
     }}
 });
 SIcon.prototype.constructor=SIcon;
+
+
+
 function SProgress(p) {
     p=propOverride(p,{min:0,max:100,value:0,direction:HORIZONTAL,repaint:null});
     this.direction=p.direction;

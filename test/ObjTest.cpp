@@ -130,9 +130,20 @@ void test::SDateTest() {
 void test::SDataTest() {
 	std::cout << String("*") * 50 << std::endl;
 	std::cout << "SData Test" << std::endl;
-	SData dat1;
+	SData dat1, dat2, dat3;
+	SRandom rand;
+	sforin(i, 0, 100) {
+		auto v = rand.iruni(0, 15);
+		dat1.add(v); dat2.add(HEX_STR[v]);
+	}
 
 
+	intarray array;
+	String str;
+	dat1.asArray<sint>(array);
+	std::cout << array << std::endl;
+	dat2.asString(str);
+	std::cout << str << std::endl;
 	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::SArrayTest() {
@@ -228,7 +239,7 @@ void test::SNetTest() {
 	String str;
 	SNetWork net;
 	net.http("https://yujisue.github.io/", true);
-	net.data.trans(str);
+	net.data.asString(str);
 	std::cout << str << std::endl;
 
 	std::cout << String("*") * 50 << NEW_LINE << std::endl;
