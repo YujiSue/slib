@@ -33,7 +33,7 @@ namespace slib {
         Map();
         Map(std::initializer_list<std::pair<Key, Val>> li);
         Map(std::initializer_list<kvpair<Key, Val>> li);
-		Map(Map &&map);
+		Map(Map &&map) noexcept;
         Map(const Map &map);
         ~Map();
         Map &operator=(const Map &map);
@@ -154,7 +154,7 @@ namespace slib {
         if (li.size()) sforeach(li) insert(E_);
     }
 	template<class Key, class Val>
-	Map<Key, Val>::Map(Map&& map) {
+	Map<Key, Val>::Map(Map&& map) noexcept {
 		_seed = map._seed;
 		_size = map._size;
 		_begin = map._begin;

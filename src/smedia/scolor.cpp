@@ -526,7 +526,7 @@ floatarray &SGradient::points() { return _points; }
 const floatarray &SGradient::points() const { return _points; }
 void SGradient::setCoordinate(sgeom::COORDINATE coord) { _coord = coord; }
 void SGradient::setAngle(float f) { _angle = f; }
-void SGradient::setPosition(size_t idx, float f) { _points[idx] = f; }
+void SGradient::setPosition(size_t idx, float f) { _points[(int)idx] = f; }
 void SGradient::addColor(float f, const SColor &col) {
 
 	if (_type != col.type()) {

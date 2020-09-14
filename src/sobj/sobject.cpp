@@ -908,10 +908,10 @@ long SObjPtr::longValue() const {
 }
 unsigned long SObjPtr::ulongValue() const {
     if (isNull()) return 0;
-    else if (isNum()) return number().sizeValue();
+    else if (isNum()) return (unsigned long)number().sizeValue();
     else if (isStr()) {
         if (empty()) return 0;
-        else if (isNumeric()) return string().sizeValue();
+        else if (isNumeric()) return (unsigned long)string().sizeValue();
     }
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }

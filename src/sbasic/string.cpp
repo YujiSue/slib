@@ -52,7 +52,7 @@ void Regex::split(Array<String, SMemory<String>> &array, const String *str) cons
     auto p = str->ptr();
     std::cregex_iterator end;
     sfortill(it, std::cregex_iterator(p, p+str->size(), _rgx), end) {
-        array.add(str->substring(srange(off, E_.position())));
+        array.add(str->substring(srange((sint)off, (sint)E_.position())));
         off = E_.position()+E_.size();
     }
 }
@@ -265,7 +265,7 @@ String::String(size_t s, const char &c) : String() {
         if (s) {
             memset(_str._ss.str, c, s);
             _str._ss.str[s] = '\0';
-			_str._ss.size = s << 1;
+			_str._ss.size = (sbyte)(s << 1);
         }
     }
     else {
@@ -283,7 +283,7 @@ String::String(const char *s) : String() {
         auto len = strlen(s);
         if (len < SHORT_STRING_CAPACITY-1) {
             if (len) strcpy(_str._ss.str, s);
-            _str._ss.size = len << 1;
+            _str._ss.size = (sbyte)(len << 1);
         }
         else {
             _str._ls.capacity = (((len>>4)+1)<<4)|0x01;
@@ -298,7 +298,7 @@ String::String(const std::string &s) : String() {
     if (len < SHORT_STRING_CAPACITY-1) {
         if (len) {
             CMemory<char>::copy(_str._ss.str, &s[0], len);
-            _str._ss.size = len<<1;
+            _str._ss.size = (sbyte)(len << 1);
             _str._ss.str[len] = '\0';
         }
     }
@@ -320,7 +320,7 @@ String::String(const String &s) : String() {
     if (len < SHORT_STRING_CAPACITY-1) {
         if (len)  {
             CMemory<char>::copy(_str._ss.str, &s[0], len);
-            _str._ss.size = len << 1;
+            _str._ss.size = (sbyte)(len << 1);
             _str._ss.str[len] = '\0';
         }
     }
@@ -337,7 +337,7 @@ String::String(const SString &s) : String() {
     if (len < SHORT_STRING_CAPACITY-1) {
         if (len) {
             CMemory<char>::copy(_str._ss.str, &s[0], len);
-            _str._ss.size = len << 1;
+            _str._ss.size = (sbyte)(len << 1);
             _str._ss.str[len] = '\0';
         }
     }
@@ -535,27 +535,27 @@ const char *String::cstr() const { return _isLong()?_str._ls.str:_str._ss.str; }
 std::string String::toStr() const { return std::string(cstr()); }
 char &String::operator[] (int idx) { return at(idx); }
 const char &String::operator[] (int idx) const { return at(idx); }
-char &String::at(int idx) {
-    if (_isLong()) {
-		int p = idx < 0 ? _str._ls.size + idx : idx;
-        if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
-    }
-    else {
-        int p = idx<0?(_str._ss.size>>1)+idx:idx;
-        if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
-    }
+char& String::at(int idx) {
+	if (_isLong()) {
+		int p = idx < 0 ? (int)_str._ls.size + idx : idx;
+		if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
+	}
+	else {
+		int p = idx < 0 ? (_str._ss.size >> 1) + idx : idx;
+		if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
+	}
 	throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 }
-const char &String::at(int idx) const {
-    if (_isLong()) {
-        int p = idx<0?_str._ls.size+idx:idx;
-        if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
-    }
-    else {
-        int p = idx<0?(_str._ss.size>>1)+idx:idx;
-        if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
-    }
-    throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+const char& String::at(int idx) const {
+	if (_isLong()) {
+		int p = idx < 0 ? (int)_str._ls.size + idx : idx;
+		if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
+	}
+	else {
+		int p = idx < 0 ? (_str._ss.size >> 1) + idx : idx;
+		if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
+	}
+	throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 }
 char &String::first(){ return at(0); }
 const char &String::first() const{ return at(0); }

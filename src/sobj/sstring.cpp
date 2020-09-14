@@ -85,7 +85,7 @@ SString::SString(const SString &s) : SString() {
     auto len = s.length();
     if (len < SHORT_STRING_CAPACITY-1) {
         if (len) CMemory<char>::copy(_str._ss.str, &s[0], len);
-        _str._ss.size = len << 1;
+        _str._ss.size = (sbyte)(len << 1);
     }
     else {
         _str._ls.capacity = (((len>>4)+1)<<4)|0x01;

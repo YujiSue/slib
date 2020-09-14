@@ -66,7 +66,7 @@ namespace slib {
         Array(size_t s);
         Array(size_t s, const T &val);
         Array(std::initializer_list<T> li);
-        Array(Array &&array);
+        Array(Array &&array) noexcept;
         Array(const Array &array);
         ~Array();
         Array &operator = (const Array &array);
@@ -137,7 +137,7 @@ namespace slib {
 		CArray(size_t s);
 		CArray(size_t s, const T& val);
 		CArray(std::initializer_list<T> li);
-		CArray(CArray&& array);
+		CArray(CArray&& array) noexcept;
 		CArray(const CArray& array);
 		~CArray();
 		CArray& operator = (const CArray& array);
@@ -204,7 +204,7 @@ namespace slib {
         }
     }
     template <typename T, class M>
-    Array<T, M>::Array(Array<T, M> &&array) : Array() {
+    Array<T, M>::Array(Array<T, M> &&array) noexcept : Array() {
         _capacity = array._capacity;
         _begin = array._begin;
         _end = array._end;
@@ -560,7 +560,7 @@ namespace slib {
 	template <typename T>
 	CArray<T>::CArray(std::initializer_list<T> li) : Array<T, CMemory<T>>(li) {}
 	template <typename T>
-	CArray<T>::CArray(CArray&& array) : Array<T, CMemory<T>>(array) {}
+	CArray<T>::CArray(CArray&& array) noexcept : Array<T, CMemory<T>>(std::forward<CArray&&>(array)) {}
 	template <typename T>
 	CArray<T>::CArray(const CArray& array) : Array<T, CMemory<T>>(array) {}
 	template <typename T>

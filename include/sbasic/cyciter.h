@@ -138,7 +138,7 @@ namespace slib {
 	template<typename T>
 	SCycleIterator<T>& SCycleIterator<T>::operator +=(std::ptrdiff_t diff) {
 		if (_size == diff) return *this;
-		else _adjust(_current + diff);
+		else _adjust(_current + (sint)diff);
 		return *this;
 	}
 	template<typename T>

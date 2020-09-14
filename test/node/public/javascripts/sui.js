@@ -1109,6 +1109,7 @@ SDialog.prototype=Object.create(SUIComponent.prototype, {
             this.content.setMainClass('sdialog');
             this.content.node.onclick=function(e){e.stopPropagation();};
             this.node.onclick=function(e){Cls.hide();};
+            this.add(this.content);
         }
         else this.message=p.message;
     }},

@@ -4,12 +4,12 @@
 using namespace slib;
 
 std::pair<slib::String, int> slib::slocale::JPYear(int year) {
-	srforeach(speriod::ERA_J_YEAR) { if (E_ < year) return std::pair<String, int>(speriod::ERA_J[INDEX_(speriod::ERA_J_YEAR)], year - E_); }
+	srforeach(speriod::ERA_J_YEAR) { if (E_ < year) return std::pair<String, int>(speriod::ERA_J[(int)INDEX_(speriod::ERA_J_YEAR)], year - E_); }
 	throw SException(ERR_INFO);
 }
 int slib::slocale::ADYear(const char* s, int year) {
 	auto idx = speriod::ERA_J.find(s);
-	if (idx != NOT_FOUND) return speriod::ERA_J_YEAR[idx] + year;
+	if (idx != NOT_FOUND) return speriod::ERA_J_YEAR[(int)idx] + year;
 	throw SException(ERR_INFO);
 }
 slib::String Locale::_locale = DEFAULT_LANG;

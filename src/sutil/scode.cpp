@@ -16,21 +16,21 @@ void SHash::md5(String& data, ubytearray& digest) {
 	digest.resize(16);
 	MD5_CTX context;
 	MD5Init(&context);
-	MD5Update(&context, (unsigned char *)data.cstr(), data.size());
+	MD5Update(&context, (unsigned char *)data.cstr(), (unsigned int)data.size());
 	MD5Final(&digest[0], &context);
 }
 void SHash::md5(ubytearray& data, ubytearray& digest) {
 	digest.resize(16);
 	MD5_CTX context;
 	MD5Init(&context);
-	MD5Update(&context, data.ptr(), data.size());
+	MD5Update(&context, data.ptr(), (unsigned int)data.size());
 	MD5Final(&digest[0], &context);
 }
 void SHash::md5Str(String& data, String& str) {
 	MD5_CTX context;
 	unsigned char digest[16];
 	MD5Init(&context);
-	MD5Update(&context, (unsigned char*)data.cstr(), data.size());
+	MD5Update(&context, (unsigned char*)data.cstr(), (unsigned int)data.size());
 	MD5Final(&digest[0], &context);
 	sforin(i, 0, 16) { str += SNumber::toHex(digest[i]); }
 }
@@ -38,7 +38,7 @@ void SHash::md5Str(ubytearray& data, String& str) {
 	MD5_CTX context;
 	unsigned char digest[16];
 	MD5Init(&context);
-	MD5Update(&context, data.ptr(), data.size());
+	MD5Update(&context, data.ptr(), (unsigned int)data.size());
 	MD5Final(&digest[0], &context);
 	sforin(i, 0, 16) { str += SNumber::toHex(digest[i]); }
 }

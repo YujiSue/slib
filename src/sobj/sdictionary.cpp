@@ -30,7 +30,7 @@ SDictionary::SDictionary(const sattribute &attr) : SDictionary() {
 }
 SDictionary::SDictionary(const sobj &obj) : SDictionary(obj.dict()) {}
 SDictionary::SDictionary(const SDictionary &dict) : SObject(), Map<String, sobj>(dict) {}
-SDictionary::SDictionary(SDictionary&& dict) : SObject(), Map<String, sobj>(std::forward<Map<String, sobj> &&>(dict)) {}
+SDictionary::SDictionary(SDictionary&& dict) noexcept : SObject(), Map<String, sobj>(std::forward<Map<String, sobj> &&>(dict)) {}
 SDictionary::~SDictionary() {}
 SDictionary &SDictionary::operator=(const SDictionary &dic) {
     clear();

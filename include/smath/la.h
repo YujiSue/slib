@@ -1460,7 +1460,7 @@ namespace slib {
 			return v;
 		}
 		extern inline sveci sequence(size_t num) {
-			return sequence(srange(1, num));
+			return sequence(srange(1, (sint)num));
 		}
 		extern inline sveci arithsequence(int beg, int diff, size_t num) {
 			sveci v(num);

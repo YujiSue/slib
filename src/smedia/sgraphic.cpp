@@ -54,7 +54,7 @@ void STransform2D::rotate(float rot, v2fvec& vertex, v2f ori) {
 void STransform2D::reflect(subyte ref, v2fvec& vertex, v2f ori) {
 	ori *= -1.0;
 	shift(ori, vertex);
-	mat2f mat((ref == smath::HORIZONTAL ? -1 : 1), 0, 0, (ref == smath::VERTICAL ? -1 : 1));
+	mat2f mat((ref == smath::HORIZONTAL ? -1.f : 1.f), 0.f, 0.f, (ref == smath::VERTICAL ? -1.f : 1.f));
 	sforeach(vertex) E_ = mat * E_;
 	ori *= -1.0;
 	shift(ori, vertex);

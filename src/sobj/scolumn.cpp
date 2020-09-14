@@ -138,7 +138,7 @@ void SColumn::convert(sushort t) {
     if (_type == t || empty()) return;
     if (_table) {
         auto idx = _table->columnIndex(_name);
-        sforeach(_table->_rows) _convert(E_[idx], _type, t);
+        sforeach(_table->_rows) _convert(E_[(int)idx], _type, t);
     }
     _type = t;
 }
@@ -151,7 +151,7 @@ String SColumn::toString() const {
         auto idx = _table->columnIndex(_name);
         if (_table->_rows.empty()) str += "]}";
         else {
-            sforeach(_table->_rows) str<<E_[idx]<<",";
+            sforeach(_table->_rows) str<<E_[(int)idx]<<",";
             str.last() = ']'; str += "}";
         }
     }

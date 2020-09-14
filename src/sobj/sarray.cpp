@@ -25,7 +25,7 @@ SArray::SArray(const sobj &obj) : SArray() {
     if (obj.isArray()) *this = obj.array();
     else add(obj);
 }
-SArray::SArray(SArray&& array) : Array(std::forward<Array &&>(array)) {}
+SArray::SArray(SArray&& array) noexcept : Array(std::forward<Array &&>(array)) {}
 SArray::SArray(const SArray &array) : Array(array) {}
 SArray::~SArray() {}
 SArray &SArray::operator = (const SArray &array) {

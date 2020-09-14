@@ -72,7 +72,7 @@ namespace slib {
 			if (0.0 < abs(len)) p /= len;
 			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
-		extern inline v2f xy2polar(const v2f& xy) { return v2f(length(xy), argument(xy)); }
+		extern inline v2f xy2polar(const v2f& xy) { return v2f((float)length(xy), (float)argument(xy)); }
 		extern inline v2d xy2polar(const v2d& xy) { return v2d(length(xy), argument(xy)); }
 		extern inline v2f polar2xy(const v2f& pol) { return v2f(pol.x * cos(pol.y), pol.x * sin(pol.y)); }
 		extern inline v2d polar2xy(const v2d& pol) { return v2d(pol.x * cos(pol.y), pol.x * sin(pol.y)); }
@@ -120,7 +120,7 @@ namespace slib {
 		extern inline v2d direction(const v3d& p1, const v3d& p2) { return v2d(azimuth(p2 - p1), altitude(p2 - p1)); }
 		extern inline void normalize(v3f& p) {
 			auto len = length(p);
-			if (0.0 < abs(len)) p /= len;
+			if (0.0 < abs(len)) p /= (float)len;
 			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline void normalize(v3d& p) {
@@ -131,11 +131,11 @@ namespace slib {
 		extern inline double distance(const v3i& p1, const v3i& p2) { return length(p1 - p2); }
 		extern inline double distance(const v3f& p1, const v3f& p2) { return length(p1 - p2); }
 		extern inline double distance(const v3d& p1, const v3d& p2) { return length(p1 - p2); }
-		extern inline v3f xyz2sphere(const v3f& xyz) { return v3f(length(xyz), azimuth(xyz), altitude(xyz)); }
+		extern inline v3f xyz2sphere(const v3f& xyz) { return v3f((float)length(xyz), (float)azimuth(xyz), (float)altitude(xyz)); }
 		extern inline v3d xyz2sphere(const v3d& xyz) { return v3d(length(xyz), azimuth(xyz), altitude(xyz)); }
 		extern inline v3f sphere2xyz(const v3f& sph) { return v3f(sph.x * cos(sph.y) * cos(sph.z), sph.x * sin(sph.y) * cos(sph.z), sph.x * sin(sph.z)); }
 		extern inline v3d sphere2xyz(const v3d& sph) { return v3d(sph.x * cos(sph.y) * cos(sph.z), sph.x * sin(sph.y) * cos(sph.z), sph.x * sin(sph.z)); }
-		extern inline v3f xyz2tube(const v3f& xyz) { return v3f(length(xyz), azimuth(xyz), xyz.z); }
+		extern inline v3f xyz2tube(const v3f& xyz) { return v3f((float)length(xyz), (float)azimuth(xyz), xyz.z); }
 		extern inline v3d xyz2tube(const v3d& xyz) { return v3d(length(xyz), azimuth(xyz), xyz.z); }
 		extern inline v3f tube2xy(const v3f& tb) { return v3f(tb.x * cos(tb.y), tb.x * sin(tb.y), tb.z); }
 		extern inline v3d tube2xy(const v3d& tb) { return v3d(tb.x * cos(tb.y), tb.x * sin(tb.y), tb.z); }
@@ -144,7 +144,7 @@ namespace slib {
 		extern inline double length(const v4d& p) { return sqrt(p.x * p.x + p.y * p.y + p.z * p.z + p.w * p.w); }
 		extern inline void normalize(v4f& p) {
 			auto len = length(p);
-			if (0.0 < abs(len)) p /= len;
+			if (0.0 < abs(len)) p /= (float)len;
 			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "p");
 		}
 		extern inline void normalize(v4d& p) {
@@ -200,7 +200,7 @@ namespace slib {
 		}
 		extern inline void normalize(svecf& p) {
 			auto len = length(p);
-			if (0.0 < abs(len)) p /= len;
+			if (0.0 < abs(len)) p /= (float)len;
 			else throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "len");
 		}
 		extern inline void normalize(svecd& p) {

@@ -118,12 +118,12 @@ namespace slib {
                         return (depth * channel) | ((channel | space) << 8);
                 }
                 extern inline sushort b2scolor(subyte i) { return (sushort)(((float)i / smath::MAX_UBYTE) * smath::MAX_USHORT); }
-                extern inline subyte s2bcolor(sushort i) { return ((float)i / smath::MAX_USHORT) * smath::MAX_UBYTE; }
+                extern inline subyte s2bcolor(sushort i) { return (subyte)(((float)i / smath::MAX_USHORT) * smath::MAX_UBYTE); }
                 extern inline float b2fcolor(subyte i) { return (float)i / smath::MAX_UBYTE; }
                 extern inline float s2fcolor(sushort i) { return (float)i / smath::MAX_USHORT; }
-                extern inline subyte f2bcolor(float f) { return f * smath::MAX_UBYTE; }
-                extern inline sushort f2scolor(float f) { return f * smath::MAX_USHORT; }
-                extern inline suint f2icolor(float f) { return f * smath::MAX_UBYTE; }
+                extern inline subyte f2bcolor(float f) { return (subyte)(f * smath::MAX_UBYTE); }
+                extern inline sushort f2scolor(float f) { return (sushort)(f * smath::MAX_USHORT); }
+                extern inline suint f2icolor(float f) { return (suint)(f * smath::MAX_UBYTE); }
                 extern inline suint f2icolor(float* f) {
                         return f2icolor(f[3]) | (f2icolor(f[2]) << 8) | (f2icolor(f[1]) << 16) | (f2icolor(f[0]) << 24);
                 }

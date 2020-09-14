@@ -135,7 +135,7 @@ namespace slib {
             if (comp.real == 0.f && comp.imaginary == 0.f)
                 throw SMathException(ERR_INFO, DIV_ZERO_ERR, "comp");
             (*this) *= comp.conjugated();
-            (*this) /= absolute();
+            (*this) /= (T)absolute();
             return *this;
         }
         template<typename T>
@@ -212,7 +212,7 @@ namespace slib {
         template<typename T>
                 String Complex<T>::rounded(size_t size, smath::ROUND rnd) const {
             String str1, str2;
-            double tmp1 = real*smath::power(10, size), tmp2 = imaginary*smath::power(10, size);
+            double tmp1 = real*smath::power(10, (int)size), tmp2 = imaginary*smath::power(10, (int)size);
             switch (rnd) {
                 case FLOOR:
                     str1 = std::to_string((int)tmp1);

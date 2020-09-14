@@ -37,7 +37,7 @@ namespace slib {
         SUtf8Iterator &operator -=(std::ptrdiff_t diff);
         SUtf8Iterator operator +(std::ptrdiff_t diff) const;
         SUtf8Iterator operator -(std::ptrdiff_t diff) const;
-        int operator-(SUtf8Iterator it) const;
+        sinteger operator-(SUtf8Iterator it) const;
         void swap(SUtf8Iterator uit1, SUtf8Iterator uit2);
         bool operator ==(const SUtf8Iterator &uit) const;
         bool operator !=(const SUtf8Iterator &uit) const;
@@ -76,7 +76,7 @@ namespace slib {
         SUtf8CIterator &operator -=(std::ptrdiff_t diff);
         SUtf8CIterator operator +(std::ptrdiff_t diff) const;
         SUtf8CIterator operator -(std::ptrdiff_t diff) const;
-        int operator-(SUtf8CIterator it) const;
+		sinteger operator-(SUtf8CIterator it) const;
         void swap(SUtf8CIterator uit1, SUtf8CIterator uit2);
         bool operator ==(const SUtf8CIterator &uit) const;
         bool operator !=(const SUtf8CIterator &uit) const;

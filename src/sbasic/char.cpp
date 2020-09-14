@@ -44,11 +44,11 @@ sbyte Char::toNum(const char *s) {
 String Char::wideChar(char c) {
 	String str(3, '\0');
     if (0x20 < (int)c && (int)c < 0x60) {
-        str[0] = 0xEF; str[1] = 0xBC; str[2] = c + 0x60;
+        str[0] = (char)0xEF; str[1] = (char)0xBC; str[2] = (char)((int)c + 0x60);
         return str;
     }
 	else if (0x5F < (int)c && (int)c < 0x7F) {
-		str[0] = 0xEF; str[1] = 0xBD; str[2] = c + 0x20;
+		str[0] = (char)0xEF; str[1] = (char)0xBD; str[2] = (char)((int)c + 0x20);
 		return str;
 	}
     else return String(1, c);

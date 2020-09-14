@@ -117,7 +117,7 @@ namespace slib {
     
     /*============================================================*/
     template<class Key, class Val>
-	map_data<Key, Val>::map_data() : filled(false), next(nullptr) { next = this + 1; }
+	map_data<Key, Val>::map_data() : filled(false), next(nullptr) { memset(data, 0, sizeof(kvpair<Key, Val>));  next = this + 1; }
     template<class Key, class Val>
     map_data<Key, Val>::map_data(const map_data<Key, Val> &dat) : map_data() {
 		filled = dat.filled; next = dat.next; 

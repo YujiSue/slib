@@ -22,7 +22,7 @@ SUtf8Iterator &SUtf8Iterator::operator +=(std::ptrdiff_t diff) { sforin(i, 0, di
 SUtf8Iterator &SUtf8Iterator::operator -=(std::ptrdiff_t diff) { sforin(i, 0, diff) --(*this); return *this; }
 SUtf8Iterator SUtf8Iterator::operator +(std::ptrdiff_t diff) const { auto it_ = *this; sforin(i, 0, diff) ++it_; return it_; }
 SUtf8Iterator SUtf8Iterator::operator -(std::ptrdiff_t diff) const { auto it_ = *this; sforin(i, 0, diff) --it_; return it_; }
-int SUtf8Iterator::operator-(SUtf8Iterator it) const { return _char.cstr()-it._char.cstr(); }
+sinteger SUtf8Iterator::operator-(SUtf8Iterator it) const { return (int)(_char.cstr()-it._char.cstr()); }
 void SUtf8Iterator::swap(SUtf8Iterator uit1, SUtf8Iterator uit2) {
     auto tmp = uit1._char; uit1._char = uit2._char; uit2._char = tmp;
 }
@@ -54,7 +54,7 @@ SUtf8CIterator SUtf8CIterator::operator +(std::ptrdiff_t diff) const {
 SUtf8CIterator SUtf8CIterator::operator -(std::ptrdiff_t diff) const {
     auto it_ = *this; sforin(i, 0, diff) --it_; return it_;
 }
-int SUtf8CIterator::operator-(SUtf8CIterator it) const { return _char.cstr()-it._char.cstr(); }
+sinteger SUtf8CIterator::operator-(SUtf8CIterator it) const { return _char.cstr()-it._char.cstr(); }
 void SUtf8CIterator::swap(SUtf8CIterator uit1, SUtf8CIterator uit2) {
     auto tmp = uit1._char; uit1._char = uit2._char; uit2._char = tmp;
 }

@@ -50,9 +50,9 @@ void SImage::_changeType(sushort t) {
 	}
 }
 
-inline void nn_interpolator(subyte *dest, float x, float y, const SImage *src, subyte bpp) {
-    int x_ = (int)x, y_ = (int)y;
-    memcpy(dest, src->ptr((x-x_<0.5f?x:x+1), (y-y_<0.5f?y:y+1)), bpp);
+inline void nn_interpolator(subyte* dest, float x, float y, const SImage* src, subyte bpp) {
+	int x_ = (int)x, y_ = (int)y;
+	memcpy(dest, src->ptr((x - x_ < 0.5f ? x_ : x_ + 1), (y - y_ < 0.5f ? y_ : y_ + 1)), bpp);
 }
 inline void bl_interpolator(subyte *dest, float x, float y, const SImage *src, subyte bpp) {
     int x_ = (int)x, y_ = (int)y;
@@ -64,9 +64,9 @@ inline void bl_interpolator(subyte *dest, float x, float y, const SImage *src, s
     }
 }
 inline float bc_weight(float f) {
-    if (f <= 1.0) return 1.0-2.0*f*f+f*f*f;
-    else if (f <= 2.0) return 4.0-8.0*f+5.0*f*f-f*f*f;
-    return 0.0;
+	if (f <= 1.f) return 1.f - 2.f * f * f + f * f * f;
+	else if (f <= 2.f) return 4.f - 8.f * f + 5.f * f * f - f * f * f;
+	return 0.f;
 }
 inline void bc_interpolator(subyte *dest, float x, float y, const SImage *src, subyte bpp) {
     int x_ = (int)x, y_ = (int) y;

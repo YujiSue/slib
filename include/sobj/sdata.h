@@ -20,7 +20,7 @@ namespace slib {
 		template<typename T>
 		SData& operator = (const Array<T, CMemory<T>>& array) {
 			ubytearray::resize(array.size() * sizeof(T));
-			CMemory<ubyte>::copy(ubytearray::_begin, reinterpret_cast<subyte*>(array._begin), ubytearray::size());
+			CMemory<subyte>::copy(ubytearray::_begin, reinterpret_cast<subyte*>(array._begin), ubytearray::size());
 		}
         SData &operator = (const sobj &obj);
         SData &operator = (const SData &dat);

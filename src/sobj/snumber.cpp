@@ -86,7 +86,7 @@ SNumber &SNumber::operator+=(const SNumber &num) {
                     break;
                 case SNumber::FRAC:
                 {
-                    _value._f[0] = num._value._f[1]*_value._i + num._value._f[0];
+                    _value._f[0] = num._value._f[1]*(sint)_value._i + num._value._f[0];
                     _value._f[1] = num._value._f[1];
                     _type = SNumber::FRAC;
                     break;
@@ -109,7 +109,7 @@ SNumber &SNumber::operator+=(const SNumber &num) {
                 case SNumber::INTEGER:
                 {
                     if (num._value._i < 0) {
-                        if (_value._ui < -num._value._i) {
+                        if ((sinteger)_value._ui < -num._value._i) {
                             suinteger i = _value._ui;
                             _value._i = num._value._i + i;
                             _type = SNumber::INTEGER;
@@ -133,7 +133,7 @@ SNumber &SNumber::operator+=(const SNumber &num) {
                     break;
                 case SNumber::FRAC:
                 {
-                    _value._f[0] = num._value._f[1]*_value._ui + num._value._f[0];
+                    _value._f[0] = num._value._f[1]*(sint)_value._ui + num._value._f[0];
                     _value._f[1] = num._value._f[1];
                     _type = SNumber::FRAC;
                     break;
@@ -170,7 +170,7 @@ SNumber &SNumber::operator+=(const SNumber &num) {
                     break;
                 case SNumber::COMPLEX:
                 {
-                    _value._c[0] = _value._r + num._value._c[0];
+                    _value._c[0] = (float)_value._r + num._value._c[0];
                     _value._c[1] = num._value._c[1];
                     _type = SNumber::COMPLEX;
                     break;
@@ -187,10 +187,10 @@ SNumber &SNumber::operator+=(const SNumber &num) {
         {
             switch (num._type) {
                 case SNumber::INTEGER:
-                    _value._f[0] += _value._f[1] * num._value._i;
+                    _value._f[0] += _value._f[1] * (sint)num._value._i;
                     break;
                 case SNumber::UINTEGER:
-                    _value._f[0] += _value._f[1] * num._value._ui;
+                    _value._f[0] += _value._f[1] * (sint)num._value._ui;
                     break;
                 case SNumber::REAL:
                 {
@@ -276,7 +276,7 @@ SNumber &SNumber::operator-=(const SNumber & num) {
                     break;
                 case SNumber::FRAC:
                 {
-                    _value._f[0] = num._value._f[1]*_value._i - num._value._f[0];
+                    _value._f[0] = num._value._f[1]* (sint)_value._i - num._value._f[0];
                     _value._f[1] = num._value._f[1];
                     _type = SNumber::FRAC;
                     break;
@@ -516,7 +516,7 @@ SNumber &SNumber::operator*=(const SNumber & num) {
                 }
                 case SNumber::COMPLEX:
                 {
-                    float tmp = _value._ui;
+                    float tmp = (float)_value._ui;
                     _value._c[0] = tmp * num._value._c[0];
                     _value._c[1] = tmp * num._value._c[1];
                     _type = SNumber::COMPLEX;
@@ -548,8 +548,8 @@ SNumber &SNumber::operator*=(const SNumber & num) {
                 case SNumber::COMPLEX:
                 {
                     double tmp = _value._r;
-                    _value._c[0] = tmp * num._value._c[0];
-                    _value._c[1] = tmp * num._value._c[1];
+                    _value._c[0] = (float)(tmp * num._value._c[0]);
+                    _value._c[1] = (float)(tmp * num._value._c[1]);
                     _type = SNumber::COMPLEX;
                     break;
                 }
@@ -565,11 +565,11 @@ SNumber &SNumber::operator*=(const SNumber & num) {
         {
             switch (num._type) {
                 case SNumber::INTEGER:
-                    _value._f[0] *= num._value._i;
+                    _value._f[0] *= (sint)num._value._i;
 					smath::reduction(_value._f[0], _value._f[1]);
                     break;
                 case SNumber::UINTEGER:
-                    _value._f[0] *= num._value._ui;
+                    _value._f[0] *= (sint)num._value._ui;
 					smath::reduction(_value._f[0], _value._f[1]);
                     break;
                 case SNumber::REAL:
@@ -683,10 +683,10 @@ SNumber & SNumber::operator/=(const SNumber & num) {
                 case SNumber::FRAC:
                 {
                     if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
-                    _value._f[0] = num._value._f[1]*_value._i;
-                    _value._f[1] = num._value._f[0];
-                    _type = SNumber::FRAC;
-                    break;
+					_value._f[0] = num._value._f[1] * (sint)_value._i;
+					_value._f[1] = num._value._f[0];
+					_type = SNumber::FRAC;
+					break;
                 }
                 case SNumber::COMPLEX:
                 {
@@ -730,7 +730,7 @@ SNumber & SNumber::operator/=(const SNumber & num) {
                 case SNumber::FRAC:
                 {
 					if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
-					_value._f[0] = num._value._f[1] * _value._ui;
+					_value._f[0] = num._value._f[1] * (sint)_value._ui;
 					_value._f[1] = num._value._f[0];
 					_type = SNumber::FRAC;
 					break;
@@ -798,14 +798,14 @@ SNumber & SNumber::operator/=(const SNumber & num) {
                 case SNumber::INTEGER:
                 {
 					if (num._value._i == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
-                    _value._f[1] *= num._value._i;
+                    _value._f[1] *= (sint)num._value._i;
 					smath::reduction(_value._f[0], _value._f[1]);
                     break;
                 }
                 case SNumber::UINTEGER:
                 {
 					if (num._value._ui == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
-                    _value._f[1] *= num._value._ui;
+                    _value._f[1] *= (sint)num._value._ui;
 					smath::reduction(_value._f[0], _value._f[1]);
                     break;
                 }
@@ -1007,7 +1007,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 			case SNumber::INTEGER:
 			{
 				sfrac tmp = fraction();
-				tmp -= sfrac(q * num._value._i, 1);
+				tmp -= sfrac(q * (sint)num._value._i, 1);
 				_value._f[0] = tmp.numerator;
 				_value._f[1] = tmp.denominator;
 				break;
@@ -1058,7 +1058,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 				_value._c[0] -= (float)q * num._value._ui;
 				break;
 			case SNumber::REAL:
-				_value._c[0] -= num._value._r * q;
+				_value._c[0] -= (float)num._value._r * q;
 				break;
 			case SNumber::BOOL:
 				throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
@@ -1522,7 +1522,7 @@ void SNumber::setType(subyte type) {
                     break;
                 case SNumber::FRAC:
                 {
-                    _value._f[0] = _value._i;
+                    _value._f[0] = (sint)_value._i;
                     _value._f[1] = 1;
                     break;
                 }
@@ -1551,7 +1551,7 @@ void SNumber::setType(subyte type) {
                     break;
                 case SNumber::FRAC:
                 {
-                    _value._f[0] = _value._ui;
+                    _value._f[0] = (sint)_value._ui;
                     _value._f[1] = 1;
                     break;
                 }
@@ -1573,7 +1573,7 @@ void SNumber::setType(subyte type) {
                     _value._i = (sinteger)_value._r;
                     break;
                 case SNumber::UINTEGER:
-                    _value._ui = (sreal)_value._r;
+                    _value._ui = (suinteger)_value._r;
                     break;
                 case SNumber::BOOL:
                     _value._b = _value._r != 0.0;
@@ -1692,7 +1692,7 @@ String SNumber::precised(size_t size, smath::ROUND round) const {
         if (tmp == INFINITY) return "inf";
         else if (tmp == -INFINITY) return "-inf";
         else if (tmp == NAN) return "NaN";
-        tmp *= smath::power(10, size);
+        tmp *= smath::power(10, (int)size);
         SString str;
         switch (round) {
             case FLOOR:
@@ -1793,7 +1793,7 @@ sinteger SNumber::integer() const {
         case SNumber::UINTEGER:
             return _value._ui;
         case SNumber::REAL:
-            return _value._r;
+            return (sinteger)_value._r;
         case SNumber::BOOL:
             return _value._b;
         case SNumber::FRAC:
@@ -1811,7 +1811,7 @@ suinteger SNumber::uinteger() const {
         case SNumber::UINTEGER:
             return _value._ui;
         case SNumber::REAL:
-            return _value._r;
+            return (suinteger)_value._r;
         case SNumber::BOOL:
             return _value._b;
         case SNumber::FRAC:
@@ -1826,9 +1826,9 @@ float SNumber::floatValue() const { return (float)doubleValue(); }
 double SNumber::doubleValue() const {
     switch (_type) {
         case SNumber::INTEGER:
-            return _value._i;
+            return (double)_value._i;
         case SNumber::UINTEGER:
-            return _value._ui;
+            return (double)_value._ui;
         case SNumber::REAL:
             return _value._r;
         case SNumber::BOOL:
@@ -1867,7 +1867,7 @@ scomp SNumber::complex() const {
         case SNumber::UINTEGER:
             return scomp((float)_value._ui);
         case SNumber::REAL:
-            return scomp(_value._r);
+            return scomp((float)_value._r);
         case SNumber::BOOL:
             return scomp((float)_value._b);
         case SNumber::FRAC:
@@ -1910,7 +1910,7 @@ bool SNumber::operator<(const SNumber &sn) const {
                 case SNumber::INTEGER:
                     return tmp < sn.integer();
                 case SNumber::UINTEGER:
-                    return tmp < sn.uinteger();
+                    return tmp < (sinteger)sn.uinteger();
                 case SNumber::REAL:
                     return tmp < sn.real();
                 case SNumber::BOOL:
@@ -1929,13 +1929,13 @@ bool SNumber::operator<(const SNumber &sn) const {
             auto &tmp = _value._ui;
             switch (_type) {
                 case SNumber::INTEGER:
-                    return tmp < sn.integer();
+                    return (sinteger)tmp < sn.integer();
                 case SNumber::UINTEGER:
                     return tmp < sn.uinteger();
                 case SNumber::REAL:
                     return tmp < sn.real();
                 case SNumber::BOOL:
-                    return tmp < sn.integer();
+                    return (sinteger)tmp < sn.integer();
                 case SNumber::FRAC:
                     return (sint)tmp < sn.fraction();
                 case SNumber::COMPLEX:
@@ -1971,13 +1971,13 @@ bool SNumber::operator<(const SNumber &sn) const {
             auto &tmp = _value._b;
             switch (_type) {
                 case SNumber::INTEGER:
-                    return tmp < sn.integer();
+                    return (int)tmp < sn.integer();
                 case SNumber::UINTEGER:
-                    return tmp < sn.uinteger();
+                    return (int)tmp < sn.uinteger();
                 case SNumber::REAL:
-                    return tmp < sn.real();
+                    return (int)tmp < sn.real();
                 case SNumber::BOOL:
-                    return tmp < sn.integer();
+                    return (int)tmp < sn.integer();
                 case SNumber::FRAC:
                     return (sint)tmp < sn.fraction();
                 case SNumber::COMPLEX:

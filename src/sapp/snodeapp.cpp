@@ -221,11 +221,11 @@ String SNodeUtil::toStr(napi_env env, napi_value val) {
 SArray SNodeUtil::toArray(napi_env env, napi_value val) {
 	SArray array;
 	napi_status st = napi_generic_failure;
-	uint32_t size;
+	suint beg = 0, size;
 	st = napi_get_array_length(env, val, &size);
 	if (st != napi_ok) napi_throw_error(env, "toArray", "Get array error.");
 	if (size) {
-		sforin(i, 0, size) {
+		sforin(i, beg, size) {
 			napi_value e;
 			st = napi_get_element(env, val, i, &e);
 			if (st != napi_ok) napi_throw_error(env, "toArray", "Get array element error.");
@@ -237,11 +237,11 @@ SArray SNodeUtil::toArray(napi_env env, napi_value val) {
 intarray SNodeUtil::toIArray(napi_env env, napi_value val) {
 	intarray array;
 	napi_status st = napi_generic_failure;
-	uint32_t size;
+	suint beg = 0, size;
 	st = napi_get_array_length(env, val, &size);
 	if (st != napi_ok) napi_throw_error(env, "toArray", "Get array error.");
 	if (size) {
-		sforin(i, 0, size) {
+		sforin(i, beg, size) {
 			napi_value e;
 			st = napi_get_element(env, val, i, &e);
 			if (st != napi_ok) napi_throw_error(env, "toArray", "Get array element error.");
@@ -253,11 +253,11 @@ intarray SNodeUtil::toIArray(napi_env env, napi_value val) {
 stringarray SNodeUtil::toStrArray(napi_env env, napi_value val) {
 	stringarray array;
 	napi_status st = napi_generic_failure;
-	uint32_t size;
+	suint beg = 0, size;
 	st = napi_get_array_length(env, val, &size);
 	if (st != napi_ok) napi_throw_error(env, "toArray", "Get array error.");
 	if (size) {
-		sforin(i, 0, size) {
+		sforin(i, beg, size) {
 			napi_value e;
 			st = napi_get_element(env, val, i, &e);
 			if (st != napi_ok) napi_throw_error(env, "toArray", "Get array element error.");
@@ -272,11 +272,11 @@ SDictionary SNodeUtil::toDict(napi_env env, napi_value val) {
 	napi_value keys;
 	st = napi_get_property_names(env, val, &keys);
 	if (st != napi_ok) napi_throw_error(env, NULL, "");
-	uint32_t size;
+	suint beg = 0, size;
 	st = napi_get_array_length(env, keys, &size);
 	if (st != napi_ok) napi_throw_error(env, NULL, "");
 	if (size) {
-		sforin(i, 0, size) {
+		sforin(i, beg, size) {
 			napi_value key, obj;
 			st = napi_get_element(env, keys, i, &key);
 			if (st != napi_ok) napi_throw_error(env, NULL, "");

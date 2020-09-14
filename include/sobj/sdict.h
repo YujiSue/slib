@@ -32,7 +32,7 @@ namespace slib {
         SDictionary(const sindex &idx);
         SDictionary(const sattribute &attr);
         SDictionary(const sobj &obj);
-		SDictionary(SDictionary &&dict);
+		SDictionary(SDictionary &&dict) noexcept;
         SDictionary(const SDictionary &dict);
         ~SDictionary();
         

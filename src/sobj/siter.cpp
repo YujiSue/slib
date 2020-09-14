@@ -183,7 +183,7 @@ slib::SIterator &slib::SIterator::operator-=(std::ptrdiff_t diff) {
 }
 slib::SIterator slib::SIterator::operator +(std::ptrdiff_t diff) { auto sit = *this; sit+=diff; return sit; }
 slib::SIterator slib::SIterator::operator -(std::ptrdiff_t diff) { auto sit = *this; sit-=diff; return sit; }
-int slib::SIterator::operator-(SIterator it) {
+sinteger slib::SIterator::operator-(SIterator it) {
     switch (_type) {
         case STRING_OBJ:
             return _it._uit-it._it._uit;
@@ -482,7 +482,7 @@ slib::SCIterator &slib::SCIterator::operator-=(std::ptrdiff_t diff) {
 }
 slib::SCIterator slib::SCIterator::operator +(std::ptrdiff_t diff) { auto sit = *this; sit+=diff; return sit; }
 slib::SCIterator slib::SCIterator::operator -(std::ptrdiff_t diff) { auto sit = *this; sit-=diff; return sit; }
-int slib::SCIterator::operator-(SCIterator it) {
+sinteger slib::SCIterator::operator-(SCIterator it) {
     switch (_type) {
         case STRING_OBJ:
             return _it._uit-it._it._uit;
