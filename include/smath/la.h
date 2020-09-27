@@ -2,7 +2,7 @@
 #define SMATH_LA_H
 
 #include "sconfig.h"
-#include "smath/mathbasic.h"
+#include "smath/calc.h"
 #include "smath/comp.h"
 #include "sbasic/array.h"
 #include "sbasic/cyciter.h"
@@ -1554,7 +1554,7 @@ namespace slib {
 		}
 		template<typename T>
 		extern inline double discriminant(svec3d<T> coef) {
-			return smath::power(coef.y, 2) - 4.0 * coef.x * coef.z;
+			return slib::smath::power(coef.y, 2) - 4.0 * coef.x * coef.z;
 		}
 		template<typename T>
 		extern inline v2d solveEq2(svec3d<T> coef) {
