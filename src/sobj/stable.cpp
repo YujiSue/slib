@@ -159,12 +159,12 @@ const SColumn &STable::column(int idx) const {
 }
 SColumn &STable::column(const char* name) {
 	auto idx = columnIndex(name);
-	if (idx != NOT_FOUND) return column(idx);
+	if (idx != NOT_FOUND) return column((int)idx);
 	else throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR);
 }
 const SColumn &STable::column(const char *name) const {
     auto idx = columnIndex(name);
-	if (idx != NOT_FOUND) return column(idx);
+	if (idx != NOT_FOUND) return column((int)idx);
 	else throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR);
 }
 SArray& STable::columns() { return _columns; }
@@ -195,8 +195,8 @@ void STable::insertColumn(size_t idx, const sobj& obj) {
 	else if (obj.isColumn()) setColumn(idx, obj.column());
 }
 void STable::setColumn(size_t idx, const SColumn& col) {
-	_columns[idx].column() = col;
-	auto& newcol = column(idx);
+	_columns[(int)idx].column() = col;
+	auto& newcol = column((int)idx);
 	if (newcol.name().empty()) newcol.setName(String("column ") + (columnCount() + 1));
 	newcol.setTable(this);
 	auto rnum = rowCount(), size = col.size();
@@ -213,11 +213,11 @@ void STable::setColumn(size_t idx, const SColumn& col) {
 	newcol.clear();
 }
 void STable::setColumnDict(size_t idx, const SDictionary& dict) {
-	_columns[idx].column() = SColumn(dict["type"], dict["name"]);
-	auto& newcol = column(idx);
+	_columns[(int)idx].column() = SColumn(dict["type"], dict["name"]);
+	auto& newcol = column((int)idx);
 	if (newcol.name().empty()) newcol.setName(String("column ") + (columnCount() + 1));
 	newcol.setTable(this);
-	column(idx).setTable(this);
+	column((int)idx).setTable(this);
 	if (dict.hasKey("values")) {
 		auto& col = dict["values"];
 		auto rnum = rowCount(), size = col.size();

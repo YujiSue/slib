@@ -58,6 +58,8 @@ namespace slib {
         extern inline bool operator<(T t, const Complex<T> &comp) { return Complex<T>(t) < comp; }
         template<typename T>
         extern inline bool operator==(T t, const Complex<T> &comp) { return Complex<T>(t) < comp; }
+		template<typename T>
+		extern std::ostream& operator<<(std::ostream& os, const smath::Complex<T>& comp) { return os << comp.real << (comp.imaginary < 0 ? "" : "+") << comp.imaginary << (comp.imaginary == 0 ? "" : "i"); }
 
         /*============================================================*/
 

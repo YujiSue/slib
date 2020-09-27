@@ -5,7 +5,6 @@
 
 namespace slib {
     class SLIB_DLL SString;
-    
 	class SLIB_DLL SData : public ubytearray, public SObject {
 	public:
 		SData();
@@ -50,5 +49,14 @@ namespace slib {
         bool operator == (const sobj &so) const;
         bool operator == (const SData &data) const;
     };
+	extern inline std::istream& operator>>(std::istream& is, ubytearray& array) {
+		is.seekg(0, std::ios::end);
+		size_t size = is.tellg();
+		is.clear();
+		is.seekg(0);
+		array.resize(size);
+		is.read((char*)array.ptr(), size);
+		return is;
+	}
 }
 #endif

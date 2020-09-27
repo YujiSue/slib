@@ -65,7 +65,7 @@ void SDate::_parse(const String& date) {
 		}
 		else if (E_ == 'M') {
 			auto count = countRepeat(it, 'M');
-			if (count == 3) { readSize(tmp, dit, count); Time::month = speriod::MONTH_INDEX[String::lower(tmp)] + 1; PREV_; --dit; }
+			if (count == 3) { readSize(tmp, dit, count); Time::month = (sint)speriod::MONTH_INDEX[String::lower(tmp)] + 1; PREV_; --dit; }
 			else if (count == 2) { readSize(tmp, dit, count); Time::month = tmp; PREV_; --dit; }
 			else { readTo(tmp, dit, E_); Time::month = tmp; }
 			tmp.clear();
@@ -77,8 +77,8 @@ void SDate::_parse(const String& date) {
 		}
 		else if (E_ == 'W') {
 			auto count = countRepeat(it, 'W');
-			if (count == 3) { readSize(tmp, dit, count); week = speriod::WEEK_INDEX[String::lower(tmp)]; PREV_; --dit; }
-			else { readTo(tmp, dit, E_); week = speriod::WEEK_LABEL.find(tmp); }
+			if (count == 3) { readSize(tmp, dit, count); week = (subyte)speriod::WEEK_INDEX[String::lower(tmp)]; PREV_; --dit; }
+			else { readTo(tmp, dit, E_); week = (subyte)speriod::WEEK_LABEL.find(tmp); }
 			tmp.clear();
 		}
 		else if (E_ == 'a') {
@@ -128,7 +128,7 @@ void SDate::_parse(const String& date) {
 		else if (E_ == u8"号") {
 			readSize(tmp, dit, 2); --dit;
 			jp = true;
-			year = speriod::ERA_J_YEAR[speriod::ERA_J.find(tmp)];
+			year = (int)speriod::ERA_J_YEAR[speriod::ERA_J.find(tmp)];
 			tmp.clear();
 		}
 		else if (E_ == u8"年") {
@@ -147,7 +147,7 @@ void SDate::_parse(const String& date) {
 		}
 		else if (E_ == u8"曜") {
 			readTo(tmp, dit, E_);
-			Time::month = speriod::WEEK_LABEL_J.find(tmp.ubegin()->toStr()) + 1;
+			Time::month = (sint)speriod::WEEK_LABEL_J.find(tmp.ubegin()->toStr()) + 1;
 			tmp.clear();
 		}
 		else if (E_ == u8"日") {

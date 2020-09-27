@@ -740,34 +740,34 @@ inline void numWrite(sio::SFile* file, const SNumber& num) {
 }
 inline void strWrite(sio::SFile* file, const SString& str) {
 	file->writeInt((sint)STRING_OBJ);
-	file->writeUInt(str.length());
+	file->writeUInt((suint)str.length());
 	file->writeBytes(str.cstr(), str.size());
 }
 inline void dateWrite(sio::SFile* file, const SDate& date) {
 	file->writeInt((sint)DATE_OBJ);
-	file->writeUInt(strlen(slib::sstyle::ISO8601));
+	file->writeUInt((suint)strlen(slib::sstyle::ISO8601));
 	file->writeChars(slib::sstyle::ISO8601);
-	file->writeUInt(date.toString(slib::sstyle::ISO8601).length());
+	file->writeUInt((suint)date.toString(slib::sstyle::ISO8601).length());
 	file->writeString(date.toString());
 }
 inline void datWrite(sio::SFile* file, const SData& dat) {
 	file->writeInt((sint)DATA_OBJ);
-	file->writeUInt(dat.size());
+	file->writeUInt((suint)dat.size());
 	file->writeBytes(dat.ptr(), dat.size());
 }
 inline void arrayWrite(sio::SFile* file, const SArray& array) {
 	file->writeInt((sint)ARRAY_OBJ);
-	file->writeUInt(array.size());
+	file->writeUInt((suint)array.size());
 	if (array.empty()) return;
 	else { sforeach(array) objWrite(file, E_); }
 }
 inline void dictWrite(sio::SFile* file, const SDictionary& dict) {
 	file->writeInt((sint)DICT_OBJ);
-	file->writeUInt(dict.size());
+	file->writeUInt((suint)dict.size());
 	if (dict.empty()) return;
 	else { 
 		sforeach(dict) {
-			file->writeUInt(E_.key.length());
+			file->writeUInt((suint)E_.key.length());
 			file->writeString(E_.key);
 			objWrite(file, E_.value);
 		}
@@ -775,7 +775,7 @@ inline void dictWrite(sio::SFile* file, const SDictionary& dict) {
 }
 inline void fileWrite(sio::SFile* file, const sio::SFile& f) {
 	file->writeInt((sint)FILE_OBJ);
-	file->writeUInt(f.path().length());
+	file->writeUInt((suint)f.path().length());
 	file->writeBytes(f.path().cstr(), f.path().size());
 }
 inline void tblWrite(sio::SFile* file, const STable& tbl) {
@@ -786,13 +786,13 @@ inline void imgWrite(sio::SFile* file, const smedia::SImage& img) {
 	file->writeInt((sint)IMAGE_OBJ);
 	file->writeUByte(img.isLink() ? 1 : 0);
 	if (img.isLink()) {
-		file->writeUInt(img.file().path().length());
+		file->writeUInt((suint)img.file().path().length());
 		file->writeString(img.file().path());
 	}
 	else {
 		file->writeUShort(img.type());
-		file->writeUInt(img.width());
-		file->writeUInt(img.height());
+		file->writeUInt((suint)img.width());
+		file->writeUInt((suint)img.height());
 		file->writeBytes(img.ptr(), img.size());
 	}
 }

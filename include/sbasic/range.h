@@ -40,7 +40,9 @@ namespace slib {
     };
     template<typename T>
     extern bool operator<(const T &n, const Range<T> & range) { return n < range.begin; }
-	
+	template<typename T>
+	extern std::ostream& operator<<(std::ostream& os, const Range<T>& range) { return os << "(" << range.begin << ", " << range.end << ")"; }
+
     /*============================================================*/
     
     template<typename T>

@@ -28,6 +28,9 @@ namespace slib {
         bool operator == (const Zone &z) const;
         bool operator != (const Zone &z) const;
     };
+	template<typename T>
+	extern std::ostream& operator<<(std::ostream& os, const Zone<T>& zone) { return os << "(" << zone.ori_x << ", " << zone.ori_y << ", " << zone.ori_z << ", " << zone.width << ", " << zone.height << ", " << zone.depth << ")"; }
+
     /*============================================================*/
     template<typename T>
     Zone<T>::Zone()

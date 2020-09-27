@@ -466,6 +466,49 @@ namespace slib {
 		if (!str.empty()) str.resize(str.length() - 1);
 		return str;
 	}
+	extern inline std::ostream& operator<<(std::ostream& os, const Char& c) {
+#if defined(WIN32_OS) || defined(WIN64_OS)
+		return os << c.toString().localize().cstr();
+#else
+		return os << c.toString().cstr();
+#endif
+	}
+	extern inline std::ostream& operator<<(std::ostream& os, const String& str) {
+#if defined(WIN32_OS) || defined(WIN64_OS)
+		return os << str.localize().cstr();
+#else
+		return os << str.cstr();
+#endif
+	}
+	extern inline std::istream& operator>>(std::istream& is, String& str) {
+		is.seekg(0, std::ios::end);
+		size_t size = is.tellg();
+		is.clear();
+		is.seekg(0);
+#if defined(WIN32_OS) || defined(WIN64_OS)
+		char* buf = new char[size + 1];
+		is.read(buf, size);
+		buf[size] = 0;
+		str = String::toUTF8(buf);
+#else
+		str.resize(size);
+		return is.read(str.ptr(), size);
+#endif
+		return is;
+	}
+
+	template<typename T, class M>
+	extern inline std::ostream& operator<<(std::ostream& os, const Array<T, M>& array) { return os << toString(array); }
+	template<typename T, size_t S, class M>
+	extern inline std::ostream& operator<<(std::ostream& os, const FixedArray<T, S, M>& array) { return os << toString(array); }
+	template<typename T, class M>
+	extern inline std::ostream& operator<<(std::ostream& os, const BiArray<T, M>& array) { return os << toString(array); }
+	template<typename T>
+	extern inline std::ostream& operator<<(std::ostream& os, const List<T>& list) { return os << toString(list); }
+	template<class Key, class Val>
+	extern inline std::ostream& operator<<(std::ostream& os, const Map<Key, Val>& map) { return os << toString(map); }
+	template<typename T>
+	extern inline std::ostream& operator<<(std::ostream& os, const Region<T>& reg) { return os << toString(reg); }
 }
 
 namespace std {

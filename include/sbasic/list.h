@@ -97,6 +97,7 @@ namespace slib {
         bool operator < (const List &list) const;
         bool operator == (const List &list) const;
     };
+	
     /*============================================================*/
     
 	template <typename T>

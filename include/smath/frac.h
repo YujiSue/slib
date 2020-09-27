@@ -55,6 +55,8 @@ namespace slib {
 		extern bool operator<(T t, const Fraction<T>& f) { return sfrac(t) < f; }
 		template<typename T>
 		extern bool operator==(T t, const Fraction<T>& f) { return sfrac(t) == f; }
+		template<typename T>
+		extern std::ostream& operator<<(std::ostream& os, const smath::Fraction<T>& frac) { return os << frac.numerator << "/" << frac.denominator; }
 
 		/*============================================================*/
 

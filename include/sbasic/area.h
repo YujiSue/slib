@@ -28,6 +28,8 @@ namespace slib {
         bool operator == (const Area &a) const;
         bool operator != (const Area &a) const;
     };
+	template<typename T>
+	extern std::ostream& operator<<(std::ostream& os, const Area<T>& area) { return os << "(" << area.ori_x << ", " << area.ori_y << ", " << area.width << ", " << area.height << ")"; }
 
     /*============================================================*/
     template<typename T>

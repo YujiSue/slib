@@ -12,8 +12,8 @@ SCanvas::SCanvas(size_t w, size_t h, const char *name, const SColor &col) : SDoc
     _type = sshape::GROUP;
     _title = name;
     _background = col;
-	_size = v2f(w, h);
-    _frame = sareaf(0, 0, w, h);
+	_size = v2f((float)w, (float)h);
+    _frame = sareaf(0, 0, (float)w, (float)h);
 }
 SCanvas::SCanvas(const SCanvas &canvas) : SDocument<SFigure>(canvas) {
     _background = canvas._background;
@@ -47,8 +47,8 @@ void SCanvas::save(const char *path) {
      */
 }
 
-size_t SCanvas::width() const { return _size.x; }
-size_t SCanvas::height() const { return _size.y; }
+size_t SCanvas::width() const { return (size_t)_size.x; }
+size_t SCanvas::height() const { return (size_t)_size.y; }
 v2i SCanvas::size() const { return _size; }
 sareaf SCanvas::frame() const { return _frame; }
 const SColor &SCanvas::background() const { return _background; }

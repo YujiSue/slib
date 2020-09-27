@@ -63,6 +63,7 @@ namespace slib {
         bool operator==(const char *s) const;
         bool operator==(const Char &c) const;
     };
+	
 }
 
 #endif
