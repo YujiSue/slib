@@ -213,11 +213,11 @@ void SBSeqList::save(const char *path) {
         }
 		file.close();
 	}
-	catch (SException ex) {
-		ex.print();
-	}
 	catch (sio::SIOException ie) {
 		ie.print();
+	}
+	catch (SException ex) {
+		ex.print();
 	}
 }
 void SBSeqList::makeIndex(const char *path) {
