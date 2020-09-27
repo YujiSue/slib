@@ -48,8 +48,10 @@
 
 namespace slib {
 	class SLIB_DLL String;
+	class SLIB_DLL SData;
     template <typename T, class M=SMemory<T>>
     class Array {
+		friend SData;
 	public:
 		typedef T value_type;
         typedef std::function<bool(const T &t1, const T &t2)> Comparer;

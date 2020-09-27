@@ -5,6 +5,8 @@
 #include "sbasic/string.h"
 
 namespace slib {
+    class SLIB_DLL String;
+
 #ifdef SLIB_DEBUG
 #define EXPORT_MSG(e) (e).print(true)
 #define ERR_MSG(e) (e).toSrting(true)

@@ -34,9 +34,9 @@ namespace slib {
 		template<typename T>
 		void asArray(Array<T, CMemory<T>>& array) {
 			if (ubytearray::_capacity) {
-				array::_capacity = ubytearray::_capacity;
-				array::_begin = reinterpret_cast<T *>(ubytearray::_begin);
-				array::_end = array::_begin + (ubytearray::size() - 1) / sizeof(T) + 1;
+				array._capacity = ubytearray::_capacity;
+				array._begin = reinterpret_cast<T *>(ubytearray::_begin);
+				array._end = array::_begin + (ubytearray::size() - 1) / sizeof(T) + 1;
 			}
 			ubytearray::discard();
 		}
