@@ -11,7 +11,9 @@ namespace slib {
 		SData(size_t size, void* dat = nullptr);
 		template<typename T>
 		SData(Array<T, CMemory<T>>& array) : SData(array.size()*sizeof(T), (void *)array.ptr()) {}
-        SData(const char *str);
+        SData(const char *s);
+		SData(const slib::String &str);
+		SData(const slib::SString& str);
         SData(const sobj &obj);
         SData(const SData &data);
         virtual ~SData();

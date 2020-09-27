@@ -2,7 +2,7 @@
 #define SMATH_COMPLEX_H
 
 #include "smath/mathbasic.h"
-#include "sbasic/string.h"
+#include "sbasic/array.h"
 
 namespace slib {
     namespace smath {
