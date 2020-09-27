@@ -16,7 +16,11 @@ slib::String Locale::_locale = DEFAULT_LANG;
 sattribute Locale::_translator{};
 void Locale::setLocale(const char* s) { _locale = s; }
 void Locale::load(const char* s) {
+#ifdef WIN_OS
 	std::ifstream ifs(String(s).localize(), std::ios::in);
+#else
+	std::ifstream ifs(s, std::ios::in);
+#endif
 	std::string row;
 	size_t pos = 0;
 	while (getline(ifs, row)) {
@@ -27,7 +31,11 @@ void Locale::load(const char* s) {
 	ifs.close();
 }
 void Locale::save(const char* s) {
+#ifdef WIN_OS
 	std::ofstream ofs(String(s).localize(), std::ios::out|std::ios::trunc);
+#else
+	std::ofstream ofs(s, std::ios::out | std::ios::trunc);
+#endif
 	sforeach(_translator) ofs << E_.key.cstr() << "=" << E_.value.cstr() << LF.cstr();
 	ofs.flush();
 	ofs.close();
