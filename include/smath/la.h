@@ -716,7 +716,7 @@ namespace slib {
 		template <typename T, class M>
 		SVector<T, M>& SVector<T, M>::operator += (const SVector<T, M>& v) {
 			if (array::size() != v.size())
-				throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
+				throw slib::smath::SMathException(ERR_INFO, slib::smath::DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
 			auto p = array::ptr(), p_ = v.ptr();
 			sforin(i, 0, array::size()) { *p += *p_; ++p; ++p_; }
 			return *this;
@@ -726,7 +726,7 @@ namespace slib {
 		template <typename T, class M>
 		SVector<T, M>& SVector<T, M>::operator -= (const SVector<T, M>& v) {
 			if (array::size() != v.size())
-				throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
+				throw slib::smath::SMathException(ERR_INFO, slib::smath::DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
 			auto p = v.ptr();
 			sforeach(*this) { E_ -= *p; ++p; }
 			return *this;
@@ -754,7 +754,7 @@ namespace slib {
 		template <typename T, class M>
 		T SVector<T, M>::operator *(const svec<T, M>& v) const {
 			if (array::size() != v.size() || array::empty())
-				throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR, "this, v", smath::DIMENSION_SIZE_DIFF(array::size(), v.size()));
+				throw slib::smath::SMathException(ERR_INFO, slib::smath::DIMENSION_SIZE_ERR, "this, v", DIMENSION_SIZE_DIFF(array::size(), v.size()));
 			T prod = initVal<T>();
 			sforeach(*this) prod += E_ * E_;
 			return prod;
@@ -831,7 +831,7 @@ namespace slib {
 		template <typename T>
 		SMatrix2D<T> SMatrix2D<T>::inverse() const {
 			auto det = determinant();
-			if (det == 0) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+			if (det == 0) throw slib::smath::SMathException(ERR_INFO, slib::smath::DIV_ZERO_ERR);
 			return SMatrix2D<T>(element[3] / det, -element[1] / det, -element[2] / det, element[0] / det);
 		}
 		template <typename T>
@@ -911,7 +911,7 @@ namespace slib {
 		template <typename T>
 		SMatrix3D<T> SMatrix3D<T>::inverse() const {
 			auto det = determinant();
-			if (det == 0) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+			if (det == 0) throw slib::smath::SMathException(ERR_INFO, slib::smath::DIV_ZERO_ERR);
 			return SMatrix3D<T>(
 				(element[4] * element[8] - element[5] * element[7]) / det,
 				-(element[1] * element[8] - element[2] * element[7]) / det,
@@ -1193,14 +1193,14 @@ namespace slib {
 		template<typename T, class M>
 		SMatrix<T, M>& SMatrix<T, M>::operator += (const SMatrix<T, M>& m) {
 			if (!comparable(m))
-				throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR, "this, m", "");
+				throw slib::smath::SMathException(ERR_INFO, slib::smath::DIMENSION_SIZE_ERR, "this, m", "");
 			sforeach2(*this, m) E1_ += E2_;
 			return *this;
 		}
 		template<typename T, class M>
 		SMatrix<T, M>& SMatrix<T, M>::operator -= (const SMatrix<T, M>& m) {
 			if (!comparable(m))
-				throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR, "this, m", "");
+				throw slib::smath::SMathException(ERR_INFO, slib::smath::DIMENSION_SIZE_ERR, "this, m", "");
 			sforeach2(*this, m) E1_ -= E2_;
 			return *this;
 		}
@@ -1227,7 +1227,7 @@ namespace slib {
 		template<typename T, class M>
 		SVector<T, M> SMatrix<T, M>::operator * (const SVector<T, M>& v) {
 			if (col != v.size())
-				throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR, "this.col, v.size", DIMENSION_SIZE_DIFF(col, v.size()));
+				throw slib::smath::SMathException(ERR_INFO, slib::smath::DIMENSION_SIZE_ERR, "this.col, v.size", DIMENSION_SIZE_DIFF(col, v.size()));
 			SVector<T, M> prod(row, 0);
 			sforeach2(prod, *this) {
 				sforeach_(vit, v) E1_ += E2_ * (*vit);
@@ -1237,7 +1237,7 @@ namespace slib {
 		template<typename T, class M>
 		SMatrix<T, M> SMatrix<T, M>::operator *(const SMatrix<T, M>& m) {
 			if (col != m.row)
-				throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR, "matrix", "m.row");
+				throw slib::smath::SMathException(ERR_INFO, slib::smath::DIMENSION_SIZE_ERR, "matrix", "m.row");
 			smat<T,M> m_(row, row, 0);
 			sforin(r, 0, row) {
 				sforin(c, 0, m.col) {
@@ -1363,7 +1363,7 @@ namespace slib {
 						}
 					}
 				}
-				if (val == 0) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+				if (val == 0) throw slib::smath::SMathException(ERR_INFO, slib::smath::DIV_ZERO_ERR);
 				tmp = 1.0 / val;
 				sforin(c, 0, col) {
 					ori[r][c] *= tmp; mat[r][c] *= tmp;
@@ -1549,7 +1549,7 @@ namespace slib {
 		}
 		template<typename T>
 		extern inline double solveEq1(svec2d<T> coef) {
-			if (coef.x == 0) throw SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+			if (coef.x == 0) throw slib::smath::SMathException(ERR_INFO, slib::smath::DIV_ZERO_ERR);
 			return -coef.y / coef.x;
 		}
 		template<typename T>
@@ -1558,9 +1558,9 @@ namespace slib {
 		}
 		template<typename T>
 		extern inline v2d solveEq2(svec3d<T> coef) {
-			if (coef.x == 0) throw SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+			if (coef.x == 0) throw slib::smath::SMathException(ERR_INFO, slib::smath::DIV_ZERO_ERR);
 			auto d = discriminant(coef);
-			if (d < 0) throw SMathException(ERR_INFO);
+			if (d < 0) throw slib::smath::SMathException(ERR_INFO);
 			d = sqrt(d);
 			return v2d((-coef.y - d) / (2.0 * coef.x), (-coef.y + d) / (2.0 * coef.x));
 		}
