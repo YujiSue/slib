@@ -1,7 +1,7 @@
 #ifndef SLIB_SXML_H
 #define SLIB_SXML_H
 
-#include "sbasic/sbasic.h"
+#include "sbasic.h"
 #include "sutil/sdocument.h"
 #include "smedia/spaint.h"
 #include "smedia/sfigure.h"

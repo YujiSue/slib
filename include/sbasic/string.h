@@ -7,21 +7,21 @@
 
 namespace slib {
 	template<typename T>
-	class SArrayIterator;
+	class SLIB_DLL SArrayIterator;
 	template<typename T>
-	class SArrayCIterator;
+	class SLIB_DLL SArrayCIterator;
 	template<typename T, class M>
-	class Array;
+	class SLIB_DLL Array;
 	template<typename T>
-	class CArray;
+	class SLIB_DLL CArray;
 	template<typename T, size_t S, class M>
-	class FixedArray;
+	class SLIB_DLL FixedArray;
 	template<typename T, class M>
-	class BiArray;
+	class SLIB_DLL BiArray;
 	template<class Key, class Val>
-	class Map;
+	class SLIB_DLL Map;
 	template<typename T>
-	class Region;
+	class SLIB_DLL Region;
     class SLIB_DLL String;
     class SLIB_DLL SNumber;
     class SLIB_DLL SString;
@@ -354,13 +354,13 @@ namespace slib {
         
         size_t find(const char *que, size_t offset = 0) const;
         size_t rfind(const char *que, size_t offset = 0) const;
-        CArray<size_t> search(const char *que, size_t offset = 0) const;
-		CArray<size_t> search(const Regex &rgx, size_t offset = 0) const;
-		Array<String, SMemory<String>> matched(const Regex &rgx, size_t offset = 0) const;
-		Array<String, SMemory<String>> split(const char *sep, bool trim = true) const;
-		Array<String, SMemory<String>> splitline(bool trim = true) const;
-		Array<String, SMemory<String>> split(const Regex &rgx) const;
-        Map<String, String> parse(const char *sep , const char *part, bool trim = true) const;
+		slib::CArray<size_t> search(const char *que, size_t offset = 0) const;
+		slib::CArray<size_t> search(const Regex &rgx, size_t offset = 0) const;
+		slib::Array<slib::String, slib::SMemory<slib::String>> matched(const Regex &rgx, size_t offset = 0) const;
+		slib::Array<slib::String, slib::SMemory<slib::String>> split(const char *sep, bool trim = true) const;
+		slib::Array<slib::String, slib::SMemory<slib::String>> splitline(bool trim = true) const;
+		slib::Array<slib::String, slib::SMemory<slib::String>> split(const Regex &rgx) const;
+		slib::Map<slib::String, slib::String> parse(const char *sep , const char *part, bool trim = true) const;
         bool beginWith(const char *que) const;
         bool endWith(const char *que) const;
         
