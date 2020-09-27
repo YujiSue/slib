@@ -174,6 +174,34 @@ namespace slib {
 		sforeach(arr) iarray.add(it->integer());
 		return iarray;
 	}
+	template<typename T, class M>
+	extern String toString(const Array<T, M>& array, const char* sep = ",") {
+		String str;
+		if (!array.empty()) sforeach(array) str << E_ << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<typename T, size_t S, class M>
+	extern String toString(const FixedArray<T, S, M>& array, const char* sep = ",") {
+		String str;
+		if (!array.empty()) sforeach(array) str << E_ << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<typename T, class M>
+	extern String toString(const BiArray<T, M>& array, const char* sep = ",") {
+		String str;
+		if (!array.empty()) sforeach(array) str << E_ << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<typename T, class M>
+	extern inline std::ostream& operator<<(std::ostream& os, const Array<T, M>& array) { return os << toString(array); }
+	template<typename T, size_t S, class M>
+	extern inline std::ostream& operator<<(std::ostream& os, const FixedArray<T, S, M>& array) { return os << toString(array); }
+	template<typename T, class M>
+	extern inline std::ostream& operator<<(std::ostream& os, const BiArray<T, M>& array) { return os << toString(array); }
+
     /*============================================================*/
     template <typename T, class M>
 	void Array<T, M>::_expand(size_t s) {

@@ -42,7 +42,15 @@ namespace slib {
     };
     template <typename T>
     extern Region<T> complement(const Range<T> &rng, const Region<T> &region);
-    
+	template<typename T>
+	extern String toString(const Region<T>& reg) {
+		String str;
+		if (!reg.empty()) sforeach(reg) str << "(" << E_.begin << "," << E_.end << "),";
+		if (!str.empty()) str.resize(str.length() - 1);
+		return str;
+	}
+	template<typename T>
+	extern inline std::ostream& operator<<(std::ostream& os, const Region<T>& reg) { return os << toString(reg); }
     /*============================================================*/
     
     template <typename T>

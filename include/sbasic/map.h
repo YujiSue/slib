@@ -82,7 +82,15 @@ namespace slib {
 		}
 		return map;
 	}
-
+	template<class Key, class Val>
+	extern String toString(const Map<Key, Val>& map, const char* sep = ";", const char* part = "=") {
+		String str;
+		if (!map.empty()) sforeach(map) str << E_.key << part << E_.value << sep;
+		if (!str.empty()) str.resize(str.length() - strlen(sep));
+		return str;
+	}
+	template<class Key, class Val>
+	extern inline std::ostream& operator<<(std::ostream& os, const Map<Key, Val>& map) { return os << toString(map); }
     /*============================================================*/
     template<class Key>
     inline size_t hashIdx(const Key &key, const size_t &seed) {

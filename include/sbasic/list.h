@@ -97,7 +97,9 @@ namespace slib {
         bool operator < (const List &list) const;
         bool operator == (const List &list) const;
     };
-	
+	template<typename T>
+	extern inline std::ostream& operator<<(std::ostream& os, const List<T>& list) { return os << toString(list); }
+
     /*============================================================*/
     
 	template <typename T>

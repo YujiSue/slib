@@ -431,41 +431,6 @@ namespace slib {
 	extern SLIB_DLL String operator+(const char* s1, const String& s2);
 	extern SLIB_DLL String operator+(const std::string& s1, const String& s2);
 	
-	template<typename T, class M>
-	extern String toString(const Array<T, M>& array, const char* sep = ",") {
-		String str;
-		if (!array.empty()) sforeach(array) str << E_ << sep;
-		if (!str.empty()) str.resize(str.length() - strlen(sep));
-		return str;
-	}
-	template<typename T, size_t S, class M>
-	extern String toString(const FixedArray<T, S, M>& array, const char* sep = ",") {
-		String str;
-		if (!array.empty()) sforeach(array) str << E_ << sep;
-		if (!str.empty()) str.resize(str.length() - strlen(sep));
-		return str;
-	}
-	template<typename T, class M>
-	extern String toString(const BiArray<T, M>& array, const char* sep = ",") {
-		String str;
-		if (!array.empty()) sforeach(array) str << E_ << sep;
-		if (!str.empty()) str.resize(str.length() - strlen(sep));
-		return str;
-	}
-	template<class Key, class Val>
-	extern String toString(const Map<Key, Val>& map, const char* sep = ";", const char* part = "=") {
-		String str;
-		if (!map.empty()) sforeach(map) str << E_.key << part << E_.value << sep;
-		if (!str.empty()) str.resize(str.length() - strlen(sep));
-		return str;
-	}
-	template<typename T>
-	extern String toString(const Region<T>& reg) {
-		String str;
-		if (!reg.empty()) sforeach(reg) str << "(" << E_.begin << "," << E_.end << "),";
-		if (!str.empty()) str.resize(str.length() - 1);
-		return str;
-	}
 	extern inline std::ostream& operator<<(std::ostream& os, const Char& c) {
 #if defined(WIN32_OS) || defined(WIN64_OS)
 		return os << c.toString().localize().cstr();
@@ -496,19 +461,6 @@ namespace slib {
 #endif
 		return is;
 	}
-
-	template<typename T, class M>
-	extern inline std::ostream& operator<<(std::ostream& os, const Array<T, M>& array) { return os << toString(array); }
-	template<typename T, size_t S, class M>
-	extern inline std::ostream& operator<<(std::ostream& os, const FixedArray<T, S, M>& array) { return os << toString(array); }
-	template<typename T, class M>
-	extern inline std::ostream& operator<<(std::ostream& os, const BiArray<T, M>& array) { return os << toString(array); }
-	template<typename T>
-	extern inline std::ostream& operator<<(std::ostream& os, const List<T>& list) { return os << toString(list); }
-	template<class Key, class Val>
-	extern inline std::ostream& operator<<(std::ostream& os, const Map<Key, Val>& map) { return os << toString(map); }
-	template<typename T>
-	extern inline std::ostream& operator<<(std::ostream& os, const Region<T>& reg) { return os << toString(reg); }
 }
 
 namespace std {
