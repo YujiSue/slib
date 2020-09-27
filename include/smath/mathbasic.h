@@ -3,14 +3,13 @@
 
 #include "sbasic/exception.h"
 
-namespace slib {
 
+#define DIMENSION_SIZE_DIFF(X, Y) slib::String(X)+u8" ≠ "+String(Y)
+namespace slib {
 	namespace smath {
 		constexpr suint DIV_ZERO_ERR = 0x0011;
 		constexpr suint UNSIGNED_MINUS_ERR = 0x0012;
 		constexpr suint DIMENSION_SIZE_ERR = 0x0013;
-
-#define DIMENSION_SIZE_DIFF(X, Y) slib::String(X)+u8" ≠ "+String(Y)
 
 		class SMathException : public SException {
 		public:

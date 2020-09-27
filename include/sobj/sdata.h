@@ -36,7 +36,7 @@ namespace slib {
 			if (ubytearray::_capacity) {
 				array._capacity = ubytearray::_capacity;
 				array._begin = reinterpret_cast<T *>(ubytearray::_begin);
-				array._end = array::_begin + (ubytearray::size() - 1) / sizeof(T) + 1;
+				array._end = array._begin + (ubytearray::size() - 1) / sizeof(T) + 1;
 			}
 			ubytearray::discard();
 		}
