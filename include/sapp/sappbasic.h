@@ -186,9 +186,9 @@ namespace slib {
                                 if (_lib) dlclose(_lib);
 #endif
                         }
-                        void call(const char* func) {
+                        void call(const char* f) {
 #ifdef WIN_OS
-                                _proc = GetProcAddress(_dll, func);
+                                _proc = GetProcAddress(_dll, f);
                                 if (_proc == NULL) throw SAppException(ERR_INFO, PLUGIN_FUNC_LOAD_ERROR);
                                 _func = reinterpret_cast<Func>(_proc);
 #else
