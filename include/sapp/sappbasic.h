@@ -175,7 +175,7 @@ namespace slib {
 #else
                                 _lib = dlopen(lib, RTLD_LAZY);
                                 if (_lib == NULL) throw SAppException(ERR_INFO, SAPP_ERROR);
-                                _func = (Ret (*)(Args... ))dlsym(_lib, f);
+                                _func = (int(*)(Args... ))dlsym(_lib, f);
                                 if (_func == NULL) throw SAppException(ERR_INFO, SAPP_ERROR);
 #endif
                         }
@@ -192,7 +192,7 @@ namespace slib {
                                 if (_proc == NULL) throw SAppException(ERR_INFO, PLUGIN_FUNC_LOAD_ERROR);
                                 _func = reinterpret_cast<Func>(_proc);
 #else
-                                _func = (Ret(*)(Args...))dlsym(_lib, f);
+                                _func = (int(*)(Args...))dlsym(_lib, f);
                                 if (_func == NULL) throw SAppException(ERR_INFO, SAPP_ERROR);
 #endif
                         }
