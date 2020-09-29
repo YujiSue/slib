@@ -2,11 +2,10 @@
     width: 100vw;
     height: 100vh;
 }
-.north{border-bottom: 0.5px solid gray;}
-.west{border-right: 0.5px solid gray;}
-.east{border-left: 0.5px solid gray;}
-.south{border-top: 0.5px solid gray;}
-
+.north {border: 0.5px solid black;}
+.west {border: 0.5px solid black;}
+.east {border: 0.5px solid black;}
+.south {border: 0.5px solid black;}
 /*menu*/
 .smenu-bar {
     background: white;
@@ -70,19 +69,50 @@
     font-size: 1.75rem;
 }
 .stool-item .tool-label {font-size: 0.75rem;}
-
+/*table*/
+.table-header {
+    background-color: lightgray;
+}
+.table-body {
+    background-color: white;
+    border: 0.25px solid silver;
+}
+.table-corner {
+    border: 0.25px solid silver;
+    background-color: silver;
+}
+.stable-column {
+    padding: 5px;
+    border: 0.25px solid silver;
+}
+.stable-column:hover {
+    background-color: silver;
+}
+.stable-row:nth-child(even) {
+    background-color: aliceblue;
+}
+.stable-cell {
+    border: 0.25px solid silver;
+}
+.stable-cell:hover {
+    background-color: azure;
+}
+.row-header {
+    width: 2rem;
+    background-color: lightgray;
+}
+.row-header:hover {
+    background-color: silver;
+}
 /*tree*/
 .stree-view {
     padding: 0.25rem;
 }
-.stree-node .tree-header .tnode-header:hover {
+.stree-node .tnode-header:hover {
     background-color: lightgray;
 }
 .tnode-icon {
     width: 1em;
-}
-.tree-children {
-    padding-left: 1em;
 }
 
 .column-label {
@@ -164,13 +194,26 @@
     background: lightgray;
     border: 0.5px solid dimgray;
 }
-
+/*Button*/
+.spush-button {
+    background: linear-gradient(white,lightgray);
+    border: 1px solid dimgray;
+}
+.spush-button.active {
+    background: linear-gradient(lightgray,silver);
+    border: 1px solid dimgray;
+}
+.stoggle-button {
+    color: gray;
+}
+.stoggle-button.active {
+    color: blue;
+}
 /*app default*/
 .app-about {
     font-size: 0.75rem;
     padding: 5px;
     background: rgba(255,255,255,1.0);
-    box-shadow: 0px 0px 5px 2px rgba(255,255,255,0.75);
 }
 .app-about .upper-panel {
     margin-bottom: 5px;

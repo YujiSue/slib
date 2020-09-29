@@ -310,8 +310,9 @@ int SCuiApp::init(int argc, const char** argv) {
 			case 2: {
 				if (app_option.hasKey(op)) {
 					if (required.contain(op)) app_option[op]["_set"] = true;
-					if (app_option[op]["type"] == "bool") preference[op] = true;
 					if (app_option[op].hasKey("defualt")) preference[op] = app_option[op]["default"];
+					if (app_option[op]["type"] == "bool") preference[op] = true;
+					else if (app_option[op]["type"] == "num") { arg++; preference[op] = SNumber::toNumber(arg[0]); }
 					else if (app_option[op]["type"] == "exec")
 						return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, preference["_cmd"]);
 					else {

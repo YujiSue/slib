@@ -14,6 +14,7 @@ body {
 p {
     padding: 0;
     margin: 0;
+    font-feature-settings: "palt";
 }
 pre {
     padding: 0;

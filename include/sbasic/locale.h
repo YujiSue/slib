@@ -39,11 +39,6 @@ namespace slib {
 		};
 		extern SLIB_DLL std::pair<slib::String, int> JPYear(int year);
 		extern SLIB_DLL int ADYear(const char* s, int year);
-
-		constexpr char HIRA_STR[256] = u8"ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろわゐゑをんゔ";
-		constexpr char KATA_STR[256] = u8"ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロワイヱヲンヴヵヶ";
-		constexpr char IROHA_STR[144] = u8"いろはにほへとちりぬるをわかよたれそつねならむうゐのおくやまけふこゑてあさきゆめみしえひもせす";
-		constexpr char ETO_STR[2][64] = { u8"甲乙丙丁戊己庚辛壬癸", u8"子丑寅卯辰巳午未申酉戌亥" };
 	}
 	class SLIB_DLL Locale {
 		static String _locale;

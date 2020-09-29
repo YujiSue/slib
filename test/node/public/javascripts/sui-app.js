@@ -5,7 +5,7 @@ var SAPP_INSTANCE=null;
 var SAPP_USER=null;
 var SAPP_ROOT=null;
 var SAPP_MAIN=null;
-var SAPP_CONNECT=new SConnect();
+var SAPP_AJAX=sajax();
 var SAPP_SOCKET=null;
 
 var SAPP_PREF=new SCookie();
@@ -42,7 +42,7 @@ function changeThema(t) {
     document.getElementById('main-thema').href=SAPP_THEMA;
 };
 var SAPP_LANG=SAPP_PREF.at('lang')?SAPP_PREF.at('lang'):'ja';
-var LANG_MENU=smenu({id:'lang-menu',expand:RIGHT,style:S_SELECT,selected:SupportedLocale.indexOf(SAPP_LANG)});
+var LANG_MENU=smenu({id:'lang-menu',expand:RIGHT,mode:'select',selected:SupportedLocale.indexOf(SAPP_LANG)});
 for(var l=0;l<SupportedLocale.length;l++) {LANG_MENU.addItem({style:S_TOGGLE|S_LABEL,state:SAPP_LANG===SupportedLocale[l],label:SupportedLocale[l],action:changeLocale})}
 function changeLocale() {
     SAPP_LANG=SupportedLocale[LANG_MENU.selectedIndex()];
@@ -53,8 +53,8 @@ var SAPP_ABOUT=null;
 var ABOUT_MENU_ITEM = smenuitem({label:'about-app',action:showAbout});
 function makeAbout() {
     SAPP_ABOUT = sdialog({
-        style:GENERIC_DIALOG,
-        content:{
+        mode:'generic',
+        content:spanel({
             class:['app-about'],
             layout:sflow(VERTICAL),
             components:[
@@ -79,7 +79,7 @@ function makeAbout() {
                     components:[slabel(APP_INFO.license+' '+COPYWRITE_CHAR+' '+APP_INFO.develop.substr(0,APP_INFO.develop.indexOf('/'))+' '+APP_INFO.creator,{class:['app-copy']})]
                 })
             ]
-        }
+        })
     });
 }
 function showAbout() {if(SAPP_ABOUT){SAPP_ABOUT.show();}};
