@@ -117,21 +117,21 @@ SArray SDictionary::lump(const stringarray &keys) {
 }
 String SDictionary::getClass() const { return "dict"; }
 String SDictionary::toString() const {
-    if(empty()) return "";
-    String str, dat;
+    if(empty()) return "{}";
+    String str = "{", dat;
     sforeach(*this) {
-        str += it->key+":";
-        if(it->value.isNull()) str += "null,";
-        else if(it->value.isNum()) str += E_.value.toString()+",";
-        else if(it->value.isArray()) str += E_.value.toString()+",";
-        else if(it->value.isDict()) str += E_.value.toString() + ",";
+        str += E_.key+":";
+        if(E_.value.isNull()) str += "null,";
+        else if(E_.value.isNum()) str += E_.value.toString()+",";
+        else if(E_.value.isArray()) str += E_.value.toString()+",";
+        else if(E_.value.isDict()) str += E_.value.toString() + ",";
         else {
-            dat = it->value.toString();
+            dat = E_.value.toString();
             if(dat.contain("\"")) dat.replace("\"", "\\\"");
             str += String::dquot(dat)+",";
         }
     }
-    str.resize(str.length()-1);
+	str.last() = '}';
     return str;
 }
 SObject * SDictionary::clone() const {
