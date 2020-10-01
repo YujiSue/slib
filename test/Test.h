@@ -3,8 +3,9 @@
 
 #include "sobj.h"
 #include "sapp.h"
+#include "sbioinfo.h"
 #include "sapp/snodeapp.h"
-
+/*
 #define MATH_TEST
 #ifndef MATH_TEST
 #define CALC_TEST
@@ -60,83 +61,84 @@
 
 
 #define APP_TEST
+*/
 
 
+#define SBIOINFO_TEST
 
-//#define CV_TEST
-
-
-//#define SBIOINFO_TEST
-namespace test {
-        extern void RangeTest();
-        extern void AreaTest();
-        extern void ZoneTest();
-        extern void MemoryTest();
-        extern void PtrTest();
-        extern void ArrayTest();
-        extern void RegionTest();
-        extern void ListTest();
-        extern void MapTest();
-        extern void SetTest();
-        extern void CharTest();
-        extern void StringTest();
-        extern void TimeTest();
-        extern void NodeTest();
-        extern void ExceptionTest();
-}
-
-namespace test {
-        extern void SObjTest();
-        extern void SNumberTest();
-        extern void SStringTest();
-        extern void SDateTest();
-        extern void SDataTest();
-        extern void SArrayTest();
-        extern void SDictTest();
-        extern void STextTest();
-        extern void SFuncTest();
-        extern void STableTest();
-        extern void SNodeTest();
-        extern void SVoidTest();
-        extern void SIOTest();
-        extern void SFileTest();
-        extern void SNetTest();
-        extern void SImageTest();
-        extern void SFigureTest();
-        //extern void SMovieTest();
-
-
-}
-namespace test {
-        extern void CalcTest();
-        extern void FracTest();
-        extern void ComplexTest();
-        extern void LinearAlgebraTest();
-        extern void GeometryTest();
-        extern void StatisticTest();
-
-}
 
 
 namespace test {
-        extern void SJsonTest();
-        extern void SXmlTest();
-        extern void SDocumentTest();
-        extern void SDBTest();
-        extern void SCodeTest();
-        extern void SThreadTest();
+	extern void RangeTest();
+	extern void AreaTest();
+	extern void ZoneTest();
+	extern void MemoryTest();
+	extern void PtrTest();
+	extern void ArrayTest();
+	extern void RegionTest();
+	extern void ListTest();
+	extern void MapTest();
+	extern void SetTest();
+	extern void CharTest();
+	extern void StringTest();
+	extern void TimeTest();
+	extern void NodeTest();
+	extern void ExceptionTest();
 }
 
-namespace test{
-        //extern void SBSeqTest();
+namespace test {
+	extern void SObjTest();
+	extern void SNumberTest();
+	extern void SStringTest();
+	extern void SDateTest();
+	extern void SDataTest();
+	extern void SArrayTest();
+	extern void SDictTest();
+	extern void STextTest();
+	extern void SFuncTest();
+	extern void STableTest();
+	extern void SNodeTest();
+	extern void SVoidTest();
+	extern void SIOTest();
+	extern void SFileTest();
+	extern void SNetTest();
+	extern void SImageTest();
+	extern void SFigureTest();
+	//extern void SMovieTest();
+
+
 }
 namespace test {
-        extern void SPlugInAppTest();
-        extern void SCUIAppTest();
+	extern void CalcTest();
+	extern void FracTest();
+	extern void ComplexTest();
+	extern void LinearAlgebraTest();
+	extern void GeometryTest();
+	extern void StatisticTest();
+
+}
+
+
+namespace test {
+	extern void SJsonTest();
+	extern void SXmlTest();
+	extern void SDocumentTest();
+	extern void SDBTest();
+	extern void SCodeTest();
+	extern void SThreadTest();
 }
 
 namespace test {
-        extern void SNodeJSAppTest();
+	extern void SBSeqIOTest();
+	extern void SBSeqTest();
+}
+namespace test {
+	extern void SPlugInAppTest();
+	extern void SCUIAppTest();
+}
+
+namespace test {
+	extern void SNodeJSAppTest();
 }
 
 #endif

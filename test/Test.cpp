@@ -131,6 +131,15 @@ int main() {
 		//test::SCodeTest();
 	}
 #endif
+	try {
+#ifdef SBIOINFO_TEST
+	test::SBSeqIOTest();
+	//test::SBSeqTest();
+#endif
+	}
+	catch (sbio::SBioInfoException be) {
+		be.print();
+	}
 	return 0;
 }
 #ifdef oldtest
@@ -190,7 +199,6 @@ public:
 };
 
 #include "sobj.h"
-#include "sbioinfo/sbioinfo.h"
 
 
 void print(int i) {
@@ -378,9 +386,7 @@ int main_()
 	proc.wait();
 
 #endif
-#ifdef SBIOINFO_TEST
-	//test::SBSeqTest();
-#endif
+
 
 	return 0;
 }
