@@ -561,11 +561,11 @@ char &String::first(){ return at(0); }
 const char &String::first() const{ return at(0); }
 char &String::last() { return at(-1); }
 const char &String::last() const { return at(-1); }
-void String::interpret(subyte* bytes, size_t size) {
+void String::interpret(subyte* bytes, size_t s) {
 	if (size < SHORT_STRING_CAPACITY - 1) {
 		if (size) Memory<char>::copy(_str._ss.str, (char*)bytes, size);
 		_str._ss.str[size] = '\0';
-		_str._ss.size = (sbyte)(size << 1);
+		_str._ss.size = (sbyte)(s << 1);
 	}
 	else {
 		_str._ls.str = (char *)bytes;
@@ -573,7 +573,7 @@ void String::interpret(subyte* bytes, size_t size) {
 		_str._ls.size = size;
 	}
 }
-void String::copy(const char *dat, size_t size) {
+void String::copy(const char *dat, size_t s) {
     if (!dat || dat[0] == '\0' || size == 0) clear();
     else {
         auto len = strlen(dat);
@@ -581,7 +581,7 @@ void String::copy(const char *dat, size_t size) {
         if (!_isLong() && size < SHORT_STRING_CAPACITY-1) {
 			Memory<char>::copy(_str._ss.str, dat, size);
             _str._ss.str[size] = '\0';
-            _str._ss.size = (sbyte)(size << 1);
+            _str._ss.size = (sbyte)(s << 1);
         }
         else {
             reserve((((len>>4)+1)<<4)|0x01);
@@ -595,7 +595,7 @@ void String::clear() { resize(0); }
 void String::resize(size_t s) {
     if (!_isLong() && s < SHORT_STRING_CAPACITY-1) {
         _str._ss.str[s] = '\0';
-        _str._ss.size = (sbyte)(size << 1);
+        _str._ss.size = (sbyte)(s << 1);
         return;
     }
     else {
