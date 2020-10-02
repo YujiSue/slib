@@ -12,6 +12,7 @@ void test::SBSeqIOTest() {
 	//SBSeqIO::loadFASTA(CIRC_DNA_SEQ1, faFile, &seq2);
 	sio::SFile abiFile("C:\\Users\\yujis\\Downloads\\test.ab1");
 	SBSeqIO::loadABI(abiFile, &seq3);
+	std::cout << seq3.raw() << std::endl;
 
 }
 

@@ -565,7 +565,7 @@ void String::interpret(subyte* bytes, size_t size) {
 	if (size < SHORT_STRING_CAPACITY - 1) {
 		if (size) Memory<char>::copy(_str._ss.str, (char*)bytes, size);
 		_str._ss.str[size] = '\0';
-		_str._ss.size = size << 1;
+		_str._ss.size = (sbyte)(size << 1);
 	}
 	else {
 		_str._ls.str = (char *)bytes;
@@ -581,7 +581,7 @@ void String::copy(const char *dat, size_t size) {
         if (!_isLong() && size < SHORT_STRING_CAPACITY-1) {
 			Memory<char>::copy(_str._ss.str, dat, size);
             _str._ss.str[size] = '\0';
-            _str._ss.size = size<<1;
+            _str._ss.size = (sbyte)(size << 1);
         }
         else {
             reserve((((len>>4)+1)<<4)|0x01);
@@ -595,7 +595,7 @@ void String::clear() { resize(0); }
 void String::resize(size_t s) {
     if (!_isLong() && s < SHORT_STRING_CAPACITY-1) {
         _str._ss.str[s] = '\0';
-        _str._ss.size = s<<1;
+        _str._ss.size = (sbyte)(size << 1);
         return;
     }
     else {
@@ -862,7 +862,7 @@ bool String::contain(const char *que, size_t offset) const {
     return find(que, offset) != NOT_FOUND;
 }
 bool String::match(const Regex &rgx, size_t offset) const {
-    return rgx.match(&at(offset));
+    return rgx.match(&at((int)offset));
 }
 bool String::equal(const Regex &rgx) const {
     return rgx.equal(cstr());
@@ -897,12 +897,12 @@ sizearray String::search(const char *que, size_t offset) const {
 }
 sizearray String::search(const Regex &rgx, size_t offset) const {
     sizearray array;
-    rgx.search(array, &at(offset), &last());
+    rgx.search(array, &at((int)offset), &last());
     return array;
 }
 stringarray String::matched(const Regex &rgx, size_t offset) const {
     stringarray array;
-    rgx.search(array, &at(offset), &last());
+    rgx.search(array, &at((int)offset), &last());
     return array;
 }
 inline void addsubstr(const String &str, stringarray &array, size_t init, size_t current, bool trim) {

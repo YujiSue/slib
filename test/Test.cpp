@@ -140,6 +140,12 @@ int main() {
 	catch (sbio::SBioInfoException be) {
 		be.print();
 	}
+	catch (sio::SIOException ie) {
+		ie.print();
+	}
+	catch (SException ex) {
+		ex.print();
+	}
 	return 0;
 }
 #ifdef oldtest

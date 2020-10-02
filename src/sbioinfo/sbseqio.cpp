@@ -54,11 +54,11 @@ inline void findMaskedRegion(SBioSeq *seq, String str) {
 	}
 	while (pos < len) {
 		if (isMaskChar(*p)) {
-			mask.begin = pos;
+			mask.begin = (sint)pos;
 			while (pos < len && isMaskChar(*p)) {
 				++pos; ++p;
 			}
-			mask.end = pos - 1;
+			mask.end = (sint)pos - 1;
 			seq->addMask(mask);
 		}
 		else { ++pos; ++p; }
@@ -117,8 +117,9 @@ void SBSeqIO::loadABI(sio::SFile &file, SBioSeq *seq) {
 	seq->attribute["version"] = ver;
 	readABIDir(file, map);
 	auto& dir = map["tdir"][0];
+	auto count = dir.num_elements;
 	file.setOffset(dir.data_offset);
-	sforin(i, 0, dir.num_elements) readABIDir(file, map);
+	sforin(i, 0, count) readABIDir(file, map);
 	if (map.hasKey("PBAS")) {
 		String str;
 		file.setOffset(map["PBAS"][0].data_offset);
