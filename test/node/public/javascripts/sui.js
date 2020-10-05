@@ -208,9 +208,6 @@ function inRange(x,y,s){if(s){return x>=s.X()&&x<=(s.X()+s.width())&&y>=s.Y()&&y
 function menuRoot(sui){
 
 };
-
-
-
 function encodeForm(d){var params=[];for(var k in d){params.push(encodeURIComponent(k)+'='+encodeURIComponent(d[k]));} return params.join('&').replace(/%20/g,'+');};
 function propOverride(p,o){if(!p){p=o;}else{for(var k in o){if(Object.keys(p).indexOf(k)==-1) p[k]=o[k];}} return p;};
 function instanceOfID(i,s){if(!s){s=document;} const e=s.getElementById(i); if(e){return e.sui;} else return null;};
@@ -230,7 +227,12 @@ function sdownload(n,b){
     const u=URL.createObjectURL(b);
     const a=document.createElement("a");
     document.body.appendChild(a);
-    a.download=n;a.href=u;a.click();a.remove();URL.revokeObjectURL(u);
+    a.download=n;
+    a.href=u;a.click();
+    setTimeout(function(){
+        URL.revokeObjectURL(u)
+        document.body.removeChild(a)
+      }, 500);
 };
 function sget(u,t){
     return new Promise(function(resolve,reject){
@@ -266,7 +268,8 @@ function useHash(t,f){
     if(crypto.subtle&&crypto.subtle.digest){
         crypto.subtle.digest('SHA-256',e).then(function(d){
             const a=Array.from(new Uint8Array(d));
-            const s=a.map(function(b){b.toString(16).padStart(2,'0')}).join('');
+            var s='';
+            for(var i=0;i<a.length;i++){s+=a[i].toString(16).padStart(2,'0');}
             if(f) f(s);
         });
     }
@@ -639,7 +642,7 @@ function SUIComponent(t,p){
 };
 SUIComponent.prototype={
     initNode:function(p){
-        this.setDisplay(p.display);
+        if(p.display) this.setDisplay(p.display);
         this.node.classList.add('component');
         if(p.id) this.setID(p.id);
         if(p.name) this.setName(p.name);
@@ -658,21 +661,21 @@ SUIComponent.prototype={
         if(p.y!==undefined) this.setY(p.y);
         if(p.z!==undefined) this.setZ(p.z);
         if(p.position) this.setPosition(p.position);
-        if(p.width != undefined) this.setWidth(p.width);
-        if(p.height != undefined) this.setHeight(p.height);
-        if(p.minw != undefined) this.setMinWidth(p.minw);
-        if(p.maxw != undefined) this.setMaxWidth(p.maxw);
-        if(p.minh != undefined) this.setMinHeight(p.minh);
-        if(p.maxh != undefined) this.setMaxHeight(p.maxh);
-        if(p.size != undefined) this.setSize(p.size);
-        if(p.draggable != undefined) this.setDraggable(p.draggable);
+        if(p.width!==undefined) this.setWidth(p.width);
+        if(p.height!==undefined) this.setHeight(p.height);
+        if(p.minw!==undefined) this.setMinWidth(p.minw);
+        if(p.maxw!==undefined) this.setMaxWidth(p.maxw);
+        if(p.minh!==undefined) this.setMinHeight(p.minh);
+        if(p.maxh!==undefined) this.setMaxHeight(p.maxh);
+        if(p.size!==undefined) this.setSize(p.size);
+        if(p.draggable!==undefined) this.setDraggable(p.draggable);
         if(p.border) this.setBorder(p.border);
         if(p.background) this.setBackground(p.background);
         if(p.shadow) this.setShadow(p.shadow);
         if(p.color) this.setColor(p.color);
         if(p.event) this.setEventListener(p.event);
         if(p.available!==undefined) this.setAvailable(p.available);
-        if(p.visible) this.setVisible(p.visible);
+        if(p.visible!==undefined) this.setVisible(p.visible);
     },
     setDisplay:function(d){this.display=d;if(d){this.node.style.display=d;}return this;},
     setLocale:function(l){this.locale=l; for(var i=0;i<this.components.length;i++){this.components[i].setLocale(l);} return this;},
@@ -1556,8 +1559,14 @@ SButtonCellRenderer.prototype={
         c.add(sbutton(p));
         c.componentAt(0).setMainClass('cell-button');
     },
-    setValue:function(c,v){c.componentAt(0).setState(v);},
-    getValue:function(c){return c.componentAt(0).state();},
+    setValue:function(c,v){c.componentAt(0).setAction(v);},
+    getValue:function(c){return c.componentAt(0).action;},
+}
+function SUICellRenderer(){}
+SUICellRenderer.prototype={
+    render:function(c,p){c.add(p.value);},
+    setValue:function(c,v){c.clear().add(v);},
+    getValue:function(c){return c.componentAt(0);},
 }
 function STableColumn(t,p){
     p=propOverride(p,{label:'column',renderer:new SCellRenderer(),items:null,sort:false,search:false});
@@ -1718,6 +1727,7 @@ STable.prototype=Object.create(SUIComponent.prototype,{
     }},
     setData:{value:function(d){this.setColumns(d.columns);this.setRows(d.rows);}},
     cellAt:{value:function(i,j){return this.rows[i].cellAt(j);}},
+    setCell:{value:function(r,c,v){this.columns[c].renderer.setValue(this.rows[r].cellAt(c),v);return this;}},
     setRowHeader:{value:function(b){this.showRowHeader=b;this.columns[0].setVisible(b);}},
 });
 STable.prototype.constructor=STable;
@@ -1949,7 +1959,7 @@ SMenuItem.prototype=Object.create(SUIComponent.prototype, {
     }},
     showMenu: { value: function(){
         if(this.submenu){
-            this.submenu.setVisible(true);
+            this.submenu.setVisible(true).setX(0).setY(0);
             if(this.expand===BOTTOM||this.expand===TOP){
                 if(document.body.clientWidth<this.X()+this.submenu.width()) this.submenu.setX(this.X()+this.width()-this.submenu.width());
                 else this.submenu.setX(this.X());
@@ -1967,6 +1977,7 @@ SMenuItem.prototype=Object.create(SUIComponent.prototype, {
         return this;
     }},
     hideMenu: {value:function(){if(this.submenu){this.submenu.setVisible(false);} return this;}},
+    setLocale:{value:function(l){SUIComponent.prototype.setLocale.apply(this,[l]);if(this.submenu)this.submenu.setLocale(l);}},
     setAction:{value:function(a){this.action=a;return this;}}
 });
 SMenuItem.prototype.constructor=SMenuItem;
@@ -1983,7 +1994,7 @@ SMenu.prototype=Object.create(SUIComponent.prototype, {
     }},
     showAt: {
         value: function(u,l){
-            document.body.appendChild(this.node);
+            this.setVisible(true).setActive(true).setX(0).setY(0);
             if(l===BOTTOM||l===TOP){
                 if(document.body.clientWidth<u.X()+this.width()) this.setX(u.X()+u.width()-this.width());
                 else this.setX(u.X());
@@ -1996,7 +2007,7 @@ SMenu.prototype=Object.create(SUIComponent.prototype, {
                 if(l===RIGHT) this.setX(u.X()+u.width());
                 else this.setX(u.X()-this.width());
             }
-            this.setActive(true).setVisible(true);CURRENT_MENU=this;
+            CURRENT_MENU=this;
     }},
     hide:{value:function(){this.setVisible(false).setActive(false);CURRENT_MENU=null;}},
     close:{ value:function(){
@@ -2117,6 +2128,13 @@ SToolItem.prototype=Object.create(SUIComponent.prototype, {
             };
         }
     },
+    setIcon:{value:function(i){
+        if(this.icon) {
+            if(this.icon.suiid==='text') this.icon.setText(i);
+            else if(this.icon.suiid==='icon') this.icon.setIcon(i.substr(i.indexOf(':')+1));
+            else if(this.icon.suiid==='image') this.icon.setSrc(i.substr(i.indexOf(':')+1));
+        }
+    }},
     setState:{value:function(s){
         if(s){this.addClass('active');}else{this.removeClass('active');}
         this.state=s;return this;
@@ -2303,6 +2321,21 @@ STextView.prototype=Object.create(SUIComponent.prototype, {
 });
 STextView.prototype.constructor=STextView;
 function stextview(a){return new STextView(a);};
+function SMathText(m,p){
+    p=propOverride(p,{});
+    SUIComponent.call(this,'code',p);
+    this.node.innerHTML=codedString('\\('+m+'\\)');
+};
+SMathText.prototype=Object.create(SUIComponent.prototype, {
+    initNode:{value:function(p){
+        SUIComponent.prototype.initNode.apply(this,[p]);
+        this.setSuiID('math').setMainClass('smath');
+    }},
+    value:{value:function(){return this.node.innerHTML;}},
+    setValue:{value:function(t){this.node.innerHTML='\\('+t+'\\)'; return this;}},
+});
+SMathText.prototype.constructor=SMathText;
+function smath(a,b){return new SMathText(a,b);};
 function SButton(p){
     p=propOverride(p,{label:'',image:null,state:false,available:true,action:null,mode:null,style:S_LABEL});
     if(p.mode) SUIComponent.call(this,'div',p);
@@ -2406,7 +2439,7 @@ SSelector.prototype=Object.create(SUIComponent.prototype, {
     }},
     setMultiSelectable:{value:function(m){this.node.multiple=m; return this;}},
     setOptions:{value:function(o){for(var i=0;i<o.length;i++){this.addOption(o[i]);} return this;}},
-    select:{value:function(o){o.setSelected(true); return this;}},
+    select:{value:function(o){this.components[o].node.selected=true; return this;}},
     selectValue:{value:function(v){for(var o=0;o<this.components.length;o++){if(this.components[o].node.value===v){this.components[o].node.selected=true;break;}}  return this;}},
     selectAt:{value:function(i){if(i<=this.components.length){this.node.selectedIndex=i-1;} return this;}},
     addOption:{value:function(o){

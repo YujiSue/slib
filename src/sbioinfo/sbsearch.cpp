@@ -15,7 +15,7 @@ sbsearch_param::sbsearch_param(sushort t) {
     max_miss = DEFAULT_MAX_MISS;
     thread_count = DEFAULT_THREAD;
     extend_threshold = DEFAULT_THRESHOLD;
-    aln_par = salign_param(ref_type);
+    aln_par = salign_param((subyte)ref_type);
 }
 sbsearch_param::~sbsearch_param() {}
 sbsearch_param &sbsearch_param::operator=(const sbsearch_param &par) {
@@ -37,7 +37,7 @@ void sbsearch_param::setType(int t) {
 	ref_type = t & 0x0F;
 	code_size = (t >> 4) & 0x0F;
 	coded_seed_len = seed_len / (code_size == 0 ? 1 : code_size);
-	aln_par = salign_param(ref_type);
+	aln_par = salign_param((subyte)ref_type);
 }
 void sbsearch_param::setSeed(int s) {
     seed_len = s;
@@ -79,7 +79,7 @@ SBSearch::SBSearch(sbsearch_param *lp) { setParam(lp); }
 SBSearch::~SBSearch() {}
 void SBSearch::_resize(size_t rn, size_t qn) {
     if (_matched.size() < rn*qn) { _matched.resize(rn*qn); aligns.resize(rn*qn); }
-    _rnum = rn; _qnum = qn;
+    _rnum = (sint)rn; _qnum = (sint)qn;
 }
 inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, srange *range,
                      ubytearray *ref, ubytearray *que, bool dir, sbsearch_param *par) {
@@ -97,8 +97,8 @@ inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, sr
             }
             ++it_;
         }
-        E_.first -= len; E_.first *= par->code_size; E_.first-=par->seed_len-par->code_size;
-        len *= par->code_size; E_.second -= len; len += par->seed_len;
+        E_.first -= (sint)len; E_.first *= par->code_size; E_.first-=par->seed_len-par->code_size;
+        len *= par->code_size; E_.second -= (sint)len; len += par->seed_len;
         if (range->end < E_.first+len) len = range->end-E_.first;
         if (len+2*((par->code_size?par->code_size:1)-1) < par->min_match) continue;
         if (1 < par->code_size) {
@@ -111,8 +111,8 @@ inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, sr
                         if (seq[1] == (char)que->at(E_.second-1)) { --E_.first; --E_.second; ++len; }
                     }
                     if (E_.first+len < range->end && E_.second+len < que->size()) {
-                        sseq::ddec21(ref->at((E_.first+len)/2), seq);
-                        if (seq[0] == (char)que->at(E_.second+len)) ++len;
+                        sseq::ddec21(ref->at((E_.first+ (sint)len)/2), seq);
+                        if (seq[0] == (char)que->at(E_.second+ (sint)len)) ++len;
                     }
                 }
                 case 4:
@@ -129,7 +129,7 @@ inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, sr
                         }
                     }
                     if (E_.first+len < range->end && E_.second+len < que->size()) {
-                        sseq::ddec41(ref->at((E_.first+len)/4), seq);
+                        sseq::ddec41(ref->at((E_.first+ (sint)len)/4), seq);
                         auto qseq = que->ptr(E_.second+len);
                         sforin(i, 0, 4) {
                             if (E_.first+len < range->end && E_.second+len < que->size() && seq[i] == *qseq) { ++qseq; ++len; }
@@ -142,7 +142,7 @@ inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, sr
                     break;
             }
         }
-        if (par->min_match <= len) vec->add(sbpos(r, E_.first, E_.first+len-1, dir), srange(E_.second, E_.second+len-1));
+        if (par->min_match <= len) vec->add(sbpos(r, E_.first, E_.first+ (sint)len-1, dir), srange(E_.second, E_.second+(sint)len-1));
     }
     match->clear();
 }

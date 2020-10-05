@@ -908,9 +908,9 @@ stringarray String::matched(const Regex &rgx, size_t offset) const {
 inline void addsubstr(const String &str, stringarray &array, size_t init, size_t current, bool trim) {
     auto l = current-init;
     if (trim) {
-        while (init < current && Char::isWSChar(str[init])) ++init;
+        while (init < current && Char::isWSChar(str[(int)init])) ++init;
         l = current-init;
-        while (0 < l && Char::isWSChar(str[init+l-1])) --l;
+        while (0 < l && Char::isWSChar(str[(int)(init+l-1)])) --l;
     }
     if (l) array.add(str.substring(init, l));
     else array.add("");
@@ -922,7 +922,7 @@ stringarray String::split(const char *sep, bool trim) const {
         if (len) {
             bool dq = false;
             auto ins = _cinstance();
-            auto off = 0, pos = 0;
+            size_t off = 0, pos = 0;
             while (off < ins.second) {
                 if (*ins.first == '\"') dq = !dq;
                 else if (*ins.first == sep[0] && !dq && off+len <= ins.second) {
@@ -977,8 +977,8 @@ Map<String, String> String::parse(const char *sep, const char *part, bool trim) 
         pos+=strlen(part);
         if (trim) {
             key.trimming();
-            while (pos < len && Char::isWSChar(E_[pos])) ++pos;
-            while (pos < len && Char::isWSChar(E_[len-1])) --len;
+            while (pos < len && Char::isWSChar(E_[(int)pos])) ++pos;
+            while (pos < len && Char::isWSChar(E_[(int)(len-1)])) --len;
         }
         if (pos == len) attr[key] = "";
         else attr[key] = E_.substring(pos, len-pos);
@@ -1046,13 +1046,13 @@ size_t String::sizeValue() const {
     }
 }
 long String::longValue() const {
-    try { return atoll(cstr()); }
+    try { return (long)atoll(cstr()); }
     catch (std::invalid_argument e) {
         throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "long"));
     }
 }
 unsigned long String::ulongValue() const {
-    try { return atoll(cstr()); }
+    try { return (unsigned long)atoll(cstr()); }
     catch (std::invalid_argument e) {
         throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "ulong"));
     }
@@ -1070,7 +1070,7 @@ unsigned long long String::ullongValue() const {
     }
 }
 float String::floatValue() const {
-    try { return atof(cstr()); }
+    try { return (float)atof(cstr()); }
     catch (std::invalid_argument e) {
         throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "float"));
     }

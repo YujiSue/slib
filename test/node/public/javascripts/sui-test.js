@@ -74,9 +74,10 @@ var dispNode=streenode({label:'display',leaf:false,children:[listNode,tblNode]})
 
 var slabelNode=streenode({label:'label',action:function(e){appCenter.clear();appCenter.add(labelSample);}});
 var slinkNode=streenode({label:'link',action:function(e){appCenter.clear();appCenter.add(linkSample);}});
+var smathNode=streenode({label:'math',action:function(e){appCenter.clear();appCenter.add(mathSample);}});
 var stextNode=streenode({label:'text',action:function(e){appCenter.clear();appCenter.add(textSample);}});
 
-var strNode=streenode({label:'string',leaf:false,children:[slabelNode,slinkNode,stextNode]});
+var strNode=streenode({label:'string',leaf:false,children:[slabelNode,slinkNode,smathNode,stextNode]});
 
 var btnNode=streenode({label:'button',action:function(e){appCenter.clear();appCenter.add(buttonSample);}});
 
@@ -147,13 +148,17 @@ var labelSample=slistview({width:'80%',height:'80%',padding:[10,10,10,10],items:
 var linkSample=slistview({width:'80%',height:'80%',padding:[10,10,10,10],items:[
     slink('link',null,{class:['item'],event:[{type:'click',func:showInfo}]}),
     slink('google','https://www.google.com',{newtab:true,class:['item'],event:[{type:'click',func:showInfo}]}),
-    slink('thumbnail','https://yujisue.github.io/',{newtab:true,class:['item'],
+    slink('thumbnail','https://yujisue.github.io/',{newtab:true,class:['item', 'thumbnail'],
         event:[
             {type:'click',func:showInfo},
             {type:'mouseover',func:showThumbnail1},
             {type:'mouseleave',func:hideThumbnail1},
         ]
     }),
+]});
+var mathSample=slistview({width:'80%',height:'80%',padding:[10,10,10,10],items:[
+    smath('e^x=1+x+\\frac{x^2}{2!}+...',{class:['item'],event:[{type:'click',func:showInfo}]}),
+    
 ]});
 var thumb1=spanel({position:'absolute',z:1,border:{style:'solid',width:1,color:'black'},components:[swebview({src:'https://yujisue.github.io/',width:320,height:240})]});
 function showThumbnail1(e){SAPP_ROOT.add(thumb1);thumb1.setX(e.clientX).setY(e.clientY);};

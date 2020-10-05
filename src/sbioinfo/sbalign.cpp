@@ -301,7 +301,7 @@ void SAlignment::align(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool 
         }
     }
     if (0 < rlen) {
-        cigars.put(scigar(scigar::DELETION, rlen));
+        cigars.put(scigar(scigar::DELETION, (sint)rlen));
         if (_gap) { sforin(l, 0, rlen) scores.add(scores.last()+_par->gap2_score); }
         else {
             scores.add(scores.last()+_par->gap_score);
@@ -309,7 +309,7 @@ void SAlignment::align(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool 
         }
     }
     else if (0 < qlen) {
-        cigars.put(scigar(scigar::INSERTION, qlen));
+        cigars.put(scigar(scigar::INSERTION, (sint)qlen));
         if (_gap) { sforin(l, 0, qlen) scores.add(scores.last()+_par->gap2_score); }
         else {
             scores.add(scores.last()+_par->gap_score);
@@ -368,7 +368,7 @@ void SAlignment::ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool
         }
     }
     if (0 < rlen) {
-        cigars.add(scigar(scigar::DELETION, rlen));
+        cigars.add(scigar(scigar::DELETION, (sint)rlen));
         if (_gap) { sforin(l, 0, rlen) scores.add(scores.last()+_par->gap2_score); }
         else {
             scores.add(scores.last()+_par->gap_score);
@@ -376,7 +376,7 @@ void SAlignment::ralign(subyte *ref, size_t rlen, subyte *que, size_t qlen, bool
         }
     }
     else if (0 < qlen) {
-        cigars.add(scigar(scigar::INSERTION, qlen));
+        cigars.add(scigar(scigar::INSERTION, (sint)qlen));
         if (_gap) { sforin(l, 0, qlen) scores.add(scores.last()+_par->gap2_score); }
         else {
             scores.add(scores.last()+_par->gap_score);

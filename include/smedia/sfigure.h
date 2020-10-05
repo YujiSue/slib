@@ -124,7 +124,11 @@ namespace slib {
             virtual double area() const;
             virtual bool include(v2f v) const;
             virtual bool cross(sfig fig) const;
-            
+			template<class Cls>
+			bool cross(Cls c) const {
+				return _boundary.overlap(c->boundary());
+			}
+
             virtual String getClass() const;
             virtual String toString() const;
             virtual SObject *clone() const;

@@ -79,7 +79,7 @@ void sbam::readinfo::init() {
 void sbam::readinfo::set(ubytearray& data) {
 	init();
 	if (data.empty()) return;
-	length = data.size();
+	length = (sint)data.size();
 	sint tmp;
 	auto ptr = data.ptr();
 	pos.idx = *reinterpret_cast<sint*>(ptr);
@@ -110,22 +110,22 @@ void sbam::readinfo::set(ubytearray& data) {
 	template_length = *reinterpret_cast<sint*>(ptr);
 	ptr += 4; length -= 4; lenCheck(length);
 	memcpy(&name[0], ptr, name.size());
-	ptr += name.size(); length -= name.size(); lenCheck(length);
+	ptr += name.size(); length -= (sint)name.size(); lenCheck(length);
 	if (name.last() == '\0') name.resize(name.size() - 1);
 	sforeach(cigars) {
 		E_ = *reinterpret_cast<sint*>(ptr);
 		ptr += 4; length -= 4; lenCheck(length);
 	}
-	pos.end = pos.begin + cigars.countRef() - 1;
+	pos.end = pos.begin + (sint)cigars.countRef() - 1;
 	memcpy(sequence.ptr(), ptr, sequence.size());
-	ptr += sequence.size(); length -= sequence.size(); lenCheck(length);
+	ptr += sequence.size(); length -= (sint)sequence.size(); lenCheck(length);
 	memcpy(qual.ptr(), ptr, qual.size());
-	ptr += qual.size(); length -= qual.size(); lenCheck(length);
+	ptr += qual.size(); length -= (sint)qual.size(); lenCheck(length);
 	auxiliary.resize(length);
 	memcpy(auxiliary.ptr(), ptr, auxiliary.size());
 }
 srange sbam::readinfo::range() {
-    return srange(pos.begin, pos.begin+cigars.countRef()-1);
+	return srange(pos.begin, pos.begin + (sint)cigars.countRef() - 1);
 }
 String sbam::readinfo::toString() {
 	String str, seq(seq_length, '\0'), qstr(seq_length, '\0');
@@ -134,7 +134,7 @@ String sbam::readinfo::toString() {
 	str << name << TAB << String(flag) << TAB << pos.idx << TAB << pos.begin + 1 << TAB <<
 		(int)mapq << TAB << cigars.toString() << TAB << (int)next_refid << TAB << (int)next_pos << TAB <<
 		seq_length << TAB << seq << TAB << qstr;
-    return str;
+	return str;
 }
 bool sbam::readinfo::operator<(const sbam::readinfo &ri) const { return pos < ri.pos; }
 bool sbam::readinfo::operator==(const sbam::readinfo &ri) const {
@@ -251,7 +251,7 @@ size_t sbam::bgzf_dat::left() {
 void sbam::bgzf_dat::read(void *dest, size_t size, size_t off) {
     memcpy((subyte *)dest+off, current, size);
     current += size;
-    offset.block_offset += size;
+    offset.block_offset += (sushort)size;
 }
 
 SBamFile::SBamFile() : sio::SFile() {
