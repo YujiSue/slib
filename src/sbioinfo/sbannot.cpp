@@ -189,7 +189,7 @@ void SBAnnotDB::_loadContigInfo() {
         sforeach(contigs) {
             auto &row = getRow();
             toAnnotInfo(&E_, row);
-            _ctg_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
+            _ctg_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _ctg_name_index.add(r);
             ++r;
         }
@@ -206,7 +206,7 @@ inline void toGeneInfo(gene_info *info, SDictionary &dict) {
     toAnnotInfo(info, dict);
     if(dict["GENE_ID"]) info->gene_id = dict["GENE_ID"];
     if(dict["OTHER_NAME"]) {
-        auto list = dict["OTHER_NAME"].split(",");
+        auto list = String::dequot(dict["OTHER_NAME"]).split(",");
         if (!list.empty()) { sforeach(list) info->other_names.add(E_.cstr()); }
     }
     if(dict["DESCRIPTION"]) info->description = dict["DESCRIPTION"];
@@ -223,14 +223,14 @@ void SBAnnotDB::_loadGeneInfo() {
             auto &row = getRow();
             toGeneInfo(&E_, row);
             if ((_mode&LOAD_TRANS) && !transcripts.empty() && row["TRANSCRIPT"]) {
-                auto translist = row["TRANSCRIPT"].split(",");
+                auto translist = String::dequot(row["TRANSCRIPT"]).split(",");
                 sforeachi(translist) {
                     auto &trans = transcripts[translist[i].intValue()-1];
                     E_.transcripts.add(&trans);
                     trans.gene = &E_;
                 }
             }
-            _gene_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
+            _gene_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             if (E_.gene_id.size()) _gene_name_index.add(name_pair(&E_.gene_id, r));
             if (E_.name.size()) _gene_name_index.add(name_pair(&E_.name, r));
             if (!E_.other_names.empty()) {
@@ -262,7 +262,7 @@ void SBAnnotDB::_loadTranscriptInfo() {
                 E_.gene = &gene;
                 gene.transcripts.add(&E_);
             }
-            _trs_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
+            _trs_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _trs_name_index.add(r);
             ++r;
         }
@@ -273,7 +273,7 @@ void SBAnnotDB::_loadTranscriptInfo() {
             if (row.empty()) break;
             struct_info si;
             toAnnotInfo(&si, row);
-            stringarray tids = row["TRANSCRIPT_ID"].split(",");
+            stringarray tids = String::dequot(row["TRANSCRIPT_ID"]).split(",");
             sforeach(tids) transcripts[E_.intValue()-1].structures.add(si);
         }
         commit();
@@ -302,7 +302,7 @@ void SBAnnotDB::_loadMutantInfo() {
         sforeach(mutants) {
             auto &row = getRow();
 			toMutInfo(&E_, row);
-            _mut_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
+            _mut_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _mut_name_index.add(r);
             ++r;
         }
@@ -325,7 +325,7 @@ void SBAnnotDB::_loadVariationInfo() {
         sforeach(variations) {
             auto &row = getRow();
 			toMutInfo(&E_, row);
-            _var_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
+            _var_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _var_name_index.add(r);
             ++r;
         }
@@ -348,7 +348,7 @@ void SBAnnotDB::_loadFeatureInfo() {
         sforeach(features) {
             auto &row = getRow();
             toAnnotInfo(&E_, row);
-            _ftr_index[E_.idx][bin_order[E_.idx][sbiutil::getBin(E_)]].add(&E_);
+            _ftr_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _ftr_name_index.add(r);
             ++r;
         }
@@ -515,7 +515,7 @@ void SBAnnotDB::ctgInfo(ctgparray &array, const char *name, subyte match, bool a
 	if (!append) array.clear();
     if (_mode&LOAD_CTG) {
         if (match == EXACT_MATCH) {
-            srange range(0, _ctg_name_index.size());
+            srange range(0, (sint)_ctg_name_index.size());
             searchNameIndex<ctgarray>(range, name, _ctg_name_index, contigs);
             if (range.end-range.begin) return array.add(&contigs[_ctg_name_index[range.begin]]);
         }
@@ -576,7 +576,7 @@ void SBAnnotDB::geneInfo(geneparray &array, const sbpos &pos, bool trans, bool a
                         transcripts[t].gene = &genes[i];
                         genes[i].addTranscript(&transcripts[t]);
                         if (E_["STRUCTURE"]) {
-                            auto struct_ids = E_["STRUCTURE"].split(",");
+                            auto struct_ids = String::dequot(E_["STRUCTURE"]).split(",");
                             sforeachi_(s, struct_ids) {
                                 auto &row = (*this)["STRUCTURE"].getRecordAt(struct_ids[s].intValue());
                                 struct_info si;
@@ -640,7 +640,7 @@ void SBAnnotDB::geneInfo(geneparray &array, const char *name, bool trans, subyte
                         transcripts[t].gene = &genes[i];
                         genes[i].addTranscript(&transcripts[t]);
                         if (E_["STRUCTURE"]) {
-                            auto struct_ids = E_["STRUCTURE"].split(",");
+                            auto struct_ids = String::dequot(E_["STRUCTURE"]).split(",");
                             sforeachi_(s, struct_ids) {
                                 auto &row = (*this)["STRUCTURE"].getRecordAt(struct_ids[s].intValue());
                                 struct_info si;
@@ -687,7 +687,7 @@ void SBAnnotDB::transcriptInfo(trsparray &array, const sbpos &pos, bool gene, bo
                 sforeach(tarray) {
                     toAnnotInfo(&transcripts[t], E_.dict());
                     if (E_["STRUCTURE"]) {
-                        auto struct_ids = E_["STRUCTURE"].split(",");
+                        auto struct_ids = String::dequot(E_["STRUCTURE"]).split(",");
                         sforeachi_(s, struct_ids) {
                             auto &row = (*this)["STRUCTURE"].getRecordAt(struct_ids[s].intValue());
                             struct_info si;
@@ -739,7 +739,7 @@ void SBAnnotDB::transcriptInfo(trsparray &array, const char *name, bool gene, su
                 sforeach(tarray) {
                     toAnnotInfo(&transcripts[t], E_.dict());
                     if (E_["STRUCTURE"]) {
-                        auto struct_ids = E_["STRUCTURE"].split(",");
+                        auto struct_ids = String::dequot(E_["STRUCTURE"]).split(",");
                         sforeachi_(s, struct_ids) {
                             auto &row = (*this)["STRUCTURE"].getRecordAt(struct_ids[s].intValue());
                             struct_info si;

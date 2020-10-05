@@ -129,6 +129,7 @@ namespace test {
 }
 
 namespace test {
+	extern void SBAnnotTest();
 	extern void SBSeqIOTest();
 	extern void SBSeqTest();
 }

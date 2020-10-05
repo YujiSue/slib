@@ -4,7 +4,7 @@ using namespace slib;
 int main() {
 	INIT_DEFAULT_IO(0)
 		try {
-#if defined(BASIC_TEST)u8 || defined(RANGE_TEST)
+#if defined(BASIC_TEST) || defined(RANGE_TEST)
 		test::RangeTest();
 #endif
 #if defined(BASIC_TEST) || defined(AREA_TEST)
@@ -133,8 +133,9 @@ int main() {
 #endif
 	try {
 #ifdef SBIOINFO_TEST
-	test::SBSeqIOTest();
-	//test::SBSeqTest();
+		test::SBAnnotTest();
+		test::SBSeqIOTest();
+		//test::SBSeqTest();
 #endif
 	}
 	catch (sbio::SBioInfoException be) {
