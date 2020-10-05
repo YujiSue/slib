@@ -483,8 +483,8 @@ inline void searchPos(const sbpos &pos, Array<Array<CArray<Info *>>> &index, sor
     sizearray bins;
     sbiutil::getBins(bins, pos);
     sforeachi(bins) {
-        if (index[pos.idx][order[bins[i]]].empty()) continue;
-        sforeach(index[pos.idx][order[bins[i]]]) {
+        if (index[pos.idx][order[(int)bins[i]]].empty()) continue;
+        sforeach(index[pos.idx][order[(int)bins[i]]]) {
             auto info = static_cast<Info *>(E_);
             if (info->overlap(pos)) array.add(info);
         }
@@ -708,7 +708,7 @@ void SBAnnotDB::transcriptInfo(trsparray &array, const char *name, bool gene, su
 	if (!append) array.clear();
     if (_mode&LOAD_TRANS) {
         if (match == EXACT_MATCH) {
-            srange range(0, _trs_name_index.size());
+            srange range(0,(sint) _trs_name_index.size());
             searchNameIndex<trsarray>(range, name, _trs_name_index, transcripts);
             if (range.end-range.begin) return array.add(&transcripts[_trs_name_index[range.begin]]);
         }
@@ -780,7 +780,7 @@ void SBAnnotDB::mutantInfo(mutparray &array, const char *name, subyte match, boo
 	if (!append) array.clear();
     if (_mode&LOAD_MUT) {
         if (match == EXACT_MATCH) {
-            srange range(0, _mut_name_index.size());
+            srange range(0, (sint)_mut_name_index.size());
             searchNameIndex<mutarray>(range, name, _mut_name_index, mutants);
             if (range.end-range.begin) return array.add(&mutants[_mut_name_index[range.begin]]);
         }
