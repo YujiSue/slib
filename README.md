@@ -4,7 +4,7 @@
 ## About
 This library is a collection of code that the author has been writing to simplify C++ coding.  
 
-1. libsobj
+1. libsobj  
 This library defines the main core objects (SObjects) and their inherited objects.  
 * Examples of defined objects:  
 Numbers (SNumber)  
