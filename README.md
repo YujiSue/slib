@@ -21,7 +21,7 @@ etc...
   
 Other features:  
 * Fractions and complex numbers are available in SNumber object.  
-* Japanese calender calender is available in SDate object.  
+* Japanese calender is available in SDate object.  
 * Support for Japanese file path and Japanese output to command prompt on Windows.  
 etc.  
 
