@@ -8,7 +8,7 @@ This library is a collection of code that the author has been writing to simplif
 This library defines the main core objects (SObjects) and their inherited objects.  
 * Examples of defined objects:  
 Numbers (SNumber)  
-Strings (SSTRing)  
+Strings (SString)  
 Object array (SArray)  
 Associative array(SDictionary)  
 Date (SDate)  
