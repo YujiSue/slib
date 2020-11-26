@@ -47,7 +47,7 @@ sobj sngs_param::encodeTarget() {
 	sforeachi(target) {
 		array[i] = sarray();
 		sforeach(target[i]) {
-			suinteger ui = E_.begin | (E_.end << 32);
+			suinteger ui = (suinteger)E_.begin | ((suinteger)E_.end << 32);
 			array[i].add(snum(ui));
 		}
 	}

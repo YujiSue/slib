@@ -1,5 +1,4 @@
 #include "sbioinfo/sbam.h"
-#include <opencv2\core\persistence.hpp>
 
 using namespace slib;
 using namespace slib::sbio;
