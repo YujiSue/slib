@@ -4,6 +4,10 @@
 #include "sbasic.h"
 
 namespace slib {
+	extern inline void SSleep(sint ms) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+	}
+
 	class SLIB_DLL SLock {
 	private:
 		std::atomic<bool> _lock;
@@ -93,7 +97,7 @@ namespace slib {
 
 		template<class Func, class... Args>
 		void addTask(Func func, Args... args) {
-			std::lock_guard<std::mutex> lock(_mtx);
+			std::unique_lock<std::mutex> lock(_mtx);
 			_tasks.emplace(func, args...);
 			_cv.notify_one();
 		}

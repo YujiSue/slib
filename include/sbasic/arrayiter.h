@@ -36,6 +36,7 @@ namespace slib {
 		pointer _ptr;
 
 	public:
+		SArrayIterator();
         SArrayIterator(pointer p);
         SArrayIterator(const SArrayIterator &it);
         ~SArrayIterator();
@@ -89,6 +90,7 @@ namespace slib {
 		pointer _ptr;
         
     public:
+		SArrayCIterator();
         SArrayCIterator(pointer p);
         SArrayCIterator(const SArrayCIterator &it);
         ~SArrayCIterator();
@@ -115,7 +117,9 @@ namespace slib {
     };
     
     /*============================================================*/
-    template<typename T>
+	template<typename T>
+	SArrayIterator<T>::SArrayIterator() : _ptr(nullptr) {}
+	template<typename T>
     SArrayIterator<T>::SArrayIterator(pointer p) : _ptr(p) {}
     template<typename T>
     SArrayIterator<T>::SArrayIterator(const SArrayIterator<T> &it) : _ptr(it._ptr) {}
@@ -165,7 +169,9 @@ namespace slib {
 	bool SArrayIterator<T>::operator!=(const SArrayIterator<T> &it) const { return _ptr != it._ptr; }
     
     /*============================================================*/
-    template<typename T>
+	template<typename T>
+	SArrayCIterator<T>::SArrayCIterator() : _ptr(nullptr) {}
+	template<typename T>
     SArrayCIterator<T>::SArrayCIterator(pointer p) : _ptr(p) {}
     template<typename T>
     SArrayCIterator<T>::SArrayCIterator(const SArrayCIterator<T> &it) : _ptr(it._ptr) {}

@@ -89,6 +89,7 @@ namespace slib {
             void setSize(size_t s);
             
             void addQuery(const char *seq);
+			void addQuery(ubytearray *seq, size_t off = 0, size_t len = -1);
             void addDSQuery(const char *seq);
             
             void setTotalLength(size_t len);
@@ -103,7 +104,37 @@ namespace slib {
             void reset();
             
         };
-        
+		class SBIOINFO_DLL SBExtend {
+			sbsearch_param* _par;
+			subyte* _ref, * _que;
+			int _rlen, _qlen, _rl, _ql, _len, * _score;
+			float _s;
+			bool _ext;
+			ubytearray _ref_seq;
+
+		public:
+			SAlignment align;
+
+		private:
+			void _extendExactHead(salign* al);
+			void _extendExactTail(salign* al);
+			void _extendHead(salign* al);
+			void _extendTail(salign* al);
+
+		public:
+			SBExtend();
+			SBExtend(sbsearch_param* p);
+			~SBExtend();
+
+			void extendHead(SBioSeq* ref, ubytearray* que, salign* al);
+			void extendTail(SBioSeq* ref, ubytearray* que, salign* al);
+			void extend(SBioSeq* ref, ubytearray* que, salign* al);
+			bool joint(SBioSeq* ref, ubytearray* que, salign* a1, salign* a2);
+			void assemble(SBioSeq* ref, ubytearray* que, Array<salign>* aligns);
+
+			void setParam(sbsearch_param* p);
+			void reset();
+		};
         class SBIOINFO_DLL SBSearch {
         public:
             typedef Array<std::pair<sint, sint>, RMemory<std::pair<sint, sint>>> match_array;
@@ -111,6 +142,8 @@ namespace slib {
         private:
             sbsearch_param *_par;
             SBQuery *_que;
+			UArray<SBExtend> _extender;
+			SBExtend _ext;
             SWork _threads;
             
             sint _qnum, _rnum;
@@ -129,43 +162,15 @@ namespace slib {
             
             void search(SBioSeq *ref, SBQuery *que);
             void search(SBSeqList *ref, SBQuery *que);
+			void searchEx(SBioSeq* ref, SBQuery* que);
+			void searchEx(SBSeqList* ref, SBQuery* que);
             void makeAlign();
             
             void setParam(sbsearch_param *p);
             void reset();
         };
         
-        class SBIOINFO_DLL SBExtend {
-            sbsearch_param *_par;
-            subyte *_ref, *_que;
-            int _rlen, _qlen, _rl, _ql, _len, *_score;
-            float _s;
-            bool _ext;
-            ubytearray _ref_seq;
-            
-        public:
-            SAlignment align;
-            
-        private:
-            void _extendExactHead(salign *al);
-            void _extendExactTail(salign *al);
-            void _extendHead(salign *al);
-            void _extendTail(salign *al);
-            
-        public:
-            SBExtend();
-            SBExtend(sbsearch_param *p);
-            ~SBExtend();
-            
-            void extendHead(SBioSeq *ref, ubytearray *que, salign *al);
-            void extendTail(SBioSeq *ref, ubytearray *que, salign *al);
-            void extend(SBioSeq *ref, ubytearray *que, salign *al);
-            bool joint(SBioSeq *ref, ubytearray *que, salign *a1, salign *a2);
-            void assemble(SBioSeq *ref, ubytearray *que, Array<salign> *aligns);
-            
-            void setParam(sbsearch_param *p);
-            void reset();
-        };
+        
     }
 }
 

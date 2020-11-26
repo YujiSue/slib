@@ -7,6 +7,7 @@
 extern "C" {
 #include "zlib/zlib.h"
 #include "crypto/md5.h"
+#include "crypto/sha.h"
 }
 
 namespace slib {
@@ -15,11 +16,32 @@ namespace slib {
 	public:
 		static suint crc32(ubytearray& data);
 		static bool crc32check(ubytearray& data, suint& ref);
+
 		static void md5(String& data, ubytearray& digest);
 		static void md5(ubytearray& data, ubytearray& digest);
 		static void md5Str(String& data, String& str);
 		static void md5Str(ubytearray& data, String& str);
+		static bool md5check(ubytearray& data, const char *str);
+
+		static void sha256(String& data, ubytearray& digest);
+		static void sha256(ubytearray& data, ubytearray& digest);
+		static void sha256Str(String& data, String& str);
+		static void sha256Str(ubytearray& data, String& str);
+		static bool sha256check(ubytearray& data, const char* str);
+
+		static void sha512(String& data, ubytearray& digest);
+		static void sha512(ubytearray& data, ubytearray& digest);
+		static void sha512Str(String& data, String& str);
+		static void sha512Str(ubytearray& data, String& str);
+		static bool sha512check(ubytearray& data, const char* str);
+
 	};
+	/*
+	class SLIB_DLL SEncryption {
+		static void encrypt(ubytearray& data, ubytearray& enc, const char* method);
+		static void decrypt(const char* method, ubytearray& data, ubytearray& dec);
+	};
+	*/
 	class SLIB_DLL SZip {
 	public:
 		const static suint LOCAL_FILE_HEADER_SIG;

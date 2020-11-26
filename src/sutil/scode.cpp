@@ -42,6 +42,75 @@ void SHash::md5Str(ubytearray& data, String& str) {
 	MD5Final(&digest[0], &context);
 	sforin(i, 0, 16) { str += SNumber::toHex(digest[i]); }
 }
+bool SHash::md5check(ubytearray& data, const char* str) {
+	String s;
+	SHash::md5Str(data, s);
+	return !strcmp(s.cstr(), str);
+}
+void SHash::sha256(String& data, ubytearray& digest) {
+	digest.resize(256);
+	SHA256_CTX ctx;
+	SHA256_Init(&ctx);
+	SHA256_Update(&ctx, data.cstr(), data.size());
+	SHA256_Final(digest.ptr(), &ctx);
+}
+void SHash::sha256(ubytearray& data, ubytearray& digest) {
+	digest.resize(256);
+	SHA256_CTX ctx;
+	SHA256_Init(&ctx);
+	SHA256_Update(&ctx, data.ptr(), data.size());
+	SHA256_Final(digest.ptr(), &ctx);
+}
+void SHash::sha256Str(String& data, String& str) {
+	ubytearray digest;
+	SHash::sha256(data, digest);
+	str.clear();
+	sforin(i, 0, 32) { str += SNumber::toHex(digest[i]); }
+}
+void SHash::sha256Str(ubytearray& data, String& str) {
+	ubytearray digest;
+	SHash::sha256(data, digest);
+	str.clear();
+	sforin(i, 0, 32) { str += SNumber::toHex(digest[i]); }
+}
+bool SHash::sha256check(ubytearray& data, const char* str) {
+	String s;
+	SHash::sha256Str(data, s);
+	return !strcmp(s.cstr(), str);
+}
+void SHash::sha512(String& data, ubytearray& digest) {
+	digest.resize(512);
+	SHA512_CTX ctx;
+	SHA512_Init(&ctx);
+	SHA512_Update(&ctx, data.cstr(), data.size());
+	SHA512_Final(digest.ptr(), &ctx);
+}
+void SHash::sha512(ubytearray& data, ubytearray& digest) {
+	digest.resize(512);
+	SHA512_CTX ctx;
+	SHA512_Init(&ctx);
+	SHA512_Update(&ctx, data.ptr(), data.size());
+	SHA512_Final(digest.ptr(), &ctx);
+}
+void SHash::sha512Str(String& data, String& str) {
+	ubytearray digest;
+	SHash::sha512(data, digest);
+	str.clear();
+	sforin(i, 0, 64) { str += SNumber::toHex(digest[i]); }
+}
+void SHash::sha512Str(ubytearray& data, String& str) {
+	ubytearray digest;
+	SHash::sha512(data, digest);
+	str.clear();
+	sforin(i, 0, 64) { str += SNumber::toHex(digest[i]); }
+}
+bool SHash::sha512check(ubytearray& data, const char* str) {
+	String s;
+	SHash::sha512Str(data, s);
+	return !strcmp(s.cstr(), str);
+}
+
+
 const suint SZip::LOCAL_FILE_HEADER_SIG = 0x04034B50;
 const suint SZip::DATA_DESCRIPTOR_SIG = 0x08074B50;
 const suint SZip::CENTRAL_DIR_SIG = 0x02014B50;

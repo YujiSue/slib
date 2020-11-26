@@ -198,9 +198,7 @@ SPixelCIterator SImage::begin() const { return SPixelCIterator(type(), _data.ptr
 SPixelIterator SImage::end() { return SPixelIterator(type(), _data.ptr() + _data.size()); }
 SPixelCIterator SImage::end() const { return SPixelCIterator(type(), _data.ptr() + _data.size()); }
 
-SImage SImage::subimage(int32_t x, int32_t y, int32_t w, int32_t h) {
-    return subimage(sarea(x, y, w, h));
-}
+SImage SImage::subimage(sint x, sint y, sint w, sint h) { return subimage(sarea(x, y, w, h)); }
 SImage SImage::subimage(sarea area) {
     SImage img(type(), area.width, area.height);
     auto row = rowAt(area.ori_y), row_ = img[0];

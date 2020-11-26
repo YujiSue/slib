@@ -57,8 +57,9 @@ namespace slib {
             sobj toObj();
         };
         
-        struct sprimer {
-			String seq;
+		class SBIOINFO_DLL sprimer {
+			ubytearray seq;
+
 			float temp, gc, bias;
 			subyte match[3];
             double score;
@@ -67,6 +68,10 @@ namespace slib {
 			sprimer(const char *seq);
 			sprimer(const sprimer&p);
             ~sprimer();
+
+			double score();
+
+
         };
     }
 }

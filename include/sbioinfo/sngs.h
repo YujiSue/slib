@@ -7,6 +7,24 @@
 namespace slib {
     namespace sbio {
         
+		struct SBIOINFO_DLL sngs_param {
+			bool splitread, paired, pcrdup;
+			sint bin;
+			SBSeqList* ref;
+			Array<sregion> target;
+
+			sngs_param();
+			sngs_param(bool sr, bool p, bool dp, sint b);
+			~sngs_param();
+			sngs_param& operator=(const sngs_param& par);
+			void setRef(SBSeqList* r);
+			void loadTarget(const char* s);
+			void decodeTarget(sobj obj);
+			sobj encodeTarget();
+			void set(const sobj& obj);
+			sobj toObj();
+		};
+
 		struct summary_data {
 			sint refnum, bin;
 			suinteger reads;
@@ -18,7 +36,6 @@ namespace slib {
 
 			summary_data();
 			~summary_data();
-
 			suinteger total();
 			bool comparable(summary_data& dat);
 			void init();
@@ -30,7 +47,7 @@ namespace slib {
 
 			depth_data();
 			~depth_data();
-
+			suinteger total();
 			void init();
 		};
 
@@ -38,14 +55,9 @@ namespace slib {
 			Array<vararray> variants;
 			uintegerarray offset;
 			svar_data current;
-			//Array<varparray> index;
-			/*
-			Array<Array< delidx, insidx, invidx;
-			intarray3d trsidx, trinvidx;
-			*/
+
 			srvar_data();
 			~srvar_data();
-
 			void init();
 		};
         
@@ -56,39 +68,18 @@ namespace slib {
         private:
 			sio::SFile _file;
 			bool _loaded;
-
-
-
             SWork _threads;
             std::mutex *_mtxs;
-			//Array<SLock> _locks;
             
         public:
 			summary_data summary;
 			depth_data depth;
 			srvar_data srvs;
-
-			/*
-            sint ref_num, depth_bin;
-            intarray ref_length, depth_size, uncovered;
-            suinteger total_length, total_reads;
-            bool target_seq;
-            Array<sregion> target;
-            integerarray read_count;
-            double average_length, average_depth, covered_region;
-            doublearray read_length;
-            
-			floatarray2d depth;
-
-            vararray2d variants;
-			intarray2d delidx, insidx, invidx;
-            intarray3d trsidx, trinvidx;
-			*/
             
         public:
             SNGSData();
+			SNGSData(sngs_param *p);
 			SNGSData(sint bin, SBSeqList* ref);
-            //SNGSData(sint bin, SBamFile *bam);
             SNGSData(const char *path);
 			~SNGSData();
             
@@ -99,16 +90,12 @@ namespace slib {
 			void nextVar();
 			void readDepth(sint r = 0, sint p = 0);
 			void nextDp();
-
+			
             void setNum(sint num);
             void setLength(int idx, sint len);
 			void setBin(sint bin);
-
-            //void setParam(sngs_param *p);
-            //void lock(int r, int v = 0);
-            //void unlock(int r, int v = 0);
-            //double depthAt(const sbpos &pos);
-
+			void setParam(sngs_param *p);
+            
             void makeVIndex(Array<varparray> &index, svariant_param *vp, SWork* threads = nullptr);
 			void subtract(SNGSData& dat, svariant_param* vp, SWork* threads = nullptr);
             //void tidy(svariant_param *vp);

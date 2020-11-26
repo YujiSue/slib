@@ -68,11 +68,12 @@ void SLogger::close() {
 void SLogger::log(sint code, const char* msg) {
 	_lock.lock();
 	SDate date(slib::sstyle::YMDHMS);
-	if (_file.isOpened()) {
+	if (_file.isOpened() && code&FILE_LOG) {
 		_file << date.toString() << "[" << codeStr(code) << "]" << TAB << msg << NEW_LINE;
 		_file.flush();
 	}
-	else _data.add(log_data(code, msg));
+	if (code & STDOUT_LOG) std::cout << msg << std::endl;
+	if (code & OS_LOG) _data.add(log_data(code, msg));
 	_lock.unlock();
 }
 

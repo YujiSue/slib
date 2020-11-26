@@ -214,6 +214,9 @@ namespace slib {
         subyte type() const;
         void *ptr() const;
         void setType(subyte type);
+		bool isNaN() const;
+		bool isInf() const;
+		bool isNInf() const;
         String precised(size_t s, smath::ROUND round = DEFAULT) const;
         String getClass() const;
         String toString() const;

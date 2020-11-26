@@ -30,13 +30,15 @@ namespace slib {
 		constexpr suint SINGLE_VIEW_UI = 0x0010;
 		constexpr suint MULTI_VIEW_UI = 0x0020;
 
-		typedef enum {
-			FILE_OUT = 1,
-			STD_OUT = 2,
-			ALERT = 4,
-			ERROR_LOG = 8,
-		} LOGGER_MODE;
+		constexpr subyte ERROR_LOG = 0x01;
+		constexpr subyte OK_LOG = 0x02;
+		constexpr subyte PROGRESS_LOG = 0x04;
+		constexpr subyte MSG_LOG = 0x08;
+		constexpr subyte FILE_LOG = 0x10;
+		constexpr subyte STDOUT_LOG = 0x20;
+		constexpr subyte OS_LOG = 0x40;
 
+		
 
 #define SAPP_ERROR 0x0A00
 #define SAPP_ERROR_EXIT 0x0A01

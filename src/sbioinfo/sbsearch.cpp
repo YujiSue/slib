@@ -35,6 +35,7 @@ sbsearch_param &sbsearch_param::operator=(const sbsearch_param &par) {
 }
 void sbsearch_param::setType(int t) {
 	ref_type = t & 0x0F;
+	ds_search = ref_type == sbio::DNA_SEQ;
 	code_size = (t >> 4) & 0x0F;
 	coded_seed_len = seed_len / (code_size == 0 ? 1 : code_size);
 	aln_par = salign_param((subyte)ref_type);
@@ -75,10 +76,14 @@ sobj sbsearch_param::toObj() {
 }
 
 SBSearch::SBSearch() : _par(nullptr), _qnum(0), _rnum(0) {}
-SBSearch::SBSearch(sbsearch_param *lp) { setParam(lp); }
+SBSearch::SBSearch(sbsearch_param* lp) { setParam(lp); }
 SBSearch::~SBSearch() {}
 void SBSearch::_resize(size_t rn, size_t qn) {
     if (_matched.size() < rn*qn) { _matched.resize(rn*qn); aligns.resize(rn*qn); }
+	if (_par->multi_thread && _extender.size() != rn) {
+		_extender = UArray<SBExtend>(rn);
+		sforeach(_extender) E_.setParam(_par);
+	}
     _rnum = (sint)rn; _qnum = (sint)qn;
 }
 inline void assemble(int r, SBSearch::match_array *match, Array<salign> *vec, srange *range,
@@ -194,6 +199,39 @@ void SBSearch::search(SBSeqList *ref, SBQuery *que) {
     }
     else sforin(i, 0, _rnum) search_i(i, ref->at(i), que, _par, &_matched[i*_qnum], &aligns[i*_qnum]);
 }
+void SBSearch::searchEx(SBioSeq* ref, SBQuery* que) {
+	search(ref, que);
+	makeAlign();
+	sforin(q, 0, _qnum) {
+		if (aligns[q].empty()) continue;
+		_ext.assemble(ref, &_que->query(q), &aligns[q]);
+	}
+}
+void assemble_i(int r, int qn, SBExtend *ext, SBSeqList* ref, SBQuery* que, Array<Array<salign>>* aligns) {
+	sforin(q, 0, qn) {
+		if (aligns->at(r * qn + q).empty()) continue;
+		ext->assemble(ref->at(r), &que->query(q), &aligns->at(r * qn + q));
+	}
+}
+void SBSearch::searchEx(SBSeqList* ref, SBQuery* que) {
+	search(ref, que);
+	makeAlign();
+	if (_par->multi_thread) {
+		sforin(r, 0, _rnum) { _threads.addTask(assemble_i, r, _qnum, &_extender[r], ref, que, &aligns); }
+		_threads.complete();
+	}
+	else {
+		sforin(r, 0, _rnum) {
+			assemble_i(r, _qnum, &_ext, ref, que, &aligns);
+			/*
+			sforin(q, 0, _qnum) {
+				if (aligns[r * _qnum + q].empty()) continue;
+				_ext.assemble(ref->at(r), &_que->query(q), &aligns[r * _qnum + q]);
+			}
+			*/
+		}
+	}
+}
 inline void _align(salign *al, sbsearch_param *par, SBQuery *que) {
     al->cigars.add(scigar(scigar::PMATCH, al->aligned.length()+1));
     if (par->ref_type&DNA_SEQ) al->score = par->aln_par.pm_score*(al->aligned.length()+1);
@@ -217,7 +255,8 @@ void SBSearch::makeAlign() {
 }
 void SBSearch::setParam(sbsearch_param *p) {
     _par = p;
-    if (p->multi_thread) _threads.setSize(p->thread_count);
+	if (p->multi_thread) _threads.setSize(p->thread_count);
+	_ext.setParam(p);
     _rnum = 0;
     _qnum = 0;
     _que = nullptr;

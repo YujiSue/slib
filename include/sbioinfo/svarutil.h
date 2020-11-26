@@ -42,7 +42,7 @@ namespace slib {
 #define DEFAULT_DIFF 100
 #define DEFAULT_FREQ_BIN 20
 
-		struct svc_param {
+		struct SBIOINFO_DLL svc_param {
 			//0:SNV, 1:MNV, 2:DEL, 3:INS
 			sint min_depth[4], min_vdepth[4];
 			double min_freq[4], homo_freq[4] , min_qual[4];
@@ -65,9 +65,7 @@ namespace slib {
 			MULTI_CNV = 5,
 		} CNV_TYPE;
 
-		struct scnv_param {
-			
-
+		struct SBIOINFO_DLL scnv_param {
 			//copy: [0, border[0]), [border[0], border[1]), [border[1], border[2]), [border[2], border[3]), [border[3], border[4]), [border[4], +inf)
 			sint min_length;
 			double min_bg, border[5], min_qual;
@@ -82,7 +80,7 @@ namespace slib {
 			sobj toObj();
 		};
 
-		struct ssrv_param {
+		struct SBIOINFO_DLL ssrv_param {
 			bool detect_var[5], detect_comp_var[4];
 			sint freq_bin, min_sr[5], min_comp_sr[4], min_length[3];// 0:del, 1:dup/ins, 2:inv
 			double min_freq, max_fr_bias, max_comp_bias, homo_freq, min_qual;
@@ -96,7 +94,7 @@ namespace slib {
 			sobj toObj();
 		};
 
-		struct svariant_param {
+		struct SBIOINFO_DLL svariant_param {
 			bool homo_select;
 			sushort annot;
 			sint max_dist, max_diff;

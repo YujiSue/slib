@@ -161,7 +161,11 @@ namespace slib {
             SFile &operator<<(const SString &s);
             SFile &operator<<(const SDate &d);
             SFile &operator<<(const sobj &obj);
-            
+            template<typename T, class M>
+			SFile& operator<<(const Array<T, M>& array) {
+				sforeach(array) { (*this) << E_ << ","; flush(); } return *this;
+			}
+
             operator const char *() const;
             
             bool operator<(const SFile &file) const;

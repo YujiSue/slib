@@ -167,7 +167,6 @@ void SBioSeq::recode(subyte c, ubytearray &seq, size_t off, size_t len, bool dir
             default:
                 break;
         }
-
     }
 }
 void SBioSeq::convert(sushort t) {

@@ -32,11 +32,51 @@ size_t SBQuery::count() const { return _seqs.size(); }
 void SBQuery::setSize(size_t s) { _seqs.resize(s); }
 void SBQuery::addQuery(const char *seq) {
     auto size = strlen(seq);
-    _total_length += size;
-    _seqs.resize(_seqs.size()+1);
-    _seqs.last().resize(size);
-    converter((const uint8_t *)seq, 0, size, _seqs.last().ptr());
+    if (_par->ds_search) {
+		_total_length += 2*size;
+		_seqs.resize(_seqs.size() + 2);
+		_seqs[-2].resize(size); _seqs[-1].resize(size);
+		if (size) {
+			converter((const uint8_t*)seq, 0, size, _seqs[-2].ptr());
+			if (_par->ref_type & DNA_SEQ) sseq::dcpycompi(_seqs[-2], _seqs[-1]);
+			else if (_par->ref_type & RNA_SEQ) sseq::rcpycompi(_seqs[-2], _seqs[-1]);
+		}
+	}
+	else {
+		_total_length += size;
+		_seqs.resize(_seqs.size() + 1);
+		_seqs.last().resize(size);
+		if (size) converter((const uint8_t*)seq, 0, size, _seqs.last().ptr());
+	}    
 }
+void SBQuery::addQuery(ubytearray* seq, size_t off, size_t len) {
+	if (len == -1) len = seq->size() - off;
+	if (_par->ds_search) {
+		_total_length += 2 * len;
+		_seqs.resize(_seqs.size() + 2);
+		_seqs[-2].resize(len); _seqs[-1].resize(len);
+		if (len) {
+			rawcopy(seq->ptr(), off, len, _seqs[-2].ptr());
+			if (_par->ref_type & DNA_SEQ) sseq::dcpycompi(_seqs[-2], _seqs[-1]);
+			else if (_par->ref_type & RNA_SEQ) sseq::rcpycompi(_seqs[-2], _seqs[-1]);
+		}
+	}
+	else {
+		_total_length += len;
+		_seqs.resize(_seqs.size() + 1);
+		_seqs.last().resize(len);
+		if (len) rawcopy(seq->ptr(), off, len, _seqs.last().ptr());
+	}
+}
+/*
+void SBQuery::addQuery(const char* seq) {
+	auto size = strlen(seq);
+	_total_length += size;
+	_seqs.resize(_seqs.size() + 1);
+	_seqs.last().resize(size);
+	converter((const uint8_t*)seq, 0, size, _seqs.last().ptr());
+}
+*/
 void SBQuery::addDSQuery(const char *seq) {
     addQuery(seq); addQuery(seq);
     if(_par->ref_type&DNA_SEQ) sseq::dcompi(_seqs.last());

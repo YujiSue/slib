@@ -493,14 +493,14 @@ inline void _VCFToDEL(SVariant &var, String& alt, stringarray& data) {
 	var.type = DELETION;
 	int off = 1, len = data[3].length() - alt.length();
 	while (off < alt.length() &&
-		data[3][data[3].length() - off] == alt[alt.length() - off]) ++off;
+		data[3][data[3].length() - off] == alt[(sint)alt.length() - off]) ++off;
 	var.pos[0].begin += alt.length() - off + 1;
 	var.pos[0].end = var.pos[0].begin + len - 1;
-	var.attribute["Ref"] = data[3].substring(alt.length() - off + 1, len);
+	var.attribute["Ref"] = data[3].substring((sint)alt.length() - off + 1, len);
 }
 inline void _VCFToINS(SVariant &var, String& alt, stringarray& data) {
 	var.type = INSERTION;
-	int off = 1, len = alt.length() - data[3].length();
+	int off = 1, len = (sint)(alt.length() - data[3].length());
 	while (off < data[3].length() &&
 		data[3][data[3].length() - off] == alt[alt.length() - off]) ++off;
 	var.pos[0].begin += data[3].length() - off + 1;

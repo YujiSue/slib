@@ -52,22 +52,20 @@ namespace slib {
 		static bool isLeapYear(int y);
 
     public:
-        sint year, month, day, hour, minute, sec, msec;
+		sint year, month, day, hour, minute, sec;// , msec;
         
         Time();
         Time(const char *s);
         Time(const Time &time);
         ~Time();
-        
         Time &operator=(const Time &time);
         Time &operator+=(const Time &time);
         Time &operator-=(const Time &time);
         Time operator+(const Time &time);
         Time operator-(const Time &time);
-        
+		void init();
         String toString() const;
-        String toJString() const;
-        
+        String toJString() const;        
         bool operator<(const Time &time) const;
         bool operator==(const Time &time) const;
     };

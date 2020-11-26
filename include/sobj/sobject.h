@@ -171,6 +171,8 @@ namespace slib {
 		SObjPtr(::std::initializer_list<SObjPtr> li);
 		SObjPtr(::std::initializer_list<::std::pair<String, SObjPtr>> li);
 		SObjPtr(::std::initializer_list<kvpair<String, SObjPtr>> li);
+		SObjPtr(const stringarray& array);
+		SObjPtr(const sattribute& atrr);
 		SObjPtr(const SNumber& num);
 		SObjPtr(const SChar& ch);
 		SObjPtr(const SString& str);
@@ -324,7 +326,7 @@ namespace slib {
 
 		static SObjPtr toSObj(const String& s);
 
-        static sobj import(sobj info);
+        static SObjPtr import(sobj info);
         void load(sobj info);
         void save(sobj info);
         

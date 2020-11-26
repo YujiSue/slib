@@ -11,6 +11,10 @@ namespace slib {
 		constexpr suint UNSIGNED_MINUS_ERR = 0x0012;
 		constexpr suint DIMENSION_SIZE_ERR = 0x0013;
 
+		constexpr sreal sinf = std::numeric_limits<double>::infinity();
+		constexpr sreal sninf = -std::numeric_limits<double>::infinity();
+		constexpr sreal snan = std::numeric_limits<double>::quiet_NaN();
+
 		class SMathException : public SException {
 		public:
 			SMathException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);

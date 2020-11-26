@@ -364,8 +364,8 @@ void SVarFilter::consolidate(Array<svar_data>& variants) {
 		if (!(E_.type)) continue;
 		auto it_ = it + 1;
 		while (it_ < variants.end()) {
-			if (!(E_.lt(*it_, _par->max_dist))) break;
-			if (E_.equal(*it_, _par->max_dist)) {
+			if (E_.pos[0].begin + _par->max_dist < it_->pos[0].begin) break;
+			if (it_->equal(E_, _par->max_dist)) {
 				E_ += (*it_); it_->type = 0; --size;
 			}
 			++it_;
@@ -550,9 +550,14 @@ void SVarFilter::filter(SVarList* list) {
 	list->tidy(s);
 }
 void SVarFilter::check(SVariant* var) {
-	if (_ref && _ref->at(var->pos[0].idx)->isMasked()) {
-		auto& mask = _ref->at(var->pos[0].idx)->mask();
-		if (mask.include(var->pos[0])) var->flag |= UNAVAILABLE_FLAG;
+	if (_par) {
+		/*
+		if (var->type)
+		if (var.total() < par.min_sr[0] || par.max_fr_bias < var.bias() ||
+			var.pos[0].length(true) < par.min_length[0] || var.phred() < par.min_qual) return false;
+			*/
+
+
 	}
 	if (_target && !_target->empty() && _target->at(var->pos[0].idx).include(var->pos[0])) var->flag |= UNAVAILABLE_FLAG;
 }

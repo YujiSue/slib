@@ -102,6 +102,7 @@ CNV_TYPE cnvariant::classify(float* sdp, float* bdp, double* ratio, double* bord
 }
 
 SVariant::SVariant() : flag(0), homo(false), svar_data() {}
+SVariant::SVariant(const svar_data& v) : flag(0), homo(false), svar_data(v) {}
 SVariant::SVariant(sushort f, const svar_data &v) : flag(f), homo(false), svar_data(v) {}
 SVariant::SVariant(const SVariant &var) : svar_data(var) {
     flag = var.flag; name = var.name;

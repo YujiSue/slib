@@ -5,9 +5,74 @@ using namespace slib::smath;
 using namespace slib::sio;
 using namespace slib::sbio;
 
+sngs_param::sngs_param() : splitread(true), paired(false), pcrdup(false), bin(1), ref(nullptr) {}
+sngs_param::sngs_param(bool sr, bool p, bool dp, sint b) : splitread(sr), paired(p), pcrdup(dp), bin(b), ref(nullptr) {}
+sngs_param::~sngs_param() {}
+sngs_param& sngs_param::operator=(const sngs_param& par) {
+	splitread = par.splitread;
+	paired = par.paired;
+	pcrdup = par.pcrdup;
+	bin = par.bin;
+}
+void sngs_param::setRef(SBSeqList* r) { ref = r; }
+void sngs_param::loadTarget(const char* s) {
+	if (!ref) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR);
+	target.resize(ref->size());
+	sio::SFile file(s, sio::READ);
+	String row;
+	while (!file.eof()) {
+		file.readLine(row);
+		auto values = row.split(TAB);
+		if (row.empty() || row[0] == '#' || values.size() < 3) continue;
+		target[ref->index[values[0]]].add(srange(values[1], values[2]));
+	}
+}
+void sngs_param::decodeTarget(sobj obj) {
+	target.clear();
+	if (obj.isNull()) return;
+	auto s = obj.size();
+	target.resize(s);
+	sforin(i, 0, s) {
+		auto& array = obj[i].array();
+		auto& region = target[i];
+		sforeach(array) {
+			auto ui = E_.uinteger();
+			region.add(srange(ui & 0xFFFFFFFF, (ui >> 32) & 0xFFFFFFFF));
+		}
+	}
+}
+sobj sngs_param::encodeTarget() {
+	if (target.empty()) return snull;
+	sarray array(target.size());
+	sforeachi(target) {
+		array[i] = sarray();
+		sforeach(target[i]) {
+			suinteger ui = E_.begin | (E_.end << 32);
+			array[i].add(snum(ui));
+		}
+	}
+	return array;
+}
+void sngs_param::set(const sobj& obj) {
+	if (obj.hasKey("sr")) splitread = obj["sr"];
+	if (obj.hasKey("pair")) paired = obj["pair"];
+	if (obj.hasKey("dp")) pcrdup = obj["dp"];
+	if (obj.hasKey("bin")) bin = obj["bin"];
+	if (obj.hasKey("target")) decodeTarget(obj["target"]);
+}
+sobj sngs_param::toObj() {
+	return {
+		kv("sr", splitread),
+		kv("pair", paired),
+		kv("dp", pcrdup),
+		kv("bin", bin),
+		kv("target", encodeTarget())
+	};
+}
+
 summary_data::summary_data() {
 	refnum = 0;
-	bin = 0;
+	bin = 1;
 	reads = 0;
 	length = 0.0;
 	depth = 0.0;
@@ -24,9 +89,9 @@ suinteger summary_data::total() {
 }
 void summary_data::init() {
 	reads = 0;
-	length = 0;
-	depth = 0;
-	cover = 0;
+	length = 0.0;
+	depth = 0.0;
+	cover = 0.0;
 	count.reset(0);
 	bases.reset(0.0);
 }
@@ -35,6 +100,11 @@ bool summary_data::comparable(summary_data& dat) {
 }
 depth_data::depth_data() : current(0.0f) {}
 depth_data::~depth_data() {}
+suinteger depth_data::total() {
+	suinteger ui = 0;
+	sforeach(count) ui += E_.size();
+	return ui;
+}
 void depth_data::init() {
 	sforeach(count) E_.reset(0);
 	offset.reset(0);
@@ -47,6 +117,7 @@ void srvar_data::init() {
 }
 
 SNGSData::SNGSData() { init(); }
+SNGSData::SNGSData(sngs_param* p) : SNGSData() { setParam(p); }
 SNGSData::SNGSData(sint bin, SBSeqList *ref) : SNGSData() { reset(bin, ref); }
 SNGSData::SNGSData(const char *path) : SNGSData() { load(path); }
 SNGSData::~SNGSData() {}
@@ -63,25 +134,7 @@ void SNGSData::setNum(sint num) {
 }
 void SNGSData::setLength(int idx, sint len) {
 	summary.reflen[idx] = len;
-	if (!summary.bin) depth.count[idx].resize((len - 1) / summary.bin + 1, 0);
-	sint l = ((len - 1) >> 14) + 1;
-
-	/*
-    ref_length[i] = l;
-	depth_size[i] = (ref_length[i] - 1) / depth_bin + 1;
-    depth[i].resize(depth_size[i]);
-	int len = ((ref_length[i] - 1) >> 14) + 1;
-    delidx[i].resize(len);
-    insidx[i].resize(len);
-	invidx[2 * i].resize(len);
-	invidx[2 * i + 1].resize(len);
-    sforin(j, 0, ref_num) {
-        if (i == j) continue;
-        trsidx[i][j].resize(len);
-		trinvidx[i][2 * j].resize(len);
-		trinvidx[i][2 * j + 1].resize(len);
-    }
-	*/
+	depth.count[idx].resize((len - 1) / summary.bin + 1, 0);
 }
 void SNGSData::setBin(sint bin) {
 	summary.bin = bin;
@@ -89,12 +142,15 @@ void SNGSData::setBin(sint bin) {
 		if (summary.reflen[r]) depth.count[r].resize((summary.reflen[r] - 1) / summary.bin + 1, 0.0f);
 	}
 }
-/*
 void SNGSData::setParam(sngs_param* p) {
-	//depth_bin = p->depth_bin;
-	//_threads.setSize(p->thread_count);
+	if (p && p->ref) {
+		summary.bin = p->bin;
+		setNum(p->ref->size());
+		sforin(r, 0, p->ref->size()) {
+			setLength(r, p->ref->at(r)->length());
+		}
+	}
 }
-*/
 inline void readVar(svar_data& var, sio::SFile& file) {
 	subyte byte;
 	sint tmp; 
@@ -319,36 +375,6 @@ void SNGSData::readDepth(sint r, sint p) {
 void SNGSData::nextDp() {
 	_file.readFloat(depth.current);
 }
-/*
-void SNGSData::lock(int r, int v) { _mtxs[5 * r + v].lock(); }
-void SNGSData::unlock(int r, int v) { _mtxs[5 * r + v].unlock(); }
-double SNGSData::depthAt(const sbpos &pos) {
-    int beg = pos.begin/depth_bin, end = pos.end/depth_bin;
-    float *dp = &depth[pos.idx][beg];
-    if (beg == end) return *dp;
-    double cp = 0.0;
-    cp += (*dp)*(depth_bin-pos.begin%depth_bin); ++dp;
-    sforin(i, beg+1, end) { cp += (*dp)*depth_bin; ++dp; }
-    cp += (*dp)*(pos.end-end*depth_bin+1);
-    return cp/(pos.length(true));
-}
-*/
-/*
-double SNGSData::totalDepthIn(sint ref, sint pos, sint length) {
-    if(!length) return 0.f;
-    float *dp = &depth[ref][0];
-    int beg = pos/bin, end = (pos+length-1)/bin;
-    if (beg == end) return dp[beg];
-    double cp = 0.0;
-    cp += dp[beg]*(bin-pos%bin);
-    sforin(i, beg+1, end-1) cp += dp[i]*bin;
-    cp += dp[end]*(pos+length-(end-1)*bin);
-    return cp;
-}
-float SNGSData::depthIn(sint ref, sint pos, sint length) {
-    return totalDepthIn(ref, pos, length)/length;
-}
-*/
 inline void varIdx1(Array<svar_data> *variants, varparray *index) {
     if (variants->empty()) return;
 	auto it = variants->begin();

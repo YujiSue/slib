@@ -42,12 +42,12 @@ size_t sbiutil::getBin(srange range) {
 }
 void sbiutil::getBins(sizearray &bins, srange range) {
     bins.add(0);
-	auto last = (range.end >> 26) + 1;
-	sforin(i, range.begin >> 26, last) bins.add(1 + i);
-    last = (range.end>>23)+1; sforin(i, range.begin>>23, last) bins.add(9+i);
-    last = (range.end>>20)+1; sforin(i, range.begin>>20, last) bins.add(73+i);
-    last = (range.end>>17)+1; sforin(i, range.begin>>17, last) bins.add(585+i);
-    last = (range.end>>14)+1; sforin(i, range.begin>>14, last) bins.add(4681+i);
+	sint last = (range.end >> 26) + 1;
+	sforin(i, (range.begin >> 26), last) bins.add(1 + i);
+	last = (range.end >> 23) + 1; sforin(i, (range.begin >> 23), last) bins.add(9 + i);
+	last = (range.end >> 20) + 1; sforin(i, (range.begin >> 20), last) bins.add(73 + i);
+	last = (range.end >> 17) + 1; sforin(i, (range.begin >> 17), last) bins.add(585 + i);
+	last = (range.end >> 14) + 1; sforin(i, (range.begin >> 14), last) bins.add(4681 + i);
 }
 void sbiutil::getBins(sizearray &bins, const sregion &region) {
     sforeach(region) getBins(bins, E_);
@@ -64,7 +64,7 @@ void sbiutil::getBins(sizearray &bins, const sregion &region) {
     bins.resize(size);
 }
 double sbiutil::scoreVal(double v) { return exp(v * logf(10.0) / -10.0); }
-double sbiutil::phredVal(double v) { return -10.0*(log(v)/log(10.0)); }
+double sbiutil::phredVal(double v) { return v < smath::D_EPS?INFINITY:-10.0*(log(v)/log(10.0)); }
 sbpos::sbpos() : idx(-1), srange(), dir(false) {}
 sbpos::sbpos(sint i, sint b, sint e, bool d) : idx(i), srange(b, e), dir(d) {}
 sbpos::sbpos(const char *s, const sindex *namei) : sbpos() { set(s, namei); }

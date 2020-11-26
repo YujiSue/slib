@@ -194,7 +194,7 @@ namespace slib {
         if (array::empty()) return srange(-1, -1);
         if (val < array::first().begin) return srange(-1, 0);
         else if (array::last().end < val)
-            return srange(array::size(), array::size());
+            return srange((sint)array::size(), (sint)array::size());
         sforeach(*this) {
             if (E_.include(val)) return srange(INDEX_(*this), INDEX_(*this));
 			if (array::begin() < it && E_PREV.end < val && val < E_.begin) return srange(INDEX_(*this) - 1, INDEX_(*this));

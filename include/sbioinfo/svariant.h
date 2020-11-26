@@ -12,7 +12,8 @@ namespace slib {
         class SBIOINFO_DLL SVariant;
         class SBIOINFO_DLL SVarList;
         
-        struct SBIOINFO_DLL svar_data {
+        class SBIOINFO_DLL svar_data {
+		public:
             sushort type;
             sbpos pos[2]; // 0: Primary, 1: Secondary (for description of complex insertion or rearrangement)
             String alt;
@@ -84,6 +85,7 @@ namespace slib {
             
         public:
             SVariant();
+			SVariant(const svar_data& v);
             SVariant(sushort f, const svar_data &v);
 			//SVariant(sobj obj);
             SVariant(const SVariant &var);

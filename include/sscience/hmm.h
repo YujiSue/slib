@@ -104,7 +104,10 @@ namespace slib {
 			sforin(s, 0, emission.row) {
 				tmp.reset(0);
 				sforin(p, 0, emission.row) {
-					if (logp) tmp[p] = prev[p] + log(transition[p][s]) + log(emission[s][output]);
+					if (logp) {
+						if (transition[p][s] == 0 || emission[s][output] == 0 || tmp[p] == -smath::D_INF) tmp[p] = -smath::D_INF;
+						else tmp[p] = prev[p] + log(transition[p][s]) + log(emission[s][output]);
+					}
 					else tmp[p] = prev[p] * transition[p][s] * emission[s][output];
 				}
 				track[s] = sstat::argmax(tmp);
@@ -117,15 +120,11 @@ namespace slib {
 			auto it = track.end() - 1;
 			*st = idx; --st;
 			while (track.begin() <= it) {
-				idx = E_[idx];
-				*st = idx;
-				PREV_; --st;
+				idx = E_[idx]; *st = idx; PREV_; --st;
 			}
 		}
 		inline void initViterbiProb(sint& output, svecd& prob, smatd& emission) {
-			sforin(i, 0, prob.size()) {
-				prob[i] = emission[i][output];
-			}
+			sforin(i, 0, prob.size()) { prob[i] = emission[i][output]; }
 		}
 		extern void Viterbi(sveci& state, sveci& observation, smatd& emission, smatd& transition, bool logp=true, bool off=true) {
 			state.resize(observation.size());
@@ -143,6 +142,7 @@ namespace slib {
 				sforeach(observation) {
 					searchPath(E_, *(pit - 1), *pit, *tit, tmp, emission, transition, logp);
 				}
+				traceBack(state, prob.last(), track);
 			}
 			else {
 				prob.resize(2);
@@ -162,7 +162,6 @@ namespace slib {
 					NEXT_;
 				}
 			}
-			traceBack(state, prob.last(), track);
 		}
 
 		class HMMAnalysis {
@@ -184,8 +183,8 @@ namespace slib {
 				transition = t;
 			}
 			void train(svecd& init, sint i = 100) {
-				iter = 100;
-				ssci::BaumWelch(*observation, init, emission, transition, i);
+				iter = i;
+				ssci::BaumWelch(*observation, init, emission, transition, iter);
 			}
 			void predict(sveci &data, bool logp = true, bool off = true) {
 				ssci::Viterbi(state, *observation, emission, transition, logp, off);

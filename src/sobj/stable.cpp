@@ -42,7 +42,7 @@ STable::STable(const sobj &obj) : STable() {
 }
 STable::STable(const STable &table) : STable() {
     _name = table._name;
-	_columns = table.columns();
+	_columns = table.columns();	
 	_rows = table.rows();
 }
 STable::~STable() {}

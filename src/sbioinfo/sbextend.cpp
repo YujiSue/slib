@@ -212,14 +212,12 @@ void SBExtend::assemble(SBioSeq *ref, ubytearray *que, Array<salign> *aligns) {
             it = it_-1;
         }
     }
-    /*
     aligns->sort([](const salign &a1, const salign &a2) {
         if (a1.ref.idx < 0) return false;
         if (a2.ref.idx < 0) return true;
         return a1 < a2;
     });
     aligns->resize(size);
-     */
 }
 void SBExtend::setParam(sbsearch_param *p) {
     _par = p; align.set(&_par->aln_par);

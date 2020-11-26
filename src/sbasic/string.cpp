@@ -1114,8 +1114,8 @@ SNumber String::number() const {
         return SNumber(atof(cstr()));
     }
     //Boolean
-    else if (equal(R(/TRUE|YES/))) return SNumber(true);
-    else if (equal(R(/FALSE|NO/)))  return SNumber(false);
+    else if (equal(R(/TRUE|YES/i))) return SNumber(true);
+    else if (equal(R(/FALSE|NO/i)))  return SNumber(false);
     //Fraction
     else if (equal(R(/[+-]*\\d+\\/\\d+/))) return SNumber(sfrac(cstr()));
     //Complex

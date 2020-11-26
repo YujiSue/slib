@@ -1683,15 +1683,17 @@ void SNumber::setType(subyte type) {
     }
     _type = type;
 }
-
+bool SNumber::isNaN() const { return real() == snan; }
+bool SNumber::isInf() const { return real() == sinf; }
+bool SNumber::isNInf() const { return real() == sninf; }
 String SNumber::precised(size_t size, smath::ROUND round) const {
     if(_type == SNumber::INTEGER || _type == SNumber::UINTEGER)
         return toString()+"."+SString('0')*size;
     else if(_type == SNumber::REAL) {
         auto tmp = real();
-        if (tmp == INFINITY) return "inf";
-        else if (tmp == -INFINITY) return "-inf";
-        else if (tmp == NAN) return "NaN";
+        if (tmp == sinf) return "inf";
+        else if (tmp == sninf) return "-inf";
+        else if (tmp == snan) return "NaN";
         tmp *= smath::power(10, (int)size);
         SString str;
         switch (round) {

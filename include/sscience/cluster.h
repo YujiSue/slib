@@ -273,7 +273,7 @@ namespace slib {
 					else (*d) = 0;
 					++rptr; ++d;
 				}
-				dist /= smath::ssstat::sum(dist);
+				dist /= sstat::sum(dist);
 				auto prob = rand.runi();
 				sforeach(dist) {
 					prob -= E_;
@@ -310,7 +310,7 @@ namespace slib {
 				auto gp = group.ptr();
 				sforin(r, 0, row) {
 					sforin(c, 0, cluster) dist[c] = distance(*rptr, centroid[c]);
-					*gp = smath::ssstat::argmin(dist);
+					*gp = sstat::argmin(dist);
 					++rptr; ++gp;
 				}
 				center(data, group, tmpcent);

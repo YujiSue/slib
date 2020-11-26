@@ -23,6 +23,7 @@ extern "C" {
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -151,6 +152,7 @@ namespace slib {
 #define suinteger uint64_t
 #define sreal double
 #define sdecimal long double
+
 #ifdef LANG_JA
 #define DEFAULT_LANG "ja"
 #else 
@@ -194,11 +196,11 @@ namespace slib {
 #define sforeachk(V) for(auto it=(V).begin();it!=(V).end();++it)
 #define sforeachk_(I,V) for(auto (I)=(V).begin();(I)!=(V).end();++(I))
 
-#define sforeachi(V) for(auto i=0;i<(V).size();++i)
-#define srforeachi(V) for(auto i=(V).size();-1<i;--i)
+#define sforeachi(V) for(sint i=0;i<(sint)((V).size());++i)
+#define srforeachi(V) for(sint i=(sint)((V).size()-1);-1<i;--i)
 
-#define sforeachi_(I,V) for(auto (I)=0;(I)<(V).size();++(I))
-#define srforeachi_(I,V) for(auto (I)=(V).size();-1<(I);--(I))
+#define sforeachi_(I,V) for(sint (I)=0;(I)<(V).size();++(I))
+#define srforeachi_(I,V) for(sint (I)=(sint)((V).size()-1);-1<(I);--(I))
 
 #define sforin(I,B,E) for(auto (I)=(B);(I)<(E);++(I))
 #define srforin(I,B,E) for(auto (I)=(E)-1;(B)<=(I);--(I))

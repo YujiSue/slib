@@ -6,16 +6,16 @@ using namespace slib::sapp;
 bool SNodeUtil::nodeInstalled() {
 	String result;
 	SSystem::exec("node -v", result);
-	if (result.equal(R(/ ^ v[0 - 9] + .[0 - 9] + .[0 - 9]/))) {
+	if (result.equal(R(/^v[0-9]+.[0-9]+.[0-9]/))) {
 		SSystem::exec("npm -v", result);
-		return result.equal(R(/ ^ [0 - 9] + .[0 - 9] + .[0 - 9] / ));
+		return result.equal(R(/^[0-9]+.[0-9]+.[0-9]/));
 	}
 	return false;
 }
 bool SNodeUtil::ngypInstalled() {
 	String result;
 	SSystem::exec("node-gyp -v", result);
-	return result.equal(R(/ ^ v[0 - 9] + .[0 - 9] + .[0 - 9] / ));
+	return result.equal(R(/^v[0-9]+.[0-9]+.[0-9]/));
 }
 //void SNodeUtil::installNode() {}
 void SNodeUtil::installNGyp() {

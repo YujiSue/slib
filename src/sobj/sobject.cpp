@@ -88,6 +88,16 @@ SObjPtr::SObjPtr(std::initializer_list<std::pair<String, SObjPtr>> li)
     : _type(DICT_OBJ), _ptr(new SDictionary(li)) {}
 SObjPtr::SObjPtr(std::initializer_list<kvpair<String, SObjPtr>> li)
     : _type(DICT_OBJ), _ptr(new SDictionary(li)) {}
+SObjPtr::SObjPtr(const stringarray& array) : _type(ARRAY_OBJ) {
+	auto a = new SArray(array.size());
+	if (array.size()) { sforeach2(*a, array) E1_ = E2_; }
+	_ptr = a;
+}
+SObjPtr::SObjPtr(const sattribute& attr) : _type(DICT_OBJ) {
+	auto d = new SDictionary();
+	sforeach(attr) d->insert(kv(E_.key, E_.value));
+	_ptr = d;
+}
 SObjPtr::SObjPtr(const SNumber &num) : _type(NUMBER_OBJ), _ptr(new SNumber(num)) {}
 SObjPtr::SObjPtr(const SChar &ch) : _type(CHAR_OBJ), _ptr(new SChar(ch)) {}
 SObjPtr::SObjPtr(const SString &str) : _type(STRING_OBJ), _ptr(new SString(str)) {}

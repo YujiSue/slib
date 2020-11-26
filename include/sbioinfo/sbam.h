@@ -41,7 +41,7 @@ namespace slib {
         constexpr int MAX_READ_NAME_LENGTH = 0xFF;
         constexpr int BAM_INDEX_BIN = 1<<14;
         
-        class SBamFile;
+        class SBam;
         
         namespace sbam {
             //Constant
@@ -60,81 +60,87 @@ namespace slib {
             /*
              Virtual offset
              */
-            struct SBIOINFO_DLL voffset {
+			class SBIOINFO_DLL voffset {
+			public:
                 sinteger file_offset;
                 sushort block_offset;
-                
+
                 voffset();
                 voffset(sinteger fo, sushort bo);
                 voffset(suinteger offset);
                 voffset(const voffset &v);
-                ~voffset();
-                
+                ~voffset();                
                 voffset & operator = (const voffset &v);
                 suinteger intOffset();
                 bool operator < (const voffset &v) const;
                 bool operator == (const voffset &v) const;
             };
-            
             /*
              BAM header
              */
-            struct SBIOINFO_DLL header {
+			class SBIOINFO_DLL header {
+			public:
                 sint ref_num;
                 intarray ref_length;
                 stringarray ref_name;
                 String text;
-                
-                header();
+
+				header();
                 ~header();
-                
                 void set(int n);
                 void init();
             };
-            
             /*
              BAM read info
              */
-            struct SBIOINFO_DLL readinfo {
-                sint length, seq_length;
-                sbpos pos;
+            //struct SBIOINFO_DLL readinfo : public ubytearray {
+			class SBIOINFO_DLL readinfo {
+			public:
+				//bool interpreted;
+                //sint length, seq_length;
+				sint seqlen, tmplen;
+                sbpos pos, next;
                 SCigarArray cigars;
                 sushort bin, flag;
-                subyte mapq;
-                sint next_refid, next_pos, template_length;
-                ubytearray sequence, qual;
-                String name, auxiliary;
+                subyte mapq;                
+				//sint next_refid, next_pos, template_length;
+                ubytearray sequence, qual, auxiliary;
+				String name;// , auxiliary;
                 
                 readinfo();
+				readinfo(ubytearray &dat);
                 readinfo(const readinfo &ri);
                 ~readinfo();
-                
-                bool headclip(int len);
-                bool tailclip(int len);
-				void set(ubytearray &data);
+				
+				static sint getRef(ubytearray& data);
+				static sint getPos(ubytearray& data);
+				static sint getLen(ubytearray& data);
+				static sushort getBin(ubytearray& data);
+				static sushort getFlag(ubytearray& data);
+				static subyte getMapQ(ubytearray& data);
+				
+				//void set(ubytearray &data);
                 void init();
-                srange range();
+				//void interpret();
+				void interpret(ubytearray& data, bool aux = false);
+
+				srange range();
+				String decode();
                 String toString();
                 
                 bool operator<(const readinfo &ri) const;
                 bool operator==(const readinfo &ri) const;
             };
-            typedef Range<sbam::voffset> voff_chunk;
-            
+			typedef Array<sbam::readinfo> read_array;
             /*
              BAM index
              */
-            typedef Array<Array<sbam::voffset, RMemory<sbam::voffset>>> voff_vec;
+			typedef Range<sbam::voffset> voff_chunk;
+			typedef Array<Array<sbam::voffset, RMemory<sbam::voffset>>> voff_vec;
             typedef Array<Array<Region<sbam::voffset>>> voff_chunk_vec;
             
-            struct SBIOINFO_DLL bai {
-                friend SBamFile;
-            private:
-                char _magic[4];
-                sint _lin_num, _bin_num, _chunk_num;
-                suint _bin;
-                suinteger _beg, _end;
-
+			class SBIOINFO_DLL bai {
+                friend SBam;
             public:
                 sint ref_num;
                 voff_chunk_vec chunks;
@@ -152,11 +158,10 @@ namespace slib {
                 //void save(const char *path);
                 void init();
             };
-            
             /*
              BAM data
              */
-            struct SBIOINFO_DLL bgzf_dat {
+			class SBIOINFO_DLL bgzf_dat {
             private:
                 char _magic[16];
                 
@@ -173,16 +178,17 @@ namespace slib {
                 ~bgzf_dat();
                 
                 void init();
-                void load(SBamFile *bam);
+                void load(SBam *bam);
                 void setOffset(sushort boff);
                 size_t left();
                 void read(void *dest, size_t size, size_t off = 0);
             };
         }
-        class SBIOINFO_DLL SBamFile : public sio::SFile {
-        public:
-            
+        class SBIOINFO_DLL SBam {
+			friend sbam::bgzf_dat;
+
         private:
+			sio::SFile _file;
             SWork _threads;
             sbam::bgzf_dat *_data, *_buffer;
             
@@ -199,24 +205,29 @@ namespace slib {
             void _checkError();
             
         public:
-            SBamFile();
-            SBamFile(const char *path, bool load = true);
-            ~SBamFile();
+			SBam();
+			SBam(const char *path, bool load = true);
+            ~SBam();
             
             void init();
-            
+            void open(const char* path);
             void load(const char *path);
+			void close();
             void loadIndex(const char *path);
             bool hasIndex() const;
             
+			suinteger size() const;
+			suinteger offset();
+			const String& path() const;
+
             sbam::voffset voff() const;
             void setVOff(const sbam::voffset &v);
             //void sort();
             //void makeIndex();
-            //bool next(sbam::readinfo *ri = nullptr);
-			bool next(ubytearray* dat = nullptr);
-            //void reads(sbam::read_vec &list, int idx, const srange &rng);
-            //void reads(sbam::read_vec &list, int idx, const sregion &reg);
+			ubytearray *next(ubytearray *dat = nullptr);
+			//sbam::readinfo* next(sbam::readinfo* ri = nullptr); 
+			void getReads(sbam::read_array& array, const sbpos &pos);
+			void getReads(sbam::read_array& array, sint idx, const sregion& region);
         };
     }
 }

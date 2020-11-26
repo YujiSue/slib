@@ -9,7 +9,7 @@ inline void _decode(String &str) {
 	if (str.isQuoted()) str.transform(slib::sstyle::DELETE_QUOTE);
 #if defined(WIN32_OS) || defined(WIN64_OS)
 	if (str.empty()) str = "C:" + PATH_SEPARATOR;
-	if (str.match(R(/ ^ [A - Z][:] / ))) return;
+	if (str.match(R(/^[A-Z][:]/))) return;
 #else
 	if (str.empty()) str = PATH_SEPARATOR;
 	if (str.beginWith(PATH_SEPARATOR)) return;
