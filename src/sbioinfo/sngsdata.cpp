@@ -375,6 +375,7 @@ void SNGSData::readDepth(sint r, sint p) {
 void SNGSData::nextDp() {
 	_file.readFloat(depth.current);
 }
+/*
 inline void varIdx1(Array<svar_data> *variants, varparray *index) {
     if (variants->empty()) return;
 	auto it = variants->begin();
@@ -392,6 +393,7 @@ inline void varIdx1(Array<svar_data> *variants, varparray *index) {
     }
 	sforin(i, pos, index->size()) { (*idx) = ptr; ++idx; }
 }
+*/
 inline void varIdx2(Array<svar_data>* variants, varparray* pindex, varparray* nindex) {
 	/*
     idx1->reset(-1); idx2->reset(-1);
@@ -454,6 +456,7 @@ inline void varIdx4(Array<svar_data> *vec, intarray2d *idxs) {
         }
     }
 }
+/*
 void SNGSData::makeVIndex(Array<varparray>& index, svariant_param* vp, SWork* threads) {
 	auto size = 4 + 3 * summary.refnum - 1;
 	index.resize(size * summary.refnum);
@@ -482,6 +485,7 @@ void SNGSData::makeVIndex(Array<varparray>& index, svariant_param* vp, SWork* th
 	}
 	if (threads) threads->complete();
 }
+*/
 /*
 void SNGSData::varindex(svariant_param *vp) {
     sforin(r, 0, summary.refnum) {

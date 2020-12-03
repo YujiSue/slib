@@ -7,7 +7,6 @@ using namespace slib::sbio;
 SVarList::SVarList() : Array<svar>() {}
 SVarList::SVarList(const char* s) : SVarList() { load(s); }
 SVarList::SVarList(const SVarList &vl) : Array<svar>(vl) {
-    //par = vl.par;
 	filetype = vl.filetype;
     name = vl.name;
     attribute = vl.attribute;
@@ -22,15 +21,14 @@ void SVarList::load(const char *path, SBSeqList *ref, sattribute* converter) {
 	else if (ext == "json") SVarIO::loadJSON(file, this);
 
 }
-
 void SVarList::save(const char *path, SBSeqList *ref) {
 	sio::SFile file(path);
 	auto ext = file.extension();
 	if (ext == "vcf") SVarIO::saveVCF(file, this, ref);
 	else if (ext == "txt") SVarIO::saveTxt(file, this);
+	else if (ext == "tsv") SVarIO::saveTSV(file, this);
 	else if (ext == "json") SVarIO::saveJSON(file, this);
 }
-
 void SVarList::tidy(size_t s) {
 	if (s == -1) {
 		s = size();

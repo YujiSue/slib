@@ -115,7 +115,6 @@ const suint SZip::LOCAL_FILE_HEADER_SIG = 0x04034B50;
 const suint SZip::DATA_DESCRIPTOR_SIG = 0x08074B50;
 const suint SZip::CENTRAL_DIR_SIG = 0x02014B50;
 const suint SZip::CENTRAL_DIR_END_SIG = 0x06054B50;
-
 SZip::localFileHeader::localFileHeader() {
     ver = 0; flag = 0; method = 0; time = 0; date = 0; flen = 0; elen = 0;
     sig = LOCAL_FILE_HEADER_SIG; crc = 0; csize = 0; rsize = 0;
@@ -131,7 +130,7 @@ SZip::centralDir::centralDir() {
     sig = 0; crc = 0; csize = 0; rsize = 0; eattr = 0; offset = 0;
 }
 SZip::centralDir::~centralDir() {}
-suint SZip::centralDir::size() { return 46+flen+elen+clen; }
+suint SZip::centralDir::size() { return 46 + flen + elen + clen; }
 SZip::centralDirEnd::centralDirEnd() {
     num = 0; disk = 0; record = 0; sum = 0; clen = 0;
     sig = CENTRAL_DIR_END_SIG; size = 0; offset = 0;
@@ -275,7 +274,7 @@ void SZip::archive(sio::SFile &ori, const char *dest, const char *encrypt) {
         centralDir cd;
         SData dat;
         dat.load(ori);
-        lfh.rsize = dat.size();
+        lfh.rsize = (suint)dat.size();
         cd.rsize = lfh.rsize;
         dat.compress();
         cde.record = 1; cde.sum = 1; cde.size = cd.size();
@@ -428,21 +427,21 @@ void SCode::encodeB64Char(const void *data, char *encoded, size_t size) {
     encoded[3] = size<3?'=':SCode::B64_STR[dat[2]&0x3F];
 }
 
-size_t SCode::base64CharCount(size_t size) { return 12+((size-1)/3+1)*4; }
+size_t SCode::base64CharCount(size_t size) { return 12 + ((size - 1) / 3 + 1) * 4; }
 
 void SCode::decodeB64Char(const char *data, void *decoded) {
     memset(decoded, 0, 3);
-    uint8_t dec[4];
-    sforin(i, 0, 4) dec[i] = data[i] == '='?0:b64i(data[i]);
-    ((char *)decoded)[0] = (dec[0]<<2)+((dec[1]>>4)&0x03);
-    ((char *)decoded)[1] = ((dec[1]&0x0F)<<4)+((dec[2]>>2)&0x0F);
-    ((char *)decoded)[2] = ((dec[2]&0x03)<<6)+(dec[3]&0x3F);
+    subyte dec[4];
+	sforin(i, 0, 4) dec[i] = data[i] == '=' ? 0 : b64i(data[i]);
+	((char*)decoded)[0] = (dec[0] << 2) + ((dec[1] >> 4) & 0x03);
+	((char*)decoded)[1] = ((dec[1] & 0x0F) << 4) + ((dec[2] >> 2) & 0x0F);
+	((char*)decoded)[2] = ((dec[2] & 0x03) << 6) + (dec[3] & 0x3F);
 }
 
-uint64_t SCode::decodeCharCount(const char *base) {
+suinteger SCode::decodeCharCount(const char *base) {
     char decode[9];
     sforin(i, 0, 3) SCode::decodeB64Char(&base[4*i], &decode[3*i]);
-    uint64_t size = 0;
+	suinteger size = 0;
     memcpy(&size, decode, 8);
     return size;
 }
@@ -462,21 +461,21 @@ void SCode::encodeBASE64(const void *ori, size_t size, char *base) {
     memset(encode, 0, 9);
     memcpy(encode, &size, 8);
     sforin(i, 0, 3) SCode::encodeB64Char((const void *)&encode[i*3], &base[i*4], 3);
-	suint length = (size-1)/3+1;
-    sforin(i, 0, length-1) SCode::encodeB64Char(&((char *)ori)[i*3], &base[12+i*4], 3);
+	auto length = (size - 1) / 3 + 1;
+	sforin(i, 0, (sint)length - 1) SCode::encodeB64Char(&((char*)ori)[i * 3], &base[12 + i * 4], 3);
     encodeB64Char(&((char *)ori)[(length-1)*3], &base[12+(length-1)*4], size-3*(length-1));
     base[12+length*4] = '\0';
 }
 void SCode::decodeBASE64(const char *base, void *ori, const size_t &size) {
-    suint length = (size-1)/3+1;
-    sforin(i, 0, length) SCode::decodeB64Char(&base[12+i*4], &((char *)ori)[i*3]);
+	auto length = (size-1)/3+1;
+	sforin(i, 0, (sint)length) SCode::decodeB64Char(&base[12 + i * 4], &((char*)ori)[i * 3]);
 }
 void SCode::decodeBASE64(const String& base, String& ori) {
-	suint length = base.size() / 4;
+	auto length = base.size() / 4;
 	ori.resize(length * 3);
 	auto bp = base.cstr();
 	auto op = &ori[0];
-	sforin(i, 0, length) {
+	sforin(i, 0, (sint)length) {
 		SCode::decodeB64Char(bp, op);
 		bp += 4; op += 3;
 	}
@@ -484,7 +483,7 @@ void SCode::decodeBASE64(const String& base, String& ori) {
 }
 void SCode::expandTo(ubytearray& ori, ubytearray& dest, size_t cap, sint bits, sint flush) {
 	if (ori.empty()) return;
-	int capacity = cap == -1 ? (ori.size() * 1.5) : cap;
+	size_t capacity = cap == -1 ? (size_t)((double)ori.size() * 1.5) : cap;
 	dest.resize(capacity);
 	z_stream strm;
 	strm.zalloc = Z_NULL;
@@ -493,14 +492,14 @@ void SCode::expandTo(ubytearray& ori, ubytearray& dest, size_t cap, sint bits, s
 	strm.next_in = (Bytef*)ori.ptr();
 	strm.avail_in = (unsigned int)ori.size();
 	strm.next_out = (Bytef*)dest.ptr();
-	strm.avail_out = capacity;
+	strm.avail_out = (suint)capacity;
 	int res = inflateInit2(&strm, bits);
 	if (res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflateInit2", EXEC_TEXT(std::to_string(res)));
 	res = inflate(&strm, flush);
 	if (res != Z_STREAM_END || strm.total_in < ori.size()) {
 		if (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
 			while (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
-				int capacity_ = capacity * 1.5;
+				int capacity_ = (int)((double)capacity * 1.5);
 				dest.resize(capacity_);
 				strm.next_out = dest.ptr(strm.total_out);
 				strm.avail_out = capacity_ - capacity;
@@ -554,7 +553,7 @@ void SCode::expand(ubytearray &bytes, size_t cap, sint bits, sint flush) {
 void SCode::compress(ubytearray &bytes) {
     if (bytes.empty()) return;
     ubytearray tmp;
-    int capacity = bytes.size()*1.5;
+	auto capacity = (suint)((double)bytes.size() * 1.5);
     tmp.resize(capacity);
     z_stream strm;
     strm.zalloc = Z_NULL;
@@ -573,7 +572,7 @@ void SCode::compress(ubytearray &bytes) {
     if (res != Z_STREAM_END || strm.total_in < bytes.size()) {
         if (res == Z_BUF_ERROR || strm.total_in < bytes.size()) {
             while (res == Z_BUF_ERROR || strm.total_in < bytes.size()) {
-                auto capacity_ = capacity*1.5;
+				auto capacity_ = (suint)((double)capacity * 1.5);
                 tmp.resize(capacity_);
                 strm.next_out = &((Bytef *)tmp.ptr())[strm.total_out];
                 strm.avail_out = capacity_-capacity;

@@ -50,12 +50,10 @@ namespace slib {
 			svc_param();
 			svc_param(const svc_param& p);
 			~svc_param();
-
 			svc_param& operator=(const svc_param& par);
 			void set(const sobj& obj);
 			sobj toObj();
 		};
-
 		typedef enum {
 			HOMO_DEL_CNV = 0,
 			HETERO_DEL_CNV = 1,
@@ -64,7 +62,6 @@ namespace slib {
 			HOMO_DUP_CNV = 4,
 			MULTI_CNV = 5,
 		} CNV_TYPE;
-
 		struct SBIOINFO_DLL scnv_param {
 			//copy: [0, border[0]), [border[0], border[1]), [border[1], border[2]), [border[2], border[3]), [border[3], border[4]), [border[4], +inf)
 			sint min_length;
@@ -74,12 +71,10 @@ namespace slib {
 			scnv_param();
 			scnv_param(const scnv_param& p);
 			~scnv_param();
-
 			scnv_param& operator=(const scnv_param& par);
 			void set(const sobj& obj);
 			sobj toObj();
 		};
-
 		struct SBIOINFO_DLL ssrv_param {
 			bool detect_var[5], detect_comp_var[4];
 			sint freq_bin, min_sr[5], min_comp_sr[4], min_length[3];// 0:del, 1:dup/ins, 2:inv
@@ -88,17 +83,14 @@ namespace slib {
 			ssrv_param();
 			ssrv_param(const ssrv_param& p);
 			~ssrv_param();
-
 			ssrv_param& operator=(const ssrv_param& par);
 			void set(const sobj& obj);
 			sobj toObj();
 		};
-
 		struct SBIOINFO_DLL svariant_param {
 			bool homo_select;
 			sushort annot;
 			sint max_dist, max_diff;
-
 			scnv_param cnv_par;
 			ssrv_param srv_par;
 			svc_param smv_par;
@@ -106,12 +98,10 @@ namespace slib {
 			svariant_param();
 			svariant_param(const svariant_param& p);
 			~svariant_param();
-
 			svariant_param& operator=(const svariant_param& par);
 			void set(const sobj& obj);
 			sobj toObj();
 		};
-
 		class SBIOINFO_DLL SVarUtil {
 		public:
 			static float readBias(const sushort *r);
@@ -123,26 +113,24 @@ namespace slib {
 			static String mtype(sushort i);
 			static subyte mtypeIdx(const char* s);
 		};
-		
 		class SBIOINFO_DLL SVarIO {
 		public:
 			static const stringarray VCF_TABLE_COLUMNS;
 			static const stringarray DEFAULT_TABLE_COLUMNS;
-
+			
 			static const sattribute ION_VAR_CALL;
 
 			static void loadTxt(sio::SFile& file, SVarList* list, SBSeqList* ref);
 			static void loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref);
 			static void loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, sattribute *converter);
 			static void loadJSON(sio::SFile& file, SVarList* list);
-			
 			static void saveTxt(sio::SFile& file, SVarList* list);
-			static void saveTSV(sio::SFile& file, SVarList* list, const stringarray& col = {""});
+			static void saveTSV(sio::SFile& file, SVarList* list, 
+				const stringarray& col = {"Sample", "Name", "Chr1", "Pos1", "Len1", "Chr2", "Pos2", "Len2", "Type"});
 			static void saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref);
 			static void saveJSON(sio::SFile& file, SVarList* list);
 
 		};
-
 		class SBIOINFO_DLL SVarFilter {
 		private:
 			SBSeqList* _ref;
@@ -153,22 +141,19 @@ namespace slib {
 		public:
 			SVarFilter(SBSeqList* ref = nullptr, SBAnnotDB* db = nullptr, svariant_param* p = nullptr, Array<sregion>* t = nullptr);
 			~SVarFilter();
-
 			void consolidate(Array<svar_data>& variants);
 			void subtract(Array<svar_data>& variants1, Array<svar_data>& variants2);
 			void merge(SVarList& vl1, SVarList& vl2);
 			void subtract(SVarList& vl1, SVarList& vl2);
 			void common(SVarList& vl1, SVarList& vl2);
 			void unique(SVarList& uni, SVarList& vl1, SVarList& vl2);
-			
+			void setRefName(SVarList* vl);
 			void annotate(SVarList* vl, SWork* threads = nullptr);
 			void checkRepeat(SVarList *list, SBSeqList* ref);
 			//void filter(SVarList* list, const char *meht, sfunc<bool)1\);
 			void filter(SVarList* list);
 			//void sortBy();
-			
 			void check(SVariant* var);
-
 			void setReference(SBSeqList* ref);
 			void setDB(SBAnnotDB* db);
 			void setParam(svariant_param* p);

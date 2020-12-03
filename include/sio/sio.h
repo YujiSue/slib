@@ -70,7 +70,7 @@ namespace slib {
 		}
 		template<class... Args>
 		extern inline void EXPAND_ARGS(Args... args) {
-			SDictionary& params;
+			SDictionary params;
 			_EXPAND_ARGS(params, args...);
 		}
 

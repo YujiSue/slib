@@ -118,6 +118,7 @@ transcript_site& transcript_site::operator=(const transcript_site& trs) {
 	ori = trs.ori; 	alt = trs.alt; pos = trs.pos; return *this;
 }
 gene_site::gene_site() : type(0), dir(false) {}
+gene_site::gene_site(const sobj& obj) : gene_site() { set(obj); }
 gene_site::gene_site(const gene_info* gi) : gene_site() {
 	name = gi->name; dir = gi->dir;
 	transcripts.reserve(gi->transcripts.size() + 1);
@@ -132,6 +133,12 @@ gene_site& gene_site::operator=(const gene_site& g) {
 	transcripts = g.transcripts;
 
 	return *this;
+}
+void gene_site::set(const sobj& obj) {
+
+}
+sobj gene_site::toObj() {
+	return snull;
 }
 
 void SBAnnotDB::_initIdx() {
@@ -206,7 +213,7 @@ inline void toGeneInfo(gene_info *info, SDictionary &dict) {
     toAnnotInfo(info, dict);
     if(dict["GENE_ID"]) info->gene_id = dict["GENE_ID"];
     if(dict["OTHER_NAME"]) {
-        auto list = String::dequot(dict["OTHER_NAME"]).split(",");
+        auto list = dict["OTHER_NAME"].split(",");
         if (!list.empty()) { sforeach(list) info->other_names.add(E_.cstr()); }
     }
     if(dict["DESCRIPTION"]) info->description = dict["DESCRIPTION"];

@@ -410,7 +410,7 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 			else if (col[i] == "Len" || col[i] == "Len1") var->pos[0].end = var->pos[0].begin + dat[i].intValue() - 1;
 			else if (col[i] == "Len2") var->pos[1].end = var->pos[1].begin + dat[i].intValue() - 1;
 
-			else if (col[i] == "Cov") var->copy.depth[0] = dat[i];
+			else if (col[i] == "Cov") var->copy.depth[0][0] = dat[i];
 			else if (col[i] == "Allele cov") var->read[0] = dat[i];
 			//			else if (col[i] == "Gene") file << "" << TAB;
 			//			else if (col[i] == "Region") file << "" << TAB;
@@ -511,7 +511,7 @@ inline void _VCFToINS(SVariant &var, String& alt, stringarray& data) {
 inline void _VCFToVar(SVariant &var, String &alt, stringarray &data, stringarray &refname) {
 	var.flag = SMALL_VARIANT;
 	var.ref[0] = data[0];
-	var.pos[0].idx = refname.find(data[0]);
+	var.pos[0].idx = (sint)refname.find(data[0]);
 	var.pos[0].begin = data[1].intValue();
 	var.name = data[2];
 	if (data[3].length() == alt.length()) {
@@ -594,7 +594,7 @@ inline void _readVCFData(String& row, SVarList* list, Array<SVariant> &variants,
 	if (format && data.size() < 10) throw SBioInfoException(ERR_INFO);
 	else if (data.size() < 8) throw SBioInfoException(ERR_INFO);
 	stringarray alts = data[4].split(",");
-	int vcount = alts.size();
+	auto vcount = alts.size();
 	variants.resize(vcount);
 	sforin(i, 0, vcount) _VCFToVar(variants[i], alts[i], data, list->refname);
 	_setVCFInfo(variants, data[7], list->attribute["INFO"]);
@@ -605,7 +605,7 @@ inline void _readVCFData(String& row, SVarList* list, Array<SVariant> &variants,
 				if (vit->pos[0].idx < 0 || !(vit->attribute.hasKey(E_.key))) continue;
 				auto& val = vit->attribute[E_.key];
 				if (E_.value == "name") vit->name = (const char*)val;
-				if (E_.value == "copy") vit->copy.depth[0] = val;
+				if (E_.value == "copy") vit->copy.depth[0][0] = val;
 				if (E_.value == "pread") vit->read[0] = val;
 				if (E_.value == "nread") vit->read[1] = val;
 				if (E_.value == "freq") vit->copy.frequency = val;
@@ -636,11 +636,14 @@ void SVarIO::loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, sattribut
 			variants.clear();
 		}
 	}
-	list->refnum = list->refname.size();
+	list->refnum = (sint)list->refname.size();
 	list->sort();
 	file.close();
 }
-void SVarIO::loadJSON(sio::SFile& file, SVarList* list) {}
+void SVarIO::loadJSON(sio::SFile& file, SVarList* list) {
+	SJson json(file);
+	sforeach(json.array()) list->add(E_);
+}
 
 void SVarIO::saveTxt(sio::SFile& file, SVarList* list) {}
 void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
@@ -650,8 +653,8 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 	if (list->empty()) return;
 	sforeach(*list) {
 		sforeach_(cit, col) {
-			if (*cit == "Chr" || *cit == "Chr1") file << list->refname[E_->pos[0].idx] << TAB;
-			else if (*cit == "Chr2") file << (E_->pos[1].idx < 0?"-":list->refname[E_->pos[1].idx]) << TAB;
+			if (*cit == "Chr" || *cit == "Chr1") file << E_->ref[0] << TAB;
+			else if (*cit == "Chr2") file << (E_->pos[1].idx < 0?"-": E_->ref[1]) << TAB;
 			else if (*cit == "Pos" || *cit == "Pos1") file << E_->pos[0].begin << TAB;
 			else if (*cit == "Pos2") file << E_->pos[1].begin << TAB;
 			else if (*cit == "Len" || *cit == "Len1") {
@@ -660,13 +663,11 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 				else file << E_->pos[0].length(true) << TAB;
 			}
 			else if (*cit == "Len2") file << E_->pos[1].length(true) << TAB;
-
-			else if (*cit == "Cov") file << (int)E_->copy.depth[0] << TAB;
+			else if (*cit == "Cov") file << SNumber(E_->copy.depth[0][0]).precised(2) << TAB;
 			else if (*cit == "Allele cov" || *cit == "Split read") file << E_->total() << TAB;
 			else if (*cit == "Copy" || *cit == "Copy1") file << SNumber(E_->copy.ratio[0]).precised(2) << TAB;
 			else if (*cit == "Copy2") file << SNumber(E_->copy.ratio[1]).precised(2) << TAB;
 			else if (*cit == "Read bias") file << SNumber(SVarUtil::readBias(E_->read)).precised(2) << TAB;
-
 			else if (*cit == "Gene") {
 				if (!E_->genes.empty()) {
 					String genenames;
@@ -732,16 +733,13 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			}
 			else if (*cit == "Ref") file << (E_->attribute["Ref"] ? E_->attribute["Ref"] : "-") << TAB;
 			else if (*cit == "Var") file << (E_->alt.size() ? E_->alt : "-") << TAB;
-
 			else if (*cit == "Type") file << SVarUtil::vtype(E_->type) << TAB;
 			else if (*cit == "Genotype" || *cit == "Homo") file << (E_->homo ? "Homo" : "Hetero") << TAB;
 			else if (*cit == "Qual") file << SNumber(E_->qual).precised(2) << TAB;
 			else if (*cit == "Freq") file << SNumber(E_->copy.frequency).precised(2) << TAB;
-
-			else if (*cit == "List") file << list->name << TAB;
+			//else if (*cit == "List") file << list->name << TAB;
 			else if (*cit == "Name") file << E_->name << TAB;
 			else if (*cit == "Sample") file << list->name << TAB;
-
 		}
 		file << LF; file.flush();
 	}
@@ -835,4 +833,9 @@ void SVarIO::saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 		file.flush();
 	}
 }
-void SVarIO::saveJSON(sio::SFile& file, SVarList* list) {}
+void SVarIO::saveJSON(sio::SFile& file, SVarList* list) {
+	sarray array;
+	sforeach(*list) array.add(E_->toObj());
+	SJson json(array);
+	json.save(file.path());
+}

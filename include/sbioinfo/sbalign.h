@@ -49,7 +49,6 @@ namespace slib {
             scigar(subyte o, sint l);
             scigar(suint i);
             scigar(const scigar &c);
-            
             scigar & operator = (const scigar &c);
             bool operator < (const scigar &c) const;
             bool operator == (const scigar &c) const;
@@ -94,26 +93,19 @@ namespace slib {
             salign(const sbpos &pos, const srange &range);
             salign(const salign &align);
             ~salign();
-            
             salign &operator = (const salign &align);
-            
             bool operator < (const salign &align) const;
             bool operator == (const salign &align) const;
-            
             void scoring(salign_param *par);
             void init();
-            
             String alref(const String &ref);
 			String match();
             String consensus(const String &ref, const String &que);
 			String alque(const String &que);
         };
-
 		#define alignarray Array<salign>
-        
 
-        class SBIOINFO_DLL SAlignment {
-            
+		class SBIOINFO_DLL SAlignment {
         private:
             salign_param *_par;
             bytearray _path;

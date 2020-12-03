@@ -103,11 +103,14 @@ namespace slib {
 			gene_site* fusion;
 
 			gene_site();
+			gene_site(const sobj& obj);
 			gene_site(const gene_info* gi);
 			gene_site(const gene_site& g);
 			~gene_site();
 
 			gene_site& operator=(const gene_site& g);
+			void set(const sobj& obj);
+			sobj toObj();
 		};
 
         class SBIOINFO_DLL SBAnnotDB : public SDataBase {

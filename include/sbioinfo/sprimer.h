@@ -58,11 +58,13 @@ namespace slib {
         };
         
 		class SBIOINFO_DLL sprimer {
-			ubytearray seq;
+			ubytearray *seq;
+			srange range;
+
 
 			float temp, gc, bias;
 			subyte match[3];
-            double score;
+            //double score;
             
 			sprimer();
 			sprimer(const char *seq);

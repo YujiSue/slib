@@ -96,7 +96,7 @@ namespace slib {
 			void setBin(sint bin);
 			void setParam(sngs_param *p);
             
-            void makeVIndex(Array<varparray> &index, svariant_param *vp, SWork* threads = nullptr);
+            //void makeVIndex(Array<varparray> &index, svariant_param *vp, SWork* threads = nullptr);
 			void subtract(SNGSData& dat, svariant_param* vp, SWork* threads = nullptr);
             //void tidy(svariant_param *vp);
 			void integrate(SNGSData& dat, svariant_param* vp, SWork* threads = nullptr);

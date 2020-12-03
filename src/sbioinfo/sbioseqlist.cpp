@@ -20,6 +20,8 @@ suinteger SBSeqList::total() const {
     sforeach(*this) total += E_->length();
     return total;
 }
+String SBSeqList::species() const { if (attribute && attribute.hasKey("species")) return attribute["species"]; else return ""; }
+String SBSeqList::version() const { if (attribute && attribute.hasKey("ver")) return attribute["ver"]; else return ""; }
 void SBSeqList::load(const char *path) {
     char magic[4];
     sint tmp;

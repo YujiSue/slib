@@ -120,6 +120,8 @@ namespace slib {
 			intarray& lengthList();
 			const intarray &lengthList() const;
             suinteger total() const;
+			String species() const;
+			String version() const;
 
 			void load(const char *path);
             void save(const char *path);

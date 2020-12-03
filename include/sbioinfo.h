@@ -6,7 +6,7 @@
 #include "sbioinfo/sbioseq.h"
 #include "sbioinfo/sbannot.h"
 #include "sbioinfo/sbsearch.h"
+#include "sbioinfo/sprimer.h"
 #include "sbioinfo/sngs.h"
-
 
 #endif

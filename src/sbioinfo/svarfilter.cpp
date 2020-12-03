@@ -474,7 +474,14 @@ void SVarFilter::unique(SVarList& uni, SVarList& vl1, SVarList& vl2) {
 	uni.name += "_" + vl1.name + "_uniq";
 	SVarFilter::subtract(uni, vl2);
 }
-
+void SVarFilter::setRefName(SVarList* vl) {
+	if (_ref) {
+		sforeach(*vl) {
+			if (-1 < E_->pos[0].idx) E_->ref[0] = _ref->at(E_->pos[0].idx)->name;
+			if (-1 < E_->pos[1].idx) E_->ref[1] = _ref->at(E_->pos[1].idx)->name;
+		}
+	}
+}
 void SVarFilter::annotate(SVarList* vl, SWork* threads) {
 	sforeach(*vl) {
 		if (threads) threads->addTask(_annotate, E_, _ref, _db);
