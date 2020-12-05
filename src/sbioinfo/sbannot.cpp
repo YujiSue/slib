@@ -16,7 +16,7 @@ const String START_ASC_QUE = sql::orderQue({ kv("START", ASC) });
 const String POS_ASC_QUE = sql::orderQue({ kv("CHROMOSOME", ASC), kv("START", ASC) });
 
 annot_info::annot_info() : sbpos(), _id(0), type(0) {}
-annot_info::annot_info(const suint&t, const String &n, const sbpos &p) : type(t), name(n), sbpos(p) {}
+annot_info::annot_info(const suint&t, const String &n, const sbpos &p) : _id(0), type(t), name(n), sbpos(p) {}
 annot_info::annot_info(const annot_info &info) : _id(info._id), type(info.type), name(info.name), sbpos(info) {}
 annot_info::~annot_info() {}
 chr_info::chr_info() : annot_info() {}
@@ -143,7 +143,7 @@ sobj gene_site::toObj() {
 
 void SBAnnotDB::_initIdx() {
     auto num = chrNum();
-    bin_order.resize(num);
+	_bin_order.resize(num);
     _ctg_index.resize(num);
     _gene_index.resize(num);
     _trs_index.resize(num);
@@ -151,7 +151,7 @@ void SBAnnotDB::_initIdx() {
     _var_index.resize(num);
     _ftr_index.resize(num);
     sforin(i, 0, num) {
-        auto count = sbiutil::countBin(bin_order[i], srange(chrInfo(i).begin, chrInfo(i).end-1));
+        auto count = sbiutil::countBin(_bin_order[i], srange(chrInfo(i).begin, chrInfo(i).end-1));
         _ctg_index[i].resize(count);
         _gene_index[i].resize(count);
         _trs_index[i].resize(count);
@@ -196,7 +196,7 @@ void SBAnnotDB::_loadContigInfo() {
         sforeach(contigs) {
             auto &row = getRow();
             toAnnotInfo(&E_, row);
-            _ctg_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
+            _ctg_index[E_.idx][_bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _ctg_name_index.add(r);
             ++r;
         }
@@ -237,7 +237,7 @@ void SBAnnotDB::_loadGeneInfo() {
                     trans.gene = &E_;
                 }
             }
-            _gene_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
+            _gene_index[E_.idx][_bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             if (E_.gene_id.size()) _gene_name_index.add(name_pair(&E_.gene_id, r));
             if (E_.name.size()) _gene_name_index.add(name_pair(&E_.name, r));
             if (!E_.other_names.empty()) {
@@ -269,7 +269,7 @@ void SBAnnotDB::_loadTranscriptInfo() {
                 E_.gene = &gene;
                 gene.transcripts.add(&E_);
             }
-            _trs_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
+            _trs_index[E_.idx][_bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _trs_name_index.add(r);
             ++r;
         }
@@ -309,13 +309,13 @@ void SBAnnotDB::_loadMutantInfo() {
         sforeach(mutants) {
             auto &row = getRow();
 			toMutInfo(&E_, row);
-            _mut_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
+            _mut_index[E_.idx][_bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _mut_name_index.add(r);
             ++r;
         }
         commit();
         std::sort(_mut_name_index.begin(), _mut_name_index.end(),
-                  [this](const int32_t &i1, const int32_t &i2) {
+                  [this](const sint &i1, const sint &i2) {
                       return mutants[i1].name < mutants[i2].name;
                   });
     } catch (SDBException de) {
@@ -332,7 +332,7 @@ void SBAnnotDB::_loadVariationInfo() {
         sforeach(variations) {
             auto &row = getRow();
 			toMutInfo(&E_, row);
-            _var_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
+            _var_index[E_.idx][_bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _var_name_index.add(r);
             ++r;
         }
@@ -355,7 +355,7 @@ void SBAnnotDB::_loadFeatureInfo() {
         sforeach(features) {
             auto &row = getRow();
             toAnnotInfo(&E_, row);
-            _ftr_index[E_.idx][bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
+            _ftr_index[E_.idx][_bin_order[E_.idx][(int)sbiutil::getBin(E_)]].add(&E_);
             _ftr_name_index.add(r);
             ++r;
         }
@@ -441,12 +441,18 @@ void SBAnnotDB::setMode(int m) {
     _mode = m;
 }
 String SBAnnotDB::species() {
-    auto &res = (*this)["INFO"].getRecord({"VALUE"}, sql::condition("NAME='species'"));
-    return res.empty()?"":res.begin()->value;
+	try {
+		auto& res = (*this)["INFO"].getRecord({ "VALUE" }, sql::condition("NAME='species'"));
+		return res.empty() ? "" : res.begin()->value;
+	}
+	catch (SDBException de) { return ""; }
 }
 String SBAnnotDB::version() {
-    auto &res = (*this)["INFO"].getRecord({"VALUE"}, sql::condition("NAME='version'"));
-    return res.empty()?"":res.begin()->value;
+	try {
+		auto& res = (*this)["INFO"].getRecord({ "VALUE" }, sql::condition("NAME='version'"));
+		return res.empty() ? "" : res.begin()->value;
+	}
+	catch (SDBException de) { return ""; }
 }
 size_t SBAnnotDB::chrNum() const { return chromosomes.size(); }
 chr_info SBAnnotDB::chrInfo(int idx) const { return chromosomes[idx]; }
@@ -486,8 +492,8 @@ inline void searchGeneNameIndex(srange &range, const String &que, Array<SBAnnotD
     }
 }
 template<class Info>
-inline void searchPos(const sbpos &pos, Array<Array<CArray<Info *>>> &index, sorder &order, CArray<Info *> &array) {
-    sizearray bins;
+inline void searchPos(const sbpos &pos, Array<Array<CArray<Info *>>> &index, Map<sint, suint> &order, CArray<Info *> &array) {
+    ushortarray bins;
     sbiutil::getBins(bins, pos);
     sforeachi(bins) {
         if (index[pos.idx][order[(int)bins[i]]].empty()) continue;
@@ -499,7 +505,7 @@ inline void searchPos(const sbpos &pos, Array<Array<CArray<Info *>>> &index, sor
 }
 void SBAnnotDB::ctgInfo(ctgparray &array, const sbpos &pos, bool append) {
     if (!append) array.clear();
-    if (_mode&LOAD_CTG) searchPos(pos, _ctg_index, bin_order[pos.idx], array);
+    if (_mode&LOAD_CTG) searchPos(pos, _ctg_index, _bin_order[pos.idx], array);
     else {
         contigs.clear();
         try {
@@ -553,7 +559,7 @@ void SBAnnotDB::geneInfo(geneparray &array, const sbpos &pos, bool trans, bool a
 	if (!append) array.clear();
     if (_mode&LOAD_GENE) {
         if (trans && !(_mode&LOAD_TRANS)) setMode(_mode|LOAD_TRANS);
-        searchPos(pos, _gene_index, bin_order[pos.idx], array);
+        searchPos(pos, _gene_index, _bin_order[pos.idx], array);
     }
     else {
         try {
@@ -605,7 +611,7 @@ void SBAnnotDB::geneInfo(geneparray &array, const char *name, bool trans, subyte
     if (_mode&LOAD_GENE) {
         if (!(_mode&LOAD_TRANS) && trans) setMode(_mode|LOAD_TRANS);
         if(match == EXACT_MATCH) {
-            srange range(0, _gene_name_index.size());
+            srange range(0, (sint)_gene_name_index.size());
             searchGeneNameIndex(range, name, _gene_name_index);
             if (range.end-range.begin) array.add(&genes[_gene_name_index[range.begin].second]);
         }
@@ -668,7 +674,7 @@ void SBAnnotDB::transcriptInfo(trsparray &array, const sbpos &pos, bool gene, bo
 	if (!append) array.clear();
     if (_mode&LOAD_TRANS) {
         if (gene & !(_mode&LOAD_GENE)) setMode(_mode|LOAD_GENE);
-        searchPos(pos, _trs_index, bin_order[pos.idx], array);
+        searchPos(pos, _trs_index, _bin_order[pos.idx], array);
     }
     else {
         transcripts.clear();
@@ -764,7 +770,7 @@ void SBAnnotDB::transcriptInfo(trsparray &array, const char *name, bool gene, su
 }
 void SBAnnotDB::mutantInfo(mutparray &array, const sbpos &pos, bool append) {
 	if (!append) array.clear();
-    if (_mode&LOAD_MUT) searchPos(pos, _mut_index, bin_order[pos.idx], array);
+    if (_mode&LOAD_MUT) searchPos(pos, _mut_index, _bin_order[pos.idx], array);
     else {
         mutants.clear();
         try {
@@ -816,7 +822,7 @@ void SBAnnotDB::mutantInfo(mutparray &array, const char *name, subyte match, boo
 }
 void SBAnnotDB::variationInfo(mutparray&array, const sbpos &pos, bool append) {
 	if (!append) array.clear();
-    if (_mode&LOAD_VAR) searchPos(pos, _var_index, bin_order[pos.idx], array);
+    if (_mode&LOAD_VAR) searchPos(pos, _var_index, _bin_order[pos.idx], array);
     else {
         variations.clear();
         try {
@@ -839,7 +845,7 @@ void SBAnnotDB::variationInfo(mutparray &array, const char *name, subyte match, 
     array.clear();
     if (_mode&LOAD_VAR) {
         if (match == EXACT_MATCH) {
-            srange range(0, _var_name_index.size());
+            srange range(0, (sint)_var_name_index.size());
             searchNameIndex<mutarray>(range, name, _var_name_index, variations);
             if (range.end-range.begin) return array.add(&variations[_var_name_index[range.begin]]);
         }
@@ -868,7 +874,7 @@ void SBAnnotDB::variationInfo(mutparray &array, const char *name, subyte match, 
 }
 void SBAnnotDB::featureInfo(ftrparray &array, const sbpos &pos, bool append) {
 	if (!append) array.clear();
-    if (_mode&LOAD_FTR) searchPos(pos, _ftr_index, bin_order[pos.idx], array);
+    if (_mode&LOAD_FTR) searchPos(pos, _ftr_index, _bin_order[pos.idx], array);
     else {
         features.clear();
         try {

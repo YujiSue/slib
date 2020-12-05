@@ -39,6 +39,9 @@ void SFile::_setPath(const char *path) {
 #if defined(WIN64_OS)
 	struct _stat64 buf;
 	int res = _stat64(_path.localize(), &buf);
+#elif defined(WIN32_OS)
+	struct _stat32 buf;
+	int res = _stat32(_path.localize(), &buf);
 #else
 	struct stat buf;
 	int res = stat(_path, &buf);
@@ -50,40 +53,66 @@ void SFile::_setPath(const char *path) {
 }
 void SFile::_open() {
     if (isDir()) return;
-	if (exist()) {
-		std::ios_base::openmode om = std::ios_base::binary;
-		if (_mode & sio::READ) om |= std::ios_base::in;
-		else if (_mode & sio::WRITE) om |= std::ios_base::out;
-		else if (_mode & sio::APPEND) om |= std::ios_base::out | std::ios_base::ate;
+	if (_mode & sio::READ || _mode & sio::APPEND) {
+		if (exist()) {
+			std::ios_base::openmode om = std::ios::binary | std::ios::in;
+			if (_mode & sio::WRITE || _mode & sio::APPEND) om |= std::ios::out;
 #ifdef WIN_OS 
+			_stream.open(_path.localize(), om);
+#else
+			_stream.open(_path, om);
+#endif
+			if (_stream.fail() || !_stream.is_open())
+				throw SIOException(ERR_INFO, FILE_OPEN_ERROR, _path);
+			auto current = _stream.tellg();
+			_stream.seekg(0, std::ios::beg);
+			auto beg = _stream.tellg();
+			_stream.seekg(0, std::ios::end);
+			auto end = _stream.tellg();
+			_size = end - beg;
+			_stream.clear();
+			if (!(_mode & sio::APPEND)) _stream.seekg(current, std::ios::beg);
+		}
+		else throw SIOException(ERR_INFO, FILE_NOT_EXIST_ERROR, _path);
+	}
+	else  if (_mode & sio::WRITE) {
+		std::ios_base::openmode om = std::ios::binary | std::ios::out;
+		if (exist()) {
+#ifdef WIN_OS 
+			_stream.open(_path.localize(), om);
+#else
+			_stream.open(_path, om);
+#endif
+			if (_stream.fail() || !_stream.is_open())
+				throw SIOException(ERR_INFO, FILE_OPEN_ERROR, _path);
+		}
+		else {
+			om |= std::ios_base::trunc;
+#ifdef WIN_OS 
+			_stream.open(_path.localize(), om);
+#else
+			_stream.open(_path, om);
+#endif
+			if (_stream.fail() || !_stream.is_open())
+				throw SIOException(ERR_INFO, FILE_OPEN_ERROR, _path);
+		}
+	}	
+}
+void SFile::_make() {
+	if (isDir()) {
+#if defined(MAC_OS)||defined(UNIX_OS)||defined(LINUX_OS)
+		mkdir(_path, S_IRWXU | S_IRWXG | S_IRWXO);
+#elif defined(WIN_OS)
+		mkdir(_path.localize());
+#endif
+	}
+	else {
+		std::ios_base::openmode om = std::ios::binary | std::ios::out | std::ios::trunc;
+		if (_mode & sio::READ) om |= std::ios::in;
+#ifdef WIN_OS
 		_stream.open(_path.localize(), om);
 #else
 		_stream.open(_path, om);
-#endif
-		if (_stream.fail())
-			throw SIOException(ERR_INFO, FILE_OPEN_ERROR, _path);
-		auto current = _stream.tellg();
-		_stream.seekg(0, std::ios::beg);
-		auto beg = _stream.tellg();
-		_stream.seekg(0, std::ios::end);
-		auto end = _stream.tellg();
-		_size = end - beg;
-		_stream.clear();
-		_stream.seekg(current, std::ios::beg);
-	}
-	else throw SIOException(ERR_INFO, FILE_NOT_EXIST_ERROR, _path);
-}
-void SFile::_make() {
-#if defined(MAC_OS)||defined(UNIX_OS)||defined(LINUX_OS)
-    if (isDir()) mkdir(_path, S_IRWXU|S_IRWXG|S_IRWXO);
-#else
-	if (isDir()) mkdir(_path.localize());
-#endif
-	else {
-#ifdef WIN_OS
-		_stream.open(_path.localize(), std::ios::binary | std::ios::out | std::ios::trunc);
-#else
-		_stream.open(_path, std::ios::binary | std::ios::out | std::ios::trunc);
 #endif
 	}
 }
@@ -169,7 +198,7 @@ bool SFile::exist() const {
     return !res;
 #elif defined(WIN32_OS)
     struct _stat32 buf;
-    res = _stat32(_path.cp932(), &buf);
+    res = _stat32(_path.localize(), &buf);
     return !res;
 #else
     struct stat buf;
@@ -242,8 +271,7 @@ inline int filecopy(SFile &src, SFile dest) {
         src.close();
         dest.close();
     } catch (SIOException ie) {
-        ie.print();
-        return 1;
+        ie.print(); return 1;
     }
     return 0;
 }
@@ -287,7 +315,11 @@ void SFile::moveTo(const char *path, int op) {
         }
         novel._path = alt;
     }
-    auto res = filerename(_path, novel._path);
+#ifdef  WIN_OS
+	auto res = filerename(_path.localize(), novel._path.localize());
+#else 
+	auto res = filerename(_path, novel._path);
+#endif 	
     if(res) throw SIOException(ERR_INFO, SLIB_EXEC_ERROR, "filerename", std::to_string(res).c_str());
     *this = novel;
 }
@@ -304,7 +336,11 @@ void SFile::rename(const char *name, int op) {
         }
         novel._path = alt;
     }
-    auto res = filerename(_path, novel._path);
+#ifdef  WIN_OS
+	auto res = filerename(_path.localize(), novel._path.localize());
+#else 
+	auto res = filerename(_path, novel._path);
+#endif 	
 	if (res) throw SIOException(ERR_INFO, SLIB_EXEC_ERROR, "filerename", std::to_string(res).c_str());
 	*this = novel;
 }
@@ -312,8 +348,14 @@ inline int fileremove(const char *s) { return remove(s); }
 void SFile::remove() {
     close();
     String option;
-    if (isDir()) rmdir(_path.cstr());
-    auto res = fileremove(_path);
+	sint res;
+#ifdef  WIN_OS
+	if (isDir()) res = rmdir(_path.localize().cstr());
+	else res = fileremove(_path.localize());
+#else 
+	if (isDir()) res = rmdir(_path.cstr());
+	res = fileremove(_path);
+#endif 	
 	if (res) throw SIOException(ERR_INFO, SLIB_EXEC_ERROR, "fileremove", std::to_string(res).c_str());
 	_path = ""; _size = 0; _mode = 0;
 }

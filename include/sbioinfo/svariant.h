@@ -89,6 +89,7 @@ namespace slib {
             bool comparable(const SVariant *var) const;
             bool lt(const SVariant *var, size_t dist) const;
             bool equal(const SVariant *var, size_t dist) const;
+			sushort annotatedSite() const;
 			void set(sobj obj);
 			sobj toObj();
             bool operator <(const SVariant &var) const;

@@ -168,55 +168,6 @@ void sbam::readinfo::interpret(ubytearray& data, bool aux) {
 		memcpy(auxiliary.ptr(), p, auxiliary.size());
 	}
 }
-/*
-void sbam::readinfo::interpret() {
-	init();
-	length = (sint)size();
-	sint tmp;
-	auto p = ptr();
-	pos.idx = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	pos.begin = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	if (pos.idx < -1 || pos.begin < -1)
-		throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "position", "Read info");
-	tmp = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	name.resize(tmp & 0xFF);
-	mapq = (tmp >> 8) & 0xFF;
-	bin = (tmp >> 16) & 0xFFFF;
-	tmp = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	flag = (tmp >> 16) & 0xFFFF;
-	if (flag & 0x10) pos.dir = true;
-	tmp = tmp & 0xFFFF;
-	cigars.resize(tmp, false);
-	seq_length = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	sequence.resize((seq_length + 1) / 2);
-	qual.resize(seq_length);
-	next_refid = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	next_pos = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	template_length = *reinterpret_cast<sint*>(p);
-	p += 4; length -= 4; lenCheck(length);
-	memcpy(&name[0], p, name.size());
-	p += name.size(); length -= (sint)name.size(); lenCheck(length);
-	if (name.last() == '\0') name.resize(name.size() - 1);
-	sforeach(cigars) {
-		E_ = *reinterpret_cast<sint*>(p);
-		p += 4; length -= 4; lenCheck(length);
-	}
-	pos.end = pos.begin + (sint)cigars.countRef() - 1;
-	memcpy(sequence.ptr(), p, sequence.size());
-	p += sequence.size(); length -= (sint)sequence.size(); lenCheck(length);
-	memcpy(qual.ptr(), p, qual.size());
-	p += qual.size(); length -= (sint)qual.size(); lenCheck(length);
-	auxiliary.resize(length);
-	memcpy(auxiliary.ptr(), p, auxiliary.size());
-}
-*/
 srange sbam::readinfo::range() {
 	return srange(pos.begin, pos.begin + (sint)cigars.countRef() - 1);
 }
@@ -322,7 +273,7 @@ void sbam::bgzf_dat::setOffset(sushort boff) {
     current = &bam_data[boff];
 }
 size_t sbam::bgzf_dat::left() {
-    return block_length - (sint)offset.block_offset;
+    return (size_t)block_length - offset.block_offset;
 }
 void sbam::bgzf_dat::read(void *dest, size_t size, size_t off) {
     memcpy((subyte *)dest+off, current, size);
@@ -372,12 +323,12 @@ void SBam::_readHeader() {
     _readData(&tmp, 4);
     info.set(tmp);
     sforin(i, 0, info.ref_num) {
-        _readData(&tmp, 4);
-        info.ref_name[i].resize(tmp, '\0');
-        _readData(&info.ref_name[i][0], tmp);
-        info.ref_name[i].resize(tmp-1);
-        _readData(&(info.ref_length[i]), 4);
-    }
+		_readData(&tmp, 4);
+		info.ref_name[i].resize((size_t)tmp, '\0');
+		_readData(&info.ref_name[i][0], tmp);
+		info.ref_name[i].resize((size_t)tmp - 1);
+		_readData(&(info.ref_length[i]), 4);
+	}
 }
 void SBam::_checkError() {
 	if (_data->result == Z_STREAM_ERROR || _data->result == Z_DATA_ERROR || _data->result == Z_BUF_ERROR)
@@ -436,24 +387,14 @@ ubytearray* SBam::next(ubytearray* dat) {
 	if (!_readData(dat->ptr(), len)) return nullptr;
 	return dat;
 }
-/*
-sbam::readinfo *SBam::next(sbam::readinfo* ri) {
-	if (!ri) ri = &read; ri->clear();
-	sint len;
-	if (!_readData(&len, 4)) return nullptr;
-	ri->resize(len);
-	if (!_readData(ri->ptr(), len)) return nullptr;
-	return ri;
-}
-*/
 void SBam::getReads(sbam::read_array& array, const sbpos& pos) {
 	array.clear();
 	if (!hasIndex()) return;
-	sizearray bins;
+	ushortarray bins;
 	sbiutil::getBins(bins, pos);
 	if (bins.empty()) return;
 	sforeach(bins) {
-		auto& chunks = index.chunks[pos.idx][index.bin_map[pos.idx][E_]];
+		auto& chunks = index.chunks[pos.idx][index.bin_map[pos.idx][(suint)E_]];
 		if (chunks.empty()) continue;
 		sforeach_(cit, chunks) {
 			setVOff(cit->begin);
@@ -468,11 +409,11 @@ void SBam::getReads(sbam::read_array& array, const sbpos& pos) {
 void SBam::getReads(sbam::read_array& array, sint idx, const sregion& region) {
 	array.clear();
 	if (!hasIndex()) return;
-	sizearray bins;
+	ushortarray bins;
 	sbiutil::getBins(bins, region);
 	if (bins.empty()) return;
 	sforeach(bins) {
-		auto& chunks = index.chunks[idx][index.bin_map[idx][E_]];
+		auto& chunks = index.chunks[idx][index.bin_map[idx][(suint)E_]];
 		if (chunks.empty()) continue;
 		sforeach_(cit, chunks) {
 			setVOff(cit->begin);
@@ -484,90 +425,3 @@ void SBam::getReads(sbam::read_array& array, sint idx, const sregion& region) {
 		}
 	}
 }
-/*
-bool SBam::next(sbam::readinfo *ri) {
-    if (!ri) ri = &read;
-    ri->init();
-    ri->offset = _data->offset;
-    sint tmp, len;
-    if(!_readData(&len, 4)) return false;
-    ri->read_length = len;
-    if (!ri->read_length) return false;
-    _readData(&ri->pos.idx, 4); len-=4; lenCheck(len);
-    _readData(&ri->pos.begin, 4); len-=4; lenCheck(len);
-    if(ri->pos.idx < -1 || ri->pos.begin < -1)
-        throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, "position", "Read info");
-    _readData(&tmp, 4); len-=4; lenCheck(len);
-    ri->name.resize(tmp&0xff);
-    ri->mapq = (tmp>>8)&0xff;
-    ri->bin = (tmp>>16)&0xffff;
-    _readData(&tmp, 4); len-=4; lenCheck(len);
-    ri->flag = (tmp>>16)&0xffff;
-    if(ri->flag&0x10) ri->pos.dir = true;
-    tmp = tmp&0xffff;
-    ri->cigars.resize(tmp, false);
-    _readData(&ri->seq_length, 4); len-=4; lenCheck(len);
-    ri->sequence.resize((ri->seq_length+1)/2);
-    ri->qual.resize(ri->seq_length);
-    _readData(&ri->next_refid, 4); len-=4; lenCheck(len);
-    _readData(&ri->next_pos, 4); len-=4; lenCheck(len);
-    _readData(&ri->template_length, 4); len-=4; lenCheck(len);
-    _readData(&ri->name[0], ri->name.size());
-    len-=ri->name.size(); lenCheck(len);
-    sforeach(ri->cigars) {
-        _readData(&tmp, 4); len-=4; lenCheck(len);
-        E_ = tmp;
-    }
-    _readData(ri->sequence.ptr(), ri->sequence.size());
-    len-=ri->sequence.size(); lenCheck(len);
-    _readData(&ri->qual[0], ri->qual.size());
-    len-=ri->qual.size(); lenCheck(len);
-    ri->auxiliary.resize(len);
-    _readData(&ri->auxiliary[0], len);
-    return true;
-}
-*/
-/*
-void SBam::reads(sbam::read_vec &list, int idx, const srange &rng) {
-    list.clear();
-    if(!hasIndex()) return;
-	sbam::readinfo ri;
-    sizearray bins;
-    sbiutil::getBins(bins, rng);
-    if (bins.empty()) return;
-    sforeach(bins) {
-        auto &chunks = index.chunks[idx][index._bin_map[idx][E_]];
-        if (chunks.empty()) continue;
-        sforeach_(cit, chunks) {
-            setVOff(cit->begin);
-            do {
-                if(!next()) break;
-				read.interpret(ri);
-                if(rng.overlap(ri.range())) list.add(read);
-            }
-            while (_data->offset < cit->end);
-        }
-    }
-}
-void SBam::reads(sbam::read_vec &list, int idx, const sregion &reg) {
-    list.clear();
-    if(!hasIndex()) return;
-	sbam::readinfo ri;
-    sizearray bins;
-    sbiutil::getBins(bins, reg);
-    if (bins.empty()) return;
-    sforeach(bins) {
-        auto &chunks = index.chunks[idx][index._bin_map[idx][E_]];
-        if (chunks.empty()) continue;
-        sforeach_(cit, chunks) {
-            setVOff(cit->begin);
-            do {
-                if(!next()) break;
-				read.interpret(ri);
-                if(reg.overlap(ri.range())) list.add(read);
-            }
-            while (_data->offset < cit->end);
-        }
-    }
-}
-*/

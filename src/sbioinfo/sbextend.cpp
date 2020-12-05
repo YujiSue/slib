@@ -3,7 +3,7 @@
 using namespace slib;
 using namespace slib::sbio;
 
-SBExtend::SBExtend() : _par(nullptr) {}
+SBExtend::SBExtend() : _par(nullptr), _len(0), _ext(false) {}
 SBExtend::SBExtend(sbsearch_param *p) : SBExtend() { setParam(p); }
 SBExtend::~SBExtend() {}
 
@@ -112,19 +112,19 @@ void SBExtend::extendHead(SBioSeq *ref, ubytearray *que, salign *al) {
     if (!_qlen || !_rlen) return;
     if (al->ref.begin < _rlen) _rlen = al->ref.begin;
     _ref_seq.resize(_rlen);
-    ref->recode(COMPRESS1, _ref_seq, al->ref.begin-_rlen, _rlen);
-    _ref = _ref_seq.ptr(_rlen-1);
-    _que = que->ptr(_qlen-1);
+    ref->recode(COMPRESS1, _ref_seq, (size_t)al->ref.begin-_rlen, _rlen);
+	_ref = _ref_seq.ptr((size_t)_rlen - 1);
+	_que = que->ptr((size_t)_qlen - 1);
     _extendHead(al);
 }
 void SBExtend::extendTail(SBioSeq *ref, ubytearray *que, salign *al) {
-    _qlen = que->size()-al->aligned.end-1;
-    _rlen = _qlen*(1+_par->max_gap);
+	_qlen = (sint)que->size() - al->aligned.end - 1;
+	_rlen = _qlen * (1 + _par->max_gap);
     if (!_qlen || !_rlen) return;
     if (ref->length() < al->ref.end + _rlen + 1) _rlen = ref->length()-al->ref.end-1;
     _ref_seq.resize(_rlen);
-    ref->recode(COMPRESS1, _ref_seq, al->ref.end+1, _rlen);
-    _ref = _ref_seq.ptr(); _que = que->ptr(al->aligned.end+1);
+	ref->recode(COMPRESS1, _ref_seq, (size_t)al->ref.end + 1, _rlen);
+	_ref = _ref_seq.ptr(); _que = que->ptr((size_t)al->aligned.end + 1);
     _extendTail(al);
 }
 void SBExtend::extend(SBioSeq *ref, ubytearray *que, salign *al) {
@@ -169,8 +169,8 @@ bool SBExtend::joint(SBioSeq *ref, ubytearray *que, salign *a1, salign *a2) {
         _rlen = qgap*(_par->max_gap+1);
         if (rgap < _rlen) _rlen = rgap;
         _ref_seq.resize(_rlen);
-        ref->recode(COMPRESS1, _ref_seq, a1->ref.end+1, _rlen);
-        _ref = _ref_seq.ptr(); _que = que->ptr(a1->aligned.end+1);
+		ref->recode(COMPRESS1, _ref_seq, (size_t)a1->ref.end + 1, _rlen);
+		_ref = _ref_seq.ptr(); _que = que->ptr((size_t)a1->aligned.end + 1);
         if (_par->aln_par.align_length < _rlen || _par->aln_par.align_length < _qlen) _extendTail(a1);
         if (_rlen <= _par->aln_par.align_length && _qlen <= _par->aln_par.align_length) {
             align.ralign(_ref, _rlen, _que, _qlen);
@@ -182,12 +182,12 @@ bool SBExtend::joint(SBioSeq *ref, ubytearray *que, salign *a1, salign *a2) {
                          _par->max_gap < E_.length)) { _ext = false; break; }
                     _len += E_.length;
                 }
-                if (_ext && _par->extend_threshold*(_len+a2->ref.length(true)) <= align.scores.last()+a2->score) {
-                    a1->ref.end = a2->ref.end; a1->aligned.end = a2->aligned.end;
-                    a1->cigars.append(align.cigars); a1->cigars.append(a2->cigars);
-                    a1->score+=align.scores.last()+a2->score;
-                    return true;
-                }
+				if (_ext && _par->extend_threshold * (_len + a2->ref.length(true)) <= (double)align.scores.last() + a2->score) {
+					a1->ref.end = a2->ref.end; a1->aligned.end = a2->aligned.end;
+					a1->cigars.append(align.cigars); a1->cigars.append(a2->cigars);
+					a1->score += align.scores.last() + a2->score;
+					return true;
+				}
             }
         }
     }

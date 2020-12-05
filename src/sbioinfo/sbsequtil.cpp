@@ -59,14 +59,14 @@ inline bool sseq::isGC(const char &s) {
 inline bool sseq::isGCi(const subyte &b) {
     return b == 2 || b == 4;
 }
-size_t sseq::gcCount(const char *s) {
-    size_t count = 0, size = strlen(s);
-    sforin(i, 0, size) { if(isGC(*s)) ++count; ++s; }
+size_t sseq::gcCount(const char *s, size_t off, size_t len) {
+    size_t count = 0, size = (len == -1 ? strlen(s) : len);
+    sforin(i, 0, size) { if(isGC(s[off+i])) ++count; ++s; }
     return count;
 }
-size_t sseq::gcCounti(const ubytearray &s) {
-    size_t count = 0, size = s.size();
-    auto p = s.ptr();
+size_t sseq::gcCounti(const ubytearray &s, size_t off, size_t len) {
+    size_t count = 0, size = (len == -1?s.size():len);
+    auto p = s.ptr(off);
     sforin(i, 0, size) { if(isGCi(*p)) ++count; ++p; }
     return count;
 }
@@ -348,7 +348,7 @@ void sseq::rcomp(char *seq, size_t s) {
     }
 }
 void sseq::rcomp(String &seq) {
-    auto beg = &seq[0], end = &seq[seq.length()-1];
+    auto beg = &seq[0], end = &seq[(sint)seq.length()-1];
     while (beg < end) {
         char tmp = *beg;
         *beg = RNA_COMPLEMENT_CHAR[*end];

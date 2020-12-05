@@ -42,7 +42,7 @@ namespace slib {
             ~sprimer_score();
 			sobj toObj();
         };
-        struct sprimer_param {
+        struct SBIOINFO_DLL sprimer_param {
             sint length, space, max_self_comp, max_match;;
             srange primer_range;
             float primer_temp[2];
@@ -56,25 +56,44 @@ namespace slib {
             ~sprimer_param();
             sobj toObj();
         };
-        
-		class SBIOINFO_DLL sprimer {
-			ubytearray *seq;
+
+		extern double nnEnthalpy(SBioSeq* seq);
+		extern double nnEntropy(SBioSeq* seq);
+		extern void tmCalc(double* tm, SBioSeq* seq);
+		extern sint crossComplement(SBioSeq* seq1, SBioSeq* seq2);
+		/*{
+			int crosscomp = 0;
+			std::string cstr = seq2.raw(), sub;
+			dcomp(cstr);
+			size_t length = seq1.length() - 3, pos = 0;
+			for (int i = 0; i < length; ++i) {
+				sub = seq1.decode(i, 3);
+				while ((pos = cstr.find(sub, pos)) != std::string::npos) { ++crosscomp; ++pos; }
+				pos = 0;
+			}
+			return crosscomp;
+		}
+		*/
+		class SBIOINFO_DLL SPrimer {
+			sushort flag;
+			SBioSeq* seq;
 			srange range;
+			bool dir;
+			Array<sbpos> match[3];
 
+			SPrimer();
+			SPrimer(SBioSeq* s, sint p, sint l, bool d);
+			SPrimer(const char *seq);
+			SPrimer(const SPrimer&p);
+            ~SPrimer();
 
-			float temp, gc, bias;
-			subyte match[3];
-            //double score;
-            
-			sprimer();
-			sprimer(const char *seq);
-			sprimer(const sprimer&p);
-            ~sprimer();
-
-			double score();
-
-
+			double score(sprimer_param* par);
+			double tm();
+			sint bias();
+			sint selfcomp();
         };
+		extern bool checkPrimer(SPrimer* p, sprimer_param* par);
+		
     }
 }
 

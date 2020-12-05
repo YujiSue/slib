@@ -262,6 +262,7 @@ sobj ssrv_param::toObj() {
 		kv("cinv", V({ kv("detect", detect_comp_var[1]), kv("read", min_comp_sr[1]) })),
 		kv("ctrs", V({ kv("detect", detect_comp_var[2]), kv("read", min_comp_sr[2]) })),
 		kv("ctrinv", V({ kv("detect", detect_comp_var[3]), kv("read", min_comp_sr[3]) })),
+		kv("length", V({ min_length[0], min_length[1], min_length[2] })),
 		kv("freq", min_freq), kv("fbias", max_fr_bias), kv("cbias", max_comp_bias),
 		kv("bin", freq_bin), kv("homo", homo_freq), kv("qual", min_qual)
 	};
@@ -664,7 +665,8 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			}
 			else if (*cit == "Len2") file << E_->pos[1].length(true) << TAB;
 			else if (*cit == "Cov") file << SNumber(E_->copy.depth[0][0]).precised(2) << TAB;
-			else if (*cit == "Allele cov" || *cit == "Split read") file << E_->total() << TAB;
+			else if (*cit == "Allele Cov" || *cit == "Split read") file << E_->total() << TAB;
+			else if (*cit == "Control Cov") file << SNumber(E_->copy.depth[0][1]).precised(2) << TAB;
 			else if (*cit == "Copy" || *cit == "Copy1") file << SNumber(E_->copy.ratio[0]).precised(2) << TAB;
 			else if (*cit == "Copy2") file << SNumber(E_->copy.ratio[1]).precised(2) << TAB;
 			else if (*cit == "Read bias") file << SNumber(SVarUtil::readBias(E_->read)).precised(2) << TAB;

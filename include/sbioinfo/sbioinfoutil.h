@@ -226,10 +226,10 @@ namespace slib {
 			static double scoreVal(double v);
 			static double phredVal(double v);
 
-			static size_t countBin(sorder& order, srange range);
-			static size_t getBin(srange range);
-			static void getBins(sizearray& bins, srange range);
-			static void getBins(sizearray& bins, const sregion& region);
+			static suint countBin(Map<sint, suint>& order, srange range);
+			static sushort getBin(srange range);
+			static void getBins(ushortarray& bins, srange range);
+			static void getBins(ushortarray& bins, const sregion& region);
 
 		};
 

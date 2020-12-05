@@ -48,7 +48,7 @@ String svar_data::toString(SBSeqList *ref) const {
 		pos[0].begin + 1 << ".." << pos[0].end + 1 << TAB <<
 		(ref ? ref->at(pos[1].idx)->name : String(pos[1].idx)) << ":" <<
 		pos[1].begin + 1 << ".." << pos[1].end + 1 << TAB <<
-		alt << TAB << phred();
+		alt << TAB << read[0] <<"/" << read[1] << TAB << phred();
 	return str;
 }
 bool svar_data::operator < (const svar_data &v) const {
@@ -146,6 +146,14 @@ bool SVariant::lt(const SVariant *var, size_t dist) const {
 bool SVariant::equal(const SVariant *var, size_t dist) const {
 	if (flag & SMALL_VARIANT) return *this == *var;
     return svar_data::equal(*var, dist);
+}
+sushort SVariant::annotatedSite() const {
+	if (genes.empty()) return 0;
+	sushort site = 0;
+	sforeach(genes) {
+		sforeach_(tit, E_.transcripts) site |= tit->site;
+	}
+	return site;
 }
 void SVariant::set(sobj obj) {
 	flag = obj["flag"];

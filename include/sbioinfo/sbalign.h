@@ -86,7 +86,7 @@ namespace slib {
         struct SBIOINFO_DLL salign {
             sbpos ref;
             srange aligned;
-            sint score;
+            float score;
             SCigarArray cigars;
             
             salign();
@@ -109,11 +109,12 @@ namespace slib {
         private:
             salign_param *_par;
             bytearray _path;
-            intarray _score, _score2, _maxcol, _maxrow;
+			floatarray _score, _score2;
+            intarray _maxcol, _maxrow;
             sint _scr[4];
             
         public:
-            intarray scores;
+            floatarray scores;
             SCigarArray cigars;
             
         public:

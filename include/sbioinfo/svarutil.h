@@ -126,7 +126,8 @@ namespace slib {
 			static void loadJSON(sio::SFile& file, SVarList* list);
 			static void saveTxt(sio::SFile& file, SVarList* list);
 			static void saveTSV(sio::SFile& file, SVarList* list, 
-				const stringarray& col = {"Sample", "Name", "Chr1", "Pos1", "Len1", "Chr2", "Pos2", "Len2", "Type"});
+				const stringarray& col = {"Sample", "Name", "Chr1", "Pos1", "Len1", "Chr2", "Pos2", "Len2", "Type",
+				"Cov", "Allele Cov", "Control Cov", "Copy", "Copy2", "Freq", "Qual" });
 			static void saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref);
 			static void saveJSON(sio::SFile& file, SVarList* list);
 

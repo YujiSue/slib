@@ -177,10 +177,10 @@ void SBioSeq::convert(sushort t) {
                 case DNA_SEQ:
                     if (c1 < c2 && 1 < c2) {
                         DNA_CONVERTER[c1][c2](ptr(), 0, _length, ptr());
-                        resize((_length-1)/c2+1);
+                        resize(((size_t)_length-1)/c2+1);
                     }
                     else if (c2 < c1 && 1 < c1) {
-                        resize((_length-1)/c2+1);
+                        resize(((size_t)_length-1)/c2+1);
                         DNA_CONVERTER[c1][c2](ptr(), 0, _length, ptr());
                     }
                     else DNA_CONVERTER[c1][c2](ptr(), 0, _length, ptr());
@@ -196,17 +196,16 @@ void SBioSeq::convert(sushort t) {
             }
         }
         else {
-            auto t1 = _type&0x000F, t2 = t&0x000F;
-            auto c1 = (_type>>4)&0x000F, c2 = (t>>4)&0x000F;
-            
+			auto t1 = _type & 0x000F, t2 = t & 0x000F;
+			auto c1 = (_type >> 4) & 0x000F, c2 = (t >> 4) & 0x000F;
             switch (t1) {
                 case DNA_SEQ:
                     if (c1 < c2 && 1 < c2) {
                         DNA_CONVERTER[c1][c2](ptr(), 0, _length, ptr());
-                        resize((_length-1)/c2+1);
+                        resize(((size_t)_length-1)/c2+1);
                     }
                     else if (c2 < c1 && 1 < c1) {
-                        resize((_length-1)/c2+1);
+                        resize(((size_t)_length-1)/c2+1);
                         DNA_CONVERTER[c1][c2](ptr(), 0, _length, ptr());
                     }
                     else DNA_CONVERTER[c1][c2](ptr(), 0, _length, ptr());
@@ -234,7 +233,7 @@ SBioSeq SBioSeq::subseq(size_t off, size_t len, bool dir) {
     else return SBioSeq(seqtype(), name+"_sub", raw(off, len, dir));
 }
 String SBioSeq::raw(const sbpos &pos) const {
-    return raw(pos.begin, pos.length()+1, pos.dir);
+	return raw((size_t)pos.begin, (size_t)pos.length(true), pos.dir);
 }
 String SBioSeq::raw(size_t off, size_t len, bool dir) const {
     if (len == -1 || _length < off+len) len = _length-off;

@@ -47,14 +47,14 @@ namespace slib {
             pair_vec match;
             
             spma();
-            spma(int n);
+            spma(size_t n);
             spma(const spma &p);
             ~spma();
             
             spma &operator=(const spma &p);
             
             void add(int i1, int i2);
-            void resize(int n);
+            void resize(size_t n);
             void init();
         };
         
@@ -107,8 +107,8 @@ namespace slib {
 		class SBIOINFO_DLL SBExtend {
 			sbsearch_param* _par;
 			subyte* _ref, * _que;
-			int _rlen, _qlen, _rl, _ql, _len, * _score;
-			float _s;
+			sint _rlen, _qlen, _rl, _ql, _len;
+			float _s, * _score;
 			bool _ext;
 			ubytearray _ref_seq;
 

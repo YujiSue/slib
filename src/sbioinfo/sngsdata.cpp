@@ -122,7 +122,7 @@ SNGSData::SNGSData(sint bin, SBSeqList *ref) : SNGSData() { reset(bin, ref); }
 SNGSData::SNGSData(const char *path) : SNGSData() { load(path); }
 SNGSData::~SNGSData() {}
 
-void SNGSData::setNum(sint num) {
+void SNGSData::setNum(size_t num) {
     summary.refnum = num;
 	summary.reflen.resize(num, 0);
 	summary.count.resize(num, 0);
@@ -132,7 +132,7 @@ void SNGSData::setNum(sint num) {
 	srvs.variants.resize(5 * num); //del, dup, inv, trs, trinv
 	srvs.offset.resize(5 * num, 0);
 }
-void SNGSData::setLength(int idx, sint len) {
+void SNGSData::setLength(int idx, size_t len) {
 	summary.reflen[idx] = len;
 	depth.count[idx].resize((len - 1) / summary.bin + 1, 0);
 }
@@ -321,7 +321,7 @@ inline void saveVariant(Array<svar_data> *variants, sio::SFile &file) {
         tmp = (E_.pos[1].dir?0x80000000:0x00000000)|E_.pos[1].begin;
         file.writeInt(tmp);
         file.writeInt(E_.pos[1].length()+1);
-        file.writeInt(E_.alt.size());
+        file.writeInt((sint)E_.alt.size());
         if (E_.alt.size()) file.writeBytes(&E_.alt[0], E_.alt.size());
         tmp = (E_.read[0]<<16)|E_.read[1];
         file.writeInt(tmp);

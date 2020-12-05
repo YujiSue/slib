@@ -113,10 +113,10 @@ inline void _compareINS(String& ori, String& alt, transcript_site& trs, int offs
 	}
 }
 inline void _annotateMNV(CArray<gene_info*>& genes, String& ori, String& alt, SVariant* var, SBSeqList* ref) {
-	sforin(i, 0, genes.size()) {
-		var->genes[i] = gene_site(genes[i]);
-		auto& gene = var->genes[i];
-		sforeach(genes[i]->transcripts) {
+	sforin(g, 0, genes.size()) {
+		var->genes[g] = gene_site(genes[g]);
+		auto& gene = var->genes[g];
+		sforeach(genes[g]->transcripts) {
 			gene.transcripts.add(E_);
 			auto& trs = gene.transcripts.last();
 			if (E_->type == M_RNA) {
@@ -146,10 +146,10 @@ inline void _annotateMNV(CArray<gene_info*>& genes, String& ori, String& alt, SV
 	}
 }
 inline void _annotateDEL(CArray<gene_info*>& genes, String& ori, String& alt, SVariant* var, SBSeqList* ref) {
-	sforin(i, 0, genes.size()) {
-		var->genes[i] = gene_site(genes[i]);
-		auto& gene = var->genes[i];
-		sforeach(genes[i]->transcripts) {
+	sforin(g, 0, genes.size()) {
+		var->genes[g] = gene_site(genes[g]);
+		auto& gene = var->genes[g];
+		sforeach(genes[g]->transcripts) {
 			gene.transcripts.add(E_);
 			auto& trs = gene.transcripts.last();
 			if (E_->type == M_RNA) {
@@ -271,9 +271,33 @@ inline void _annotateINS(CArray<gene_info*>& genes, String& ori, String& alt, SV
 	}
 }
 
-inline void _annotate(SVariant* var, SBSeqList* ref, SBAnnotDB* db) {
-	CArray<gene_info*> genes;
-	CArray<mut_info*> mutants;
+inline void _annotate(SVariant* var, SBSeqList* ref, SBAnnotDB* db, svariant_param *par) {
+	SBAnnotDB::geneparray genes;
+	SBAnnotDB::mutparray mutants;
+	
+
+
+
+	auto asite = var->annotatedSite();
+	bool avail = false;
+	if ((par->annot & CDS) && (asite & CDS)) avail = true;
+	if ((par->annot & EXON) && (asite & EXON)) avail = true;
+	if ((par->annot & UTR) && (asite & UTR)) {
+		auto u5 = UTR5 - UTR, u3 = UTR3 - UTR;
+		if ((par->annot & u5) && (asite & u5)) avail = true;
+		if ((par->annot & u3) && (asite & u3)) avail = true;
+		if (!(par->annot & u5) && !(par->annot & u3)) avail = true;
+	}
+	if ((par->annot & INTRON) && (asite & INTRON)) {
+		auto sp = SPLICE_SITE - INTRON;
+		if (par->annot & sp) { if (asite & sp) avail = true; }
+		else avail = true;
+	}
+	if (!avail) var->flag |= UNAVAILABLE_FLAG;
+
+
+
+
 	String ori, alt;
 	if (var->type & INSERTION && -1 < var->pos[1].idx) {  // complex var.
 		db->geneInfo(genes, var->pos[0]);
@@ -484,8 +508,8 @@ void SVarFilter::setRefName(SVarList* vl) {
 }
 void SVarFilter::annotate(SVarList* vl, SWork* threads) {
 	sforeach(*vl) {
-		if (threads) threads->addTask(_annotate, E_, _ref, _db);
-		else _annotate(E_, _ref, _db);
+		if (threads) threads->addTask(_annotate, E_, _ref, _db, _par);
+		else _annotate(E_, _ref, _db, _par);
 	}
 	if (threads) threads->complete();
 }
@@ -552,7 +576,7 @@ void SVarFilter::filter(SVarList* list) {
 	size_t s = list->size();
 	sforeach(*list) {
 		check(E_);
-		if (E_->flag & UNAVAILABLE_FLAG) --s;
+		if ((E_->flag & UNAVAILABLE_FLAG) || (E_->flag & NOT_USE_FLAG)) --s;
 	}
 	list->tidy(s);
 }

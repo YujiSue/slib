@@ -91,8 +91,8 @@ namespace slib {
 			void readDepth(sint r = 0, sint p = 0);
 			void nextDp();
 			
-            void setNum(sint num);
-            void setLength(int idx, sint len);
+            void setNum(size_t num);
+            void setLength(int idx, size_t len);
 			void setBin(sint bin);
 			void setParam(sngs_param *p);
             

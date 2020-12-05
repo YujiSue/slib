@@ -226,7 +226,7 @@ namespace slib {
             
         private:
             sushort _mode;
-            Array<sorder> bin_order;
+            Array<Map<sint, suint>> _bin_order;
             sindex _chr_index;
             Array<name_pair> _gene_name_index;
             Array<Array<ctgparray>> _ctg_index;

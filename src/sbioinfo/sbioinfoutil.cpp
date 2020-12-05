@@ -10,11 +10,11 @@ SBioInfoException::SBioInfoException(const char* f, sint l, const char* func, si
 }
 SBioInfoException::~SBioInfoException() {}
 
-size_t slib::sbio::sbiutil::countBin(sorder& order, srange range) {
+suint slib::sbio::sbiutil::countBin(Map<sint, suint>& order, srange range) {
 	auto cap = range.length() >> 13;
     if (cap < 8) cap = 8;
     order.reserve(cap);
-    sint count = 1; order[0] = 0;
+	suint count = 1; order[0] = 0;
     auto beg = range.begin>>26, end = (range.end>>26)+1;
     sforin(i, beg, end) { order[1+i] = count; ++count; }
     beg = range.begin>>23, end = (range.end>>23)+1;
@@ -27,7 +27,7 @@ size_t slib::sbio::sbiutil::countBin(sorder& order, srange range) {
     sforin(i, beg, end) { order[4681+i] = count; ++count; }
     return count;
 }
-size_t sbiutil::getBin(srange range) {
+sushort sbiutil::getBin(srange range) {
 	range.begin >>= 14; range.end >>= 14;
 	if (range.begin == range.end) return 4681 + range.begin;
 	range.begin >>= 3; range.end >>= 3;
@@ -40,7 +40,7 @@ size_t sbiutil::getBin(srange range) {
 	if (range.begin == range.end) return 1 + range.begin;
     return 0;
 }
-void sbiutil::getBins(sizearray &bins, srange range) {
+void sbiutil::getBins(ushortarray &bins, srange range) {
     bins.add(0);
 	sint last = (range.end >> 26) + 1;
 	sforin(i, (range.begin >> 26), last) bins.add(1 + i);
@@ -49,7 +49,7 @@ void sbiutil::getBins(sizearray &bins, srange range) {
 	last = (range.end >> 17) + 1; sforin(i, (range.begin >> 17), last) bins.add(585 + i);
 	last = (range.end >> 14) + 1; sforin(i, (range.begin >> 14), last) bins.add(4681 + i);
 }
-void sbiutil::getBins(sizearray &bins, const sregion &region) {
+void sbiutil::getBins(ushortarray&bins, const sregion &region) {
     sforeach(region) getBins(bins, E_);
     bins.sort();
     auto size = bins.size();

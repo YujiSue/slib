@@ -4,7 +4,7 @@ using namespace slib;
 using namespace slib::sbio;
 
 spma::spma() {}
-spma::spma(int n) {
+spma::spma(size_t n) {
     child.resize(n+1); memset(child.ptr(), 0, sizeof(spma *)*child.size());
 }
 spma::spma(const spma &p) {
@@ -16,7 +16,7 @@ spma &spma::operator=(const spma &p) {
     child = p.child; match = p.match; return *this;
 }
 void spma::add(int i1, int i2) { match.add(i1, i2); }
-void spma::resize(int n) { child.resize(n+1, 0); }
+void spma::resize(size_t n) { child.resize(n + 1, 0); }
 void spma::init() {
     memset(child.ptr(), 0, sizeof(spma *)*child.size());
     match.clear();
@@ -126,7 +126,7 @@ void SBQuery::makeStrictTrie() {
                     }
                     now = now->child[q];
                 }
-                now->add(it-_seqs.begin(), l);
+                now->add((sint)(it-_seqs.begin()), l);
             }
             ++p;
         }

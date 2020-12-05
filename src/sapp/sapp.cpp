@@ -38,16 +38,6 @@ SAppException::SAppException(const char* f, sint l, const char* func, sint e, co
 }
 SAppException::~SAppException() {}
 
-inline String codeStr(sint code) {
-	/*
-	if (code & SLIB_LOG_CODE) return "log";
-	else if (code & SLIB_LAUNCH_CODE) return "launched";
-	else if (code & SLIB_TERMINATE_CODE) return "terminated";
-	else if (code & SLIB_ERROR_CODE) return "error";
-	else if (code & SLIB_WARNING_CODE) return "warning";
-	*/
-	return "";
-}
 log_data::log_data(sint c, const char* s) {
 	date = SDate(slib::sstyle::YMDHMS);
 	code = c;
@@ -59,17 +49,17 @@ SLogger::SLogger(const char* path) {
 }
 SLogger::~SLogger() { if (_file.isOpened()) _file.close(); }
 void SLogger::open(const char* path) {
-	if (sio::fileExist(path)) _file = sio::SFile(path, sio::APPEND);
-	else _file = sio::SFile(path, sio::CREATE);
+	if (!fileExist(path)) sio::SFile::createFile(path);
+	_file.open(path, sio::APPEND);
 }
 void SLogger::close() {
 	_file.close();
 }
 void SLogger::log(sint code, const char* msg) {
 	_lock.lock();
-	SDate date(slib::sstyle::YMDHMS);
-	if (_file.isOpened() && code&FILE_LOG) {
-		_file << date.toString() << "[" << codeStr(code) << "]" << TAB << msg << NEW_LINE;
+	SDate date;
+	if (_file.isOpened() && code & FILE_LOG) {
+		_file << date.toString(sstyle::ISO8601) << TAB << msg << NEW_LINE;
 		_file.flush();
 	}
 	if (code & STDOUT_LOG) std::cout << msg << std::endl;
