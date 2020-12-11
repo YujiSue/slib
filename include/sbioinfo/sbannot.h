@@ -83,33 +83,39 @@ namespace slib {
 		};
 
 		struct SBIOINFO_DLL transcript_site {
-			sushort type, site;
+			transcript_info* info;
+			sushort type, mutation, site;
 			String name, ori, alt;
 			sint pos;
 
 			transcript_site();
+			transcript_site(sobj& obj);
 			transcript_site(transcript_info* ti);
 			transcript_site(const transcript_site& trs);
 			~transcript_site();
 
 			transcript_site& operator=(const transcript_site& trs);
+			void set(sobj obj);
+			sobj toObj();
 		};
 
 		struct SBIOINFO_DLL gene_site {
-			sushort type;
-			String name;
-			bool dir;
+			gene_info* info;
+			sushort type, mutation;
+			String gid, name;
 			Array<transcript_site> transcripts;
-			gene_site* fusion;
-
+			
 			gene_site();
-			gene_site(const sobj& obj);
-			gene_site(const gene_info* gi);
+			gene_site(sobj& obj);
+			gene_site(gene_info* gi);
+			gene_site(gene_info* gi, srange *range);
 			gene_site(const gene_site& g);
 			~gene_site();
 
 			gene_site& operator=(const gene_site& g);
-			void set(const sobj& obj);
+			sushort annotatedSite() const;
+			void check(srange* range);
+			void set(sobj obj);
 			sobj toObj();
 		};
 

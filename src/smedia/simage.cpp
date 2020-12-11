@@ -208,12 +208,12 @@ SImage SImage::subimage(sarea area) {
     }
     return img;
 }
-void SImage::set(size_t x, size_t y, int8_t c, subyte val) { at(x, y, c) = val; }
+void SImage::set(size_t x, size_t y, sbyte c, subyte val) { at((sint)x, (sint)y, c) = val; }
 void SImage::set(size_t x, size_t y, subyte *val) {
-    CMemory<subyte>::copy(ptr(x, y), val, 1);
+    CMemory<subyte>::copy(ptr((sint)x, (sint)y), val, 1);
 }
 void SImage::set(size_t x, size_t y, suint val) {
-    CMemory<subyte>::copy(ptr(x, y), (subyte *)&val, 4);
+    CMemory<subyte>::copy(ptr((sint)x, (sint)y), (subyte *)&val, 4);
 }
 void SImage::clear() {
     _width = 0; _height = 0; _type = 0;

@@ -378,112 +378,94 @@ void SObjPtr::swap(SObjPtr &ptr) {
     auto t = _type; _type = ptr._type; ptr._type = t;
     auto p = _ptr; _ptr = ptr._ptr; ptr._ptr = p;
 }
-SObjPtr &SObjPtr::operator[](int idx) {
-    if (isNull()) { _type = ARRAY_OBJ; _ptr = new SArray(); }
+SObjPtr& SObjPtr::operator[](int idx) { return at(idx); }
+const SObjPtr &SObjPtr::operator[](int idx) const { return at(idx); }
+SObjPtr &SObjPtr::operator[](const char *key) { return at(key); }
+const SObjPtr &SObjPtr::operator[](const char *key) const { return at(key); }
+SObjPtr &SObjPtr::operator[](const std::string &key) { return at(key); }
+const SObjPtr &SObjPtr::operator[](const std::string &key) const { return at(key); } 
+SObjPtr &SObjPtr::operator[](const String &key) { return at(key); } 
+const SObjPtr &SObjPtr::operator[](const String &key) const { return at(key); }
+SObjPtr &SObjPtr::operator[](const SString &key) { return at(key); }
+const SObjPtr &SObjPtr::operator[](const SString &key) const { return at(key); }
+SObjPtr &SObjPtr::operator[](const SObjPtr &obj) { return at(obj); }
+const SObjPtr &SObjPtr::operator[](const SObjPtr &obj) const { return at(obj); }
+SObjPtr& SObjPtr::at(int idx) {
+	if (isNull()) { _type = ARRAY_OBJ; _ptr = new SArray(); }
 	if (isStr()) { return string().charAt(idx); }
-    if (isArray()) return array()[idx];
-    if (isTable()) return table()[idx];
-    //if (isCnvs()) return canvas()[idx];
-    //if (isMov()) return movie()[idx];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
-}
-const SObjPtr &SObjPtr::operator[](int idx) const {
-    if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-	if (isStr()) { return string().charAt(idx); }
-
-	
 	if (isArray()) return array()[idx];
-    if (isTable()) return table()[idx];
-    //if (isCnvs()) return canvas()[idx];
-    //if (isMov()) return movie()[idx];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+	if (isTable()) return table()[idx];
+	//if (isCnvs()) return canvas()[idx];
+	//if (isMov()) return movie()[idx];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr &SObjPtr::operator[](const char *key) {
-    if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+const SObjPtr& SObjPtr::at(int idx) const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isStr()) { return string().charAt(idx); }
+	if (isArray()) return array()[idx];
+	if (isTable()) return table()[idx];
+	//if (isCnvs()) return canvas()[idx];
+	//if (isMov()) return movie()[idx];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-const SObjPtr &SObjPtr::operator[](const char *key) const {
-    if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+SObjPtr& SObjPtr::at(const char* key) {
+	if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr &SObjPtr::operator[](const std::string &key) {
-    if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+const SObjPtr& SObjPtr::at(const char* key) const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-const SObjPtr &SObjPtr::operator[](const std::string &key) const {
-    if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+SObjPtr& SObjPtr::at(const ::std::string& key) {
+	if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr &SObjPtr::operator[](const String &key) {
-    if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+const SObjPtr& SObjPtr::at(const ::std::string& key) const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-const SObjPtr &SObjPtr::operator[](const String &key) const {
-    if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+SObjPtr& SObjPtr::at(const String& key) {
+	if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr &SObjPtr::operator[](const SString &key) {
-    if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+const SObjPtr& SObjPtr::at(const String& key) const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-const SObjPtr &SObjPtr::operator[](const SString &key) const {
-    if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-    if (isDict()) return dict()[key];
-    //if (isCnvs()) return canvas()[key];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+SObjPtr& SObjPtr::at(const SString& key) {
+	if (isNull()) { _type = DICT_OBJ; _ptr = new SDictionary(); }
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr &SObjPtr::operator[](const SObjPtr &obj) {
-    
-    
-    if (isArray() && obj.isNum()) return array()[obj.intValue()];
-    if (isDict() && obj.isStr()) return dict()[obj.str()];
-    /*
-    if (isTable()) {
-        if (obj.isNum()) return table()[obj.intValue()];
-        if (obj.isStr()) return table()[obj.str()];
-    }
-     */
-    /*
-    if (isCnvs()) {
-        if (obj.isNum()) return canvas()[obj.intValue()];
-        if (obj.isStr()) return canvas()[obj.str()];
-    }
-     */
-    //if (isMov()) return movie()[obj.intValue()];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+const SObjPtr& SObjPtr::at(const SString& key) const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isDict()) return dict()[key];
+	//if (isCnvs()) return canvas()[key];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-const SObjPtr &SObjPtr::operator[](const SObjPtr &obj) const {
-    if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
-    if (isArray() && obj.isNum()) return array()[obj.intValue()];
-    if (isDict() && obj.isStr()) return dict()[obj.str()];
-    /*
-     if (isTable()) {
-     if (obj.isNum()) return table()[obj.intValue()];
-     if (obj.isStr()) return table()[obj.str()];
-     }
-     */
-    /*
-     if (isCnvs()) {
-     if (obj.isNum()) return canvas()[obj.intValue()];
-     if (obj.isStr()) return canvas()[obj.str()];
-     }
-     */
-    //if (isMov()) return movie()[obj.intValue()];
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+SObjPtr& SObjPtr::at(const SObjPtr& obj) {
+	if (isArray() && obj.isNum()) return array()[obj.intValue()];
+	if (isDict() && obj.isStr()) return dict()[obj.str()];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
+const SObjPtr& SObjPtr::at(const SObjPtr& obj) const {
+	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (isArray() && obj.isNum()) return array()[obj.intValue()];
+	if (isDict() && obj.isStr()) return dict()[obj.str()];
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 
 SIterator SObjPtr::begin() {
@@ -569,6 +551,12 @@ size_t SObjPtr::size() const {
     //
     return 0;
 }
+void SObjPtr::resize(size_t s, sobj obj) {
+	if (isNull()) return;
+	else if (isStr()) return string().resize(s);
+	else if (isArray()) return array().resize(s, obj);
+	
+}
 size_t SObjPtr::length() const {
     if (isNull()) return 0;
     else if (isChar()) return character().length();
@@ -584,13 +572,12 @@ bool SObjPtr::empty() const {
     //
     return true;
 }
-const String &SObjPtr::name() const {
+String SObjPtr::name() const {
     if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
     if (isColumn()) return column().name();
-    if (isTable()) return table().name();
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-const String &SObjPtr::key() const {
+String SObjPtr::key() const {
     if (isPair()) return pair().key;
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -652,7 +639,6 @@ void SObjPtr::transform(int t) {
 void SObjPtr::add(SObjPtr &&ptr) {
     if (isNull()) { _type = ARRAY_OBJ; _ptr = new SArray(); }
     if (isArray()) array().add(std::forward<SObjPtr>(ptr));
-    else if (isColumn()) column().add(std::forward<SObjPtr>(ptr));
     else if (isNum() && ptr.isNum()) number()+=ptr.number();
     else if (isStr()) {
         if (ptr.isStr()) string() += ptr.string();
@@ -666,7 +652,6 @@ void SObjPtr::add(SObjPtr &&ptr) {
 void SObjPtr::add(const SObjPtr &ptr) {
     if (isNull()) { _type = ARRAY_OBJ; _ptr = new SArray(); }
     if (isArray()) array().add(ptr);
-    else if (isColumn()) column().add(ptr);
     else if (!ptr.isNull()) {
         if (isNum() && ptr.isNum()) number()+=ptr.number();
         else if (isStr()) {
@@ -681,7 +666,6 @@ void SObjPtr::add(const SObjPtr &ptr) {
 }
 void SObjPtr::insert(int idx, const SObjPtr &ptr) {
     if (isArray()) array().insert(idx, ptr);
-    else if (isColumn()) column().insert(idx, ptr);
     else if (!ptr.isNull()) {
         if (isStr() && ptr.isStr()) string().insert(idx, ptr.str());
         else if (isTable()) table().insertRow(idx, ptr);
@@ -692,7 +676,6 @@ void SObjPtr::insert(const SObjPtr& ptr) {
 	if (isArray()) array().add(ptr);
 	else if (isDict() && ptr.isPair()) dict().insert(ptr.pair());
 	else if (isStr() && ptr.isStr()) string().append(ptr.str());
-	else if (isColumn()) column().add(ptr);
 	else if (isTable()) {
 		if (ptr.isColumn()) table().addColumn(ptr.column());
 
@@ -704,7 +687,6 @@ void SObjPtr::insert(const kvpair<String, SObjPtr> &pair) {
 }
 void SObjPtr::set(int idx, const SObjPtr &ptr) {
     if (isArray()) array().set(idx, ptr);
-    else if (isColumn()) column().set(idx, ptr);
     else if (!ptr.isNull()) {
         if (isStr() && ptr.isStr()) string().replace(idx, Char::u8size(string().ptr(idx)), ptr);
         else if (isTable()) table().setRow(idx, ptr);
@@ -722,7 +704,6 @@ void SObjPtr::set(const sobj &obj, const SObjPtr& ptr) {
 void SObjPtr::removeAt(int idx) {
     if (isStr()) string().removeAt(idx);
     else if (isArray()) array().removeAt(idx);
-    else if (isColumn()) column().removeAt(idx);
     else if (isTable()) table().removeRow(idx);
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -735,14 +716,12 @@ void SObjPtr::remove(const char *key) {
 void SObjPtr::remove(const size_t &off, const size_t &len) {
     if (isStr()) string().remove(off, len);
     else if (isArray()) string().remove(off, len);
-    else if (isColumn()) column().remove(off, len);
     else if (isTable()) table().removeRows(off, len);
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 void SObjPtr::remove(const srange &range) {
     if (isStr()) string().remove(range);
     else if (isArray()) string().remove(range);
-    else if (isColumn()) column().remove(range);
     else if (isTable()) table().removeRows(range);
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -751,14 +730,12 @@ void SObjPtr::clear() {
     else if (isStr()) string().clear();
     else if (isArray()) array().clear();
     else if (isDict()) dict().clear();
-    else if (isColumn()) column().clear();
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 bool SObjPtr::contain(const char *que) const {
     if (_ptr) {
         if (isStr()) return string().contain(que);
         else if (isArray()) return array().search(que)!=NOT_FOUND;
-        else if (isColumn()) return column().search(que)!=NOT_FOUND;
     }
     return false;
 }

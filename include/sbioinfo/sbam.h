@@ -88,6 +88,7 @@ namespace slib {
 				header();
                 ~header();
                 void set(int n);
+				String toString() const;
                 void init();
             };
             /*

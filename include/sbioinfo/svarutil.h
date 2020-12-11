@@ -106,12 +106,12 @@ namespace slib {
 		public:
 			static float readBias(const sushort *r);
 			static float combBias(sushort *r1, sushort *r2);
-			static String vtype(sushort i);
-			static sushort vtypeIdx(const char* s);
-			static String vsite(sushort i);
-			static subyte vsiteIdx(const char* s);
-			static String mtype(sushort i);
-			static subyte mtypeIdx(const char* s);
+			//static String vtype(sushort i);
+			//static sushort vtypeIdx(const char* s);
+			//static String vsite(sushort i);
+			//static subyte vsiteIdx(const char* s);
+			//static String mtype(sushort i);
+			//static subyte mtypeIdx(const char* s);
 		};
 		class SBIOINFO_DLL SVarIO {
 		public:
@@ -127,7 +127,7 @@ namespace slib {
 			static void saveTxt(sio::SFile& file, SVarList* list);
 			static void saveTSV(sio::SFile& file, SVarList* list, 
 				const stringarray& col = {"Sample", "Name", "Chr1", "Pos1", "Len1", "Chr2", "Pos2", "Len2", "Type",
-				"Cov", "Allele Cov", "Control Cov", "Copy", "Copy2", "Freq", "Qual" });
+				"Gene", "Region", "Mutation", "Substitution", "Mutant", "Cov", "Allele Cov", "Control Cov", "Copy", "Copy2", "Homo", "Freq", "Qual" });
 			static void saveVCF(sio::SFile& file, SVarList* list, SBSeqList* ref);
 			static void saveJSON(sio::SFile& file, SVarList* list);
 
@@ -149,11 +149,14 @@ namespace slib {
 			void common(SVarList& vl1, SVarList& vl2);
 			void unique(SVarList& uni, SVarList& vl1, SVarList& vl2);
 			void setRefName(SVarList* vl);
+			void annotate(SVariant* var);
 			void annotate(SVarList* vl, SWork* threads = nullptr);
 			void checkRepeat(SVarList *list, SBSeqList* ref);
 			//void filter(SVarList* list, const char *meht, sfunc<bool)1\);
 			void filter(SVarList* list);
 			//void sortBy();
+			void linkGene(SVariant* var);
+			void linkGenes(SVarList* list);
 			void check(SVariant* var);
 			void setReference(SBSeqList* ref);
 			void setDB(SBAnnotDB* db);

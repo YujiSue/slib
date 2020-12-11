@@ -310,6 +310,7 @@ float SVarUtil::readBias(const sushort *r) {
 float SVarUtil::combBias(sushort *r1, sushort *r2) {
 	return abs((float)(sstat::sum(r1, 2) - sstat::sum(r2, 2)) / (sstat::sum(r1, 2) + sstat::sum(r2, 2)));
 }
+/*
 String SVarUtil::vtype(sushort i) {
 	if (i == sbio::SNV) return "SNV";
 	else if (i == sbio::MNV) return "MNV";
@@ -353,28 +354,68 @@ String SVarUtil::vsite(sushort i) {
 	}
 	return "intergenic";
 }
-subyte SVarUtil::vsiteIdx(const char* s) { return 0; }
+subyte SVarUtil::vsiteIdx(const char* s) { 
+	auto str = String::lower(s);
+	if (str == "intergenic") return 0;
+	if (str == "cds") return sbio::CDS;
+	if (str == "exon") return sbio::EXON;
+	if (str == "utr") return sbio::UTR;
+	if (str == "5'utr") return sbio::UTR5;
+	if (str == "3'utr") return sbio::UTR3;
+	if (str == "intron") return sbio::INTRON;
+	if (str.contain("splice site")) return sbio::SPLICE_SITE;
+	if (str.contain("rna")) return sbio::PROCESSED;
+}
+
 String SVarUtil::mtype(sushort i) {
 	if (!i) return "Silent";
-	if (i & sbio::GENE_FUSION) {
-		return "Gene fusion";
-	}
-	else if (i & sbio::STRUCTURE_CHANGE) {
-		return "Structure variation";
-	}
-	else if (i & sbio::INDEL) {
-		if ((i & FRAME_SHIFT) == FRAME_SHIFT) return "Frame shift"; 
-		else if ((i & IN_FRAME) == IN_FRAME) return "In frame";
-		else return "Indel";
-	}
-	else if (i & sbio::SUBSTITUTION) {
-		if ((i & sbio::NONSENSE) == sbio::NONSENSE) return "Nonsense";
-		else if ((i & sbio::MISSENSE) == sbio::MISSENSE) return "Missense";
+	if (i & sbio::SUBSTITUTION) {
+		if ((i & 0xFF00) == sbio::NONSENSE) return "Nonsense";
+		else if ((i & 0xFF00) == sbio::MISSENSE) return "Missense";
 		else return "Substitution";
 	}
-	return "Unknown Mutaion";
+	else if (i & sbio::INDEL_MUT) {
+		if ((i & 0xFF00) == IN_FRAME) return "In frame";
+		else if ((i & 0xFF00) == FRAME_SHIFT) return "Frame shift";
+		else if ((i & 0xFF00) == HEAD_LESION) return "Head lesion";
+		else if ((i & 0xFF00) == TAIL_LESION) return "Tail lesion";
+		else return "Indel";
+	}
+	else if (i & sbio::COPYNUM_MUT) {
+		if ((i & 0xFF00) == NULL_MUT) return "Null";
+		else if ((i & 0xFF00) == MULTI_COPY) return "Multi copies";
+		else if ((i & 0xFF00) == TRIPLET_REPEAT) return "Tri. repeat";
+		else return "Copy number mutation";
+	}
+	else if (i & sbio::REARRANGE_MUT) {
+		if ((i & 0xFF00) == SPLIT_MUT) return "Gene split";
+		else if ((i & 0xFF00) == SELF_REARRANGEMENT) return "Self-rearrangement";
+		else if ((i & 0xFF00) == ECTOPIC_MUT) return "Ectopic gene";
+		else return "Rearranged mutation";
+	}
+	return "Unknown";
 }
-subyte SVarUtil::mtypeIdx(const char* s) { return 0; }
+subyte SVarUtil::mtypeIdx(const char* s) {
+	auto str = String::lower(s);
+	if (str.contain("silent")) return sbio::SILENT_MUT;
+	if (str.contain("nonsense")) return sbio::NONSENSE;
+	if (str.contain("missense")) return sbio::MISSENSE;
+	if (str.contain("substitution")) return sbio::SUBSTITUTION;
+	if (str.contain("indel")) return sbio::INDEL_MUT;
+	if (str.contain("in frame")) return sbio::IN_FRAME;
+	if (str.contain("frame shift")) return sbio::FRAME_SHIFT;
+	if (str.contain("head lesion")) return sbio::HEAD_LESION;
+	if (str.contain("tail lesion")) return sbio::TAIL_LESION;
+	if (str.contain("null")) return sbio::NULL_MUT;
+	if (str.contain("multi copies")) return sbio::MULTI_COPY;
+	if (str.contain("tri. repeat")) return sbio::TRIPLET_REPEAT;
+	if (str.contain("copy number")) return sbio::COPYNUM_MUT;
+	if (str.contain("gene split")) return sbio::SPLIT_MUT;
+	if (str.contain("self-rearrange")) return sbio::SELF_REARRANGEMENT;
+	if (str.contain("ectopic")) return sbio::ECTOPIC_MUT;
+	if (str.contain("rearrange")) return sbio::REARRANGE_MUT;
+}
+*/
 
 const stringarray SVarIO::VCF_TABLE_COLUMNS = {
 	"Chr", "Pos", "Ref", "Var","Type","Len", "Qual", "Freq", "Cov", "Allele cov",
@@ -410,9 +451,17 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 			else if (col[i] == "Pos2") var->pos[1].begin = dat[i];
 			else if (col[i] == "Len" || col[i] == "Len1") var->pos[0].end = var->pos[0].begin + dat[i].intValue() - 1;
 			else if (col[i] == "Len2") var->pos[1].end = var->pos[1].begin + dat[i].intValue() - 1;
+			else if (col[i] == "Cov" || col[i] == "Cov1") var->copy.depth[0][0] = dat[i];
+			else if (col[i] == "Cov2") var->copy.depth[1][0] = dat[i];
+			else if (col[i] == "Control Cov" || col[i] == "Control Cov1") var->copy.depth[0][1] = dat[i];
+			else if (col[i] == "Control Cov2") var->copy.depth[1][1] = dat[i];
 
-			else if (col[i] == "Cov") var->copy.depth[0][0] = dat[i];
-			else if (col[i] == "Allele cov") var->read[0] = dat[i];
+			//else if (col[i] == "Allele cov") var->read[0] = dat[i];
+			else if (col[i] == "Normalized Cov") var->copy.ndepth[0][0] = dat[i];
+			
+			//else if (col[i] == "Normalized Allele cov") var->read[0] = dat[i];
+			else if (col[i] == "Copy" || col[i] == "Copy1") var->copy.ratio[0] = dat[i];
+			else if (col[i] == "Copy2") var->copy.ratio[1] = dat[i];
 			//			else if (col[i] == "Gene") file << "" << TAB;
 			//			else if (col[i] == "Region") file << "" << TAB;
 			//			else if (col[i] == "Mutant") file << "" << TAB;
@@ -422,13 +471,10 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 
 			else if (col[i] == "Ref" && dat[i] != "-") var->attribute["Ref"] = dat[i];
 			else if (col[i] == "Var" && dat[i] != "-") var->alt = dat[i];
-
-			else if (col[i] == "Type") var->type = SVarUtil::vtypeIdx(dat[i]);
+			else if (col[i] == "Type") var->type = sbiutil::varTypeIdx(dat[i]);
 			else if (col[i] == "Genotype" || col[i] == "Homo") var->homo = (dat[i] == "Homo");
 			else if (col[i] == "Qual") var->qual = dat[i];
 			else if (col[i] == "Freq") var->copy.frequency= dat[i];
-
-
 			else if (col[i] == "List" && list->name != dat[i]) list->name = dat[i];
 			else if (col[i] == "Name") var->name = dat[i];
 			list->add(var);
@@ -657,38 +703,43 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			if (*cit == "Chr" || *cit == "Chr1") file << E_->ref[0] << TAB;
 			else if (*cit == "Chr2") file << (E_->pos[1].idx < 0?"-": E_->ref[1]) << TAB;
 			else if (*cit == "Pos" || *cit == "Pos1") file << E_->pos[0].begin << TAB;
-			else if (*cit == "Pos2") file << E_->pos[1].begin << TAB;
+			else if (*cit == "Pos2") file << (E_->pos[1].idx < 0 ? "-" : String(E_->pos[1].begin)) << TAB;
 			else if (*cit == "Len" || *cit == "Len1") {
-				if ((E_->flag & SMALL_VARIANT) && E_->type == INSERTION )
-					file << E_->alt.length() << TAB;
+				if (E_->type == INSERTION) file << E_->alt.length() << TAB;
 				else file << E_->pos[0].length(true) << TAB;
 			}
-			else if (*cit == "Len2") file << E_->pos[1].length(true) << TAB;
-			else if (*cit == "Cov") file << SNumber(E_->copy.depth[0][0]).precised(2) << TAB;
+			else if (*cit == "Len2") {
+				if (0 < E_->pos[1].idx) file << E_->pos[1].length(true) << TAB;
+				else if (E_->type == DELETION || E_->type == INSERTION) file << E_->alt.length() << TAB;
+				else file << "-" << TAB;
+			}
+			else if (*cit == "Cov" || *cit == "Cov1") file << SNumber(E_->copy.depth[0][0]).precised(2) << TAB;
+			else if (*cit == "Cov2") file << SNumber(E_->copy.depth[1][0]).precised(2) << TAB;
+			/*
+			*/
 			else if (*cit == "Allele Cov" || *cit == "Split read") file << E_->total() << TAB;
+			else if (*cit == "Allele Cov(+)" || *cit == "Split read(Fwd)") file << E_->read[0] << TAB;
+			else if (*cit == "Allele Cov(-)" || *cit == "Split read(Rev)") file << E_->read[1] << TAB;
 			else if (*cit == "Control Cov") file << SNumber(E_->copy.depth[0][1]).precised(2) << TAB;
 			else if (*cit == "Copy" || *cit == "Copy1") file << SNumber(E_->copy.ratio[0]).precised(2) << TAB;
 			else if (*cit == "Copy2") file << SNumber(E_->copy.ratio[1]).precised(2) << TAB;
 			else if (*cit == "Read bias") file << SNumber(SVarUtil::readBias(E_->read)).precised(2) << TAB;
 			else if (*cit == "Gene") {
 				if (!E_->genes.empty()) {
-					String genenames;
-					sforeach_(git, E_->genes) genenames << git->name << ",";
-					if (!genenames.empty()) genenames.resize(genenames.length() - 1);
-					file << genenames << TAB;
+					stringarray gnames;
+					sforeach_(git, E_->genes) gnames.add(git->name);
+					file << slib::toString(gnames) << TAB;
 				}
 				else file << "-" << TAB;
 			}
 			else if (*cit == "Region" || *cit == "Site") {
 				if (!E_->genes.empty()) {
-					String regioname;
+					stringarray regions;
 					sforeach_(git, E_->genes) {
-						sushort site = 0;
-						sforeach_(tit, git->transcripts) site |= tit->site;
-						regioname << SVarUtil::vsite(site) << ",";
+						auto sites = sbiutil::geneSite(git->annotatedSite());
+						regions.add(sites.empty()?"-":sites[0]);
 					}
-					if (!regioname.empty()) regioname.resize(regioname.length() - 1);
-					file << regioname << TAB;
+					file << slib::toString(regions) << TAB;
 				}
 				else file << "-" << TAB;
 			}
@@ -699,47 +750,39 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			else if (*cit == "Repeat") file << (E_->attribute["repeat"] ? "true" : "false") << TAB;
 			else if (*cit == "Mutation") {
 				if (!E_->genes.empty()) {
-					String mutname;
+					stringarray mnames;
 					sforeach_(git, E_->genes) {
-						if (git->transcripts.empty()) mutname << "no transcript,";
-						else {
-							sushort type = 0;
-							sforeach_(tit, git->transcripts) type |= tit->type;
-							mutname << SVarUtil::mtype(type) << ";";
-						}
+						auto muts = sbiutil::mutType(git->mutation);
+						mnames.add(muts.empty() ? "-" : muts[0]);
 					}
-					if (!mutname.empty()) mutname.resize(mutname.length() - 1);
-					file << mutname << TAB;
+					file << slib::toString(mnames) << TAB;
 				}
 				else file << "-" << TAB;
 			}
 			else if (*cit == "Substitution") {
 				if (!E_->genes.empty()) {
-					String substitute;
+					stringarray subs;
 					sforeach_(git, E_->genes) {
-						if (git->transcripts.empty()) substitute << "no transcript,";
+						if (git->transcripts.empty()) subs.add("No transcript");
 						else {
+							String sub;
 							sforeach_(tit, git->transcripts) {
-								if (!(tit->type)) continue;
-								if (tit->site & sbio::CDS)
-									substitute << tit->name << ":" << tit->ori << tit->pos << tit->alt << ";";
-								else if (tit->site & sbio::EXON) substitute << "-;";
+								if (tit->site & sbio::CDS && 0 < tit->pos) sub << tit->name << ":" << tit->ori << tit->pos << tit->alt << ";";
 							}
-							if (!substitute.empty()) substitute.last() = ',';
+							subs.add(sub);
 						}
 					}
-					if (!substitute.empty()) substitute.resize(substitute.length() - 1);
-					file << substitute << TAB;
+					file << slib::toString(subs) << TAB;
 				}
 				else file << "-" << TAB;
 			}
 			else if (*cit == "Ref") file << (E_->attribute["Ref"] ? E_->attribute["Ref"] : "-") << TAB;
 			else if (*cit == "Var") file << (E_->alt.size() ? E_->alt : "-") << TAB;
-			else if (*cit == "Type") file << SVarUtil::vtype(E_->type) << TAB;
+			else if (*cit == "Type") file << slib::toString(sbiutil::varTypes(E_->type), "+") << TAB;
 			else if (*cit == "Genotype" || *cit == "Homo") file << (E_->homo ? "Homo" : "Hetero") << TAB;
 			else if (*cit == "Qual") file << SNumber(E_->qual).precised(2) << TAB;
 			else if (*cit == "Freq") file << SNumber(E_->copy.frequency).precised(2) << TAB;
-			//else if (*cit == "List") file << list->name << TAB;
+			else if (*cit == "Homo") file << SNumber(E_->homo).toString() << TAB;
 			else if (*cit == "Name") file << E_->name << TAB;
 			else if (*cit == "Sample") file << list->name << TAB;
 		}

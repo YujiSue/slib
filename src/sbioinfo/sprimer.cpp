@@ -226,7 +226,7 @@ SPrimer::SPrimer(const SPrimer& p) {
 }
 SPrimer::~SPrimer() {}
 
-double SPrimer::score(sprimer_param *par) {
+double SPrimer::score(sprimer_param *par) const {
 	double value = 0.0;
 
 
@@ -234,22 +234,22 @@ double SPrimer::score(sprimer_param *par) {
 	return value;
 
 }
-double SPrimer::tm() {
+double SPrimer::tm() const  {
 	double values[3];
 	tmCalc(values, seq);
 	return values[0] < 20.0 ? values[1] : (values[0] < 80.0 ? values[0] : values[2]);
 }
 
-sint SPrimer::bias() {
+sint SPrimer::bias() const {
 	auto length = seq->length() - 3;
-	sint bias = 0;
+	sint bias = 0, count = 0;
 	sforin(i, 0, length) {
 		auto count = sseq::gcCounti(*seq, i, 3);
 		if (!count || count == 3) ++bias;
 	}
 	return bias;
 }
-sint SPrimer::selfcomp() {
+sint SPrimer::selfcomp() const {
 	sint selfcomp = 0;
 	/*
 	std::string raw = seq.raw(), sub;

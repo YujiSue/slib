@@ -19,7 +19,77 @@ namespace slib {
 
 #define SDB_ORDER(X,Y) std::pair<String, slib::ORDER>((X),(Y))
 
+	typedef enum {
+		SQLITE_DB = 0x01,
+		//MYSQL_DB = 0x02,
+		
+	} DB_MODE;
+	/*
+	typedef enum {
+		EQ = 0x01,
+		NOT = 0x02,
+		NEQ = 0x04,
+		LT = 0x10,
+		ELT = 0x11,
+		GT = 0x20,
+		EGT = 0x21,
+		//IN = 0x40,
 
+	} OPERATION;
+	*/
+
+	struct search_query {
+		String key;
+		suint operation;
+		sobj value;
+
+		search_query();
+		search_query(const char* k, suint op, const sobj& v);
+		search_query(const search_query& que);
+		~search_query();
+		search_query& operator=(const search_query& que);
+	};
+	struct search_sorter {
+		String key;
+		slib::ORDER order;
+
+		search_sorter();
+		search_sorter(const char* k, slib::ORDER o = DESC);
+		search_sorter(const search_sorter& sorter);
+		~search_sorter();
+		search_sorter& operator=(const search_sorter& sorter);
+	};
+
+	class SLIB_DLL SSearchQuery {
+	private:
+		stringarray _keys;
+		Array<Array<search_query>> _queries;
+		Array<search_sorter> _sorters;
+		Range<suinteger> _range;
+		bool _andor;
+
+	public:
+		SSearchQuery();
+		~SSearchQuery();
+		
+		void addQuery(const search_query& que);
+		template<class... Args>
+		void addQuery(Args... args) { addQuery(search_query(args)); }
+		void andQuery();
+		void orQuery();
+		void setQueries(SDictionary &que);
+		void addSorter(const search_sorter &sorter);
+		template<class... Args>
+		void addSorter(Args... args) { addSorter(search_sorter(args)); }
+		void addKey(const char* key);
+		void addKeys(const stringarray& keys);
+		void setKeys(SArray& keys);
+		void setOffset(suinteger i);
+		void setLimit(suinteger i);
+		void setRange(Range<suinteger> r);
+		void setConditions(SDictionary& cond);
+		String toString(DB_MODE m) const;
+	};
 	namespace sql {
 		constexpr subyte INNER_JOIN = 1;
 		constexpr subyte OUTER_JOIN = 2;
@@ -30,8 +100,10 @@ namespace slib {
 		constexpr int AUTO_INCREMENT_COLUMN = 0x4000;
 
 		extern SLIB_DLL String colTypeName(int type);
-		extern SLIB_DLL String colInfo(const sobj& col);
+		extern SLIB_DLL String colInfo(const SColumn& col);
+		extern SLIB_DLL String colInfos(const Array<SColumn>& cols);
 		extern SLIB_DLL String colInfos(const SArray& cols);
+		extern SLIB_DLL String colNames(const  Array<SColumn>& cols);
 		extern SLIB_DLL String colNames(const SArray& cols);
 		extern SLIB_DLL String escaped(const char* que);
 		extern SLIB_DLL String value(sobj obj, bool like = true, subyte match = 0);
@@ -69,6 +141,25 @@ namespace slib {
 			const char* limit = nullptr, bool distinct = false);
 	}
 	class SLIB_DLL SDataBase;
+
+	class SLIB_DLL SRecord : public SObject {
+		friend SDataBase;
+	private:
+		suint _type;
+		SDataBase* _db;
+		String _name;
+		SSearchQuery _query;
+
+	public:
+		SRecord();
+		~SRecord();
+
+		
+
+		
+
+
+	};
 	class SLIB_DLL SDBTable {
 	private:
 		SDataBase* _db;
@@ -149,8 +240,13 @@ namespace slib {
 		friend SDBTable;
 
 	private:
+		DB_MODE _mode;
+		
 		sqlite3* _db;
 		sqlite3_stmt* _stmt;
+
+		//Array<SRecord> _records;
+		
 		String _path;
 		STable _result;
 		SDictionary _row;
@@ -174,9 +270,9 @@ namespace slib {
 		sobj tables();
 
 	public:
-		void createTable(const char* name, const SArray& columns = {}, const SArray& rows = {});
+		void createTable(const char* name, const Array<SColumn>& columns = {}, const SArray& rows = {});
+		void createTable(const char* name, const STable& table);
 		void createTable(const SDictionary& dic);
-		void createTable(const STable& table);
 		void removeTable(const char* name);
 		void clearTables();
 		SDBTable table(const char* name);

@@ -43,6 +43,7 @@ void SVarList::tidy(size_t s) {
 	});
 	this->resize(s);
 }
+void SVarList::addFlag(sushort f) { sforeach(*this) E_->flag |= f; }
 void SVarList::clearAll() {
     clear();
 	refnum = 0;

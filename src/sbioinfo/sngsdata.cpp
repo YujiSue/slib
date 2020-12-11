@@ -5,13 +5,14 @@ using namespace slib::smath;
 using namespace slib::sio;
 using namespace slib::sbio;
 
-sngs_param::sngs_param() : splitread(true), paired(false), pcrdup(false), bin(1), ref(nullptr) {}
-sngs_param::sngs_param(bool sr, bool p, bool dp, sint b) : splitread(sr), paired(p), pcrdup(dp), bin(b), ref(nullptr) {}
+sngs_param::sngs_param() : splitread(true), paired(false), pcrdup(false), bin(1), parallele(false), ref(nullptr) {}
+sngs_param::sngs_param(bool sr, bool p, bool dp, sint b) : splitread(sr), paired(p), pcrdup(dp), bin(b), parallele(false), ref(nullptr) {}
 sngs_param::~sngs_param() {}
 sngs_param& sngs_param::operator=(const sngs_param& par) {
 	splitread = par.splitread;
 	paired = par.paired;
 	pcrdup = par.pcrdup;
+	parallele = par.parallele;
 	bin = par.bin;
 }
 void sngs_param::setRef(SBSeqList* r) { ref = r; }
@@ -57,6 +58,7 @@ void sngs_param::set(const sobj& obj) {
 	if (obj.hasKey("sr")) splitread = obj["sr"];
 	if (obj.hasKey("pair")) paired = obj["pair"];
 	if (obj.hasKey("dp")) pcrdup = obj["dp"];
+	if (obj.hasKey("parallele")) parallele = obj["parallele"];
 	if (obj.hasKey("bin")) bin = obj["bin"];
 	if (obj.hasKey("target")) decodeTarget(obj["target"]);
 }
@@ -65,6 +67,7 @@ sobj sngs_param::toObj() {
 		kv("sr", splitread),
 		kv("pair", paired),
 		kv("dp", pcrdup),
+		kv("parallele", parallele),
 		kv("bin", bin),
 		kv("target", encodeTarget())
 	};
@@ -596,6 +599,27 @@ void SNGSData::integrate(SNGSData& dat, svariant_param* vp, SWork* threads) {
 	}
 	else throw SBioInfoException(ERR_INFO, SLIB_CONFLICT_ERROR, "reference count", CONFLICT_TEXT("this", "dat"));
 }
+/*
+String SNGSData::brief() const {
+	String str;
+	str << String("=") * 60 << NEW_LINE;
+	str << SPACE * 5 << "Reference:" << NEW_LINE;
+	str << SPACE * 5 << String("-") * 50 << NEW_LINE;
+	str << SPACE * 10 << String("Name:").filled(24) << "|" << String("Length").filled(15, ' ') << NEW_LINE;
+	str << SPACE * 5 << String("-") * 50 << NEW_LINE;
+	sforin(r, 0, summary.refnum) {
+		str << SPACE * 10 << summary.ref.name[r].filled(24) << "|" << String("Length").filled(15, ' ') << NEW_LINE;
+	}
+	str << SPACE * 5 << String("-") * 50 << NEW_LINE;
+	str << SPACE * 5 << String("Reference count:").filled(25) << String(summary.refnum).filled(15, ' ', true) << NEW_LINE;
+	str << SPACE * 5 << String("Total length:").filled(25) << String(total()).filled(15, ' ', true) << NEW_LINE;
+	str << SPACE * 5 << String("Total read:").filled(25) << String(total()).filled(15, ' ', true) << NEW_LINE;
+	str << NEW_LINE * 2;
+	str << 
+
+	str << String("=") * 60 << NEW_LINE;
+}
+*/
 bool SNGSData::isLoaded() { return _loaded; }
 void SNGSData::reset(sint bin, SBSeqList* ref) {
 	setBin(bin);

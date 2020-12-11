@@ -8,7 +8,7 @@ namespace slib {
     namespace sbio {
         
 		struct SBIOINFO_DLL sngs_param {
-			bool splitread, paired, pcrdup;
+			bool splitread, paired, pcrdup, parallele;
 			sint bin;
 			SBSeqList* ref;
 			Array<sregion> target;
@@ -101,6 +101,7 @@ namespace slib {
             //void tidy(svariant_param *vp);
 			void integrate(SNGSData& dat, svariant_param* vp, SWork* threads = nullptr);
             
+			//String brief() const;
 			bool isLoaded();
 			void reset(sint bin, SBSeqList* ref);
             void init();

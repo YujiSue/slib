@@ -24,30 +24,44 @@ namespace slib {
 	constexpr sushort IMG_COLUMN = 0x0800;
 
 	class SLIB_DLL STable;
-	class SLIB_DLL SColumn : public SArray {
+	class SLIB_DLL SColumn : public SObject { //: public SArray {
 		friend STable;
 	private:
 		sushort _type;
 		String _name;
 		STable* _table;
 
+	private:
+		void setTable(STable* tbl);
+
 	public:
-		SColumn(int type = 0, const char* name = nullptr, const SArray& array = {});
-		SColumn(SArray&& array);
+		SColumn(int type = 0, const char* name = nullptr);
+		SColumn(const char* name);
+		SColumn(const SDictionary &dict);
 		SColumn(const SColumn& column);
 		~SColumn();
-
+		SColumn& operator=(const SColumn& col);
 		static sushort colType(const sobj& obj);
 		static String colTypeStr(int t);
 		static sushort colTypeIndex(const char* t);
 
 		sushort type() const;
 		const String& name() const;
-
+		size_t size() const;
+		bool empty() const;
+		sobj& at(sint i);
+		const sobj& at(sint i) const;
+		sobj& operator[](sint i);
+		const sobj& operator[](sint i) const;
+		sobj getValue(sint i) const;
+		SArray getValues(sint r, sint h) const;
+		void clearValue(sint i) const;
+		void clearValues(sint r, sint h) const;
 		void convert(sushort t);
 		void setName(const char* n);
-		void setTable(STable* tbl);
-
+		void setValue();
+		void setValues();
+		
 		String getClass() const;
 		String toString() const;
 		SObject* clone() const;
@@ -55,21 +69,25 @@ namespace slib {
 
 	class SLIB_DLL STable : public SObject {
 		friend SColumn;
+	private:
+		sint _lastcol;
 
 	protected:
-		String _name;
-		SArray _columns, _rows;
+		//String _name;
+		Array<SColumn> _columns;
+		SArray _rows;
 
 	public:
 		STable();
 		STable(int row, int col);
-		STable(const Array<scolumn>& cols, const SArray& rows);
-		STable(const smat<sobj>& mat);
+		STable(const Array<SColumn>& cols, const SArray& rows);
 		STable(const sobj& obj);
 		STable(const STable& table);
 		~STable();
 
 		STable& operator=(const STable& table);
+		void initWithArray(SArray& array, bool header = false);
+		void initWithDict(SDictionary& dict);
 
 		//IO
 		void load(sobj obj);
@@ -80,86 +98,70 @@ namespace slib {
 		void save(const char* path);
 		void saveTxt(const char* path, const char* sep);
 
-		String& name();
-		const String& name() const;
-		void setName(const char* name);
 
 		size_t columnCount() const;
 		bool hasColumn(const char* name) const;
 		size_t columnIndex(const char* name) const;
-		SColumn& column(int idx);
-		const SColumn& column(int idx) const;
+		SColumn& columnAt(int idx);
+		const SColumn& columnAt(int idx) const;
 		SColumn& column(const char* name);
 		const SColumn& column(const char* name) const;
-		SArray& columns();
-		const SArray& columns() const;
+		Array<SColumn>& columns();
+		const Array<SColumn>& columns() const;
+		void addColumn(const char *s = nullptr);
 		void addColumn(const SColumn& col);
-		void addColumnDict(const SDictionary& dict);
-		void addColumn(const sobj& obj = snull);
+		void addColumns(const Array<SColumn>& cols);
 		void insertColumn(size_t idx, const SColumn& col);
-		void insertColumnDicr(size_t idx, const SDictionary& dict);
-		void insertColumn(size_t idx, const sobj& obj);
 		void setColumn(size_t idx, const SColumn& col);
-		void setColumnDict(size_t idx, const SDictionary& dict);
-		void setColumn(size_t idx, const sobj& col);
 		void removeColumn(size_t idx);
 		void removeColumns(size_t off, size_t len);
 		void removeColumns(const srange& range);
-		void clearColumns();
+		void swapColumns(size_t i1, size_t i2);
 		void resizeColumn(size_t s);
-		void sortBy(size_t idx, slib::ORDER order = ASC);
-
+		
 		size_t rowCount() const;
 		sobj& operator[](int idx);
 		const sobj& operator[](int idx) const;
 		sobj& at(int idx);
 		const sobj& at(int idx) const;
-		SArray& row(int idx);
-		const SArray& row(int idx) const;
+		SArray& rowAt(int idx);
+		const SArray& rowAt(int idx) const;
 		SArray& rows();
 		const SArray& rows() const;
-		sobj namedRow(int idx) const;
-		void addRowArray(const SArray& array);
-		void addRowDict(const SDictionary& dict);
-		void addRow(const sobj& obj = snull);
-		void insertRowArray(size_t idx, const SArray& array);
-		void insertRowDict(size_t idx, const SDictionary& dict);
-		void insertRow(size_t idx, const sobj& obj = snull);
-		void setRowArray(size_t idx, const SArray& array);
-		void setRowDict(size_t idx, const SDictionary& dict);
-		void setRow(size_t idx, const sobj& obj = snull);
+		void addRow();
+		void addRow(const SArray& array);
+		void addRows(const SArray& array);
+		void insertRow(size_t idx, const SArray& array);
+		void setRow(size_t idx, const SArray& array);
+		void updateRow(size_t idx, const SDictionary& dict);
 		void removeRow(int idx);
 		void removeRows(size_t off, size_t len);
 		void removeRows(const srange& range);
 		void clearRows();
-		void swapRow(size_t i1, size_t i2);
+		void swapRows(size_t i1, size_t i2);
 		void resizeRow(size_t s);
 
+		void add(sobj obj, smath::DIRECTION dir);
+		void insert(sint idx, sobj obj, smath::DIRECTION dir);
+		void set(sint idx, sobj obj, smath::DIRECTION dir);
+
+		sobj& valueAt(sint r, sint c);
+		const sobj& valueAt(sint r, sint c) const;
+		sobj getValue(sint r, sint c) const;
+		SArray getValues(sint r, sint c, sint h, sint w) const;
+		void clearValue(sint r, sint c);
+		void clearValues(sint r, sint c, sint h, sint w);
+		void setValue(sint r, sint c, sobj val);
+		void updateValues(sint r, const SDictionary &values);
+		void setValues(sint r, sint c, const SArray &values);
 		void resize(size_t r, size_t c);
-		sobj& value(int row, int col);
-		const sobj& value(int row, int col) const;
-		void setValue(int row, int col, const sobj& obj);
-		void clear();
-		svec2d<size_t> find(const sobj& obj, smath::DIRECTION dir = HORIZONTAL, size_t offset = 0);
-		void toMatrix(smat<sobj>& mat);
-
-		/*
-		sobj& at(sint r, sint c);
-		sobj getValue(sint row, sint col);
-
-		STable &where();
-		STable &and();
-		STable &or();
-
-
-		SArray getValues(sint roff, sint coff, sint row, sint col);
-		SArray getValues(const char *rque, const char *cque);
-
-		void setValue(sint row, sint col, sobj val);
-		void setValues(sint row, sint col, sobj val);
-
-		sobj search();
-		*/
+		Range<size_t> find(const sobj& obj, smath::DIRECTION dir = HORIZONTAL, srange offset = srange(0, 0));
+		void sortBy(size_t idx, slib::ORDER order = ASC);
+		//STable& where();
+		//size_t count();
+		//SArray search();
+		void clearAll();
+		//void toMatrix(smat<sobj>& mat);
 
 		String getClass() const;
 		String toString() const;

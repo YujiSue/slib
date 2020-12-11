@@ -31,6 +31,14 @@ void sbam::header::set(int n) {
     ref_length.resize(ref_num);
     ref_name.resize(ref_num);
 }
+String sbam::header::toString() const{
+	String str;
+	str << "Reference count: " << ref_num << NEW_LINE;
+	str << "Index" << TAB << "Name" << SPACE * 6 << TAB << "Length (bp)" << SPACE * 4 << NEW_LINE;
+	sforin(r, 0, ref_num) {
+		str << TAB << String(r + 1).filled(5, ' ', true) << TAB << ref_name[r].filled(10, ' ') << TAB << String(ref_length[r]).filled(15, ' ') << NEW_LINE;
+	}
+}
 void sbam::header::init() { 
 	ref_num = 0;
 	ref_length.clear();

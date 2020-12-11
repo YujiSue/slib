@@ -76,7 +76,7 @@ namespace slib {
 		constexpr sushort BALANCER_CHR = 0x4100;
 
 		//Gene type
-		constexpr sushort PROTEN_CODING = 0x1000;
+		constexpr sushort PROTEIN_CODING = 0x1000;
 		constexpr sushort NON_CODING = 0x2000;
 		constexpr sushort PSEUDOGENE = 0x4000;
 		constexpr sushort TRANSPOSON = 0x8000;
@@ -204,23 +204,30 @@ namespace slib {
 		constexpr sushort SR_VARIANT = 0x0004;
 
 		//Genetic mutation type
-		constexpr sushort SILENT = 0x0000;
+		constexpr sushort SILENT_MUT = 0x0000;
 		constexpr sushort SUBSTITUTION = 0x1000;
 		constexpr sushort MISSENSE = 0x1100;
 		constexpr sushort NONSENSE = 0x1200;
-		constexpr sushort INDEL = 0x2000;
+
+		constexpr sushort INDEL_MUT = 0x2000;
 		constexpr sushort IN_FRAME = 0x2100;
 		constexpr sushort FRAME_SHIFT = 0x2200;
-		constexpr sushort FRAME_END = 0x2300;
+		constexpr sushort NTERM_LESION = 0x2400;
+		constexpr sushort CTERM_LESION = 0x2800;
 
-		constexpr sushort NTERM_DEL = 0x2A00;
-		constexpr sushort CTERM_DEL = 0x2B00;
+		constexpr sushort HEAD_LESION = 0x2400;
+		constexpr sushort TAIL_LESION = 0x2800;
 
-		constexpr sushort NULL_MUT = 0x2F00;
-		constexpr sushort STRUCTURE_CHANGE = 0x4000;
-		constexpr sushort GENE_FUSION = 0x8000;
+		constexpr sushort COPYNUM_MUT = 0x4000;
+		constexpr sushort NULL_MUT = 0x4100;
+		constexpr sushort MULTI_COPY = 0x4200;
+		constexpr sushort TRIPLET_REPEAT = 0x4400;
 
-
+		constexpr sushort REARRANGE_MUT = 0x8000;
+		constexpr sushort SPLIT_MUT = 0x8100;
+		constexpr sushort SELF_REARRANGEMENT = 0x8200;
+		constexpr sushort ECTOPIC_MUT = 0x8400;
+		/*
 		class SBIOINFO_DLL sbiutil {
 		public:
 			static double scoreVal(double v);
@@ -231,7 +238,51 @@ namespace slib {
 			static void getBins(ushortarray& bins, srange range);
 			static void getBins(ushortarray& bins, const sregion& region);
 
+			static String vartype(sushort i);
+			static sushort vartypeIdx(const char* s);
+			static sushort codeVarType(sobj& obj);
+			
+			static String vsite(sushort i);
+			static subyte vsiteIdx(const char* s);
+			static String mtype(sushort i);
+			static subyte mtypeIdx(const char* s);
+
 		};
+		*/
+		namespace sbiutil {
+			extern double scoreVal(double v);
+			extern double phredVal(double v);
+
+			extern suint countBin(Map<sint, suint>& order, srange range);
+			extern sushort getBin(srange range);
+			extern void getBins(ushortarray& bins, srange range);
+			extern void getBins(ushortarray& bins, const sregion& region);
+
+			extern String geneType(sushort i);
+			extern sushort geneTypeIdx(const char* s);
+			extern sobj decodeGeneType(sushort i);
+			extern sushort encodeGeneType(sobj obj);
+			extern String transcriptType(sushort i);
+			extern sushort transcriptTypeIdx(const char* s);
+			extern sobj decodeTranscriptType(sushort i);
+			extern sushort encodeTranscriptType(sobj obj);
+			extern stringarray geneSite(sushort i);
+			extern sushort geneSiteIdx(const char* s);
+			extern sushort geneSiteIdx(const stringarray& s);
+			extern sobj decodeGeneSite(sushort i);
+			extern sushort encodeGeneSite(sobj obj);
+			extern String varType(sushort i);
+			extern stringarray varTypes(sushort i);
+			extern sushort varTypeIdx(const char* s);
+			extern sushort varTypeIdx(const stringarray &s);
+			extern sobj decodeVarType(sushort i);
+			extern sushort encodeVarType(sobj obj);
+			extern stringarray mutType(sushort i);
+			extern sushort mutTypeIdx(const char* s);
+			extern sushort mutTypeIdx(const stringarray& s);
+			extern sobj decodeMutType(sushort i);
+			extern sushort encodeMutType(sobj obj);
+		}
 
 		struct SBIOINFO_DLL sbpos : public srange {
 			sint idx;

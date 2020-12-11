@@ -43,7 +43,7 @@ bool svar_data::equal(const svar_data &var, size_t dist) const {
 }
 String svar_data::toString(SBSeqList *ref) const {
 	String str;
-	str << SVarUtil::vtype(type) << TAB <<
+	str << slib::toString(sbiutil::varTypes(type), "+") << TAB <<
 		(ref ? ref->at(pos[0].idx)->name : String(pos[0].idx)) << ":" <<
 		pos[0].begin + 1 << ".." << pos[0].end + 1 << TAB <<
 		(ref ? ref->at(pos[1].idx)->name : String(pos[1].idx)) << ":" <<
@@ -186,7 +186,7 @@ sobj SVariant::toObj() {
 	if (!genes.empty()) sforeach(genes) genes.add(E_.toObj());
 	if (!mutants.empty()) sforeach(mutants) marray.add(E_);
 	return {
-		kv("flag", flag), kv("name", name), kv("type", SVarUtil::vtype(type)),
+		kv("flag", flag), kv("name", name), kv("type", sbiutil::encodeVarType(type)),
 		kv("pos1", V({ kv("ref", ref[0]), kv("idx", pos[0].idx), kv("begin", pos[0].begin), kv("end", pos[0].end), kv("dir", pos[0].dir) })),
 		kv("pos2", V({ kv("ref", ref[1]), kv("idx", pos[1].idx), kv("begin", pos[1].begin), kv("end", pos[1].end), kv("dir", pos[1].dir) })),
 		kv("alt", alt), kv("read", V({ kv("forward", read[0]), kv("reverse", read[1]) })), kv("qual", qual),

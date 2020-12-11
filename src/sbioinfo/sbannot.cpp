@@ -104,41 +104,105 @@ feature_info &feature_info::operator=(const feature_info &f) {
     idx = f.idx; begin = f.begin; end = f.end; dir = f.dir;
     _id = f._id; type = f.type; name = f.name; return *this;
 }
-transcript_site::transcript_site() : type(0), site(0), pos(0) {}
+transcript_site::transcript_site() : info(nullptr), type(0), mutation(0), site(0), pos(-1) {}
+transcript_site::transcript_site(sobj& obj) : transcript_site() { set(obj); }
 transcript_site::transcript_site(transcript_info* ti) : transcript_site() {
-	name = ti->name;
+	info = ti; type = ti->type; name = ti->name;
 }
 transcript_site::transcript_site(const transcript_site& trs) {
-	type = trs.type; site = trs.site; name = trs.name;
+	info = trs.info; type = trs.type; name = trs.name; 
+	mutation = trs.mutation; site = trs.site; 
 	ori = trs.ori; alt = trs.alt; pos = trs.pos;
 }
 transcript_site::~transcript_site() {}
 transcript_site& transcript_site::operator=(const transcript_site& trs) {
-	type = trs.type; site = trs.site; name = trs.name;
+	info = trs.info; type = trs.type; name = trs.name;
+	mutation = trs.mutation; site = trs.site;
 	ori = trs.ori; 	alt = trs.alt; pos = trs.pos; return *this;
 }
-gene_site::gene_site() : type(0), dir(false) {}
-gene_site::gene_site(const sobj& obj) : gene_site() { set(obj); }
-gene_site::gene_site(const gene_info* gi) : gene_site() {
-	name = gi->name; dir = gi->dir;
-	transcripts.reserve(gi->transcripts.size() + 1);
+void transcript_site::set(sobj obj) {
+	type = sbiutil::encodeTranscriptType(obj["type"]);
+	name = obj["name"];
+	mutation = sbiutil::encodeMutType(obj["mutation"]);
+	site = sbiutil::encodeGeneSite(obj["site"]);
+	ori = obj["ori"]; alt = obj["alt"]; pos = obj["pos"];
 }
+sobj transcript_site::toObj() {
+	return {
+		kv("type", sbiutil::decodeTranscriptType(type)),
+		kv("name", name),
+		kv("mutation", sbiutil::decodeMutType(mutation)),
+		kv("site", sbiutil::decodeGeneSite(site)),
+		kv("ori", ori), kv("alt", alt), kv("pos", pos)
+	};
+}
+gene_site::gene_site() : info(nullptr), type(0), mutation(0) {}
+gene_site::gene_site(sobj& obj) : gene_site() { set(obj); }
+gene_site::gene_site(gene_info* gi) : gene_site() {
+	info = gi; type = gi->type; gid = gi->gene_id; name = gi->name;
+}
+gene_site::gene_site(gene_info* gi, srange* range) : gene_site(gi) { check(range); }
 gene_site::gene_site(const gene_site& g) {
-	type = g.type; name = g.name; dir = g.dir;
-	transcripts = g.transcripts;
+	info = g.info; type = g.type; gid = g.gid; name = g.name;
+	mutation = g.mutation; transcripts = g.transcripts;
 }
 gene_site::~gene_site() {}
 gene_site& gene_site::operator=(const gene_site& g) {
-	type = g.type; name = g.name; dir = g.dir;
-	transcripts = g.transcripts;
-
-	return *this;
+	info = g.info; type = g.type; gid = g.gid; name = g.name;
+	mutation = g.mutation; transcripts = g.transcripts; return *this;
 }
-void gene_site::set(const sobj& obj) {
-
+sushort gene_site::annotatedSite() const {
+	sushort site = 0;
+	sforeach(transcripts) site |= E_.site;
+	return site;
+}
+void gene_site::check(srange* range) {
+	if (!info) return;
+	if (transcripts.empty()) {
+		sforeach(info->transcripts) {
+			transcript_site ts(E_);
+			sforeach_(sit, E_->structures) {
+				if (sit->overlap(*range)) {
+					ts.site |= sit->type;
+					if (sit->type == INTRON) {
+						if (range->include(sit->begin) || range->include(sit->begin + 1) ||
+							range->include(sit->end) || range->include(sit->end - 1)) ts.site |= SPLICE_SITE;
+					}
+				}
+			}
+			transcripts.add(ts);
+		}
+	}
+	else {
+		sforeach2(transcripts, info->transcripts) {
+			sforeach_(sit, E2_->structures) {
+				if (sit->overlap(*range)) {
+					E1_.site |= sit->type;
+					if (sit->type == INTRON) {
+						if (range->include(sit->begin) || range->include(sit->begin + 1) ||
+							range->include(sit->end) || range->include(sit->end - 1)) E1_.site |= SPLICE_SITE;
+					}
+				}
+			}
+		}
+	}
+}
+void gene_site::set(sobj obj) {
+	type = sbiutil::encodeGeneType(obj["mutation"]);;
+	gid = obj["geneid"]; name = obj["name"];
+	mutation = sbiutil::encodeMutType(obj["mutation"]);
+	if (obj["transcripts"]) { sforeach(obj["transcripts"]) transcripts.add(E_); }
 }
 sobj gene_site::toObj() {
-	return snull;
+	sarray trs;
+	if (transcripts.empty()) trs = snull;
+	else { sforeach(transcripts) trs.add(E_.toObj()); }
+	return {
+		kv("type", sbiutil::decodeGeneType(type)),
+		kv("geneid", gid), kv("name", name),
+		kv("mutation", sbiutil::decodeMutType(mutation)),
+		kv("transcripts", trs)
+	};
 }
 
 void SBAnnotDB::_initIdx() {
@@ -899,7 +963,7 @@ void SBAnnotDB::featureInfo(ftrparray &array, const char *name, subyte match, bo
 		if (match == EXACT_MATCH) {
             srange range(0, _ftr_name_index.size());
             searchNameIndex<ftrarray>(range, name, _ftr_name_index, features);
-            if (range.end-range.begin) return array.add(&features[_ftr_name_index[range.begin]]);
+			if (range.end - range.begin) return array.add(&features[_ftr_name_index[range.begin]]);
         }
         else {
             Regex reg("/"+String::lower(name)+"/i");

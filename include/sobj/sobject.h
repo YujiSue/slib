@@ -207,7 +207,8 @@ namespace slib {
 		template<class Cls, OBJ_TYPE T>
 		SObjPtr(const SClsPtr<Cls, T>& obj) : _type(T), _ptr(obj._ptr) { share(); }
 		virtual ~SObjPtr();
-
+		static SObjPtr toSObj(const String& s);
+		static SObjPtr import(sobj info);
 		SObjPtr& operator = (SObjPtr&& obj);
 		SObjPtr& operator = (const SObjPtr& obj);
 		template<class Cls, OBJ_TYPE T>
@@ -318,24 +319,37 @@ namespace slib {
 		const SObjPtr& operator[](const SString& key) const;
 		SObjPtr& operator[](const SObjPtr& obj);
 		const SObjPtr& operator[](const SObjPtr& obj) const;
+		SObjPtr& at(int idx);
+		const SObjPtr& at(int idx) const;
+		SObjPtr& at(const char* key);
+		const SObjPtr& at(const char* key) const;
+		SObjPtr& at(const ::std::string& key);
+		const SObjPtr& at(const ::std::string& key) const;
+		SObjPtr& at(const String& key);
+		const SObjPtr& at(const String& key) const;
+		SObjPtr& at(const SString& key);
+		const SObjPtr& at(const SString& key) const;
+		SObjPtr& at(const SObjPtr& obj);
+		const SObjPtr& at(const SObjPtr& obj) const;
+		
+		SObjPtr getValue(int idx) const;
+
 
 		SIterator begin();
 		SCIterator begin() const;
 		SIterator end();
 		SCIterator end() const;
 
-		static SObjPtr toSObj(const String& s);
-
-        static SObjPtr import(sobj info);
-        void load(sobj info);
+		void load(sobj info);
         void save(sobj info);
         
         suint type() const;
         size_t size() const;
+		void resize(size_t s, sobj obj = snull);
         size_t length() const;
         bool empty() const;
-        const String &name() const;
-        const String &key() const;
+        String name() const;
+        String key() const;
         const SObjPtr &value() const;
         bool hasKey(const char *key) const;
         stringarray keyset() const;
@@ -403,9 +417,9 @@ namespace slib {
         //bool isSound() const;
         bool isMov() const;
         template<class Cls>
-        inline bool isClass() const {
+        bool isClass() const {
             if (_ptr) return instanceOf<Cls>(_ptr);
-            else throw SException(ERR_INFO, SLIB_NULL_ERROR);
+			return false;
         }
         //Convert
 		template<class Cls>

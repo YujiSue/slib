@@ -119,6 +119,7 @@ namespace slib {
             void load(const char *path, SBSeqList* ref = nullptr, sattribute *converter = nullptr);
             void save(const char *path, SBSeqList* ref = nullptr);
 			void tidy(size_t s = -1);
+			void addFlag(sushort f);
             void clearAll();
         };
     }

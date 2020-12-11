@@ -12,6 +12,58 @@ SDBException::SDBException(const char* f, sint l, const char* func, sint e, cons
 }
 SDBException::~SDBException() {}
 
+search_query::search_query() : operation(0) {}
+search_query::search_query(const char* k, suint op, const sobj& v) : key(k), operation(op), value(v) {}
+search_query::search_query(const search_query& que) : key(que.key), operation(que.operation), value(que.value) {}
+search_query::~search_query() {}
+search_query& search_query::operator=(const search_query& que) {
+	key = que.key; operation = que.operation; value = que.value; return *this;
+}
+search_sorter::search_sorter() : order(DESC) {}
+search_sorter::search_sorter(const char* k, slib::ORDER o) : key(k), order(o) {}
+search_sorter::search_sorter(const search_sorter& sorter) : key(sorter.key), order(sorter.order) {}
+search_sorter::~search_sorter() {}
+search_sorter& search_sorter::operator=(const search_sorter& sorter) {
+	key = sorter.key; order = sorter.order; return *this;
+}
+SSearchQuery::SSearchQuery() : _andor(false) {}
+SSearchQuery::~SSearchQuery() {}
+void SSearchQuery::addQuery(const search_query& que) {
+	if (_andor) _queries.add({ que });
+	else {
+		if (_queries.empty())  _queries.add({ que });
+		else _queries.last().add(que);
+	}
+}
+void SSearchQuery::andQuery() { _andor = false; }
+void SSearchQuery::orQuery() { _andor = true; }
+void setQueries(SDictionary& que);
+void SSearchQuery::addSorter(const search_sorter& sorter) { _sorters.add(sorter); }
+void SSearchQuery::addKey(const char* key) { _keys.add(key); }
+void SSearchQuery::addKeys(const stringarray& keys) { _keys.append(keys); }
+void SSearchQuery::setKeys(SArray& keys) { sforeach(keys) _keys.add(E_); }
+void SSearchQuery::setOffset(suinteger i) { _range.begin = i; }
+void SSearchQuery::setLimit(suinteger i) { _range.end = _range.begin + i; }
+void SSearchQuery::setRange(Range<suinteger> r) { _range = r; }
+void SSearchQuery::setConditions(SDictionary& cond) {
+	/*
+	*/
+}
+String SSearchQuery::toString(DB_MODE m) const {
+	String str;
+	switch (m)
+	{
+	case SQLITE_DB:
+	{
+
+		break;
+	}
+	default:
+		break;
+	}
+	return str;
+}
+
 String sql::colTypeName(int type) {
     String name = String::upper(SColumn::colTypeStr(type&0x0FFF));
     if(type & KEY_COLUMN) name += " PRIMARY KEY";
@@ -19,25 +71,34 @@ String sql::colTypeName(int type) {
     if(type & AUTO_INCREMENT_COLUMN) name += " AUTOINCREMENT";
     return name;
 }
-String sql::colInfo(const sobj &col) {
-	if (col.isColumn()) return col.name() + " " + sql::colTypeName(col.type());
-	else if (col.isDict()) return col["name"] + " " + (col["type"].isNum() ? sql::colTypeName(col["type"]) : col["type"].toString());
-	return "";
+String sql::colInfo(const SColumn &col) {
+	return col.name() + " " + sql::colTypeName(col.type());
 }
-String sql::colInfos(const SArray& cols) {
+String sql::colInfos(const Array<SColumn>& cols) {
 	String str;
 	if (cols.empty()) return str;
 	sforeach(cols) str << colInfo(E_) << ",";
 	if (str.length()) str.resize(str.length() - 1);
 	return str;
 }
+String sql::colInfos(const SArray& cols) {
+	String str;
+	if (cols.empty()) return str;
+	sforeach(cols) str << colInfo(E_.dict()) << ",";
+	if (str.length()) str.resize(str.length() - 1);
+	return str;
+}
+String sql::colNames(const Array<SColumn>& cols) {
+	String str;
+	if (cols.empty()) return str;
+	sforeach(cols) { str << E_.name() << ","; }
+	if (str.length()) str.resize(str.length() - 1);
+	return str;
+}
 String sql::colNames(const SArray& cols) {
 	String str;
 	if (cols.empty()) return str;
-	sforeach(cols) {
-		if (E_.isDict()) str << E_["name"] << ",";
-		else if (E_.isColumn()) str << E_.name() << ",";
-	}
+	sforeach(cols) { str << E_["name"] << ","; }
 	if (str.length()) str.resize(str.length() - 1);
 	return str;
 }
@@ -297,12 +358,12 @@ void SDBTable::removeColumn(const char* name) {
 	String ori = _table;
 	rename(_table + "_tmp");
 	auto &cols = columnInfo();
-	SArray newcol;
+	Array<SColumn> newcol;
 	sforeach(cols) {
-		if (E_["name"] != name) newcol.add(E_);
+		if (E_["name"] != name) newcol.add(SColumn(E_["type"].intValue(), E_["name"]));
 	}
 	_db->begin();
-	_db->createTable(ori, newcol);
+	_db->createTable(ori.cstr(), newcol);
 	_db->sqlexec(String("INSERT INTO ") << ori << "(" << sql::colNames(newcol) << ") SELECT " << sql::colNames(newcol) << " FROM " << _table);
 	_db->sqlexec(String("DROP TABLE ") << _table);
 	_db->commit();
@@ -557,7 +618,7 @@ sobj SDataBase::tables() {
 	}
 	return tbls;
 }
-void SDataBase::createTable(const char* name, const SArray& columns, const SArray& rows) {
+void SDataBase::createTable(const char* name, const Array<SColumn>& columns, const SArray& rows) {
 	String que = "CREATE TABLE IF NOT EXISTS " + String(name ? name : "table");
 	if (columns.size()) {
 		que << "(" << sql::colInfos(columns) << ")";
@@ -600,13 +661,13 @@ void SDataBase::createTable(const SDictionary& dic) {
 		sqlexec(que);
 	}
 }
-void SDataBase::createTable(const STable& tbl) {
-	String que = "CREATE TABLE IF NOT EXISTS " + tbl.name();
+void SDataBase::createTable(const char* name, const STable& tbl) {
+	String que = String("CREATE TABLE IF NOT EXISTS ") + name;
 	if (tbl.columnCount()) {
 		que << "(" << sql::colInfos(tbl.columns()) << ")";
 		sqlexec(que);
 		if (tbl.rowCount()) {
-			auto sqltbl = table(tbl.name());
+			auto sqltbl = table(name);
 			sqltbl.addRecordPrepare(tbl.columnCount());
 			sforeach(tbl.rows()) {
 				bindRow(E_);
@@ -735,7 +796,7 @@ STable& SDataBase::getResult(STable* table) {
 	while ((_res = sqlite3_step(_stmt)) == SQLITE_ROW) {
 		auto size = sqlite3_column_count(_stmt);
 		bool col = size == table->columnCount();
-		if (!col) table->clearColumns();
+		if (!col) table->clearAll();
 		sforin(i, 0, size) {
 			auto name = sqlite3_column_name(_stmt, i);
 			auto type = sqlite3_column_type(_stmt, i);
@@ -769,7 +830,8 @@ STable& SDataBase::getResult(STable* table) {
 			default:
 				break;
 			}
-			table->addColumnDict(row);
+			table->addRow();
+			table->updateRow(table->rowCount() - 1, row);
 		}
 	}
 	if (_res != SQLITE_DONE)

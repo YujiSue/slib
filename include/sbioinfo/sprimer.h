@@ -87,10 +87,11 @@ namespace slib {
 			SPrimer(const SPrimer&p);
             ~SPrimer();
 
-			double score(sprimer_param* par);
-			double tm();
-			sint bias();
-			sint selfcomp();
+			double score(sprimer_param* par) const;
+			double tm() const;
+			sint bias() const;
+			sint selfcomp() const;
+			String toString() const;
         };
 		extern bool checkPrimer(SPrimer* p, sprimer_param* par);
 		
