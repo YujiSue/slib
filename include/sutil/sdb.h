@@ -74,13 +74,13 @@ namespace slib {
 		
 		void addQuery(const search_query& que);
 		template<class... Args>
-		void addQuery(Args... args) { addQuery(search_query(args)); }
+		void addQuery(Args... args) { addQuery(search_query(args...)); }
 		void andQuery();
 		void orQuery();
 		void setQueries(SDictionary &que);
 		void addSorter(const search_sorter &sorter);
 		template<class... Args>
-		void addSorter(Args... args) { addSorter(search_sorter(args)); }
+		void addSorter(Args... args) { addSorter(search_sorter(args...)); }
 		void addKey(const char* key);
 		void addKeys(const stringarray& keys);
 		void setKeys(SArray& keys);
