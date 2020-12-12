@@ -15,7 +15,7 @@ svar_data &svar_data::operator = (const svar_data &v) {
     return (*this);
 }
 svar_data &svar_data::operator += (const svar_data &v) {
-	read[0] += v.read[0];  read[1] += v.read[1]; qual *= v.qual; return (*this);
+	read[0] += v.read[0];  read[1] += v.read[1]; qual += v.qual; return (*this);
 }
 void svar_data::comp() {
     sbpos tmp = pos[0]; pos[0] = pos[1]; pos[1] = tmp;
@@ -158,8 +158,14 @@ sushort SVariant::annotatedSite() const {
 void SVariant::set(sobj obj) {
 	flag = obj["flag"];
 	name = obj["name"];
-	ref[0] = obj["ref1"];
-	ref[1] = obj["ref2"];
+	type = sbiutil::encodeVarType(obj["type"]);
+	auto p1 = obj["pos1"], p2 = obj["pos2"];
+	ref[0] = p1["ref"]; pos[0] = sbpos(p1["idx"], p1["begin"], p1["end"], p1["dir"]);
+	ref[1] = p2["ref"]; pos[1] = sbpos(p2["idx"], p2["begin"], p2["end"], p2["dir"]);
+	alt = obj["alt"];
+	read[0] = obj["read"][0]; read[1] = obj["read"][1];
+	qual = obj["qual"];
+	homo = obj["homo"];
 	auto cns = obj["copy"];
 	copy.depth[0][0] = cns[0];
 	copy.depth[0][1] = cns[1];
@@ -172,10 +178,9 @@ void SVariant::set(sobj obj) {
 	copy.ratio[0] = cns[8];
 	copy.ratio[1] = cns[9];
 	copy.frequency = cns[10];
-	if (obj["homo"]) homo = true;
-	if (obj["genes"]) { sforeach(obj["genes"]) genes.add(E_); }
-	if (obj["mut"]) sforeach(obj["mut"]) mutants.add(E_.string());
-	if (obj["attr"]) attribute = obj["attr"];
+	sforeach(obj["genes"]) { genes.add(E_); }
+	sforeach(obj["mut"]) { mutants.add(E_.string()); }
+	attribute = obj["attr"];
 }
 sobj SVariant::toObj() { 
 	sarray copies = { 
@@ -183,13 +188,13 @@ sobj SVariant::toObj() {
 		copy.ndepth[0][0], copy.ndepth[0][1], copy.ndepth[1][0], copy.ndepth[1][1],
 		copy.ratio[0], copy.ratio[1], copy.frequency
 	}, garray, marray;
-	if (!genes.empty()) sforeach(genes) genes.add(E_.toObj());
+	if (!genes.empty()) { sforeach(genes) garray.add(E_.toObj()); }
 	if (!mutants.empty()) sforeach(mutants) marray.add(E_);
 	return {
-		kv("flag", flag), kv("name", name), kv("type", sbiutil::encodeVarType(type)),
+		kv("flag", flag), kv("name", name), kv("type", sbiutil::decodeVarType(type)),
 		kv("pos1", V({ kv("ref", ref[0]), kv("idx", pos[0].idx), kv("begin", pos[0].begin), kv("end", pos[0].end), kv("dir", pos[0].dir) })),
 		kv("pos2", V({ kv("ref", ref[1]), kv("idx", pos[1].idx), kv("begin", pos[1].begin), kv("end", pos[1].end), kv("dir", pos[1].dir) })),
-		kv("alt", alt), kv("read", V({ kv("forward", read[0]), kv("reverse", read[1]) })), kv("qual", qual),
+		kv("alt", alt), kv("read", V({ read[0], read[1] })), kv("qual", qual),
 		kv("copy", copies), kv("homo", homo), kv("genes", garray), kv("mut", marray), kv("attr", attribute)
 	};
 }

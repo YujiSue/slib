@@ -689,7 +689,11 @@ void SVarIO::loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, sattribut
 }
 void SVarIO::loadJSON(sio::SFile& file, SVarList* list) {
 	SJson json(file);
-	sforeach(json.array()) list->add(E_);
+	sforeach(json.array()) {
+		std::cout << E_ << std::endl;
+		list->add(E_);
+		std::cout << list->last()->toString() << std::endl;
+	}
 }
 
 void SVarIO::saveTxt(sio::SFile& file, SVarList* list) {}
