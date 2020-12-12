@@ -714,8 +714,10 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			}
 			else if (*cit == "Len2") {
 				if (0 < E_->pos[1].idx) file << E_->pos[1].length(true) << TAB;
-				else if (E_->type == DELETION || E_->type == INSERTION) file << E_->alt.length() << TAB;
-				else file << "-" << TAB;
+				else {
+					if (E_->type == DELETION || E_->type == INSERTION) file << E_->alt.length() << TAB;
+					else file << "-" << TAB;
+				}
 			}
 			else if (*cit == "Cov" || *cit == "Cov1") file << SNumber(E_->copy.depth[0][0]).precised(2) << TAB;
 			else if (*cit == "Cov2") file << SNumber(E_->copy.depth[1][0]).precised(2) << TAB;
@@ -731,42 +733,56 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			else if (*cit == "Gene") {
 				if (!E_->genes.empty()) {
 					stringarray gnames;
-					sforeach_(git, E_->genes) gnames.add(git->name);
-					file << slib::toString(gnames) << TAB;
+					auto count = 0;
+					sforeach_(git, E_->genes) {
+						if (count == 5) break;
+						gnames.add(git->name); ++count;
+					}
+					file << slib::toString(gnames) << (E_->genes.size() > 5 ? " etc...":"") << TAB;
 				}
 				else file << "-" << TAB;
 			}
 			else if (*cit == "Region" || *cit == "Site") {
 				if (!E_->genes.empty()) {
 					stringarray regions;
+					auto count = 0;
 					sforeach_(git, E_->genes) {
+						if (count == 5) break;
 						auto sites = sbiutil::geneSite(git->annotatedSite());
 						regions.add(sites.empty()?"-":sites[0]);
+						++count;
 					}
-					file << slib::toString(regions) << TAB;
+					file << slib::toString(regions) << (E_->genes.size() > 5 ? " etc,,," : "") << TAB;
 				}
 				else file << "-" << TAB;
 			}
 			else if (*cit == "Mutant") {
-				if (!E_->mutants.empty()) file << toString(E_->mutants) << TAB;
+				if (!E_->mutants.empty()) {
+					file << (E_->mutants.size() > 5 ? slib::toString(E_->mutants.subarray(0, 5)) : slib::toString(E_->mutants)) << TAB;
+				}
 				else file << "-" << TAB;
 			}
 			else if (*cit == "Repeat") file << (E_->attribute["repeat"] ? "true" : "false") << TAB;
 			else if (*cit == "Mutation") {
 				if (!E_->genes.empty()) {
 					stringarray mnames;
+					auto count = 0;
 					sforeach_(git, E_->genes) {
+						if (count == 5) break;
 						auto muts = sbiutil::mutType(git->mutation);
 						mnames.add(muts.empty() ? "-" : muts[0]);
+						++count;
 					}
-					file << slib::toString(mnames) << TAB;
+					file << slib::toString(mnames) << (E_->genes.size() > 5 ? " etc,,," : "") << TAB;
 				}
 				else file << "-" << TAB;
 			}
 			else if (*cit == "Substitution") {
 				if (!E_->genes.empty()) {
 					stringarray subs;
+					auto count = 0;
 					sforeach_(git, E_->genes) {
+						if (count == 5) break;
 						if (git->transcripts.empty()) subs.add("No transcript");
 						else {
 							String sub;
@@ -775,8 +791,9 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 							}
 							subs.add(sub);
 						}
+						++count;
 					}
-					file << slib::toString(subs) << TAB;
+					file << slib::toString(subs) << (E_->genes.size() > 5 ? " etc,,," : "") << TAB;
 				}
 				else file << "-" << TAB;
 			}

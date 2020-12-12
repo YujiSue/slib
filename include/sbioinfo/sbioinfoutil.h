@@ -19,6 +19,7 @@ namespace slib {
             ~SBioInfoException();
         };
 		
+		constexpr sushort MULTI_CANDIDATE_FLAG = 0x2000;
 		constexpr sushort NOT_USE_FLAG = 0x4000;
 		constexpr sushort UNAVAILABLE_FLAG = 0x8000;
 
