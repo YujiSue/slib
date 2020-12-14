@@ -19,7 +19,7 @@ SData::SData(const slib::String& str) : SData(str.length(), (void*)str.cstr()) {
 SData::SData(const slib::SString& str) : SData(str.length(), (void*)str.cstr()) {}
 SData::SData(const sobj &obj) : SData() {
     if (obj.isDat()) *this = obj.data();
-    else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+    else throw SException(ERR_INFO, SLIB_CAST_ERROR, "obj", CAST_TEXT(obj->getClass(), "SData"));
 }
 SData::SData(const SData &data) : SData(data.size(), const_cast<subyte *>(data.ptr())) {}
 SData::~SData() {}

@@ -25,7 +25,6 @@ void svar_data::comp() {
 }
 sint svar_data::total() const { return read[0] + read[1]; }
 double svar_data::bias() const { return SVarUtil::readBias(read); }
-double svar_data::phred() const { return sbiutil::phredVal(qual); }
 bool svar_data::comparable(const svar_data& v) const {
 	return type == v.type && pos[0].idx == v.pos[0].idx && pos[1].idx == v.pos[1].idx &&
             pos[0].dir == v.pos[0].dir && pos[1].dir == v.pos[1].dir;
@@ -48,7 +47,7 @@ String svar_data::toString(SBSeqList *ref) const {
 		pos[0].begin + 1 << ".." << pos[0].end + 1 << TAB <<
 		(ref ? ref->at(pos[1].idx)->name : String(pos[1].idx)) << ":" <<
 		pos[1].begin + 1 << ".." << pos[1].end + 1 << TAB <<
-		alt << TAB << read[0] <<"/" << read[1] << TAB << phred();
+		alt << TAB << read[0] <<"/" << read[1] << TAB << qual;
 	return str;
 }
 bool svar_data::operator < (const svar_data &v) const {

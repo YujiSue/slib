@@ -18,7 +18,6 @@ namespace slib {
 		Region(std::initializer_list<Range<T>> li);
         Region(const Region &reg);
         ~Region();
-        
         Region &operator=(const Range<T> &rng);
         Region &operator=(const Region &reg);
         T length(bool closed = false) const;

@@ -7,13 +7,8 @@
 namespace slib {
     class SLIB_DLL String;
 
-#ifdef SLIB_DEBUG
-#define EXPORT_MSG(e) (e).print(true)
-#define ERR_MSG(e) (e).toSrting(true)
-#else
-#define EXPORT_MSG(e) (e).print(false)
-#define ERR_MSG(e) (e).toSrting(false)
-#endif
+#define EXPORT_MSG(e) (e).print()
+#define ERR_MSG(e) (e).toSrting()
 
 	constexpr suint SLIB_NULL_ERROR = 0x0001;
     constexpr suint SLIB_CAST_ERROR = 0x0002;
@@ -29,8 +24,8 @@ namespace slib {
 	constexpr suint SLIB_SHARED_MEMORY_ALLOC_ERR = 0x000C;
 
 	#define TARGET_TEXT(T) u8"\""+String(T)+u8"\""
-    #define CAST_TEXT(F, T) u8"< '"+String(F)+u8"' => '"+String(T)+u8">"
-    #define RANGE_TEXT(B, E) u8"["+String(B)+u8", "+String(E)+u8")"
+    #define CAST_TEXT(F, T) u8"[ '"+String(F)+u8"' => '"+String(T)+u8" ]"
+    #define RANGE_TEXT(B, E) u8"( "+String(B)+u8" : "+String(E)+u8" )"
 	#define EXEC_TEXT(E) u8"Return :"+String(E)
 	#define CONFLICT_TEXT(A, B) u8"'"+String(A)+u8"' vs '"+String(B)+"'"
 	
@@ -43,16 +38,10 @@ namespace slib {
         
     public:
         SException(const char *f, sint l,  const char *func, sint e = 0, const char *target = nullptr, const char *note = nullptr);
-        virtual ~SException();
-        
+        virtual ~SException();        
         sint error();
-#ifdef _DEBUG
-		String toString(bool debug = true) const;
-		void print(bool debug = true) const;
-#else
-        String toString(bool debug = false) const;
-        void print(bool debug = false) const;
-#endif
+        String toString() const;
+        void print() const;
 	};
 }
 

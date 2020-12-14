@@ -162,6 +162,7 @@ sushort slib::sbio::sbiutil::geneSiteIdx(const char* s) {
 	if (str == "intron") return sbio::INTRON;
 	if (str == "splice site") return sbio::SPLICE_SITE;
 	if (str.contain("rna")) return sbio::PROCESSED;
+	return 0;
 }
 sushort slib::sbio::sbiutil::geneSiteIdx(const stringarray& s) {
 	sushort i = 0;

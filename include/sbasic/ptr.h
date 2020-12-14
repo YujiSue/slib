@@ -11,7 +11,6 @@ namespace slib {
     protected:
 		std::atomic<int>* _scope;
         T *_ptr;
-        
     public:
         Pointer();
         Pointer(T *obj);

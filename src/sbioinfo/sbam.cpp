@@ -23,7 +23,6 @@ bool sbam::voffset::operator < (const sbam::voffset &v) const {
 bool sbam::voffset::operator == (const sbam::voffset &v) const {
     return file_offset == v.file_offset && block_offset == v.block_offset;
 }
-
 sbam::header::header() : ref_num(0) {}
 sbam::header::~header() {}
 void sbam::header::set(int n) {
@@ -33,11 +32,15 @@ void sbam::header::set(int n) {
 }
 String sbam::header::toString() const{
 	String str;
-	str << "Reference count: " << ref_num << NEW_LINE;
-	str << "Index" << TAB << "Name" << SPACE * 6 << TAB << "Length (bp)" << SPACE * 4 << NEW_LINE;
+	str << String("=") * 60 << NEW_LINE;
+	str << SPACE * 5 << "Index" << SPACE * 5 << "| Name" << SPACE * 16 << "| Length (bp)" << SPACE * 6 << NEW_LINE;
 	sforin(r, 0, ref_num) {
-		str << TAB << String(r + 1).filled(5, ' ', true) << TAB << ref_name[r].filled(10, ' ') << TAB << String(ref_length[r]).filled(15, ' ') << NEW_LINE;
+		str << SPACE * 5 << String(r + 1).filled(10, ' ') << "| " << ref_name[r].filled(20, ' ') << "| " << ref_length[r] << NEW_LINE;
 	}
+	str << String("-") * 60 << NEW_LINE;
+	str << text << NEW_LINE;
+	str << String("=") * 60 << NEW_LINE;
+	return str;
 }
 void sbam::header::init() { 
 	ref_num = 0;
@@ -61,27 +64,6 @@ sbam::readinfo::readinfo(const sbam::readinfo& ri) {
 	name = ri.name;
 	auxiliary = ri.auxiliary;
 }
-/*
-sbam::readinfo::readinfo(const sbam::readinfo &ri) : ubytearray(ri) {
-	if(ri.interpreted) {
-		interpreted = true;
-		length = ri.length;
-		seq_length = ri.seq_length;
-		pos = ri.pos;
-		cigars = ri.cigars;
-		bin = ri.bin;
-		flag = ri.flag;
-		mapq = ri.mapq;
-		next_refid = ri.next_refid;
-		next_pos = ri.next_pos;
-		template_length = ri.template_length;
-		sequence = ri.sequence;
-		qual = ri.qual;
-		name = ri.name;
-		auxiliary = ri.auxiliary;
-	}
-}
-*/
 sbam::readinfo::~readinfo() {}
 sint sbam::readinfo::getRef(ubytearray& data) {
 	if(data.size() < 4) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, String(4), READ_SIZE_ERR_MSG);
@@ -142,11 +124,6 @@ void sbam::readinfo::interpret(ubytearray& data, bool aux) {
 	tmp = *reinterpret_cast<sint*>(p);
 	p += 4; length -= 4; lenCheck(length);
 	cigars.resize(tmp & 0xFFFF, false);
-
-	if (!cigars.size()) {
-		std::cout << "cigar size err." << std::endl;
-	}
-
 	flag = (tmp >> 16) & 0xFFFF;
 	if (flag & sbam::COMPLEMET_READ) pos.dir = true;
 	seqlen = *reinterpret_cast<sint*>(p);
@@ -349,12 +326,12 @@ void SBam::init() {
 void SBam::open(const char* path) {
 	if (_file.isOpened()) _file.close();
 	_file.open(path);
+	_data->load(this);
+	_checkError();
+	_threads.addTask(&sbam::bgzf_dat::load, _buffer, this);
 }
 void SBam::load(const char *path) {
 	open(path);
-    _data->load(this);
-    _checkError();
-    _threads.addTask(&sbam::bgzf_dat::load, _buffer, this);
     info.init();
     loadIndex(String(path)+".bai");
     _readHeader();
@@ -364,7 +341,7 @@ void SBam::close() {
 }
 suinteger SBam::size() const { return _file.size(); }
 suinteger SBam::offset() { return _file.offset(); }
-const String& SBam::path() const { return _file.path(); }
+String SBam::path() const { return _file.path(); }
 void SBam::loadIndex(const char *path) {
     index.init();
     if (sio::SFile(path).exist()) index.load(path);

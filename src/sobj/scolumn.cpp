@@ -93,31 +93,31 @@ bool SColumn::empty() const {
 	return _table->_rows.empty();
 }
 sobj& SColumn::at(sint i) {
-	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_table");
 	return _table->column(_name)[i];
 }
 const sobj& SColumn::at(sint i) const {
-	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_table");
 	return _table->column(_name)[i];
 }
 sobj& SColumn::operator[](sint i) { return at(i); }
 const sobj& SColumn::operator[](sint i) const { return at(i); }
 sobj SColumn::getValue(sint i) const {
-	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_table");
 	return _table->column(_name)[i];
 }
 SArray SColumn::getValues(sint r, sint h) const {
-	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_table");
 	SArray array(r);
 	sint col = _table->columnIndex(_name);
 	return _table->getValues(r, col, h, 1);
 }
 void SColumn::clearValue(sint i) const {
-	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_table");
 	_table->column(_name)[i] = snull;
 }
 void SColumn::clearValues(sint r, sint h) const {
-	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+	if (!_table) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_table");
 	sint col = _table->columnIndex(_name);
 	_table->clearValues(r, col, h, 1);
 }

@@ -219,7 +219,7 @@ namespace slib {
             
 			suinteger size() const;
 			suinteger offset();
-			const String& path() const;
+			String path() const;
 
             sbam::voffset voff() const;
             void setVOff(const sbam::voffset &v);

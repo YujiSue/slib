@@ -149,10 +149,17 @@ void SNGSData::setParam(sngs_param* p) {
 	if (p && p->ref) {
 		summary.bin = p->bin;
 		setNum(p->ref->size());
+		_lock = UArray<SLock>(p->ref->size() * 5);
 		sforin(r, 0, p->ref->size()) {
 			setLength(r, p->ref->at(r)->length());
 		}
 	}
+}
+void SNGSData::addVariant(sint idx, svar_data& var) { srvs.variants[idx].add(var); }
+void SNGSData::addVariantAsync(sint idx, svar_data& var) {
+	_lock[idx].lock();
+	srvs.variants[idx].add(var);
+	_lock[idx].unlock();
 }
 inline void readVar(svar_data& var, sio::SFile& file) {
 	subyte byte;

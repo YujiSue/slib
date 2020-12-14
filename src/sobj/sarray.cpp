@@ -47,7 +47,7 @@ void SArray::load(const char *path) {
         doc.load(path);
         auto node = doc.entity()->children().first();
         if(doc.type() != xml::PLIST)
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, path, "plist");
         *this = SXmlNode::toPlistObj(node);
     }
     else if(ext == "json") {

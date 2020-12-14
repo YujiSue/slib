@@ -442,10 +442,10 @@ void SVarIO::loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref) {
 		sforeachi(col) {
 			SVariant *var = new SVariant();
 			if (col[i] == "Chr" || col[i] == "Chr1") {
-				var->ref[0] = dat[i]; var->pos[0].idx = ref->index[dat[i]];
+				var->ref[0] = dat[i]; var->pos[0].idx = (sint)ref->index[dat[i]];
 			}
 			else if (col[i] == "Chr2") {
-				var->ref[1] = dat[i]; var->pos[1].idx = ref->index[dat[i]];
+				var->ref[1] = dat[i]; var->pos[1].idx = (sint)ref->index[dat[i]];
 			}
 			else if (col[i] == "Pos" || col[i] == "Pos1") var->pos[0].begin = dat[i];
 			else if (col[i] == "Pos2") var->pos[1].begin = dat[i];
@@ -538,19 +538,19 @@ inline void _VCFToMNV(SVariant &var, String& alt, stringarray& data) {
 }
 inline void _VCFToDEL(SVariant &var, String& alt, stringarray& data) {
 	var.type = DELETION;
-	int off = 1, len = data[3].length() - alt.length();
+	sint off = 1, len = (sint)data[3].length() - (sint)alt.length();
 	while (off < alt.length() &&
-		data[3][data[3].length() - off] == alt[(sint)alt.length() - off]) ++off;
-	var.pos[0].begin += alt.length() - off + 1;
+		data[3][(sint)data[3].length() - off] == alt[(sint)alt.length() - off]) ++off;
+	var.pos[0].begin += (sint)alt.length() - off + 1;
 	var.pos[0].end = var.pos[0].begin + len - 1;
-	var.attribute["Ref"] = data[3].substring((sint)alt.length() - off + 1, len);
+	var.attribute["Ref"] = data[3].substring(alt.length() - off + 1, len);
 }
 inline void _VCFToINS(SVariant &var, String& alt, stringarray& data) {
 	var.type = INSERTION;
 	int off = 1, len = (sint)(alt.length() - data[3].length());
 	while (off < data[3].length() &&
-		data[3][data[3].length() - off] == alt[alt.length() - off]) ++off;
-	var.pos[0].begin += data[3].length() - off + 1;
+		data[3][(sint)data[3].length() - off] == alt[(sint)alt.length() - off]) ++off;
+	var.pos[0].begin += (sint)data[3].length() - off + 1;
 	var.pos[0].end = var.pos[0].begin;
 	var.alt = alt.substring(data[3].length() - off + 1, len).cstr();
 	var.attribute["Ref"] = "";
@@ -614,7 +614,7 @@ inline void _setVCFFormat(Array<SVariant>& variants, String &keydat, String &for
 							variants[v].attribute[key] = "0/1";
 						}
 						else {
-							if (genotype.find(String(v + 1), idx+1) == NOT_FOUND) {
+							if (genotype.find(String(v + 1), idx + 1) == NOT_FOUND) {
 								variants[v].homo = false;
 								variants[v].attribute[key] = "1/2";
 							}
@@ -628,15 +628,15 @@ inline void _setVCFFormat(Array<SVariant>& variants, String &keydat, String &for
 			}
 		}
 		else {
-			if (form_attr[key]["Number"] == "A") {
-				stringarray vals = format.split(",");
-				sforin(v, 0, variants.size()) variants[v].attribute[key] = vals[v];
-			}
-			else { sforeach_(vit, variants) vit->attribute[key] = format; }
+		if (form_attr[key]["Number"] == "A") {
+			stringarray vals = format.split(",");
+			sforin(v, 0, variants.size()) variants[v].attribute[key] = vals[v];
+		}
+		else { sforeach_(vit, variants) vit->attribute[key] = format; }
 		}
 	}
 }
-inline void _readVCFData(String& row, SVarList* list, Array<SVariant> &variants, sattribute* converter, bool format) {
+inline void _readVCFData(String& row, SVarList* list, Array<SVariant>& variants, const sattribute* converter, bool format) {
 	stringarray data = row.split("\t");
 	if (format && data.size() < 10) throw SBioInfoException(ERR_INFO);
 	else if (data.size() < 8) throw SBioInfoException(ERR_INFO);
@@ -661,11 +661,11 @@ inline void _readVCFData(String& row, SVarList* list, Array<SVariant> &variants,
 			}
 		}
 	}
-	sforeach(variants) { 
+	sforeach(variants) {
 		if (E_.flag != UNAVAILABLE_FLAG) list->add(E_);
 	}
 }
-void SVarIO::loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, sattribute *converter) {
+void SVarIO::loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, const sattribute* converter) {
 	list->clearAll();
 	list->filetype = "vcf";
 	bool format = false;
@@ -705,18 +705,23 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 	sforeach(*list) {
 		sforeach_(cit, col) {
 			if (*cit == "Chr" || *cit == "Chr1") file << E_->ref[0] << TAB;
-			else if (*cit == "Chr2") file << (E_->pos[1].idx < 0?"-": E_->ref[1]) << TAB;
+			else if (*cit == "Chr2") file << (E_->pos[1].idx < 0 ? "-" : E_->ref[1]) << TAB;
 			else if (*cit == "Pos" || *cit == "Pos1") file << E_->pos[0].begin << TAB;
 			else if (*cit == "Pos2") file << (E_->pos[1].idx < 0 ? "-" : String(E_->pos[1].begin)) << TAB;
 			else if (*cit == "Len" || *cit == "Len1") {
-				if (E_->type == INSERTION) file << E_->alt.length() << TAB;
-				else file << E_->pos[0].length(true) << TAB;
+				if (E_->type & DELETION) file << E_->pos[0].length(true) << TAB;
+				else if (E_->type == INSERTION && E_->pos[1].idx < 0) file << E_->alt.length() << TAB;
+				else file << "0" << TAB;
 			}
 			else if (*cit == "Len2") {
-				if (0 < E_->pos[1].idx) file << E_->pos[1].length(true) << TAB;
-				else {
-					if (E_->type == DELETION || E_->type == INSERTION) file << E_->alt.length() << TAB;
+				if (E_->pos[1].idx < 0) {
+					if (E_->type == DELETION) file << E_->alt.length() << TAB;
 					else file << "-" << TAB;
+				}
+				else {
+					if (E_->type & INSERTION) file << E_->pos[1].length() << TAB;
+					else if ((E_->type & TRANSLOCATION) && (E_->type & DELETION)) file << E_->pos[1].length(false) - 1 << TAB;
+					else file << E_->pos[1].length() << TAB;
 				}
 			}
 			else if (*cit == "Cov" || *cit == "Cov1") file << SNumber(E_->copy.depth[0][0]).precised(2) << TAB;
@@ -803,7 +808,6 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			else if (*cit == "Genotype" || *cit == "Homo") file << (E_->homo ? "Homo" : "Hetero") << TAB;
 			else if (*cit == "Qual") file << SNumber(E_->qual).precised(2) << TAB;
 			else if (*cit == "Freq") file << SNumber(E_->copy.frequency).precised(2) << TAB;
-			else if (*cit == "Homo") file << SNumber(E_->homo).toString() << TAB;
 			else if (*cit == "Name") file << E_->name << TAB;
 			else if (*cit == "Sample") file << list->name << TAB;
 		}

@@ -29,7 +29,6 @@ namespace slib {
             void comp();
             sint total() const;
             double bias() const;
-            double phred() const;
             bool comparable(const svar_data &v) const;
             bool lt(const svar_data &var, size_t dist) const;
             bool equal(const svar_data &var, size_t dist) const;
@@ -116,7 +115,7 @@ namespace slib {
             SVarList(const char *s);
             SVarList(const SVarList &vl);
             virtual ~SVarList();
-            void load(const char *path, SBSeqList* ref = nullptr, sattribute *converter = nullptr);
+            void load(const char *path, SBSeqList* ref = nullptr, const sattribute *converter = nullptr);
             void save(const char *path, SBSeqList* ref = nullptr);
 			void tidy(size_t s = -1);
 			void addFlag(sushort f);

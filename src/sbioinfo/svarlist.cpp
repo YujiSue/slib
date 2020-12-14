@@ -13,7 +13,7 @@ SVarList::SVarList(const SVarList &vl) : Array<svar>(vl) {
 }
 SVarList::~SVarList() {}
 
-void SVarList::load(const char *path, SBSeqList *ref, sattribute* converter) {
+void SVarList::load(const char *path, SBSeqList *ref, const sattribute* converter) {
 	sio::SFile file(path);
 	auto ext = file.extension();
 	if (ext == "vcf") SVarIO::loadVCF(file, this, ref, converter);

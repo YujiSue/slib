@@ -16,33 +16,58 @@ prefix("slib"), file(f), line(l), function(func), err(e) {
     switch (err) {
         case SLIB_NULL_ERROR:
 		{
+#ifdef LANG_JA
+			message = u8"Null値エラー";
+			description << target << u8" は null です。";
+#else
 			message = "Null value error.";
-			description = TARGET_TEXT(target) + u8" is null value.";
-			break;
+			description << target << " is null value.";
 
+#endif
+			break;
 		}
 		case SLIB_CAST_ERROR:
 		{
+#ifdef LANG_JA
+			message = u8"値の型変換エラー";
+			description << target << u8" は型変換 " + String(note ? note : "") + u8" に対応していません。";
+#else
 			message = "Cast error.";
-			description = TARGET_TEXT(target) + u8" is unable to cast (" + String(note ? note : "")+u8")";
+			description << target << u8" is unable to cast " + String(note ? note : "")+u8".";
+#endif
 			break;
 		}
 		case SLIB_RANGE_ERROR:
 		{
+#ifdef LANG_JA
+			message = u8"範囲外値指定エラー";
+			description << target << u8" は適正な範囲 " + String(note ? note : "") << " から外れた値です。";
+#else
 			message = "Out of range error.";
-			description = TARGET_TEXT(target) + u8" is out of range " + String(note ? note : "");
+			description  << target << u8" is out of range " + String(note ? note : "");
+#endif
 			break;
 		}
 		case SLIB_FORMAT_ERROR:
 		{
+#ifdef LANG_JA
+			message = u8"フォーマットエラー";
+			description << "'" << target << u8"' は形式 '" + String(note ? note : "") + u8"' に適合しません。";
+#else
 			message = "Format error.";
-			description = TARGET_TEXT(target) + u8" does not match format '" + String(note ? note : "")+u8"'";
+			description << "'" << target << u8"' does not match format '" + String(note ? note : "")+u8"'";
+#endif
 			break;
 		}
 		case SLIB_NOT_FOUND_ERROR:
 		{
+#ifdef LANG_JA
+			message = u8"不一致エラー";
+			description << target << u8" は '" + String(note ? note : "") + u8"' の中には見つかりませんでした。";
+#else
 			message = "Not found error.";
-			description = TARGET_TEXT(target) + u8" was not found in '" + String(note ? note : "") + u8"'";
+			description << target << u8" was not found in '" + String(note ? note : "") + u8"'";
+#endif
 			break;
 		}
 		case SLIB_READ_ERROR:
@@ -94,13 +119,12 @@ prefix("slib"), file(f), line(l), function(func), err(e) {
 SException::~SException() {}
 
 sint SException::error() { return err; }
-String SException::toString(bool debug) const {
+String SException::toString() const {
 	String err_str = String(prefix) << " error! [#" << err << "]: " <<
-		message << NEW_LINE << "> " << description;
-	if (debug)
-		err_str << NEW_LINE << " @ '" << function << "'" << NEW_LINE << " in {" << file << "} (l." << line << ")";
+		message << NEW_LINE << "> " << description << NEW_LINE << 
+		" @ '" << function << "'" << NEW_LINE << " in { '" << file << "' l." << line << " }";
 	return err_str;
 }
-void SException::print(bool debug) const {
-	std::cout << SColorText("red", toString(debug)) << std::endl;
+void SException::print() const {
+	std::cout << SColorText("red", toString()) << std::endl;
 }

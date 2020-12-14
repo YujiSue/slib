@@ -69,7 +69,8 @@ namespace slib {
 			sio::SFile _file;
 			bool _loaded;
             SWork _threads;
-            std::mutex *_mtxs;
+			UArray<SLock> _lock;
+            //std::mutex *_mtxs;
             
         public:
 			summary_data summary;
@@ -95,7 +96,8 @@ namespace slib {
             void setLength(int idx, size_t len);
 			void setBin(sint bin);
 			void setParam(sngs_param *p);
-            
+			void addVariant(sint idx, svar_data& var);
+			void addVariantAsync(sint idx, svar_data& var);
             //void makeVIndex(Array<varparray> &index, svariant_param *vp, SWork* threads = nullptr);
 			void subtract(SNGSData& dat, svariant_param* vp, SWork* threads = nullptr);
             //void tidy(svariant_param *vp);

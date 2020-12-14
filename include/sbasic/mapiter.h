@@ -9,7 +9,6 @@
 namespace slib {
 	template<class Key, class Val>
 	class Map;
-
     template<class Key, class Val>
     struct kvpair {
         Key key;

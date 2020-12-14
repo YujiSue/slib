@@ -322,7 +322,7 @@ SObject &SObjPtr::operator*() {
     return *_ptr;
 }
 const SObject &SObjPtr::operator*() const {
-    if (!_ptr) throw SException(ERR_INFO, SLIB_NULL_ERROR);
+    if (!_ptr) throw SException(ERR_INFO, SLIB_NULL_ERROR, "_ptr");
     return *_ptr;
 }
 void SObjPtr::share() { if (_ptr) _ptr->addScope(); }

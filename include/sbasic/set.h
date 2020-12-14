@@ -57,13 +57,10 @@ namespace slib {
 			str << typeid(First).name() << ","; rest.addName(str);
 		}
 	};
-
 	template<class... Args>
 	class Set {
-	
 	protected:
 		set_element<0, Args...> _args;
-
 	public:
 		Set();
 		Set(Args... args);

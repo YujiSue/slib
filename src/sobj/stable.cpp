@@ -148,11 +148,11 @@ SColumn& STable::columnAt(int idx) { return _columns[idx]; }
 const SColumn &STable::columnAt(int idx) const { return _columns[idx]; }
 SColumn &STable::column(const char* name) {
 	sforeach(_columns) { if (E_._name == name) return E_; }
-	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR);
+	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR, name, "columns");
 }
 const SColumn &STable::column(const char *name) const {
 	sforeach(_columns) { if (E_._name == name) return E_; }
-	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR);
+	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR, name, "columns");
 }
 Array<SColumn>& STable::columns() { return _columns; }
 const Array<SColumn>&STable::columns() const { return _columns; }

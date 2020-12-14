@@ -141,7 +141,7 @@ slib::SIterator &slib::SIterator::operator --() {
             --_it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator--");
             break;
         default:
             break;
@@ -174,7 +174,7 @@ slib::SIterator &slib::SIterator::operator-=(std::ptrdiff_t diff) {
             _it._ait-=diff;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-=");
             break;
         default:
             break;
@@ -192,7 +192,7 @@ sinteger slib::SIterator::operator-(SIterator it) {
             return _it._ait-it._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-");
             break;
         default:
             break;
@@ -264,7 +264,7 @@ bool slib::SIterator::operator <=(const slib::SIterator &sit) const {
             return _it._ait <= sit._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator<=");
             break;
         default:
             break;
@@ -280,7 +280,7 @@ bool slib::SIterator::operator >(const slib::SIterator &sit) const {
             return _it._ait > sit._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw sit._it._mit < _it._mit;
             break;
         default:
             break;
@@ -296,7 +296,7 @@ bool slib::SIterator::operator >=(const slib::SIterator &sit) const {
             return _it._ait >= sit._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator>=");
             break;
         default:
             break;
@@ -440,7 +440,7 @@ slib::SCIterator &slib::SCIterator::operator --() {
             --_it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator--");
             break;
         default:
             break;
@@ -473,7 +473,7 @@ slib::SCIterator &slib::SCIterator::operator-=(std::ptrdiff_t diff) {
             _it._ait-=diff;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-=");
             break;
         default:
             break;
@@ -491,7 +491,7 @@ sinteger slib::SCIterator::operator-(SCIterator it) {
             return _it._ait-it._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-");
             break;
         default:
             break;
@@ -563,7 +563,7 @@ bool slib::SCIterator::operator <=(const slib::SCIterator &sit) const {
             return _it._ait <= sit._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator<=");
             break;
         default:
             break;
@@ -579,7 +579,7 @@ bool slib::SCIterator::operator >(const slib::SCIterator &sit) const {
             return _it._ait > sit._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+			return sit._it._mit < _it._mit;
             break;
         default:
             break;
@@ -595,7 +595,7 @@ bool slib::SCIterator::operator >=(const slib::SCIterator &sit) const {
             return _it._ait >= sit._it._ait;
             break;
         case DICT_OBJ:
-            throw SException(ERR_INFO);
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator>=");
             break;
         default:
             break;

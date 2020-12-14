@@ -290,7 +290,7 @@ inline void _annotSmallMUL(SVariant* var, gene_site* gene, SBSeqList* ref, Strin
 			region.shift(-tit->info->begin);
 			*ori = ref->at(var->pos[0].idx)->raw(tit->info->begin - 1, tit->info->length(true));
 			*alt = *ori;
-			float cp = var->homo ? var->copy.ratio[0] : var->copy.ratio[0] * 2 - 1.0;
+			auto cp = var->homo ? var->copy.ratio[0] : var->copy.ratio[0] * 2.0 - 1.0;
 			sint off = var->pos[0].begin - tit->info->begin,
 				off2 = var->pos[0].end - tit->info->begin,
 				copy = (cp - floor(cp)) < 0.5 ? floor(cp) : floor(cp) + 1;

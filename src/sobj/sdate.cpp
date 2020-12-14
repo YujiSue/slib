@@ -145,7 +145,7 @@ void SDate::_parse(const String& date, const char *form) {
 		else if (E_ == u8"号") {
 			readSize(tmp, dit, 2); --dit;
 			jp = true;
-			year = (int)speriod::ERA_J_YEAR[speriod::ERA_J.find(tmp)];
+			year = speriod::ERA_J_YEAR[(sint)speriod::ERA_J.find(tmp)];
 			tmp.clear();
 		}
 		else if (E_ == u8"年") {
@@ -391,7 +391,7 @@ Time SDate::operator - (const SDate& date) const {
 bool SDate::summerTime() const { return tzone & 0x80; }
 suint SDate::ymd() const { suint val = 0; val |= mday | (month << 5) | (year << 9); return val; }
 suint SDate::hms() const { suint val = 0; val |= sec | (minute << 6) | (hour << 12); return val; }
-sinteger SDate::intValue() const { sinteger val = ymd(); val << 32; val |= hms(); return val; }
+sinteger SDate::intValue() const { auto val = ((sinteger)ymd() << 32); val |= hms(); return val; }
 int SDate::lag() const { 
 	if (tzone == 0xFF) return -1;
 	return (tzone & 0x40 ? -1 : 1) * ((tzone & 0x03) * 15 + ((tzone >> 2) & 0x0F)) * 60 + (tzone & 0x80 ? 60 : 0); 

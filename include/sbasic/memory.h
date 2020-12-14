@@ -93,17 +93,12 @@ namespace slib {
     template<typename T>
     void SMemory<T>::shift(T *dest, T *src, size_t size) {
 		if (dest < src) {
-			sforin(i, 0, size) {
-				new(dest) T(*src); src->~T(); new(src) T(); ++dest; ++src;
-			}
+			sforin(i, 0, size) { new(dest) T(*src); src->~T(); new(src) T(); ++dest; ++src; }
 		}
 		else {
 			dest += size - 1; src += size - 1; 
-			sforin(i, 0, size) {
-				new(dest) T(*src); src->~T(); new(src) T(); --dest; --src;
-			}
+			sforin(i, 0, size) { new(dest) T(*src); src->~T(); new(src) T(); --dest; --src; }
 		}
     }
 }
-
 #endif

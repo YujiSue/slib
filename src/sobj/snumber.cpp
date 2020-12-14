@@ -679,7 +679,7 @@ SNumber & SNumber::operator/=(const SNumber & num) {
                     break;
                 }
                 case SNumber::BOOL:
-                    throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+                    throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
                 case SNumber::FRAC:
                 {
                     if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
@@ -726,7 +726,7 @@ SNumber & SNumber::operator/=(const SNumber & num) {
 					break;
                 }
                 case SNumber::BOOL:
-					throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+					throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
                 case SNumber::FRAC:
                 {
 					if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
@@ -770,7 +770,7 @@ SNumber & SNumber::operator/=(const SNumber & num) {
 					break;
                 }
                 case SNumber::BOOL:
-					throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+					throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
                 case SNumber::FRAC:
                 {
 					if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
@@ -791,7 +791,7 @@ SNumber & SNumber::operator/=(const SNumber & num) {
             break;
         }
         case SNumber::BOOL:
-			throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+			throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
         case SNumber::FRAC:
         {
             switch (num._type) {
@@ -817,7 +817,7 @@ SNumber & SNumber::operator/=(const SNumber & num) {
                     break;
                 }
                 case SNumber::BOOL:
-					throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+					throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
                 case SNumber::FRAC:
                 {
 					if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
@@ -864,7 +864,7 @@ SNumber & SNumber::operator/=(const SNumber & num) {
                     break;
                 }
                 case SNumber::BOOL:
-					throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+					throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
                 case SNumber::FRAC:
                 {
 					if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");
@@ -909,7 +909,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
                     break;
                 }
 				case SNumber::BOOL:
-					throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+					throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
                 case SNumber::FRAC:
                 {
 					sfrac tmp = (sint)_value._i - num.fraction() * (sint)q;
@@ -947,7 +947,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 				break;
 			}
 			case SNumber::BOOL:
-				throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+				throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
 			case SNumber::FRAC:
 			{
 				sfrac tmp = (sint)_value._ui - num.fraction() * (sint)q;
@@ -982,7 +982,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 				_value._r -= num._value._r * q;
 				break;
 			case SNumber::BOOL:
-				throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+				throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
 			case SNumber::FRAC:
 				_value._r -= num.doubleValue() * q;
 				break;
@@ -1000,7 +1000,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
             break;
         }
 		case SNumber::BOOL:
-			throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+			throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
 		case SNumber::FRAC:
         {
             switch (num._type) {
@@ -1027,7 +1027,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 				break;
 			}
 			case SNumber::BOOL:
-				throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+				throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
 			case SNumber::FRAC:
 			{
 				sfrac tmp = fraction() - num.fraction() * (sint)q;
@@ -1061,7 +1061,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 				_value._c[0] -= (float)num._value._r * q;
 				break;
 			case SNumber::BOOL:
-				throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+				throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
 			case SNumber::FRAC:
 				_value._c[0] -= num.floatValue() * q;
 				break;
@@ -1143,7 +1143,7 @@ SNumber SNumber::operator-() const {
         case SNumber::REAL:
             return SNumber(_value._r * -1.0);
         case SNumber::BOOL:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "_value");
+            throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
         case SNumber::FRAC:
             return SNumber(_value._f[0]*-1, _value._f[1]*-1);
         case SNumber::COMPLEX:
@@ -1291,7 +1291,7 @@ sinteger SNumber::quot(const SNumber& num) const {
 			break;
 		}
 		case SNumber::BOOL:
-			throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "bool", "division");
+			throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
 		case SNumber::FRAC:
 		{
 			if (num._value._f[0] == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "num");

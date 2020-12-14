@@ -122,7 +122,7 @@ namespace slib {
 
 			static void loadTxt(sio::SFile& file, SVarList* list, SBSeqList* ref);
 			static void loadTSV(sio::SFile& file, SVarList* list, SBSeqList* ref);
-			static void loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, sattribute *converter);
+			static void loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, const sattribute *converter);
 			static void loadJSON(sio::SFile& file, SVarList* list);
 			static void saveTxt(sio::SFile& file, SVarList* list);
 			static void saveTSV(sio::SFile& file, SVarList* list, 
