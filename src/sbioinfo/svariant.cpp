@@ -177,9 +177,13 @@ void SVariant::set(sobj obj) {
 	copy.ratio[0] = cns[8];
 	copy.ratio[1] = cns[9];
 	copy.frequency = cns[10];
-	sforeach(obj["genes"]) { genes.add(E_); }
-	sforeach(obj["mut"]) { mutants.add(E_.string()); }
-	attribute = obj["attr"];
+	if (obj["genes"] && !obj["genes"].empty()) {
+		sforeach(obj["genes"]) { genes.add(E_); }
+	}
+	if (obj["mut"] && !obj["mut"].empty()) {
+		sforeach(obj["mut"]) { mutants.add(E_.string()); }
+	}
+	if (obj["attr"]) attribute = obj["attr"];
 }
 sobj SVariant::toObj() { 
 	sarray copies = { 

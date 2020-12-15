@@ -709,7 +709,7 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			else if (*cit == "Pos" || *cit == "Pos1") file << E_->pos[0].begin << TAB;
 			else if (*cit == "Pos2") file << (E_->pos[1].idx < 0 ? "-" : String(E_->pos[1].begin)) << TAB;
 			else if (*cit == "Len" || *cit == "Len1") {
-				if (E_->type & DELETION) file << E_->pos[0].length(true) << TAB;
+				if (E_->type & DELETION || E_->type == INVERSION || E_->type == DUPLICATION || E_->type == MULTIPLICATION) file << E_->pos[0].length(true) << TAB;
 				else if (E_->type == INSERTION && E_->pos[1].idx < 0) file << E_->alt.length() << TAB;
 				else file << "0" << TAB;
 			}
@@ -721,6 +721,7 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 				else {
 					if (E_->type & INSERTION) file << E_->pos[1].length() << TAB;
 					else if ((E_->type & TRANSLOCATION) && (E_->type & DELETION)) file << E_->pos[1].length(false) - 1 << TAB;
+					else if (E_->type & INVERSION) file << E_->pos[1].length(true) << TAB;
 					else file << E_->pos[1].length() << TAB;
 				}
 			}

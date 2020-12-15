@@ -483,7 +483,7 @@ void SCode::decodeBASE64(const String& base, String& ori) {
 }
 void SCode::expandTo(ubytearray& ori, ubytearray& dest, size_t cap, sint bits, sint flush) {
 	if (ori.empty()) return;
-	size_t capacity = cap == -1 ? (size_t)((double)ori.size() * 1.5) : cap;
+	sint capacity = (cap == -1 ? (sint)((double)ori.size() * 1.5) : cap);
 	dest.resize(capacity);
 	z_stream strm;
 	strm.zalloc = Z_NULL;
