@@ -14,6 +14,7 @@ sngs_param& sngs_param::operator=(const sngs_param& par) {
 	pcrdup = par.pcrdup;
 	parallele = par.parallele;
 	bin = par.bin;
+	return *this;
 }
 void sngs_param::setRef(SBSeqList* r) { ref = r; }
 void sngs_param::loadTarget(const char* s) {

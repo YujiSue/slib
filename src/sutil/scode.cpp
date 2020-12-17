@@ -109,8 +109,6 @@ bool SHash::sha512check(ubytearray& data, const char* str) {
 	SHash::sha512Str(data, s);
 	return !strcmp(s.cstr(), str);
 }
-
-
 const suint SZip::LOCAL_FILE_HEADER_SIG = 0x04034B50;
 const suint SZip::DATA_DESCRIPTOR_SIG = 0x08074B50;
 const suint SZip::CENTRAL_DIR_SIG = 0x02014B50;
@@ -192,8 +190,8 @@ inline void readLocalHeader(sio::SFile &ori, SZip::centralDir &cd, SZip::localFi
 	if (lfh.elen) { lfh.ext.resize(lfh.elen); ori.readBytes(lfh.ext.ptr(), lfh.elen); }
 	if (cd.csize) {
 		dat.clear();
-		dat.reserve(cd.rsize + 1);
-		dat.resize(cd.csize + 10);
+		dat.reserve((size_t)cd.rsize + 1);
+		dat.resize((size_t)cd.csize + 10);
 		dat[0] = 0x1F; dat[1] = 0x8B; dat[2] = 0x08; dat[9] = 0x13;
 		ori.readBytes(&dat[10], cd.csize);
 	}
@@ -406,10 +404,9 @@ void SCode::urlDecode(String &str) {
     str.replace("%7E", "~");
     str.replace("%25", "%");
 }
-
 const char *SCode::B64_STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 subyte SCode::b64i(const char &c) {
-    uint8_t b = *((uint8_t *)&c);
+    subyte b = *((subyte *)&c);
     if (0x60 < b) return 26+b-0x61;
     else if (0x40 < b) return b-0x41;
     else if (0x2f < b) return 52+b-0x30;
@@ -426,9 +423,7 @@ void SCode::encodeB64Char(const void *data, char *encoded, size_t size) {
     encoded[2] = size<2?'=':SCode::B64_STR[((dat[1]&0x0F)<<2)+((dat[2]>>6)&0x03)];
     encoded[3] = size<3?'=':SCode::B64_STR[dat[2]&0x3F];
 }
-
 size_t SCode::base64CharCount(size_t size) { return 12 + ((size - 1) / 3 + 1) * 4; }
-
 void SCode::decodeB64Char(const char *data, void *decoded) {
     memset(decoded, 0, 3);
     subyte dec[4];
@@ -437,7 +432,6 @@ void SCode::decodeB64Char(const char *data, void *decoded) {
 	((char*)decoded)[1] = ((dec[1] & 0x0F) << 4) + ((dec[2] >> 2) & 0x0F);
 	((char*)decoded)[2] = ((dec[2] & 0x03) << 6) + (dec[3] & 0x3F);
 }
-
 suinteger SCode::decodeCharCount(const char *base) {
     char decode[9];
     sforin(i, 0, 3) SCode::decodeB64Char(&base[4*i], &decode[3*i]);

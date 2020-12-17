@@ -322,6 +322,7 @@ Range<size_t> STable::find(const sobj& obj, smath::DIRECTION dir, srange offset)
 		cit = rbeg->begin();
 		while (cit < cbeg) {
 			if ((*cit) == obj) return Range<size_t>(rbeg - _rows.begin(), cit - rit->begin());
+			++cit;
 		}
 	}
 	else {
@@ -329,6 +330,7 @@ Range<size_t> STable::find(const sobj& obj, smath::DIRECTION dir, srange offset)
 		auto cbeg = offset.end, current = cbeg;
 		while (rit < _rows.end()) {
 			if (rit->at(current) == obj) return Range<size_t>(rit - _rows.begin(), current);
+			++rit;
 		}
 		++current;
 		if (current == columnCount()) current = 0;
@@ -336,6 +338,7 @@ Range<size_t> STable::find(const sobj& obj, smath::DIRECTION dir, srange offset)
 			rit = _rows.begin();
 			while (rit < _rows.end()) {
 				if (rit->at(current) == obj) return Range<size_t>(rit - _rows.begin(), current);
+				++rit;
 			}
 			++current;
 			if (current == columnCount()) current = 0;
@@ -343,6 +346,7 @@ Range<size_t> STable::find(const sobj& obj, smath::DIRECTION dir, srange offset)
 		rit = _rows.begin();
 		while (rit < rbeg) {
 			if (rit->at(cbeg) == obj) return Range<size_t>(rit - _rows.begin(), cbeg);
+			++rit;
 		}
 	}
 	return Range<size_t>(NOT_FOUND, NOT_FOUND);

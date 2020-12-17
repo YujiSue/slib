@@ -248,7 +248,7 @@ inline void _annotSmallDEL(SVariant* var, gene_site* gene, SBSeqList* ref, Strin
 			*alt = *ori;
 			sint off = var->pos[0].begin - tit->info->begin;
 			sforin(i, 0, var->pos[0].length(true)) {
-				if ((off + i) < 0 || alt->length() <= (off + i)) continue;
+				if ((off + i) < 0 || (sint)alt->length() <= (off + i)) continue;
 				alt->at(off + i) = '-';
 			}
 			_splice(ori, alt, gene->info->dir, region, &off);
@@ -270,7 +270,7 @@ inline void _annotSmallINS(SVariant* var, gene_site* gene, SBSeqList* ref, Strin
 			tit->mutation = INDEL_MUT;
 			auto region = tit->info->codingRegion();
 			region.shift(-tit->info->begin);
-			*ori = ref->at(var->pos[0].idx)->raw(tit->info->begin - 1, tit->info->length(true));
+			*ori = ref->at(var->pos[0].idx)->raw((size_t)tit->info->begin - 1, tit->info->length(true));
 			*alt = *ori;
 			sint off = var->pos[0].begin - tit->info->begin;
 			_splice(ori, alt, gene->info->dir, region, &off);
@@ -288,7 +288,7 @@ inline void _annotSmallMUL(SVariant* var, gene_site* gene, SBSeqList* ref, Strin
 			tit->mutation = INDEL_MUT;
 			auto region = tit->info->codingRegion();
 			region.shift(-tit->info->begin);
-			*ori = ref->at(var->pos[0].idx)->raw(tit->info->begin - 1, tit->info->length(true));
+			*ori = ref->at(var->pos[0].idx)->raw((size_t)tit->info->begin - 1, tit->info->length(true));
 			*alt = *ori;
 			auto cp = var->homo ? var->copy.ratio[0] : var->copy.ratio[0] * 2.0 - 1.0;
 			sint off = var->pos[0].begin - tit->info->begin,
@@ -406,88 +406,6 @@ inline void _annotate(SVariant* var, SBSeqList* ref, SBAnnotDB* db, svariant_par
 	else if ((asite & INTRON) && (par->annot & INTRON)) avail = true;
 	else if (par->annot & INTER_GENE) avail = true;
 	if (!avail) var->flag |= UNAVAILABLE_FLAG;
-
-
-
-	/*
-	String ori, alt;
-	if (var->type & INSERTION && -1 < var->pos[1].idx) {  // complex var.
-		db->geneInfo(genes, var->pos[0]);
-		var->genes.resize(genes.size());
-
-		sforin(i, 0, genes.size()) {
-			var->genes[i] = gene_site(genes[i]);
-			auto& gene = var->genes[i];
-			sforeach(genes[i]->transcripts) {
-				gene.transcripts.add(E_);
-				auto& trs = gene.transcripts.last();
-				if (E_->type == M_RNA) {
-					_annotCodingGene(var, trs, E_);
-					if (trs.site & CDS) {
-						auto region = E_->codingRegion(); region.shift(-E_->begin);
-						ori = ref->at(var->pos[0].idx)->raw(E_->begin - 1, E_->length(true) + 1);
-						alt = ori;
-						int off = var->pos[0].begin - E_->begin;
-						sforin(i, 0, var->pos[0].length(true)) {
-							if ((off + i) < 0 || alt.length() <= (off + i)) continue;
-							alt[off + i] = '-';
-						}
-						_splice(ori, alt, gene.dir, region, off);
-						auto del = _removeN(alt);
-						auto len = ori.length() - alt.length();
-						if (alt.size()) {
-							if (var->pos[0].begin < E_->begin) trs.type = NTERM_DEL;
-							else if (E_->end < var->pos[0].end) trs.type = CTERM_DEL;
-							else {
-								if (len % 3) {
-									trs.type = FRAME_SHIFT;
-									_translate(ori, alt);
-									_compareDEL(ori, alt, trs, off / 3, len / 3 + 1);
-								}
-								else {
-									trs.type = IN_FRAME;
-									_translate(ori, alt);
-									_compareDEL(ori, alt, trs, off / 3, len / 3);
-								}
-							}
-						}
-						else trs.type = NULL_MUT;
-					}
-				}
-				else {
-					_annotNonCodingGene(var, trs, E_);
-					trs.type = INDEL;
-				}
-				gene.type |= trs.type;
-			}
-		}
-
-		db->mutantInfo(mutants, var->pos[0]);
-		if (!mutants.empty()) { sforeach_(mit, mutants) var->mutants.add((*mit)->name); }
-	}
-	else if (var->type < 0x40) {  // simple var.
-		db->geneInfo(genes, var->pos[0]);
-		var->genes.resize(genes.size());
-		if (var->type == SNV || var->type == MNV)
-			_annotateMNV(genes, ori, alt, var, ref);
-		else if (var->type == DELETION)
-			_annotateDEL(genes, ori, alt, var, ref);
-		else if (var->type == DUPLICATION || var->type == MULTIPLICATION)
-			_annotateMUL(genes, ori, alt, var, ref);
-		else if (var->type == INSERTION)
-			_annotateINS(genes, ori, alt, var, ref);
-		db->mutantInfo(mutants, var->pos[0]);
-		if (!mutants.empty()) { sforeach_(mit, mutants) var->mutants.add((*mit)->name); }
-	}
-	else {  // rearrangement
-		if (var->type & TRANSLOCATION) {
-
-		}
-		else if (var->type & INVERSION) {
-
-		}
-	}
-	*/
 }
 SVarFilter::SVarFilter(SBSeqList* ref, SBAnnotDB* db, svariant_param* p, Array<sregion>* t) : _ref(ref), _db(db), _par(p), _target(t) {}
 SVarFilter::~SVarFilter() {}

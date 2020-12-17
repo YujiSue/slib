@@ -38,7 +38,7 @@ namespace slib {
 	} OPERATION;
 	*/
 
-	struct search_query {
+	struct SLIB_DLL search_query {
 		String key;
 		suint operation;
 		sobj value;
@@ -49,7 +49,7 @@ namespace slib {
 		~search_query();
 		search_query& operator=(const search_query& que);
 	};
-	struct search_sorter {
+	struct SLIB_DLL search_sorter {
 		String key;
 		slib::ORDER order;
 

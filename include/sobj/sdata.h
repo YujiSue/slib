@@ -17,7 +17,7 @@ namespace slib {
         SData(const sobj &obj);
         SData(const SData &data);
         virtual ~SData();
-		static SData& decode(const char* b64);
+		static SData decode(const char* b64);
 		template<typename T>
 		SData& operator = (const Array<T, CMemory<T>>& array) {
 			ubytearray::resize(array.size() * sizeof(T));

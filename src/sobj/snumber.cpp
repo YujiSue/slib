@@ -1015,7 +1015,7 @@ SNumber &SNumber::operator%=(const SNumber & num) {
 			case SNumber::UINTEGER:
 			{
 				sfrac tmp = fraction();
-				tmp -= sfrac(q * (sint)num._value._ui, 1);
+				tmp -= sfrac((sint)q * num._value._ui, 1);
 				_value._f[0] = tmp.numerator;
 				_value._f[1] = tmp.denominator;
 				break;

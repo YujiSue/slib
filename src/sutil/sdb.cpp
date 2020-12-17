@@ -37,7 +37,9 @@ void SSearchQuery::addQuery(const search_query& que) {
 }
 void SSearchQuery::andQuery() { _andor = false; }
 void SSearchQuery::orQuery() { _andor = true; }
-void setQueries(SDictionary& que);
+void SSearchQuery::setQueries(SDictionary& que) {
+
+}
 void SSearchQuery::addSorter(const search_sorter& sorter) { _sorters.add(sorter); }
 void SSearchQuery::addKey(const char* key) { _keys.add(key); }
 void SSearchQuery::addKeys(const stringarray& keys) { _keys.append(keys); }

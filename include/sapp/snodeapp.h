@@ -7,7 +7,6 @@
 namespace slib {
 	namespace sapp {
 		#define DECLARE_NAPI_METHOD(name, func) { name, 0, func, 0, 0, 0, napi_default, 0 }
-
 		class SNodeUtil {
 		public:
 			typedef enum {
@@ -61,14 +60,12 @@ namespace slib {
 				return c;
 			}
 		};
-		
 		template<class Wrapper>
 		class SNodeApp {
 		private:
 			napi_env _env;
 			napi_ref _wrapper;
 			static napi_ref _constructor;
-			
 		public:
 			static napi_value Init(napi_env env, napi_value exports);
 			static void Destructor(napi_env env, void *object, void *finalize);
@@ -77,14 +74,11 @@ namespace slib {
 			static String className();
 			static Array<napi_property_descriptor> descriptor();
 			 */
-        
 		protected:
 			explicit SNodeApp();
 			virtual ~SNodeApp();
-        
 			static napi_value New(napi_env env, napi_callback_info info);
 		};
-		
 		template<class Wrapper>
 		napi_ref SNodeApp<Wrapper>::_constructor;
 		template<class Wrapper>
@@ -150,5 +144,4 @@ namespace slib {
 		}
 	}
 }
-
 #endif

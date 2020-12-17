@@ -23,8 +23,10 @@ SData::SData(const sobj &obj) : SData() {
 }
 SData::SData(const SData &data) : SData(data.size(), const_cast<subyte *>(data.ptr())) {}
 SData::~SData() {}
-SData& SData::decode(const char* b64) {
+SData SData::decode(const char* b64) {
+	SData dat;
 	/**/
+	return dat;
 }
 SData &SData::operator = (const SData &dat) {
     clear(); if (!dat.empty()) ubytearray::copy(dat.ptr(), dat.size()); return *this;
