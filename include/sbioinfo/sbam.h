@@ -194,8 +194,7 @@ namespace slib {
             sbam::bgzf_dat *_data, *_buffer;
             
         public:
-            //sbam::readinfo read;
-			ubytearray read;
+            ubytearray read;
             sbam::header info;
             sbam::bai index;
             
@@ -226,7 +225,6 @@ namespace slib {
             //void sort();
             //void makeIndex();
 			ubytearray *next(ubytearray *dat = nullptr);
-			//sbam::readinfo* next(sbam::readinfo* ri = nullptr); 
 			void getReads(sbam::read_array& array, const sbpos &pos);
 			void getReads(sbam::read_array& array, sint idx, const sregion& region);
         };

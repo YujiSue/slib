@@ -152,7 +152,6 @@ namespace slib {
 			void annotate(SVariant* var);
 			void annotate(SVarList* vl, SWork* threads = nullptr);
 			void checkRepeat(SVarList *list, SBSeqList* ref);
-			//void filter(SVarList* list, const char *meht, sfunc<bool)1\);
 			void filter(SVarList* list);
 			//void sortBy();
 			void linkGene(SVariant* var);

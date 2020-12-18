@@ -173,7 +173,7 @@ ssrv_param::ssrv_param() {
 	max_fr_bias = DEFAULT_FR_BIAS;
 	max_comp_bias = DEFAULT_COMP_BIAS;
 	homo_freq = DEFAULT_HOMO_FREQ;
-	min_qual = DEFAULT_MIN_QUAL;
+	min_qual = 0.0;
 }
 ssrv_param::ssrv_param(const ssrv_param& par) {
 	memcpy(detect_var, par.detect_var, sizeof(bool) * 5);
@@ -303,120 +303,12 @@ sobj svariant_param::toObj() {
 		kv("cnvpar", cnv_par.toObj()), kv("srvpar", srv_par.toObj()), kv("smvpar", smv_par.toObj())
 	};
 }
-
 float SVarUtil::readBias(const sushort *r) {
 	return abs((float)(r[0] - r[1]) / (r[0] + r[1]));
 }
 float SVarUtil::combBias(sushort *r1, sushort *r2) {
-	return abs((float)(sstat::sum(r1, 2) - sstat::sum(r2, 2)) / (sstat::sum(r1, 2) + sstat::sum(r2, 2)));
+	return abs((float)((r1[0] + r1[1]) - (r2[0] + r2[1])) / (r1[0] + r1[1] + r2[0] + r2[1]));
 }
-/*
-String SVarUtil::vtype(sushort i) {
-	if (i == sbio::SNV) return "SNV";
-	else if (i == sbio::MNV) return "MNV";
-	else {
-		String str;
-		if (i & sbio::DELETION) str += "DEL+";
-		if (i & sbio::INSERTION) str += "INS+";
-		if (i & sbio::DUPLICATION) str += "DUP+";
-		if (i & sbio::MULTIPLICATION) str += "MUL+";
-		if (i & sbio::INVERSION) str += "INV+";
-		if (i & sbio::TRANSLOCATION) str += "TRS+";
-		if (str.size()) str.resize(str.size() - 1);
-		return str;
-	}
-}
-sushort SVarUtil::vtypeIdx(const char* s) {
-	sushort idx = 0;
-	String str(s);
-	if (str.contain("SNV")) idx |= sbio::SNV;
-	if (str.contain("MNV")) idx |= sbio::MNV;
-	if (str.contain("DEL")) idx |= sbio::DELETION;
-	if (str.contain("INS")) idx |= sbio::INSERTION;
-	if (str.contain("DUP")) idx |= sbio::DUPLICATION;
-	if (str.contain("MUL")) idx |= sbio::MULTIPLICATION;
-	if (str.contain("INV")) idx |= sbio::INVERSION;
-	if (str.contain("TRS")) idx |= sbio::TRANSLOCATION;
-	return idx;
-}
-String SVarUtil::vsite(sushort i) {
-	if (i & sbio::CDS) return "CDS";
-	if (i & sbio::EXON) return "exon";
-	if (i & sbio::UTR) {
-		if (i & 0x0010) return "5'UTR";
-		else if (i & 0x0020) return "3'UTR";
-		else return "UTR";
-	}
-	if (i & sbio::PROCESSED) return "RNA";
-	if (i & sbio::INTRON) {
-		if (i & 0x0040) return "intron(splice site)";
-		else return "intron";
-	}
-	return "intergenic";
-}
-subyte SVarUtil::vsiteIdx(const char* s) { 
-	auto str = String::lower(s);
-	if (str == "intergenic") return 0;
-	if (str == "cds") return sbio::CDS;
-	if (str == "exon") return sbio::EXON;
-	if (str == "utr") return sbio::UTR;
-	if (str == "5'utr") return sbio::UTR5;
-	if (str == "3'utr") return sbio::UTR3;
-	if (str == "intron") return sbio::INTRON;
-	if (str.contain("splice site")) return sbio::SPLICE_SITE;
-	if (str.contain("rna")) return sbio::PROCESSED;
-}
-
-String SVarUtil::mtype(sushort i) {
-	if (!i) return "Silent";
-	if (i & sbio::SUBSTITUTION) {
-		if ((i & 0xFF00) == sbio::NONSENSE) return "Nonsense";
-		else if ((i & 0xFF00) == sbio::MISSENSE) return "Missense";
-		else return "Substitution";
-	}
-	else if (i & sbio::INDEL_MUT) {
-		if ((i & 0xFF00) == IN_FRAME) return "In frame";
-		else if ((i & 0xFF00) == FRAME_SHIFT) return "Frame shift";
-		else if ((i & 0xFF00) == HEAD_LESION) return "Head lesion";
-		else if ((i & 0xFF00) == TAIL_LESION) return "Tail lesion";
-		else return "Indel";
-	}
-	else if (i & sbio::COPYNUM_MUT) {
-		if ((i & 0xFF00) == NULL_MUT) return "Null";
-		else if ((i & 0xFF00) == MULTI_COPY) return "Multi copies";
-		else if ((i & 0xFF00) == TRIPLET_REPEAT) return "Tri. repeat";
-		else return "Copy number mutation";
-	}
-	else if (i & sbio::REARRANGE_MUT) {
-		if ((i & 0xFF00) == SPLIT_MUT) return "Gene split";
-		else if ((i & 0xFF00) == SELF_REARRANGEMENT) return "Self-rearrangement";
-		else if ((i & 0xFF00) == ECTOPIC_MUT) return "Ectopic gene";
-		else return "Rearranged mutation";
-	}
-	return "Unknown";
-}
-subyte SVarUtil::mtypeIdx(const char* s) {
-	auto str = String::lower(s);
-	if (str.contain("silent")) return sbio::SILENT_MUT;
-	if (str.contain("nonsense")) return sbio::NONSENSE;
-	if (str.contain("missense")) return sbio::MISSENSE;
-	if (str.contain("substitution")) return sbio::SUBSTITUTION;
-	if (str.contain("indel")) return sbio::INDEL_MUT;
-	if (str.contain("in frame")) return sbio::IN_FRAME;
-	if (str.contain("frame shift")) return sbio::FRAME_SHIFT;
-	if (str.contain("head lesion")) return sbio::HEAD_LESION;
-	if (str.contain("tail lesion")) return sbio::TAIL_LESION;
-	if (str.contain("null")) return sbio::NULL_MUT;
-	if (str.contain("multi copies")) return sbio::MULTI_COPY;
-	if (str.contain("tri. repeat")) return sbio::TRIPLET_REPEAT;
-	if (str.contain("copy number")) return sbio::COPYNUM_MUT;
-	if (str.contain("gene split")) return sbio::SPLIT_MUT;
-	if (str.contain("self-rearrange")) return sbio::SELF_REARRANGEMENT;
-	if (str.contain("ectopic")) return sbio::ECTOPIC_MUT;
-	if (str.contain("rearrange")) return sbio::REARRANGE_MUT;
-}
-*/
-
 const stringarray SVarIO::VCF_TABLE_COLUMNS = {
 	"Chr", "Pos", "Ref", "Var","Type","Len", "Qual", "Freq", "Cov", "Allele cov",
 	"Genotype", "Gene", "Region", "Repeat", "Mutation", "Substitution"
