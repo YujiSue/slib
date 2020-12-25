@@ -156,7 +156,7 @@ namespace slib {
 			//void sortBy();
 			void linkGene(SVariant* var);
 			void linkGenes(SVarList* list);
-			void check(SVariant* var);
+			bool check(SVariant* var);
 			void setReference(SBSeqList* ref);
 			void setDB(SBAnnotDB* db);
 			void setParam(svariant_param* p);

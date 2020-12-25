@@ -41,6 +41,7 @@ namespace slib {
 		typedef Array<svar_data *> varparray;
 
 		struct scn_data {
+			bool ctrl;
 			float depth[2][2], ndepth[2][2], ratio[2], frequency;
 			scn_data();
 			scn_data(const scn_data &cn);

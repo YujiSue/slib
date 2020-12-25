@@ -17,7 +17,7 @@ namespace slib {
     namespace smedia {
         class SLIB_DLL SFigure;
         class SLIB_DLL SCanvas;
-        
+		class SLIB_DLL SFigureGroup;
         class SLIB_DLL SPoint2D;
         class SLIB_DLL SLine2D;
         class SLIB_DLL SCurve2D;
@@ -31,10 +31,10 @@ namespace slib {
         class SLIB_DLL SCalligraphy;
         
         #define sfig scobj<slib::smedia::SFigure, FIGURE_OBJ>
-        #define spoint2d scobj<slib::smedia::SPoint2D, FIGURE_OBJ>
-        #define sline2d scobj<slib::smedia::SLine2D, FIGURE_OBJ>
-        #define scurve2d scobj<slib::smedia::SCurve2D, FIGURE_OBJ>
-        #define spath2d scobj<slib::smedia::SPath2D, FIGURE_OBJ>
+        #define spoint scobj<slib::smedia::SPoint2D, FIGURE_OBJ>
+        #define sline scobj<slib::smedia::SLine2D, FIGURE_OBJ>
+        #define scurve scobj<slib::smedia::SCurve2D, FIGURE_OBJ>
+        #define spath scobj<slib::smedia::SPath2D, FIGURE_OBJ>
         #define srect scobj<slib::smedia::SRectangle, FIGURE_OBJ>
 		#define sellipse scobj<slib::smedia::SEllipse, FIGURE_OBJ>
         #define scirc scobj<slib::smedia::SCircle, FIGURE_OBJ>
@@ -134,87 +134,6 @@ namespace slib {
             virtual SObject *clone() const;
         };
         
-#define scnvs scobj<slib::smedia::SCanvas, CANVAS_OBJ>
-        
-        class SLIB_DLL SCanvas : public SDocument<SFigure> {
-        protected:
-			v2f _size;
-			sareaf _frame;
-			SColor _background;
-			SPaint _paint;
-
-        private:
-            void loadSVG(const char *path);
-            //void loadCNVS(const char *path);
-            void saveSVG(const char *path);
-            //void saveCNVS(const char *path);
-            
-        public:
-            SCanvas();
-            SCanvas(size_t w, size_t h, const char *name = "", const SColor & col = "white");
-            SCanvas(const SCanvas &canvas);
-            ~SCanvas();
-            
-            void load(const char *path);
-            void save(const char *path);
-            
-            size_t width() const;
-            size_t height() const;
-			v2i size() const;
-            sareaf frame() const;
-            const SColor &background() const;
-            void resize(size_t w, size_t h);
-            void setBackGround(const SColor &col);
-            void setFrame(sareaf area);
-            
-            void setPaint(const SPaint &paint);
-
-			template<class... Args>
-			void drawPoint(Args... args) {
-				drawFigure(spoint2d(args...));
-			}
-			template<class... Args>
-			void drawLine(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure *>(new SLine2D(args...))));
-			}
-			template<class... Args>
-            void drawPath(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure*>(new SPath2D(args...))));
-			}
-			template<class... Args>
-            void drawRect(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure*>(new SRectangle(args...))));
-			}
-			template<class... Args>
-			void drawPolygon(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure*>(new SPolygon(args...))));
-			}
-			template<class... Args>
-			void drawEllipse(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure*>(new SEllipse(args...))));
-			}
-			//template<class... Args>
-			//void drawCircle(Args... args) {
-			//	drawFigure(scircle(args...));
-			//}
-			template<class... Args>
-			void drawArc(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure*>(new SArc(args...))));
-			}
-			template<class... Args>
-			void drawPict(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure*>(new SPicture(args...))));
-			}
-			template<class... Args>
-			void drawText(Args... args) {
-				drawFigure(sfig(dynamic_cast<SFigure*>(new SCalligraphy(args...))));
-			}
-			void drawFigure(sfig fig);
-            
-            String getClass() const;
-            String toString() const;
-            SObject *clone() const;
-        };
         
         class SLIB_DLL SPoint2D : public SFigure {
         protected:
@@ -446,6 +365,61 @@ namespace slib {
             String toString() const;
             SObject *clone() const;
         };
+
+
+
+#define scnvs scobj<slib::smedia::SCanvas, CANVAS_OBJ>
+
+		class SLIB_DLL SCanvas : public SDocument<SFigure> {
+		protected:
+			v2f _size;
+			sareaf _frame;
+			SColor _background;
+			SPaint _paint;
+
+		private:
+			void loadSVG(const char* path);
+			//void loadCNVS(const char *path);
+			void saveSVG(const char* path);
+			//void saveCNVS(const char *path);
+
+		public:
+			SCanvas();
+			SCanvas(size_t w, size_t h, const char* name = "", const SColor& col = "white");
+			SCanvas(const SCanvas& canvas);
+			~SCanvas();
+
+			void load(const char* path);
+			void save(const char* path);
+
+			size_t width() const;
+			size_t height() const;
+			v2i size() const;
+			sareaf frame() const;
+			const SColor& background() const;
+			void resize(size_t w, size_t h);
+			void setBackGround(const SColor& col);
+			void setFrame(sareaf area);
+
+			void setPaint(const SPaint& paint);
+
+			/*
+			void drawPoint(const spoint& point);
+			void drawLine(const sline& line);
+			void drawPath(const spath& path);
+			void drawRect(const srect& rect);
+			void drawPolygon(const spolygon& pol);
+			void drawEllipse(const sellipse& eli);
+			void drawCircle(const scirc& circ);
+			void drawArc(const sarc& arc);
+			void drawPict(const spict& pic);
+			void drawText(const scalligraphy& cal);
+			void drawFigure(sfig fig);
+			*/
+			String getClass() const;
+			String toString() const;
+			SObject* clone() const;
+		};
     }
 }
 

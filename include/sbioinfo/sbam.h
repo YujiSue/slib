@@ -5,7 +5,8 @@
 #include "sobj.h"
 #include "sutil/sutil.h"
 #include "sbioinfo/sbalign.h"
-#include "sbioinfo/svariant.h"
+#include "sbioinfo/sngs.h"
+//#include "sbioinfo/svariant.h"
 
 namespace slib {
     using namespace smath;
@@ -16,7 +17,6 @@ namespace slib {
 #define NOT_BAM_ERR_MSG "Not BAM magic."
 #define NOT_BAI_ERR_MSG "Not BAI magic."
 #define NOT_BGZF_ERR_MSG "Not BGZF magic."
-#define NOT_BSM_ERR_MSG "Not BGZF magic."
         
 #define GZIP_STREAM_ERR_MSG "zlib stream error."
 #define GZIP_DATA_ERR_MSG "zlib data error."
@@ -30,7 +30,6 @@ namespace slib {
         constexpr char GZ_MAGIC[17] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0";
         constexpr char BAM_MAGIC[5] = "\102\101\115\001";
         constexpr char BAI_MAGIC[5] = "\102\101\111\001";
-        constexpr char BSM_MAGIC[5] = "\102\123\115\002";
         
         //Constant
         constexpr int DEFAULT_THREAD_COUNT = 8;
@@ -184,7 +183,96 @@ namespace slib {
                 size_t left();
                 void read(void *dest, size_t size, size_t off = 0);
             };
+
+			
+
         }
+
+		/*
+		class SBIOINFO_DLL SBamFile;
+		class SBIOINFO_DLL SBamData {
+		private:
+			char _magic[16];
+			SBamFile* _bam;
+			SWork _thread;
+
+		public:
+			sint idx, count, result;
+			sbam::voffset offset, last;
+			intarray length;
+			ubytearray raw, buffer[2], readinfo, * current;
+
+
+			subyte* rawptr, * curptr;
+
+		public:
+			SBamData();
+			SBamData(const SBamData &dat);
+			~SBamData();
+
+			void init();
+			void resize(sint n);
+			void setBam(SBamFile* f);
+			void load();
+			void update();
+			void setOffset(sushort o);
+			void copy(void* p, size_t s);
+			ubytearray* next();
+			void swap();
+		};
+		class SBIOINFO_DLL SBamFile {
+			friend SBamData;
+		private:
+			sio::SFile _file;
+			SBamData* _data;
+			Array<SBamData> _store;
+			SLock _lock;
+			bool _single;
+			
+		public:
+			sbam::header info;
+			sbam::bai index;
+
+		private:
+			//void _swapdat();
+			//bool _readData(void* dest, size_t size, size_t off = 0);
+			void _readHeader();
+			void _checkError();
+
+		public:
+			SBamFile();
+			SBamFile(sngs_param* par);
+			~SBamFile();
+
+			void init();
+			void setParam(sngs_param* p);
+			void open(const char* path);
+			void close();
+			void loadIndex(const char* path);
+			bool hasIndex() const;
+			void lock();
+			void unlock();
+
+			suinteger filesize() const;
+			suinteger offset();
+			void setOffset(suinteger off);
+			String path() const;
+
+			sbam::voffset voff() const;
+			void setVOff(const sbam::voffset& off);
+			void setVOff(sint idx, const sbam::voffset& off);
+			sint readBytes(void *p, size_t s);
+
+			//void sort();
+			//void makeIndex();
+			SBamData *getData(sint idx);
+			void setData(sint idx);
+			ubytearray* next(ubytearray* dat = nullptr);
+			void getReads(sbam::read_array& array, const sbpos& pos);
+			void getReads(sbam::read_array& array, sint idx, const sregion& region);
+		};
+		*/
+
         class SBIOINFO_DLL SBam {
 			friend sbam::bgzf_dat;
 

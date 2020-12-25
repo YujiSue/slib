@@ -201,14 +201,14 @@ namespace slib {
     const T &BiArray<T, M>::at(int idx) const {
 		auto p = idx < 0 ? _end + idx : _off + idx;
 		if (p < _off || _end <= p)
-			throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(p - _begin).c_str(), RANGE_TEXT(offset(), size()));
+			throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(p - _begin).c_str(), std::string(RANGE_TEXT(offset(), size())).c_str());
         return *p;
     }
     template <typename T, class M>
     T &BiArray<T, M>::at(int idx) {
 		auto p = idx < 0 ? _end + idx : _off + idx;
 		if (p < _off || _end <= p)
-			throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(p - _begin).c_str(), RANGE_TEXT(offset(), size()));
+			throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(p - _begin).c_str(), std::string(RANGE_TEXT(offset(), size())).c_str());
         return *p;
     }
     template <typename T, class M>

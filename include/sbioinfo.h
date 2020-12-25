@@ -8,5 +8,6 @@
 #include "sbioinfo/sbsearch.h"
 #include "sbioinfo/sprimer.h"
 #include "sbioinfo/sngs.h"
+#include "sbioinfo/sbam.h"
 
 #endif

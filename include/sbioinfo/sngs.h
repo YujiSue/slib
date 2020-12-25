@@ -1,15 +1,18 @@
 #ifndef SNGS_SNGS_H
 #define SNGS_SNGS_H
 
-#include "sbioinfo/sbam.h"
 #include "sbioinfo/sbioseq.h"
+#include "sbioinfo/svariant.h"
+
+#define NOT_BSM_ERR_MSG "Not BSM magic."
 
 namespace slib {
     namespace sbio {
-        
+		constexpr char BSM_MAGIC[5] = "\102\123\115\002";
+
 		struct SBIOINFO_DLL sngs_param {
 			bool splitread, paired, pcrdup, parallele;
-			sint bin;
+			sint bin, block, count;
 			SBSeqList* ref;
 			Array<sregion> target;
 
@@ -29,8 +32,7 @@ namespace slib {
 			sint refnum, bin;
 			suinteger reads;
 			double length, depth, cover;
-			sveci reflen;
-			svecs count;
+			sveci reflen, count;
 			svecd bases;
 			Array<sregion> target;
 
@@ -58,6 +60,7 @@ namespace slib {
 
 			srvar_data();
 			~srvar_data();
+			srvar_data& subtract(srvar_data& srvs, svariant_param* par, SWork* threads = nullptr);
 			void init();
 		};
         
@@ -93,7 +96,7 @@ namespace slib {
 			void nextDp();
 			
             void setNum(size_t num);
-            void setLength(int idx, size_t len);
+            void setLength(sint idx, sint len);
 			void setBin(sint bin);
 			void setParam(sngs_param *p);
 			void addVariant(sint idx, svar_data& var);

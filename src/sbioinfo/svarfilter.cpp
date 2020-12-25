@@ -605,7 +605,7 @@ void SVarFilter::checkRepeat(SVarList* list, SBSeqList* ref) {
 void SVarFilter::filter(SVarList* list) {
 	size_t s = list->size();
 	sforeach(*list) {
-		check(E_);
+		if (!check(E_)) E_->flag |= UNAVAILABLE_FLAG;
 		if ((E_->flag & UNAVAILABLE_FLAG) || (E_->flag & NOT_USE_FLAG)) --s;
 	}
 	list->tidy(s);
@@ -619,12 +619,85 @@ void SVarFilter::linkGene(SVariant* var) {
 	}
 }
 void SVarFilter::linkGenes(SVarList* list) { sforeach(*list) SVarFilter::linkGene(E_); }
-void SVarFilter::check(SVariant* var) {
+bool SVarFilter::check(SVariant* var) {
 	if (_par) {
-		/*
-		*/
+		if (_par->homo_select && !var->homo) return false;
+		if (var->flag & SMALL_VARIANT) {
+			switch (var->type)
+			{
+			case sbio::SNV:
+				if (var->copy.depth[0][1] < _par->smv_par.min_depth[0] ||
+					var->total() < _par->smv_par.min_vdepth[0] ||
+					var->qual < _par->smv_par.min_qual[0] ||
+					var->copy.frequency < _par->smv_par.min_freq[0]) return false;
+				break;
+			case sbio::MNV:
+				if (var->copy.depth[0][1] < _par->smv_par.min_depth[1] ||
+					var->total() < _par->smv_par.min_vdepth[1] ||
+					var->qual < _par->smv_par.min_qual[1] ||
+					var->copy.frequency < _par->smv_par.min_freq[1]) return false;
+				break;
+			case sbio::DELETION:
+				if (var->copy.depth[0][1] < _par->smv_par.min_depth[2] ||
+					var->total() < _par->smv_par.min_vdepth[2] ||
+					var->qual < _par->smv_par.min_qual[2] ||
+					var->copy.frequency < _par->smv_par.min_freq[2]) return false;
+				break;
+			case sbio::INSERTION:
+				if (var->copy.depth[0][1] < _par->smv_par.min_depth[3] ||
+					var->total() < _par->smv_par.min_vdepth[3] ||
+					var->qual < _par->smv_par.min_qual[3] ||
+					var->copy.frequency < _par->smv_par.min_freq[3]) return false;
+				break;
+			default:
+				break;
+			}
+		}
+		if (var->flag & CN_VARIANT) {
+			if (var->copy.ctrl) {
+				if (var->copy.depth[0][1] < _par->cnv_par.min_bg || 
+					var->pos[0].length(true) < _par->cnv_par.min_length) return false;
+				if (-1 < var->pos[1].idx && 
+					(var->copy.depth[1][1] < _par->cnv_par.min_bg || 
+						var->pos[1].length(true) < _par->cnv_par.min_length)) return false;
+			}
+		}
+		if (var->flag & SR_VARIANT) {
+			if (var->copy.frequency < _par->srv_par.min_freq ||
+				var->qual < _par->srv_par.min_qual ||
+				_par->srv_par.max_fr_bias < var->bias()) return false;
+			if (-1 < var->pos[1].idx) {
+				if (var->type & INSERTION) {
+					if (var->type & DELETION) {
+						
+					}
+				}
+				else {
+
+
+
+				}
+			}
+			else {
+				if (var->type == DELETION && (
+					!_par->srv_par.detect_var[0] ||
+					var->pos[0].length(true) < _par->srv_par.min_length[0] ||
+					var->total() < _par->srv_par.min_sr[0])) return false;
+				if ((var->type == DUPLICATION || var->type == MULTIPLICATION || var->type == INSERTION) && (
+					!_par->srv_par.detect_var[1] ||
+					var->pos[0].length(true) < _par->srv_par.min_length[1] ||
+					var->total() < _par->srv_par.min_sr[1])) return false;
+			}
+		}
 	}
-	if (_target && !_target->empty() && _target->at(var->pos[0].idx).include(var->pos[0])) var->flag |= UNAVAILABLE_FLAG;
+	if (_target && !_target->empty()) {
+		if (- 1 < var->pos[1].idx) {
+			if (!(_target->at(var->pos[0].idx).overlap(var->pos[0])) && 
+				!(_target->at(var->pos[1].idx).overlap(var->pos[1]))) return false;
+		}
+		else if (!(_target->at(var->pos[0].idx).overlap(var->pos[0]))) return false;
+	}
+	return true;
 }
 void SVarFilter::setReference(SBSeqList* ref) { _ref = ref; }
 void SVarFilter::setDB(SBAnnotDB* db) { _db = db; }

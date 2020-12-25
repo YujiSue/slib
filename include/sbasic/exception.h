@@ -25,7 +25,7 @@ namespace slib {
 
 	#define TARGET_TEXT(T) u8"\""+String(T)+u8"\""
     #define CAST_TEXT(F, T) u8"[ '"+String(F)+u8"' => '"+String(T)+u8" ]"
-    #define RANGE_TEXT(B, E) u8"( "+String(B)+u8" : "+String(E)+u8" )"
+    #define RANGE_TEXT(B, E) u8"( "+std::to_string(B)+u8" : "+std::to_string(E)+u8" )"
 	#define EXEC_TEXT(E) u8"Return :"+String(E)
 	#define CONFLICT_TEXT(A, B) u8"'"+String(A)+u8"' vs '"+String(B)+"'"
 	

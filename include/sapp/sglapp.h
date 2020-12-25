@@ -3,7 +3,7 @@
 
 #include "glew/glew.h"
 #include "glfw/glfw3.h"
-#include "sapp/sapp.h"
+#include "sapp/sappbasic.h"
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/core.hpp"

@@ -142,7 +142,7 @@ namespace slib {
 			SVector2D<T> operator / (const T& val);
 			SVector2D<T> orthogonal(smath::ROTATION rot);
 			void reset(const T& val = initVal<T>());
-
+			size_t size() const;
 			T& operator[](int i);
 			const T& operator[](int i) const;
 			bool operator<(const SVector2D<T>& v) const;
@@ -183,7 +183,7 @@ namespace slib {
 			SVector3D cross(const SVector3D<T>& v) const;
 			SVector2D<T> projection(smath::PLANE p) const;
 			void reset(const T& val = initVal<T>());
-
+			size_t size() const;
 			T& operator[](int i);
 			const T& operator[](int i) const;
 			bool operator<(const SVector3D& v) const;
@@ -224,7 +224,7 @@ namespace slib {
 			SVector4D<T> operator * (const T& val) const;
 			SVector4D<T> operator / (const T& val) const;
 			void reset(const T& val = initVal<T>());
-
+			size_t size() const;
 			T& operator[](int i);
 			const T& operator[](int i) const;
 			bool operator<(const SVector4D& v) const;
@@ -577,6 +577,8 @@ namespace slib {
 		template <typename T>
 		void SVector2D<T>::reset(const T& val) { x = val; y = val; }
 		template <typename T>
+		size_t SVector2D<T>::size() const { return 2; }
+		template <typename T>
 		T& SVector2D<T>::operator[](int i) { return i == 0 ? x : y; }
 		template <typename T>
 		const T& SVector2D<T>::operator[](int i) const { return i == 0 ? x : y; }
@@ -638,6 +640,8 @@ namespace slib {
 		template <typename T>
 		void SVector3D<T>::reset(const T& val) { x = val; y = val; z = val; }
 		template <typename T>
+		size_t SVector3D<T>::size() const { return 3; }
+		template <typename T>
 		T& SVector3D<T>::operator[](int i) { return i == 0 ? x : (i == 1 ? y : z); }
 		template <typename T>
 		const T& SVector3D<T>::operator[](int i) const { return i == 0 ? x : (i == 1 ? y : z); }
@@ -687,7 +691,8 @@ namespace slib {
 		SVector4D<T> SVector4D<T>::operator / (const T& val) const { SVector4D<T> div = *this; div /= val; return div; }
 		template <typename T>
 		void SVector4D<T>::reset(const T& val) { x = val; y = val; z = val; w = val; }
-
+		template <typename T>
+		size_t SVector4D<T>::size() const { return 4; }
 		template <typename T>
 		T& SVector4D<T>::operator[](int i) { return i == 0 ? x : (i == 1 ? y : (i == 2 ? z : w)); }
 		template <typename T>
@@ -765,7 +770,7 @@ namespace slib {
 		scyc_citer<T> SVector<T, M>::cycle(int i) const { return scyc_citer<T>(array::ptr(i), i, array::size()); }
 
 		template <typename T>
-		SMatrix2D<T>::SMatrix2D() { auto p = element; sforin(i, 0, 4) { *p = initVal<T>(); ++p; } }
+		SMatrix2D<T>::SMatrix2D() { memset(element, 0, sizeof(T) * 4); auto p = element; sforin(i, 0, 4) { *p = initVal<T>(); ++p; } }
 		template <typename T>
 		SMatrix2D<T>::SMatrix2D(const T& t1, const T& t2, const T& t3, const T& t4) {
 			element[0] = t1; element[1] = t2; element[2] = t3; element[3] = t4;

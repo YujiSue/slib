@@ -307,6 +307,37 @@ namespace slib {
 			bool operator == (const sbpos& p) const;
 			bool operator != (const sbpos& p) const;
 		};
+
+		struct SBIOINFO_DLL sbposex : public sbpos {
+			String name;
+			sushort score;
+			srange thick;
+			bool join;
+			sbposex* root, * next;
+			sdict attribute;
+
+			sbposex();
+			sbposex(const sbposex& p);
+			~sbposex();
+			sbposex& operator = (const sbposex& p);
+
+			void init();
+
+			bool operator < (const sbposex& p) const;
+			bool operator == (const sbposex& p) const;
+			bool operator != (const sbposex& p) const;
+		};
+		class SBIOINFO_DLL sbregion {
+		private:
+			Array<Array<sbposex>> _regions;
+
+
+		public:
+
+
+
+		};
+
 	}
 }
 

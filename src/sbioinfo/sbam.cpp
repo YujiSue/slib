@@ -192,7 +192,7 @@ void sbam::bai::load(const char *path) {
         if (memcmp(BAI_MAGIC, magic, 4) != 0)
             throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, magic, "BAI");
         file.readInt(ref_num);
-        if(ref_num < 0) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, "ref_num", ">0");
+        if(ref_num < 1) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR, "ref_num", "> 0");
         setNum(ref_num);
         sforin(i, 0, ref_num) {
             auto &map = bin_map[i];
@@ -410,3 +410,244 @@ void SBam::getReads(sbam::read_array& array, sint idx, const sregion& region) {
 		}
 	}
 }
+
+/*
+SBamData::SBamData() { init(); }
+SBamData::SBamData(const SBamData& dat) : SBamData() {
+	_bam = dat._bam;
+	idx = dat.idx;
+	count = dat.count;
+	offset = dat.offset;
+	last = dat.last;
+	length = dat.length;
+	raw = dat.raw;
+	buffer[0] = dat.buffer[0];
+	buffer[1] = dat.buffer[1];
+	readinfo = dat.readinfo;
+	current = dat.current;
+	rawptr = dat.rawptr;
+	curptr = dat.curptr;
+}
+SBamData::~SBamData() {
+
+}
+void SBamData::init() {
+	memset(_magic, 0, 16);
+	_bam = nullptr;
+	_thread.setSize(1);
+	idx = 0;
+	result = 0;
+	buffer[0].reserve(BGZF_MAX_BLOCK_SIZE);
+	buffer[1].reserve(BGZF_MAX_BLOCK_SIZE);
+	current = buffer;
+	curptr = current->ptr();
+	resize(2);
+}
+void SBamData::resize(sint n) {
+	count = n;
+	raw.reserve((size_t)BGZF_MAX_BLOCK_SIZE * n);
+	rawptr = raw.ptr();
+	length.resize(n);
+}
+void SBamData::setBam(SBamFile* f) { _bam = f; }
+
+void SBamData::load() { 
+	if (!_bam) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "_bam");
+	_bam->lock();
+	raw.clear();
+	rawptr = raw.ptr();
+	length.reset(0);
+	offset = sbam::voffset(_bam->offset(), 0);
+	sforin(i, 0, count) {
+		result = _bam->readBytes(&length[i], 4);
+		if (result) throw SBioInfoException(ERR_INFO, SLIB_READ_ERROR);
+		raw.resize(raw.size() + length[i]);
+		result = _bam->readBytes(rawptr, length[i]);
+		rawptr += length[i];
+	}
+	last = sbam::voffset(_bam->offset(), 0);
+	_bam->unlock();
+}
+void SBamData::copy(void* p, size_t s) {
+	if (offset.block_offset + s < current->size()) {
+		memcpy(p, (const void *)curptr, s);
+		curptr += s; offset.block_offset += s;
+	}
+	else {
+		auto left = current->size() - offset.block_offset;
+		memcpy(p, (const void*)curptr, left);
+		p = (void*)((unsigned char*)p + left);
+		swap();
+		memcpy(p, (const void*)curptr, s - left);
+	}
+}
+ubytearray* SBamData::next() {
+	sint len = 0;
+	copy(&len, 4);
+	if (!len) return nullptr;
+	readinfo.resize(len);
+	copy(readinfo.ptr(), len);
+	return &readinfo;
+}
+void SBamData::swap() {
+
+
+	if (idx == count - 1) update();
+	else {
+		offset.file_offset += length[idx];
+		offset.block_offset = 0;
+		++idx;
+		_thread.complete();
+		if (current == &buffer[1]) {
+			current = &buffer[0];
+			if (idx < count - 1) _thread.addTask()
+		}
+		else {
+			current = &buffer[1];
+
+		}
+		curptr = 
+	}
+}
+SBamFile::SBamFile() {
+	_single = true;
+	_store.resize(1);
+	_data->setBam(this);
+	_data = &_store[0];
+}
+SBamFile::SBamFile(sngs_param* par) { setParam(par); }
+SBamFile::~SBamFile() {
+	close();
+}
+void SBamFile::_readHeader() {
+	char s[4];
+	_data->copy(s, 4);
+	if (memcmp(BAM_MAGIC, s, 4) != 0)
+		throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, s, "BAM");
+	sint tmp;
+	_data->copy(&tmp, 4);
+	info.text.resize(tmp);
+	_data->copy(&info.text[0], tmp);
+	_data->copy(&tmp, 4);
+	info.set(tmp);
+	sforin(i, 0, info.ref_num) {
+		_data->copy(&tmp, 4);
+		info.ref_name[i].resize((size_t)tmp, '\0');
+		_data->copy(&info.ref_name[i][0], tmp);
+		info.ref_name[i].resize((size_t)tmp - 1);
+		_data->copy(&(info.ref_length[i]), 4);
+	}
+}
+void SBamFile::_checkError() {
+	if (_data->result == Z_STREAM_ERROR || _data->result == Z_DATA_ERROR || _data->result == Z_BUF_ERROR)
+		throw SBioInfoException(ERR_INFO, SLIB_EXEC_ERROR, "inflate", std::to_string(_data->result).c_str());
+}
+void SBamFile::init() {
+	if (_file.isOpened()) _file.close();
+	index.init();
+}
+void SBamFile::setParam(sngs_param* p) {
+	_single = !p->parallele;
+	if (_single) {
+		_store.resize(1);
+		_data->setBam(this);
+		_data->resize(p->block);
+	}
+	else {
+		_store.resize(p->count);
+		sforeach(_store) { E_.setBam(this); E_.resize(p->block); }
+	}
+	_data = &_store[0];
+}
+void SBamFile::open(const char* path) {
+	if (_file.isOpened()) _file.close();
+	_file.open(path);
+	_data->load();
+	_checkError();
+	info.init();
+	loadIndex(String(path) + ".bai");
+	_readHeader();
+}
+void SBamFile::close() {
+	if (_file.isOpened()) _file.close();
+}
+void SBamFile::loadIndex(const char* path) {
+	index.init();
+	if (sio::SFile(path).exist()) index.load(path);
+}
+bool SBamFile::hasIndex() const { return 0 < index.ref_num; }
+void SBamFile::lock() { _lock.lock(); }
+void SBamFile::unlock() { _lock.unlock(); }
+suinteger SBamFile::filesize() const { return _file.size(); }
+suinteger SBamFile::offset() { return _file.offset(); }
+void SBamFile::setOffset(suinteger off) { return _file.setOffset(off); }
+String SBamFile::path() const { return _file.path(); }
+
+
+sbam::voffset SBamFile::voff() const { return _data->offset; }
+
+
+void SBamFile::setVOff(const sbam::voffset& off) {
+	if (_file.eof()) _file.clear();
+	lock();
+	_file.setOffset(off.file_offset);
+	_data->load(); 
+	_data->setOffset(off.block_offset);
+	unlock();
+}
+void SBamFile::setVOff(sint idx, const sbam::voffset& off) {
+	lock();
+	if (_file.eof()) _file.clear();
+	_file.setOffset(off.file_offset);
+	_store[idx].load(); 
+	_store[idx].setOffset(off.block_offset);
+	unlock();
+}
+//void SBamFile::sort() {}
+//void SBamFile::createIndex() {}
+ubytearray* SBamFile::next(ubytearray* dat) { return _data->next(); }
+SBamData* SBamFile::getData(sint idx) { return &_store[idx]; }
+void SBamFile::setData(sint idx) {
+	lock();
+	_data = &_store[idx];
+	unlock();
+}
+void SBamFile::getReads(sbam::read_array& array, const sbpos& pos) {
+	array.clear();
+	if (!hasIndex()) return;
+	ushortarray bins;
+	sbiutil::getBins(bins, pos);
+	if (bins.empty()) return;
+	sforeach(bins) {
+		auto& chunks = index.chunks[pos.idx][index.bin_map[pos.idx][(suint)E_]];
+		if (chunks.empty()) continue;
+		sforeach_(cit, chunks) {
+			setVOff(cit->begin);
+			do {
+				if (!next()) break;
+				sbam::readinfo ri(read);
+				if (E_ == ri.bin && pos.overlap(ri.range())) array.add(ri);
+			} while (_data->offset < cit->end);
+		}
+	}
+}
+void SBamFile::getReads(sbam::read_array& array, sint idx, const sregion& region) {
+	array.clear();
+	if (!hasIndex()) return;
+	ushortarray bins;
+	sbiutil::getBins(bins, region);
+	if (bins.empty()) return;
+	sforeach(bins) {
+		auto& chunks = index.chunks[idx][index.bin_map[idx][(suint)E_]];
+		if (chunks.empty()) continue;
+		sforeach_(cit, chunks) {
+			setVOff(cit->begin);
+			do {
+				if (!next()) break;
+				sbam::readinfo ri(read);
+				if (E_ == ri.bin && region.overlap(ri.range())) array.add(ri);
+			} while (_data->offset < cit->end);
+		}
+	}
+}
+*/

@@ -276,7 +276,7 @@ namespace slib {
     T &Array<T, M>::at(int idx) {
 		auto p = idx < 0 ? _end + idx : _begin + idx;
         if (p < _begin || _end <= p)
-            throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+            throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(idx).c_str(), std::string(RANGE_TEXT(0, size())).c_str());
         return *p;
     }
     template <typename T, class M>

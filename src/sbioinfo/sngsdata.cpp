@@ -5,8 +5,8 @@ using namespace slib::smath;
 using namespace slib::sio;
 using namespace slib::sbio;
 
-sngs_param::sngs_param() : splitread(true), paired(false), pcrdup(false), bin(1), parallele(false), ref(nullptr) {}
-sngs_param::sngs_param(bool sr, bool p, bool dp, sint b) : splitread(sr), paired(p), pcrdup(dp), bin(b), parallele(false), ref(nullptr) {}
+sngs_param::sngs_param() : splitread(true), paired(false), pcrdup(false), bin(1), block(2), count(1), parallele(false), ref(nullptr) {}
+sngs_param::sngs_param(bool sr, bool p, bool dp, sint b) : splitread(sr), paired(p), pcrdup(dp), bin(b), block(2), count(1), parallele(false), ref(nullptr) {}
 sngs_param::~sngs_param() {}
 sngs_param& sngs_param::operator=(const sngs_param& par) {
 	splitread = par.splitread;
@@ -14,9 +14,11 @@ sngs_param& sngs_param::operator=(const sngs_param& par) {
 	pcrdup = par.pcrdup;
 	parallele = par.parallele;
 	bin = par.bin;
+	block = par.block;
+	count = par.count;
 	return *this;
 }
-void sngs_param::setRef(SBSeqList* r) { ref = r; }
+void sngs_param::setRef(SBSeqList* r) { ref = r; if (ref && parallele && count < ref->size()) count = ref->size(); }
 void sngs_param::loadTarget(const char* s) {
 	if (!ref) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR);
 	target.resize(ref->size());
@@ -26,7 +28,7 @@ void sngs_param::loadTarget(const char* s) {
 		file.readLine(row);
 		auto values = row.split(TAB);
 		if (row.empty() || row[0] == '#' || values.size() < 3) continue;
-		target[ref->index[values[0]]].add(srange(values[1], values[2]));
+		target[(sint)(ref->index[values[0]])].add(srange(values[1], values[2]));
 	}
 }
 void sngs_param::decodeTarget(sobj obj) {
@@ -61,6 +63,8 @@ void sngs_param::set(const sobj& obj) {
 	if (obj.hasKey("dp")) pcrdup = obj["dp"];
 	if (obj.hasKey("parallele")) parallele = obj["parallele"];
 	if (obj.hasKey("bin")) bin = obj["bin"];
+	if (obj.hasKey("block")) block = obj["block"];
+	if (obj.hasKey("count")) count = obj["count"];
 	if (obj.hasKey("target")) decodeTarget(obj["target"]);
 }
 sobj sngs_param::toObj() {
@@ -70,6 +74,8 @@ sobj sngs_param::toObj() {
 		kv("dp", pcrdup),
 		kv("parallele", parallele),
 		kv("bin", bin),
+		kv("block", block),
+		kv("count", count),
 		kv("target", encodeTarget())
 	};
 }
@@ -115,6 +121,42 @@ void depth_data::init() {
 }
 srvar_data::srvar_data() {}
 srvar_data::~srvar_data() {}
+inline void _subtractVarData(vararray &va1, vararray &va2, size_t dist) {
+	if (va1.empty()) return;
+	Array<svar_data*> vars(va1.size() + va2.size());
+	auto it = vars.begin();
+	sforeach_(vit, va1) { E_ = &(*vit); NEXT_; }
+	sforeach_(vit, va2) { E_ = &(*vit); NEXT_; }
+	vars.sort([](const svar_data *v1, const svar_data *v2) { return v1->pos[0] < v2->pos[0]; });
+	it = vars.begin();
+	while (it < vars.end() - 1) {
+		auto it_ = it + 1;
+		while (it_ < vars.end()) {
+			if (E_->pos[0].begin + dist < (*it_)->pos[0].begin) break;
+			if (E_->equal(**it_, dist)) { E_->type = 0; (*it_)->type = 0; }
+			++it_;
+		}
+		NEXT_;
+	}
+	auto size = va1.size();
+	sforeach(va1) { if (!E_.type) --size; }
+	va1.sort([](const svar_data &v1, const svar_data &v2) {
+		if (!v1.type) return false;
+		if (!v2.type) return true;
+		return v1 < v2;
+		});
+	va1.resize(size);
+}
+srvar_data& srvar_data::subtract(srvar_data& srvs, svariant_param *par, SWork *threads) {
+	if (threads) {
+		sforeach2(variants, srvs.variants) threads->addTask(_subtractVarData, E1_, E2_, par->max_dist);
+		threads->complete();
+	}
+	else {
+		sforeach2(variants, srvs.variants) _subtractVarData(E1_, E2_, par->max_dist);
+	}
+	return *this;
+}
 void srvar_data::init() {
 	sforeach(variants) E_.clear();
 	offset.reset(0);
@@ -136,7 +178,7 @@ void SNGSData::setNum(size_t num) {
 	srvs.variants.resize(5 * num); //del, dup, inv, trs, trinv
 	srvs.offset.resize(5 * num, 0);
 }
-void SNGSData::setLength(int idx, size_t len) {
+void SNGSData::setLength(sint idx, sint len) {
 	summary.reflen[idx] = len;
 	depth.count[idx].resize((len - 1) / summary.bin + 1, 0);
 }
@@ -386,139 +428,6 @@ void SNGSData::readDepth(sint r, sint p) {
 void SNGSData::nextDp() {
 	_file.readFloat(depth.current);
 }
-/*
-inline void varIdx1(Array<svar_data> *variants, varparray *index) {
-    if (variants->empty()) return;
-	auto it = variants->begin();
-	auto idx = index->ptr();
-	auto ptr = &E_;
-	auto pos = (E_.pos[0].begin >> 14);
-	sforin(i, 0, pos + 1) { (*idx) = ptr; ++idx; }
-	NEXT_;
-    while(it < variants->end()) {
-		auto p = (E_.pos[0].begin >> 14);
-		if (pos < p) {
-			sforin(i, pos, p) { (*idx) = ptr; ++idx; }
-			pos = p; ptr = &E_;
-		}
-    }
-	sforin(i, pos, index->size()) { (*idx) = ptr; ++idx; }
-}
-*/
-inline void varIdx2(Array<svar_data>* variants, varparray* pindex, varparray* nindex) {
-	/*
-    idx1->reset(-1); idx2->reset(-1);
-    if (vec->empty()) return;
-    auto off = -1;
-    auto idx = idx1;
-    bool rev = false;
-    sforeach(*vec) {
-        if (rev != E_.pos[0].dir) {
-            rev = true;
-            idx = idx2;
-            off = -1;
-        }
-        if (off < E_.pos[0].begin) {
-            idx->at(E_.pos[0].begin>>14) = it-vec->begin();
-            while (off < E_.pos[0].begin) off += BAM_INDEX_BIN;
-        }
-    }
-	*/
-}
-inline void varIdx3(Array<svar_data> *vec, intarray2d *idxs) {
-    sforeach(*idxs) E_.reset(-1);
-    if (vec->empty()) return;
-    int off = -1, current = 0;
-    auto idx = idxs->ptr();
-    sforeach(*vec) {
-        if (E_.pos[1].idx != current) {
-            current = E_.pos[1].idx;
-            idx = &idxs->at(current);
-            off = -1;
-        }
-        if (off < E_.pos[0].begin) {
-            idx->at(E_.pos[0].begin>>14) = it-vec->begin();
-            while (off < E_.pos[0].begin) off += BAM_INDEX_BIN;
-        }
-    }
-}
-
-inline void varIdx4(Array<svar_data> *vec, intarray2d *idxs) {
-    sforeach(*idxs) E_.reset(-1);
-    if (vec->empty()) return;
-    int off = -1, current = 0;
-    auto idx = idxs->ptr();
-    bool rev = false;
-    sforeach(*vec) {
-        if (E_.pos[1].idx != current) {
-            current = E_.pos[1].idx;
-            rev = E_.pos[0].dir;
-            idx = &idxs->at(2*current+(rev?1:0));
-            off = -1;
-        }
-        else if (rev != E_.pos[0].dir) {
-            rev = E_.pos[0].dir;
-            idx = &idxs->at(2*current+(rev?1:0));
-            off = -1;
-        }
-        if (off < E_.pos[0].begin) {
-            idx->at(E_.pos[0].begin>>14) = it-vec->begin();
-            while (off < E_.pos[0].begin) off += BAM_INDEX_BIN;
-        }
-    }
-}
-/*
-void SNGSData::makeVIndex(Array<varparray>& index, svariant_param* vp, SWork* threads) {
-	auto size = 4 + 3 * summary.refnum - 1;
-	index.resize(size * summary.refnum);
-	sforin(r, 0, summary.refnum) {
-		auto len = ((summary.reflen[r] - 1) >> 14) + 1;
-
-		if (threads) {
-			index[r * size].resize(len, nullptr);
-			index[r * size + 1].resize(len, nullptr);
-			index[r * size + 2].resize(len, nullptr);
-			index[r * size + 3].resize(len, nullptr);
-
-			threads->addTask(varIdx1, &srvs.variants[5 * r], &index[r * size]);
-			threads->addTask(varIdx1, &srvs.variants[5 * r + 1], &index[r * size + 1]);
-			threads->addTask(varIdx2, &srvs.variants[5 * r + 2], &index[r * size + 2], &index[r * size + 3]);
-
-		}
-		else {
-			varIdx1(&srvs.variants[5 * r], &index[r * size]);
-			varIdx1(&srvs.variants[5 * r + 1], &index[r * size + 1]);
-			varIdx2(&srvs.variants[5 * r + 2], &index[r * size + 2], &index[r * size + 3]);
-
-		}
-		//if (threads) threads->addTask(varIdx3, &srvs.variants[5 * r + 3], &trsidx[i]);
-		//if (threads) threads->addTask(varIdx4, &srvs.variants[5 * r + 4], &trinvidx[i]);
-	}
-	if (threads) threads->complete();
-}
-*/
-/*
-void SNGSData::varindex(svariant_param *vp) {
-    sforin(r, 0, summary.refnum) {
-		_threads.addTask(varIdx1, &srvs.variants[5 * r], &delidx[i]);
-		_threads.addTask(varIdx1, &srvs.variants[5 * r + 1], &insidx[i]);
-		_threads.addTask(varIdx2, &srvs.variants[5 * r + 2], &invidx[2 * i], &invidx[2 * i + 1]);
-		_threads.addTask(varIdx3, &srvs.variants[5 * r + 3], &trsidx[i]);
-		_threads.addTask(varIdx4, &srvs.variants[5 * r + 4], &trinvidx[i]);
-    }
-    _threads.complete();
-}
-
-inline void _shrink(Array<svar_data> *vec, size_t count) {
-    std::sort(vec->begin(), vec->end(),
-              [](const svar_data &v1, const svar_data &v2) {
-                  if (!(v1.type)) return false;
-                  if (!(v2.type)) return true;
-                  return v1 < v2;
-              });
-    vec->resize(count);
-}
-*/
 inline void _varSubtract(vararray *v1, vararray *v2, svariant_param *vp) {
 	SVarFilter filter(nullptr, nullptr, vp);
 	filter.subtract(*v1, *v2);
@@ -579,8 +488,8 @@ inline void _addDepth(int r, SNGSData *dat1, SNGSData* dat2, sint *count) {
         ++dp1; ++dp2;
     }
     (*dp1) += (*dp2);
-	auto rest = dat1->summary.reflen[r] - len * bin;
-	if ((*dp1) < 1.0) (*count) += rest - (int)((*dp1) * rest);
+	auto rest = dat1->summary.reflen[r] - (len * bin);
+	if ((*dp1) < 1.0) (*count) += (sint)(rest - (size_t)((*dp1) * rest));
 }
 void SNGSData::integrate(SNGSData& dat, svariant_param* vp, SWork* threads) {
 	if (summary.comparable(dat.summary)) {
