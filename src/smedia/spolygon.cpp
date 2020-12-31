@@ -74,9 +74,15 @@ inline float _strWidth(String& str, float f) {
 	}
 	return w;
 }
-SCalligraphy::SCalligraphy() : SFigure(sshape::TEXT) {}
+SCalligraphy::SCalligraphy() : SFigure(sshape::TEXT) {
+	addVertex(v2f(0, 0));
+	addVertex(v2f(0, 0));
+	addVertex(v2f(0, 0));
+	addVertex(v2f(0, 0));
+}
 SCalligraphy::SCalligraphy(float x, float y, const char *s) : SCalligraphy() {
     _text = s;
+	_vertex.clear();
 	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
     addVertex(v2f(x, y));

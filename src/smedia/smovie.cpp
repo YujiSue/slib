@@ -67,7 +67,7 @@ void SMovie::save(const char *path, SDictionary &config) {
 
 sframe SMovie::operator[](size_t idx) {
     if(frame_count <= idx)
-        throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(idx).c_str(), RANGE_TEXT(0, frame_count));
+        throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     if (load_frames) return frames[idx];
     else {
         //if (threads.isWorking()) threads.complete();
@@ -87,7 +87,7 @@ sframe SMovie::operator[](size_t idx) {
 }
 sframe SMovie::frameAt(size_t idx) {
     if(frame_count <= idx)
-        throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(idx).c_str(), RANGE_TEXT(0, frame_count));
+        throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     if (load_frames) return frames[idx];
     else {
         //if (threads.isWorking()) threads.complete();

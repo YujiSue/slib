@@ -1,7 +1,7 @@
 #ifndef SLIB_CONFIG_H
 #define SLIB_CONFIG_H
 
-#define SLIB_VERSION 1.0.0
+#define SLIB_VERSION 1.0.7
 
 extern "C" {
 #include <float.h>

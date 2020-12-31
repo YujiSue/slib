@@ -44,6 +44,7 @@ namespace slib {
 		sobj value;
 
 		search_query();
+		search_query(const char* k, const char* op, const sobj& v);
 		search_query(const char* k, suint op, const sobj& v);
 		search_query(const search_query& que);
 		~search_query();
@@ -153,12 +154,19 @@ namespace slib {
 	public:
 		SRecord();
 		~SRecord();
-
-		
-
-		
-
-
+		/*
+		sobj get(size_t count = -1);
+		sobj get(const stringarray& columns, size_t count = -1);
+		sobj set(sobj data);
+		SRecord& incerement(sint i = 1);
+		SRecord& decrement(sint i = 1);
+		SRecord& insert(sobj data);
+		SRecord& transaction();
+		*/
+		//SRecord& from(size_t off);
+		//SRecord& where();
+		//SRecord& sort();
+		//SRecord& join();
 	};
 	class SLIB_DLL SDBTable {
 	private:

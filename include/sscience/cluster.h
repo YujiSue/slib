@@ -34,7 +34,7 @@ namespace slib {
 					tmp[0] = dist[r - 1][c] + 1;
 					tmp[1] = dist[r][c - 1] + 1;
 					tmp[2] = dist[r - 1][c - 1] + cost;
-					dist[r][c] = sstat::argmin(tmp, 3);
+					dist[r][c] = tmp[sstat::argmin(tmp, 3)];
 				}
 			}
 			return dist.last();
@@ -245,8 +245,54 @@ namespace slib {
 				hcluster<T>(*data, clusters, tree, method, distFunc);
 			}
 			//void plot();
-			//void summary();
-			//void export();
+			String summary(intarray& array) {
+				String str;
+				array.reserve(data->size());
+				auto beg = clusters.ptr(data->size());
+				auto it = sarr_iter<scluster>(beg);
+				while (it < clusters.end()) {
+					if (E_.elements[0]->isOrigin()) {
+						str << "#" << (E_.elements[0]->index + 1) << TAB;
+						array.add(E_.elements[0]->index);
+					}
+					else str << "%" << (E_.elements[0] - beg + 1) << TAB;
+					if (E_.elements[1]->isOrigin()) {
+						str << "#" << (E_.elements[1]->index + 1) << TAB;
+						array.add(E_.elements[1]->index);
+					}
+					else str << "%" << (E_.elements[1] - beg + 1) << TAB;
+					str << E_.distance << NEW_LINE;
+					NEXT_;
+				}
+				return str;
+			}
+			void order(intarray& array) {
+				array.reserve(data->size());
+				auto it = clusters.begin() + data->size();
+				while (it < clusters.end()) {
+					if (E_.elements[0]->isOrigin()) array.add(E_.elements[0]->index);
+					if (E_.elements[1]->isOrigin()) array.add(E_.elements[1]->index);
+					NEXT_;
+				}
+			}
+			void structure(stringarray& array) {
+				array.resize(data->size() * 2);
+				tree[0]->toStrs(array);
+			}
+			/*
+			void export(const char* path) {
+				intarray sorted;
+				sorted.reserve(data->size());
+				stringarray strs(data->size() * 2);
+				sio::SFile clusters(String(path) + ".cluster", sio::WRITE | sio::CREATE),
+					sorted(String(path) + ".sorted", sio::WRITE | sio::CREATE),
+					tree(String(path) + ".tree", sio::WRITE | sio::CREATE);
+				
+
+
+
+			}
+			*/
 		};
 
 		template<typename T>

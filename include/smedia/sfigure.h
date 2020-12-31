@@ -65,43 +65,43 @@ namespace slib {
             SFigure(const SFigure &fig);
             virtual ~SFigure();
             
-            sushort type() const;
-			sareaf boundary() const;
-			sgeom::ORIGIN origin() const;
-			size_t vcount() const;
-			v2fvec& vertex();
-			const v2fvec& vertex() const;
-			SDictionary& attribute();
-			const SDictionary& attribute() const;
+			virtual sushort type() const;
+			virtual sareaf boundary() const;
+			virtual sgeom::ORIGIN origin() const;
+			virtual size_t vcount() const;
+			virtual v2fvec& vertex();
+			virtual const v2fvec& vertex() const;
+			virtual SDictionary& attribute();
+			virtual const SDictionary& attribute() const;
 
-			const STransform2D &transformer() const;
-            const SPaint &painter() const;
-			const SBrush &brush() const;
-			const SStroke &stroke() const;
+			virtual const STransform2D &transformer() const;
+			virtual const SPaint &painter() const;
+			virtual const SBrush &brush() const;
+			virtual const SStroke &stroke() const;
             
-            void setOrigin(sgeom::ORIGIN ori);
-			void setScale(v2f v);
-            void setTranslate(v2f v);
-            void setSkew(v2f v);
-            void setRotation(float f);
-            void setReflect(subyte r);
-            void setStrokeType(sushort t);
-            void setStrokeWidth(float w);
-            void setStrokeColor(const SColor &c);
-            void setStrokeInterval(const intarray &a);
-            void setStroke(const SStroke &s);
-            void setFillColor(const SColor &c);
-            void setFillColor(const SGradient &g);
-            void setBrush(const SBrush &f);
-            void setPaint(const SPaint &p);
-            void setAttribute(const SDictionary &dic);
+			virtual void setOrigin(sgeom::ORIGIN ori);
+			virtual void setScale(v2f v);
+			virtual void setTranslate(v2f v);
+			virtual void setSkew(v2f v);
+			virtual void setRotation(float f);
+			virtual void setReflect(subyte r);
+			virtual void setStrokeType(sushort t);
+			virtual void setStrokeWidth(float w);
+			virtual void setStrokeColor(const SColor &c);
+			virtual void setStrokeInterval(const intarray &a);
+			virtual void setStroke(const SStroke &s);
+			virtual void setFillColor(const SColor &c);
+			virtual void setFillColor(const SGradient &g);
+			virtual void setBrush(const SBrush &f);
+			virtual void setPaint(const SPaint &p);
+			virtual void setAttribute(const SDictionary &dic);
             
-            void expand(v2f s);
-            void shift(v2f t);
-            void shear(v2f s);
-            void rotate(float rot);
-            void reflect(subyte ref);
-            void transform();
+			virtual void expand(v2f s);
+            virtual void shift(v2f t);
+			virtual void shear(v2f s);
+			virtual void rotate(float rot);
+			virtual void reflect(subyte ref);
+			void transform();
             
             void addVertex(v2f v);
             void setVertex(size_t idx, v2f v);
@@ -414,8 +414,9 @@ namespace slib {
 			void drawArc(const sarc& arc);
 			void drawPict(const spict& pic);
 			void drawText(const scalligraphy& cal);
-			void drawFigure(sfig fig);
 			*/
+			void drawFigure(sfig fig);
+			
 			String getClass() const;
 			String toString() const;
 			SObject* clone() const;

@@ -422,12 +422,16 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         case sshape::TEXT:
         {
             auto txt = static_cast<SCalligraphy *>(fig);
+			auto &style = txt->style();
+			auto &col = style.color;
             node->type = xml::START_TAG;
             node->tag = "text";
             node->attribute["x"] = fig->vertex()[0].x;
             node->attribute["y"] = fig->vertex()[0].y;
             SXmlNode::txtstyleSVG(node->attribute, txt->style());
             node->content = txt->text();
+			if (transform.length())
+				node->attribute["transform"] = transform;
             break;
         }
         case sshape::GROUP:

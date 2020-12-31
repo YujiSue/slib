@@ -7,6 +7,42 @@
 namespace slib {
 	namespace sstat {
 		template<typename T>
+		extern inline sint argmax(sla::SVector2D<T>& vec) { return vec.x < vec.y ? 1 : 0; }
+		template<typename T>
+		extern inline sint argmax(sla::SVector3D<T>& vec) { 
+			if (vec.x < vec.y) {
+				if (vec.y < vec.z) return 2;
+				else return 1;
+			}
+			else {
+				if (vec.x < vec.z) return 2;
+				else return 0;
+			}
+		}
+		template<typename T>
+		extern inline sint argmax(sla::SVector4D<T>& vec) { 
+			if (vec.x < vec.y) {
+				if (vec.y < vec.z) {
+					if (vec.z < vec.w) return 3;
+					else return 2;
+				}
+				else {
+					if (vec.y < vec.w) return 3;
+					else return 1;
+				}
+			}
+			else {
+				if (vec.x < vec.z) {
+					if (vec.z < vec.w) return 3;
+					else return 2;
+				}
+				else {
+					if (vec.x < vec.w) return 3;
+					else return 0;
+				}
+			}
+		}
+		template<typename T>
 		extern inline sint argmax(T* val, size_t s) {
 			sint idx = 0; T max = *val;
 			sforin(i, 0, s) {

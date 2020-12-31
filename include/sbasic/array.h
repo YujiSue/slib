@@ -12,6 +12,7 @@
 #define shortarray slib::CArray<sshort>
 #define ushortarray slib::CArray<sushort>
 #define intarray slib::CArray<sint>
+#define uintarray slib::CArray<suint>
 #define sizearray slib::CArray<size_t>
 #define floatarray slib::CArray<float>
 #define doublearray slib::CArray<double>
