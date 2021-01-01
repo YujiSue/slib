@@ -588,12 +588,12 @@ bool SObjPtr::hasKey(const char *key) const {
     if (isDict()) return dict().hasKey(key);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr SObjPtr::keys() const {
+SObjPtr SObjPtr::keyset() const {
 	if (isDict()) {
-		sarray array;
+		sarray keys;
 		auto& d = dict();
-		sforeach(d) array.add(E_.key);
-		return array;
+		sforeach(d) keys.add(E_.key);
+		return keys;
 	}
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
@@ -629,7 +629,10 @@ sattribute SObjPtr::parse(const char *sep, const char *part, bool trim) const {
     if (isStr()) return string().parse(sep, part, trim);
     else return toString().parse(sep, part, trim);
 }
-
+void SObjPtr::sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer) {
+	if (isArray()) array().sort(Comparer);
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
 void SObjPtr::convert(int t) {
     if (isNum()) number().setType(t);
     if (isColumn()) column().convert(t);

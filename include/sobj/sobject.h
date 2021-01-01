@@ -352,7 +352,7 @@ namespace slib {
         String key() const;
         const SObjPtr &value() const;
         bool hasKey(const char *key) const;
-        SObjPtr keys() const;
+        SObjPtr keyset() const;
         
         String substring(size_t offset, size_t len = -1) const;
         String substring(srange range) const;
@@ -362,6 +362,7 @@ namespace slib {
         stringarray splitline(bool trim = true) const;
         sattribute parse(const char *sep, const char *part, bool trim = true) const;
         
+		void sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer = sortAsc<SObjPtr>);
         void convert(int t);
         void transform(int t);
         void replace(const char *ori, const char *alt) const;
