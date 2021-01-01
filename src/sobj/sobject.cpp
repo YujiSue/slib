@@ -588,20 +588,23 @@ bool SObjPtr::hasKey(const char *key) const {
     if (isDict()) return dict().hasKey(key);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr SObjPtr::keyset() const {
-	if (isDict()) {
-		sarray keys;
-		auto& d = dict();
-		sforeach(d) keys.add(E_.key);
-		return keys;
-	}
+stringarray SObjPtr::keyset() const {
+	if (isDict()) return dict().keyset();
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr SObjPtr::substring(size_t offset, size_t len) const {
+bool SObjPtr::beginWith(const char* que) const {
+	if (isStr()) return string().beginWith(que);
+	else return toString().beginWith(que);
+}
+bool SObjPtr::endWith(const char* que) const {
+	if (isStr()) return string().endWith(que);
+	else return toString().endWith(que);
+}
+String SObjPtr::substring(size_t offset, size_t len) const {
     if (isStr()) return string().substring(offset, len);
     else return toString().substring(offset, len);
 }
-SObjPtr SObjPtr::substring(srange range) const {
+String SObjPtr::substring(srange range) const {
     if (isStr()) return string().substring(range);
     else return toString().substring(range);
 }
@@ -617,21 +620,25 @@ SObjPtr SObjPtr::subset(srange range) const{
     else if (isArray()) return array().subarray(range);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-SObjPtr SObjPtr::split(const char *sep, bool trim) const {
+stringarray SObjPtr::split(const char *sep, bool trim) const {
     if (isStr()) return string().split(sep, trim);
     else return toString().split(sep, trim);
 }
-SObjPtr SObjPtr::splitline(bool trim) const {
+stringarray SObjPtr::splitline(bool trim) const {
     if (isStr()) return string().splitline(trim);
     else return toString().splitline(trim);
 }
-SObjPtr SObjPtr::replace(const char *ori, const char *alt) const {
+String SObjPtr::replace(const char *ori, const char *alt) const {
 	if (isStr()) return string().replaced(ori, alt);
 	else return toString().replaced(ori, alt);
 }
-SObjPtr SObjPtr::parse(const char *sep, const char *part, bool trim) const {
+sattribute SObjPtr::parse(const char *sep, const char *part, bool trim) const {
     if (isStr()) return string().parse(sep, part, trim);
     else return toString().parse(sep, part, trim);
+}
+String SObjPtr::fill(size_t size, char fill, bool head) {
+	if (isStr()) return string().filled(size, fill, head);
+	else return toString().filled(size, fill, head);
 }
 void SObjPtr::sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer) {
 	if (isArray()) array().sort(Comparer);

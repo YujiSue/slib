@@ -352,17 +352,18 @@ namespace slib {
         String key() const;
         const SObjPtr &value() const;
         bool hasKey(const char *key) const;
-        SObjPtr keyset() const;
-        
-		SObjPtr substring(size_t offset, size_t len = -1) const;
-		SObjPtr substring(srange range) const;
+        stringarray keyset() const;
+		bool beginWith(const char* que) const;
+		bool endWith(const char* que) const;
+		String substring(size_t offset, size_t len = -1) const;
+		String substring(srange range) const;
         SObjPtr subset(size_t offset, size_t len = -1) const;
         SObjPtr subset(srange range) const;
-		SObjPtr split(const char *sep, bool trim = true) const;
-		SObjPtr splitline(bool trim = true) const;
-		SObjPtr replace(const char* ori, const char* alt) const;
-		SObjPtr parse(const char *sep, const char *part, bool trim = true) const;
-        
+		stringarray split(const char *sep, bool trim = true) const;
+		stringarray splitline(bool trim = true) const;
+		String replace(const char* ori, const char* alt) const;
+		sattribute parse(const char *sep, const char *part, bool trim = true) const;
+		String fill(size_t size, char fill = ' ', bool head = false);
 		void sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer = sortAsc<SObjPtr>);
         void convert(int t);
         void transform(int t);
