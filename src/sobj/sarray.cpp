@@ -82,15 +82,16 @@ SArray SArray::subarray(SArrayCIterator<SObjPtr> beg, SArrayCIterator<SObjPtr> e
 SArray SArray::subarray(srange range) const {
     return subarray(range.begin, range.length());
 }
-size_t SArray::search(const char *que, size_t offset) const {
-    auto query = String::lower(que);
-    for(auto it = begin()+offset; it < end(); ++it) {
-        if(it->isNull()) continue;
-        else if(String::lower(it->toString()).contain(query)) return it-begin();
+size_t SArray::search(const sobj& que, size_t offset) const {
+	auto it = begin() + offset;
+	while(it < end()) {
+        if(E_.isNull()) continue;
+        else if(E_ == que) return INDEX_(*this);
+		NEXT_;
     }
     return NOT_FOUND;
 }
-void SArray::sortby(const char *key, ORDER order) {
+void SArray::sortBy(const char *key, ORDER order) {
     if(order == ASC)
         std::sort(Array<sobj>::begin(), Array<sobj>::end(),
                   [key](const sobj &s1, const sobj &s2) {

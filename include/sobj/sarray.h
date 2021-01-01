@@ -23,8 +23,8 @@ namespace slib {
         SArray subarray(size_t off, size_t len = -1) const;
         SArray subarray(sarr_citer<SObjPtr> beg, sarr_citer<SObjPtr> end) const;
         SArray subarray(srange range) const;
-        size_t search(const char *que, size_t offset = 0) const;
-        void sortby(const char *key, slib::ORDER order = ASC);
+        size_t search(const sobj &que, size_t offset = 0) const;
+        void sortBy(const char *key, slib::ORDER order = ASC);
         String getClass() const;
         String toString() const;
         SObject *clone() const;

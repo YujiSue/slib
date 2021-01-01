@@ -597,11 +597,11 @@ SObjPtr SObjPtr::keyset() const {
 	}
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-String SObjPtr::substring(size_t offset, size_t len) const {
+SObjPtr SObjPtr::substring(size_t offset, size_t len) const {
     if (isStr()) return string().substring(offset, len);
     else return toString().substring(offset, len);
 }
-String SObjPtr::substring(srange range) const {
+SObjPtr SObjPtr::substring(srange range) const {
     if (isStr()) return string().substring(range);
     else return toString().substring(range);
 }
@@ -617,15 +617,19 @@ SObjPtr SObjPtr::subset(srange range) const{
     else if (isArray()) return array().subarray(range);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-stringarray SObjPtr::split(const char *sep, bool trim) const {
+SObjPtr SObjPtr::split(const char *sep, bool trim) const {
     if (isStr()) return string().split(sep, trim);
     else return toString().split(sep, trim);
 }
-stringarray SObjPtr::splitline(bool trim) const {
+SObjPtr SObjPtr::splitline(bool trim) const {
     if (isStr()) return string().splitline(trim);
     else return toString().splitline(trim);
 }
-sattribute SObjPtr::parse(const char *sep, const char *part, bool trim) const {
+SObjPtr SObjPtr::replace(const char *ori, const char *alt) const {
+	if (isStr()) return string().replaced(ori, alt);
+	else return toString().replaced(ori, alt);
+}
+SObjPtr SObjPtr::parse(const char *sep, const char *part, bool trim) const {
     if (isStr()) return string().parse(sep, part, trim);
     else return toString().parse(sep, part, trim);
 }
