@@ -55,7 +55,7 @@ namespace slib {
         size_t capacity() const;
         void swap(Map &map);
         
-        keyarray keyset() const;
+        keyarray keys() const;
         Key rlookup(const Val &val) const;
         bool hasKey(const Key &key) const;
         
@@ -229,10 +229,10 @@ namespace slib {
         auto tmpv = _vacant; _vacant = map._vacant; map._vacant = tmpv;
     }
     template<class Key, class Val>
-    Array<Key> Map<Key, Val>::keyset() const {
-        keyarray keys;
-        sforeach(*this) keys.add(E_.key);
-        return keys;
+    Array<Key> Map<Key, Val>::keys() const {
+        keyarray array;
+        sforeach(*this) array.add(E_.key);
+        return array;
     }
     template<class Key, class Val>
     Key Map<Key, Val>::rlookup(const Val &val) const {

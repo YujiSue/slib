@@ -255,7 +255,6 @@ namespace slib {
 		SObjPtr& operator++();
 		SObjPtr& operator--();
 		SObjPtr operator-() const;
-		SObjPtr absolute() const;
 
 		SObjPtr operator+(const char* s) const;
 		SObjPtr operator+(const ::std::string& s) const;
@@ -353,7 +352,7 @@ namespace slib {
         String key() const;
         const SObjPtr &value() const;
         bool hasKey(const char *key) const;
-        stringarray keyset() const;
+        SObjPtr keys() const;
         
         String substring(size_t offset, size_t len = -1) const;
         String substring(srange range) const;
@@ -664,7 +663,9 @@ namespace slib {
     SObjPtr &SObjPtr::operator=(const SClsPtr<Cls, T> &obj) {
         obj.copyTo(*this); return *this;
     }
-    
+    namespace smath {
+		extern SObjPtr absolute(const SObjPtr& obj);
+	}
     #define siter SIterator
     #define sciter SCIterator
     

@@ -246,10 +246,6 @@ SObjPtr SObjPtr::operator-() const {
     if (isNum()) return -number();
     return snull;
 }
-SObjPtr SObjPtr::absolute() const {
-	if (isNum()) return number().absolute();
-	return snull;
-}
 SObjPtr SObjPtr::operator+(const char *s) const {
     if (isNull()) return SObjPtr("")+=s;
     if (isStr()) return SObjPtr(string())+=s;
@@ -592,11 +588,15 @@ bool SObjPtr::hasKey(const char *key) const {
     if (isDict()) return dict().hasKey(key);
     throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-stringarray SObjPtr::keyset() const {
-    if (isDict()) return dict().keyset();
-    throw SException(ERR_INFO, SLIB_CAST_ERROR);
+SObjPtr SObjPtr::keys() const {
+	if (isDict()) {
+		sarray array;
+		auto& d = dict();
+		sforeach(d) array.add(E_.key);
+		return array;
+	}
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-
 String SObjPtr::substring(size_t offset, size_t len) const {
     if (isStr()) return string().substring(offset, len);
     else return toString().substring(offset, len);
@@ -1237,3 +1237,7 @@ bool slib::operator<(const int& i, const SObjPtr& obj) {
 	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 
+slib::SObjPtr slib::smath::absolute(const slib::SObjPtr& obj) {
+	if (obj.isNum()) return obj.number().absolute();
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
