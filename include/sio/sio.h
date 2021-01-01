@@ -160,7 +160,10 @@ namespace slib {
 	extern inline std::ostream& operator<<(std::ostream& os, const STable& table) { return os << table.toString(); }
 	template<class Return, class... Args>
 	extern inline std::ostream& operator<<(std::ostream& os, const SFunction<Return(Args...)>& func) { return os << func.toString(); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SObjPtr& obj) { return os << obj.toString(); }
+	extern inline std::ostream& operator<<(std::ostream& os, const SObjPtr& obj) { 
+		if (obj.isText()) return os << obj.text();
+		else return os << obj.toString(); 
+	}
 
 }
 #endif
