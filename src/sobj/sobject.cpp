@@ -631,7 +631,7 @@ sattribute SObjPtr::parse(const char *sep, const char *part, bool trim) const {
 }
 void SObjPtr::sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer) {
 	if (isArray()) array().sort(Comparer);
-	throw SException(ERR_INFO, SLIB_CAST_ERROR);
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 void SObjPtr::convert(int t) {
     if (isNum()) number().setType(t);
