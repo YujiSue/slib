@@ -640,9 +640,15 @@ String SObjPtr::fill(size_t size, char fill, bool head) {
 	if (isStr()) return string().filled(size, fill, head);
 	else return toString().filled(size, fill, head);
 }
-void SObjPtr::sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer) {
+SObjPtr& SObjPtr::sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer) {
 	if (isArray()) array().sort(Comparer);
 	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+	return *this;
+}
+SObjPtr& SObjPtr::sortBy(const char* key, slib::ORDER order) {
+	if (isArray()) array().sortBy(key, order);
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+	return *this;
 }
 void SObjPtr::convert(int t) {
     if (isNum()) number().setType(t);

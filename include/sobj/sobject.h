@@ -364,8 +364,9 @@ namespace slib {
 		String replace(const char* ori, const char* alt) const;
 		sattribute parse(const char *sep, const char *part, bool trim = true) const;
 		String fill(size_t size, char fill = ' ', bool head = false);
-		void sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer = sortAsc<SObjPtr>);
-        void convert(int t);
+		SObjPtr &sort(std::function<bool(const SObjPtr & o1, const SObjPtr & o2)> Comparer = sortAsc<SObjPtr>);
+		SObjPtr& sortBy(const char *key, slib::ORDER order = ASC);
+		void convert(int t);
         void transform(int t);
         
         void add(SObjPtr &&ptr);
