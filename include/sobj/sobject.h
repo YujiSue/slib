@@ -255,6 +255,7 @@ namespace slib {
 		SObjPtr& operator++();
 		SObjPtr& operator--();
 		SObjPtr operator-() const;
+		SObjPtr absolute() const;
 
 		SObjPtr operator+(const char* s) const;
 		SObjPtr operator+(const ::std::string& s) const;

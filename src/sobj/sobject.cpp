@@ -246,7 +246,10 @@ SObjPtr SObjPtr::operator-() const {
     if (isNum()) return -number();
     return snull;
 }
-
+SObjPtr SObjPtr::absolute() const {
+	if (isNum()) return number().absolute();
+	return snull;
+}
 SObjPtr SObjPtr::operator+(const char *s) const {
     if (isNull()) return SObjPtr("")+=s;
     if (isStr()) return SObjPtr(string())+=s;
