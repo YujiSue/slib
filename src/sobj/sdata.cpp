@@ -9,16 +9,11 @@ SData::SData(): ubytearray(), SObject() {}
 SData::SData(size_t size, void *dat) : ubytearray(size), SObject() {
     if (dat) ubytearray::copy((subyte *)dat, size);
 }
-/*
-SData::SData(const char *s) : SData(SCode::decodeCharCount(s)) {
-    SCode::decodeBASE64(s, (void *)ubytearray::ptr(), ubytearray::size());
-}
-*/
-SData::SData(const char* s) : SData(strlen(s), (void *)s) {}
+SData::SData(const char* s) : SData(s?(strlen(s)):0, s?(void *)s:nullptr) {}
 SData::SData(const slib::String& str) : SData(str.length(), (void*)str.cstr()) {}
 SData::SData(const slib::SString& str) : SData(str.length(), (void*)str.cstr()) {}
 SData::SData(const sobj &obj) : SData() {
-    if (obj.isDat()) *this = obj.data();
+	if (obj.isDat()) *this = obj.data();
     else throw SException(ERR_INFO, SLIB_CAST_ERROR, "obj", CAST_TEXT(obj->getClass(), "SData"));
 }
 SData::SData(const SData &data) : SData(data.size(), const_cast<subyte *>(data.ptr())) {}

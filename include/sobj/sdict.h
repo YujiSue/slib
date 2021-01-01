@@ -43,7 +43,7 @@ namespace slib {
         smap_iter<String, slib::SObjPtr> search(const char *que);
 		void combine(const SDictionary& dic);
 		void merge(const SDictionary& dic);
-        SArray lump(const stringarray &keys);
+        SArray search(const stringarray &keys);
         String getClass() const;
         String toString() const;
         SObject *clone() const;

@@ -73,7 +73,6 @@ namespace slib {
 		sint _lastcol;
 
 	protected:
-		//String _name;
 		Array<SColumn> _columns;
 		SArray _rows;
 

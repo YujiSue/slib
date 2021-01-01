@@ -177,24 +177,40 @@ namespace slib {
 		class SLIB_DLL siostream {
 			sbyte _mode;
 			sio::SFile _file;
+		private:
+			void _output1();
+			template<class First, class... Args>
+			void _output1(First& f, Args&... args) {
+				if (_mode) _file << f;
+				else std::cout << f;
+				_output1(args...);
+			}
+			void _output2();
+			template<class First, class... Args>
+			void _output2(First& f, Args&... args) {
+				if (_mode) _file << f;
+				else std::cout << f;
+				_output2(args...);
+			}
 		public:
-			siostream(int i);
+			siostream(int i = 0);
 			siostream(const char* s);
 			~siostream();
 			void setStdMode();
 			void setPath(const char* s);
 			void read(slib::String& s);
-			void input(ubytearray& a);
-			void _output();
-			template<class First, class... Args>
-			void _output(First& f, Args&... args) {
-				if (_mode) _file << f;
-				else std::cout << f;
-				output(args...);
-			}
 			template<class... Args>
-			void output(Args... args) { _output(args...); }
+			void write(Args... args) { _output1(args...); }
+			template<class... Args>
+			void print(Args... args) { _output2(args...); }
 		};
     }
+	extern sio::siostream SIO_;
 }
+#define STDIO_MODE SIO_.setStdMode();
+#define FILEIO_MODE(X) SIO_.setPath(X);
+#define SRead(X) SIO_.read(X)
+#define SWrite(...) SIO_.write(__VA_ARGS__)
+#define SPrint(...) SIO_.print(__VA_ARGS__)
+
 #endif

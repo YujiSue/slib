@@ -32,7 +32,7 @@ namespace slib {
         _num _value;
 
     public:
-		static String toBinary(subyte b);
+		static String toBinary(subyte b, bool le = true);
 		static String toOct(subyte b);
 		static String toHex(subyte b);
         static SNumber toNumber(const char *s);
@@ -83,7 +83,7 @@ namespace slib {
         SNumber &operator--();
         SNumber operator--(int) const;
         SNumber operator-() const;
-        SNumber abs() const;
+        SNumber absolute() const;
 		SNumber operator+(const sbyte& num) const;
 		SNumber operator+(const subyte& num) const;
 		SNumber operator+(const sshort& num) const;
@@ -185,6 +185,7 @@ namespace slib {
 		SNumber operator/(const sfrac& num) const;
 		SNumber operator/(const scomp& num) const;
 		SNumber operator/(const SNumber& num) const;
+		SNumber reciprocal() const;
 		sinteger quot(const SNumber& num) const;
 		SNumber operator%(const sbyte& num) const;
 		SNumber operator%(const subyte& num) const;

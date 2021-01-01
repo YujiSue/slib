@@ -110,7 +110,7 @@ inline void _merge(SDictionary &d1, const SDictionary &d2) {
 	}
 }
 void SDictionary::merge(const SDictionary& dic) { _merge(*this, dic); }
-SArray SDictionary::lump(const stringarray &keys) {
+SArray SDictionary::search(const stringarray &keys) {
     SArray array;
     sforeach(keys) array.add(at(E_));
     return array;

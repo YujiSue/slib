@@ -62,7 +62,7 @@ int SSystem::exec(const char *cmd, String &result) {
     }
     else throw SException(ERR_INFO, SLIB_EXEC_ERROR, "SSystem::exec", cmd);
 }
-size_t SSystem::getProcessID(const char* name) {
+size_t SSystem::getPID(const char* name) {
 #ifdef WIN_OS
 	String res;
 	exec("tasklist /FO csv", res);
@@ -76,13 +76,27 @@ size_t SSystem::getProcessID(const char* name) {
 #else
 	String res;
 	exec("ps -a", res);
-	/*
-	 */
+	auto list = res.splitline();
+	if (!list.empty() && list[0].size()) {
+		sint pid = 0, cmd = 0;
+		auto it = list.begin();
+		auto cols = E_.split(SPACE, true, true);
+		sforeach_(cit, cols) {
+			if ((*cit) == "PID") pid = cit - cols.begin();
+			else if ((*cit) == "CMD") cmd = cit - cols.begin();
+		}
+		NEXT_;
+		while (it < list.end()) {
+			auto datas = E_.split(SPACE, true, true);
+			if (datas[cmd] == name) return datas[pid].sizeValue();
+			NEXT_;
+		}
+	}
     return NOT_FOUND;
 
 #endif
 }
-void SSystem::killProcess(size_t pid) {
+void SSystem::kill(size_t pid) {
 	String cmd;
 #ifdef WIN_OS
 	cmd = "taskkill";

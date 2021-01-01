@@ -866,3 +866,23 @@ SFile &SFile::operator<<(const sobj &obj) { writeString(obj.toString()); return 
 SFile::operator const char *() const { return _path.cstr(); }
 bool SFile::operator<(const SFile &file) const { return _path < file._path; }
 bool SFile::operator==(const SFile &file) const { return _path == file._path; }
+
+
+slib::sio::siostream::siostream(int i) :_mode(i) {}
+slib::sio::siostream::siostream(const char* s) : _mode(1) { _file = sio::SFile(s, sio::READ | sio::CREATE); }
+slib::sio::siostream::~siostream() {}
+void slib::sio::siostream::setStdMode() { _mode = 0; }
+void slib::sio::siostream::setPath(const char* s) { _mode = 1; _file = sio::SFile(s, sio::READ | sio::CREATE); }
+void slib::sio::siostream::read(slib::String& s) {
+	if (_mode) _file >> s;
+	else std::cin >> s;
+}
+void slib::sio::siostream::_output1() {
+	if (_mode) { _file; _file.flush(); }
+	else std::cout << std::flush;
+}
+void slib::sio::siostream::_output2() {
+	if (_mode) { _file << NEW_LINE; _file.flush(); }
+	else std::cout << std::endl;
+}
+slib::sio::siostream slib::SIO_ = slib::sio::siostream(0);

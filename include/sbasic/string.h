@@ -135,7 +135,7 @@ namespace slib {
         String(String &&s);
         String(const SString &s);
         String(const SObjPtr &obj);
-        ~String();
+        virtual ~String();
         
         String &operator=(bool b);
         String &operator=(int i);
@@ -357,8 +357,8 @@ namespace slib {
 		slib::CArray<size_t> search(const char *que, size_t offset = 0) const;
 		slib::CArray<size_t> search(const Regex &rgx, size_t offset = 0) const;
 		slib::Array<slib::String, slib::SMemory<slib::String>> matched(const Regex &rgx, size_t offset = 0) const;
-		slib::Array<slib::String, slib::SMemory<slib::String>> split(const char *sep, bool trim = true) const;
-		slib::Array<slib::String, slib::SMemory<slib::String>> splitline(bool trim = true) const;
+		slib::Array<slib::String, slib::SMemory<slib::String>> split(const char *sep, bool trim = true, bool ignore = false) const;
+		slib::Array<slib::String, slib::SMemory<slib::String>> splitline(bool trim = true, bool ignore = false) const;
 		slib::Array<slib::String, slib::SMemory<slib::String>> split(const Regex &rgx) const;
 		slib::Map<slib::String, slib::String> parse(const char *sep , const char *part, bool trim = true) const;
         bool beginWith(const char *que) const;

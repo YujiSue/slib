@@ -35,7 +35,7 @@ namespace slib {
 		bool summerTime() const;
 		suint ymd() const;
 		suint hms() const;
-		sinteger intValue() const;
+		sinteger integer() const;
 		int lag() const;
 		String lagStr() const;
 		String getClass() const;

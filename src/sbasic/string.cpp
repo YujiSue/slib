@@ -905,7 +905,7 @@ stringarray String::matched(const Regex &rgx, size_t offset) const {
     rgx.search(array, &at((int)offset), &last());
     return array;
 }
-inline void addsubstr(const String &str, stringarray &array, size_t init, size_t current, bool trim) {
+inline void addsubstr(const String &str, stringarray &array, size_t init, size_t current, bool trim, bool ignore) {
     auto l = current-init;
     if (trim) {
         while (init < current && Char::isWSChar(str[(int)init])) ++init;
@@ -913,9 +913,9 @@ inline void addsubstr(const String &str, stringarray &array, size_t init, size_t
         while (0 < l && Char::isWSChar(str[(int)(init+l-1)])) --l;
     }
     if (l) array.add(str.substring(init, l));
-    else array.add("");
+    else if (!ignore) array.add("");
 }
-stringarray String::split(const char *sep, bool trim) const {
+stringarray String::split(const char *sep, bool trim, bool ignore) const {
     stringarray array;
     if (sep) {
         auto len = strlen(sep);
@@ -927,18 +927,18 @@ stringarray String::split(const char *sep, bool trim) const {
                 if (*ins.first == '\"') dq = !dq;
                 else if (*ins.first == sep[0] && !dq && off+len <= ins.second) {
                     if (!memcmp(ins.first, sep, len)) {
-                        addsubstr(*this, array, pos, off, trim);
+                        addsubstr(*this, array, pos, off, trim, ignore);
                         pos = off+len; off += len-1; ins.first += len-1;
                     }
                 }
                 ++off; ++ins.first;
             }
-            addsubstr(*this, array, pos, off, trim);
+            addsubstr(*this, array, pos, off, trim, ignore);
         }
     }
     return array;
 }
-stringarray String::splitline(bool trim) const {
+stringarray String::splitline(bool trim, bool ignore) const {
     stringarray array;
     if(empty()) return array;
     bool dq = false;
@@ -947,7 +947,7 @@ stringarray String::splitline(bool trim) const {
     while (off < ins.second) {
         if (*ins.first == '\"') dq = !dq;
         else if ((*ins.first == '\n' || *ins.first == '\r') && !dq) {
-            addsubstr(*this, array, pos, off, trim);
+            addsubstr(*this, array, pos, off, trim, ignore);
             if (off < ins.second-1 && *ins.first == '\r' && *(ins.first+1) == '\n') {
                 pos = off+2; ++off; ++ins.first;
             }
@@ -955,7 +955,7 @@ stringarray String::splitline(bool trim) const {
         }
         ++off; ++ins.first;
     }
-    addsubstr(*this, array, pos, off, trim);
+    addsubstr(*this, array, pos, off, trim, ignore);
     return array;
 }
 stringarray String::split(const Regex &rgx) const {

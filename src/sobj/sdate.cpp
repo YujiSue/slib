@@ -310,7 +310,6 @@ SDate& SDate::operator = (const SDate& date) {
 	Time::hour = date.hour;
 	Time::minute = date.minute;
 	Time::sec = date.sec;
-	//Time::msec = date.msec;
 	mday = date.mday;
 	wday = date.wday;
 	return (*this);
@@ -391,7 +390,7 @@ Time SDate::operator - (const SDate& date) const {
 bool SDate::summerTime() const { return tzone & 0x80; }
 suint SDate::ymd() const { suint val = 0; val |= mday | (month << 5) | (year << 9); return val; }
 suint SDate::hms() const { suint val = 0; val |= sec | (minute << 6) | (hour << 12); return val; }
-sinteger SDate::intValue() const { auto val = ((sinteger)ymd() << 32); val |= hms(); return val; }
+sinteger SDate::integer() const { auto val = ((sinteger)ymd() << 32); val |= hms(); return val; }
 int SDate::lag() const { 
 	if (tzone == 0xFF) return -1;
 	return (tzone & 0x40 ? -1 : 1) * ((tzone & 0x03) * 15 + ((tzone >> 2) & 0x0F)) * 60 + (tzone & 0x80 ? 60 : 0); 

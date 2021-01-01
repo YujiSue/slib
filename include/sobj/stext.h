@@ -37,7 +37,7 @@ namespace slib {
         float size, weight;
         smedia::SColor color, background;
         
-		text_style(int t = sstyle::PLAIN, const char *f = "Arial", float s = 10.0, smedia::SColor c = "black", smedia::SColor b = "clear");
+		text_style(suint t = sstyle::PLAIN, const char *f = "Arial", float s = 10.0, smedia::SColor c = "black", smedia::SColor b = "clear");
 		text_style(SDictionary &dict);
 		text_style(const text_style&style);
         ~text_style();

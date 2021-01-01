@@ -83,7 +83,7 @@ SArray SArray::subarray(srange range) const {
     return subarray(range.begin, range.length());
 }
 size_t SArray::search(const char *que, size_t offset) const {
-    auto query = SString::lower(que);
+    auto query = String::lower(que);
     for(auto it = begin()+offset; it < end(); ++it) {
         if(it->isNull()) continue;
         else if(String::lower(it->toString()).contain(query)) return it-begin();

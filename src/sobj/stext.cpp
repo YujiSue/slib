@@ -5,8 +5,8 @@
 using namespace slib;
 using namespace slib::sio;
 
-text_style::text_style(int t, const char *f, float s, smedia::SColor c, smedia::SColor b) :
-                                        type(t), font(f), size(s), color(c), background(b) {}
+text_style::text_style(suint t, const char *f, float s, smedia::SColor c, smedia::SColor b) :
+                                        type(t), font(f), weight(1.0), size(s), color(c), background(b) {}
 text_style::text_style(SDictionary& dict) : text_style() {
 	if (dict["type"]) type = dict["type"];
 	if (dict["font"]) font = dict["font"];
@@ -241,6 +241,3 @@ String SText::toString() const {
     return _string;
 }
 SObject *SText::clone() const { return new SText(*this); }
-
-
-

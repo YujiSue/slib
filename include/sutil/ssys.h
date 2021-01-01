@@ -25,8 +25,8 @@ namespace slib {
         static void setCurrent(const char *path);
         static void exec(const char *cmd);
         static int exec(const char *cmd, String &result);
-        static size_t getProcessID(const char *name);
-        static void killProcess(size_t pid);
+        static size_t getPID(const char *name);
+        static void kill(size_t pid);
         //void screenShot(smedia::SImage *img);
         //void copyToBoard(const sobj &obj);
         //sobj pasteFromBoard();
@@ -64,7 +64,6 @@ namespace slib {
 	};
 
 	class SLIB_DLL SharedMemory {
-	public:
 	private:
 		size_t _size;
 		void* _memory;
@@ -75,15 +74,12 @@ namespace slib {
 		bool _child;
 		int _pid, _sid;
 #endif
-
 	public:
 		SharedMemory();
 		SharedMemory(size_t s, const char* n, int i = 0);
 		SharedMemory(const SharedMemory &mem);
 		~SharedMemory();
-
 		SharedMemory& operator=(const SharedMemory& mem);
-
 		void create();
 		void share();
 		void* pointer();

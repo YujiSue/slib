@@ -27,22 +27,19 @@ namespace slib {
         SData &operator = (const SData &dat);
         void load(const char *path);
         void save(const char *path);
-        template<class Checker>
-        bool check(void *ref, size_t s) { Checker::check(ptr(), size(), ref, s); }
         void compress();
         void expand();
-		
 		void asString(String& str);
 		template<typename T>
 		void asArray(Array<T, CMemory<T>>& array) {
+			if (ubytearray::size() % sizeof(T)) throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
 			if (ubytearray::_capacity) {
 				array._capacity = ubytearray::_capacity;
 				array._begin = reinterpret_cast<T *>(ubytearray::_begin);
-				array._end = array._begin + (ubytearray::size() - 1) / sizeof(T) + 1;
+				array._end = array._begin + (ubytearray::size() / sizeof(T));
 			}
 			ubytearray::discard();
 		}
-		//void trans(String &str);
 		virtual String getClass() const;
         virtual String toString() const;
         virtual SObject *clone() const;

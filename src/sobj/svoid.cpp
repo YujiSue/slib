@@ -6,7 +6,7 @@ using namespace slib;
 SVoid::SVoid() : _ptr(nullptr), SObject() {}
 SVoid::SVoid(void *p) : _ptr(p), SObject() {}
 SVoid::SVoid(const SVoid& ptr) : _ptr(ptr._ptr), SObject() {}
-SVoid::~SVoid() { if (_ptr) delete _ptr; }
+SVoid::~SVoid() { if (_ptr) free(_ptr); }
 SVoid& SVoid::operator = (const SVoid& ptr) {
 	_ptr = ptr._ptr; return *this;
 }

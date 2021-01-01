@@ -13,8 +13,7 @@ SColumn::SColumn(const SDictionary& dict) : SColumn(dict["type"], dict["name"]) 
 SColumn::SColumn(const SColumn &column) : SColumn(column.type(), column.name()) { _table = column._table; }
 SColumn::~SColumn() {}
 SColumn& SColumn::operator=(const SColumn& col) {
-	_type = col._type; _name = col._name; _table = col._table;
-	return *this;
+	_type = col._type; _name = col._name; _table = col._table; return *this;
 }
 sushort SColumn::colType(const sobj &obj) {
     if (obj.isNum()) return NUMBER_COLUMN;
@@ -68,7 +67,7 @@ String SColumn::colTypeStr(int t) {
     }
 }
 sushort SColumn::colTypeIndex(const char *t) {
-    auto type = SString::lower(t);
+    auto type = String::lower(t);
 	if (type == "auto") return OBJECT_COLUMN;
 	else if (type.beginWith("num")) return NUMBER_COLUMN;
 	else if (type.beginWith("int")) return INTEGER_COLUMN;
@@ -173,15 +172,15 @@ inline void _convert(sobj &obj, sushort from, sushort to) {
 	else _setInitObj(obj, to);
 }
 void SColumn::convert(sushort t) {
-    if (_type == t) return;
-    if (_table) {
-        sint idx = _table->columnIndex(_name);
-        sforeach(_table->_rows) _convert(E_[idx], _type, t);
-    }
-    _type = t;
+	if (_type == t) return;
+	if (_table) {
+		sint idx = _table->columnIndex(_name);
+		sforeach(_table->_rows) _convert(E_[idx], _type, t);
+	}
+	_type = t;
 }
-void SColumn::setName(const char *n) { _name = n?n:""; }
-void SColumn::setTable(STable *tbl) { _table = tbl; }
+void SColumn::setName(const char* n) { _name = n ? n : ""; }
+void SColumn::setTable(STable* tbl) { _table = tbl; }
 String SColumn::getClass() const { return "column"; }
-String SColumn::toString() const { return _name + "(" +SColumn::colTypeStr(_type)+")"; }
-SObject *SColumn::clone() const { return new SColumn(*this); }
+String SColumn::toString() const { return _name + "(" + SColumn::colTypeStr(_type) + ")"; }
+SObject* SColumn::clone() const { return new SColumn(*this); }
