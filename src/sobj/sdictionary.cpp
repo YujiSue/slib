@@ -119,18 +119,35 @@ String SDictionary::getClass() const { return "dict"; }
 String SDictionary::toString() const {
     if(empty()) return "{}";
     String str = "{", dat;
-    sforeach(*this) {
-        str += E_.key+":";
-        if(E_.value.isNull()) str += "null,";
-        else if(E_.value.isNum()) str += E_.value.toString()+",";
-        else if(E_.value.isArray()) str += E_.value.toString()+",";
-        else if(E_.value.isDict()) str += E_.value.toString() + ",";
-        else {
-            dat = E_.value.toString();
-            if(dat.contain("\"")) dat.replace("\"", "\\\"");
-            str += String::dquot(dat)+",";
-        }
-    }
+	if (hasKey("__key__")) {
+		auto keys = at("__key__");
+		sforeach(keys) {
+			str << E_ << ":";
+			if (at(E_).isNull()) str << "null,";
+			else if (at(E_).isNum()) str << at(E_) << ",";
+			else if (at(E_).isArray()) str << at(E_) << ",";
+			else if (at(E_).isDict()) str << at(E_) << ",";
+			else {
+				dat = at(E_);
+				if (dat.contain("\"")) dat.replace("\"", "\\\"");
+				str << String::dquot(dat) << ",";
+			}
+		}
+	}
+	else {
+		sforeach(*this) {
+			str += E_.key + ":";
+			if (E_.value.isNull()) str += "null,";
+			else if (E_.value.isNum()) str += E_.value.toString() + ",";
+			else if (E_.value.isArray()) str += E_.value.toString() + ",";
+			else if (E_.value.isDict()) str += E_.value.toString() + ",";
+			else {
+				dat = E_.value.toString();
+				if (dat.contain("\"")) dat.replace("\"", "\\\"");
+				str += String::dquot(dat) + ",";
+			}
+		}
+	}
 	str.last() = '}';
     return str;
 }

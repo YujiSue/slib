@@ -78,7 +78,14 @@ SObjPtr::SObjPtr(sinteger i) : _type(NUMBER_OBJ), _ptr(new SNumber(i)) {}
 SObjPtr::SObjPtr(float f) : _type(NUMBER_OBJ), _ptr(new SNumber(f)) {}
 SObjPtr::SObjPtr(double d) :_type(NUMBER_OBJ), _ptr(new SNumber(d)) {}
 SObjPtr::SObjPtr(const smath::Fraction<sint> &frac) : _type(NUMBER_OBJ), _ptr(new SNumber(frac)) {}
-SObjPtr::SObjPtr(const smath::Complex<float> &comp) :_type(NUMBER_OBJ), _ptr(new SNumber(comp)) {}
+SObjPtr::SObjPtr(const smath::Complex<float> &comp) : _type(NUMBER_OBJ), _ptr(new SNumber(comp)) {}
+SObjPtr::SObjPtr(const Time& t) : _type(DICT_OBJ) {
+	_ptr = new SDictionary({
+		kv("__key__", V({ "year", "month", "day", "hour", "minute", "second" })),
+		kv("year", t.year), kv("month", t.month), kv("day", t.day),
+		kv("hour", t.hour), kv("minute", t.minute), kv("second", t.second)
+		});
+}
 SObjPtr::SObjPtr(const char *s) : _type(STRING_OBJ), _ptr(new SString(s)) {}
 SObjPtr::SObjPtr(const std::string &str) : _type(STRING_OBJ), _ptr(new SString(str)) {}
 SObjPtr::SObjPtr(String &&str) : _type(STRING_OBJ), _ptr(new SString(std::forward<SString>(str))) {}
@@ -176,7 +183,11 @@ SObjPtr &SObjPtr::operator = (const SObjPtr &obj) {
     else { release(); obj.copyTo(*this); }
     return *this;
 }
-
+SObjPtr& SObjPtr::operator += (const Time& t) {
+	if (isDate()) date() += t;
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+	return *this;
+}
 SObjPtr &SObjPtr::operator += (const char *s) {
     if (isStr()) string()+=s;
     return *this;
@@ -204,8 +215,21 @@ SObjPtr &SObjPtr::operator += (const SObjPtr &obj) {
     }
     return *this;
 }
+SObjPtr& SObjPtr::operator -= (const Time& t) {
+	if (isDate()) date() -= t;
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+	return *this;
+}
 SObjPtr &SObjPtr::operator -= (const SObjPtr &obj) {
-    if (isNum() && obj.isNum() & !obj.isNull()) number()-=obj.number();
+	if (isNum() && obj.isNum()) {
+		if (isNull()) {
+			if (obj.isNull()) number() = 0;
+			else number() = -obj.number();
+		}
+		else if (obj.isNull()) return *this;
+		else number() -= obj.number();
+	}
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
     return *this;
 }
 SObjPtr &SObjPtr::operator *= (int i) {
@@ -246,25 +270,29 @@ SObjPtr SObjPtr::operator-() const {
     if (isNum()) return -number();
     return snull;
 }
+SObjPtr SObjPtr::operator+(const Time& t) {
+	if (isDate()) return date() + t;
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
 SObjPtr SObjPtr::operator+(const char *s) const {
     if (isNull()) return SObjPtr("")+=s;
     if (isStr()) return SObjPtr(string())+=s;
-    else return SObjPtr(toString())+s;
+    else return SObjPtr(toString() + s);
 }
 SObjPtr SObjPtr::operator+(const std::string &s) const {
     if (isNull()) return SObjPtr("")+=s;
     if (isStr()) return SObjPtr(string())+=s;
-    else return SObjPtr(toString())+s;
+    else return SObjPtr(toString() + s);
 }
 SObjPtr SObjPtr::operator+(const String &s) const {
     if (isNull()) return SObjPtr("")+=s;
     if (isStr()) return SObjPtr(string())+=s;
-    else return SObjPtr(toString())+s;
+    else return SObjPtr(toString() + s);
 }
 SObjPtr SObjPtr::operator+(const SString &s) const {
     if (isNull()) return SObjPtr("")+=s;
     if (isStr()) return SObjPtr(string())+=s;
-    else return SObjPtr(toString())+s;
+    else return SObjPtr(toString() + s);
 }
 SObjPtr SObjPtr::operator+(const SObjPtr &obj) const {
     if (_ptr) {
@@ -283,9 +311,23 @@ SObjPtr SObjPtr::operator+(const SObjPtr &obj) const {
         else return snull;
     }
 }
+SObjPtr SObjPtr::operator-(const Time& t) {
+	if (isDate()) return date() - t;
+	else throw SException(ERR_INFO, SLIB_CAST_ERROR);
+}
 SObjPtr SObjPtr::operator-(const SObjPtr &obj) const {
-    if (isNum() && obj.isNum() && !obj.isNull()) return number()-obj.number();
-    return snull;
+	if (isNum() && obj.isNum()) {
+		if (isNull()) {
+			if (obj.isNull()) return 0;
+			else return -obj.number();
+		}
+		else if (obj.isNull()) return *this;
+		else return number() - obj.number();
+	}
+	else if (isDate() && !isNull() && obj.isDate() && !obj.isNull()) {
+		return date() - obj.date();
+	}
+	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
 SObjPtr SObjPtr::operator*(int i) const {
     if (isNum()) return SObjPtr(number()*i);

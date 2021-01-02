@@ -164,6 +164,7 @@ namespace slib {
 		SObjPtr(double d);
 		SObjPtr(const smath::Fraction<sint>& frac);
 		SObjPtr(const smath::Complex<float>& comp);
+		SObjPtr(const Time& t);
 		SObjPtr(const char* s);
 		SObjPtr(const ::std::string& str);
 		SObjPtr(String&& str);
@@ -216,6 +217,7 @@ namespace slib {
 		template<class Cls, OBJ_TYPE T>
 		SObjPtr& operator = (const SClsPtr<Cls, T>& obj);
 
+		SObjPtr& operator += (const Time& t);
 		SObjPtr& operator += (const char* s);
 		SObjPtr& operator += (const ::std::string& s);
 		SObjPtr& operator += (const String& s);
@@ -226,6 +228,7 @@ namespace slib {
 			if (isNum()) number() += val;
 			else if (isStr()) string() += val;
 		}
+		SObjPtr& operator -= (const Time& t);
 		SObjPtr& operator -= (const SObjPtr& obj);
 		template<typename T>
 		SObjPtr& operator -= (const T& val) {
@@ -255,7 +258,7 @@ namespace slib {
 		SObjPtr& operator++();
 		SObjPtr& operator--();
 		SObjPtr operator-() const;
-
+		SObjPtr operator+(const Time& t);
 		SObjPtr operator+(const char* s) const;
 		SObjPtr operator+(const ::std::string& s) const;
 		SObjPtr operator+(const String& s) const;
@@ -266,6 +269,7 @@ namespace slib {
 			if (isNum()) return number() + val;
 			throw SException(ERR_INFO, SLIB_CAST_ERROR, T(_ptr), CAST_TEXT(, T(number)));
 		}
+		SObjPtr operator-(const Time& t);
 		SObjPtr operator-(const SObjPtr& obj) const;
 		template<typename T>
 		SObjPtr operator-(T val) const {
