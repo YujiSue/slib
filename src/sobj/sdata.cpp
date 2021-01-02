@@ -16,6 +16,7 @@ SData::SData(const sobj &obj) : SData() {
 	if (obj.isDat()) *this = obj.data();
     else throw SException(ERR_INFO, SLIB_CAST_ERROR, "obj", CAST_TEXT(obj->getClass(), "SData"));
 }
+SData::SData(SData&& data) noexcept : ubytearray(std::forward<ubytearray&&>(data)) {}
 SData::SData(const SData &data) : SData(data.size(), const_cast<subyte *>(data.ptr())) {}
 SData::~SData() {}
 SData SData::decode(const char* b64) {

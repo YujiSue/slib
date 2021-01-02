@@ -15,6 +15,7 @@ namespace slib {
 		SData(const slib::String &str);
 		SData(const slib::SString& str);
         SData(const sobj &obj);
+		SData(SData&& data) noexcept;
         SData(const SData &data);
         virtual ~SData();
 		static SData decode(const char* b64);

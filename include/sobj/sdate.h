@@ -10,7 +10,8 @@ namespace slib {
 	private:
 		const char *_autoform(const char* s);
 		void _parse(const String& date, const char *form);
-		void _adjust();
+		void _dadjust();
+		void _init();
 
 	public:
 		subyte mday, wday, tzone;
@@ -24,7 +25,6 @@ namespace slib {
 		SDate(const SDate& date);
 		~SDate();
 		static SDate utc();
-		void init();
 		SDate& operator = (const char* s);
 		SDate& operator = (const SDate& date);
 		SDate& operator += (const Time& time);
@@ -35,7 +35,7 @@ namespace slib {
 		bool summerTime() const;
 		suint ymd() const;
 		suint hms() const;
-		sinteger integer() const;
+		suinteger uinteger() const;
 		int lag() const;
 		String lagStr() const;
 		String getClass() const;

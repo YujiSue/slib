@@ -46,13 +46,13 @@ namespace slib {
 	private:
 		sinteger _totalsec();
 		sinteger _totaldays();
-		void _adjust();
+		void _tadjust();
 
 	public:
 		static bool isLeapYear(int y);
 
     public:
-		sint year, month, day, hour, minute, sec;// , msec;
+		sint year, month, day, hour, minute, second;
         
         Time();
         Time(const char *s);
@@ -63,6 +63,7 @@ namespace slib {
         Time &operator-=(const Time &time);
         Time operator+(const Time &time);
         Time operator-(const Time &time);
+		Time operator-();
 		void init();
         String toString() const;
         String toJString() const;        

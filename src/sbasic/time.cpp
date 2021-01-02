@@ -10,9 +10,9 @@ bool slib::Time::isLeapYear(int y) {
     }
     return false;
 }
-void slib::Time::_adjust() {
-	while (sec < 0) { sec += 60; --minute; }
-	while (59 < sec) { sec -= 60; ++minute; }
+void slib::Time::_tadjust() {
+	while (second < 0) { second += 60; --minute; }
+	while (59 < second) { second -= 60; ++minute; }
 	while (minute < 0) { minute += 60; --hour; }
 	while (59 < minute) { minute -= 60; ++hour; }
 	while (hour < 0) { hour += 24; --day; }
@@ -22,7 +22,7 @@ void slib::Time::_adjust() {
 	while (month < 0) { month += 12; --year; }
 	while (11 < month) { month -= 12; ++year; }
 }
-Time::Time() : year(0), month(0), day(0), hour(0), minute(0), sec(0) {}
+Time::Time() : year(0), month(0), day(0), hour(0), minute(0), second(0) {}
 Time::Time(const char *s) : Time() {
     String str(s), sub;
     bool neg = false;
@@ -33,7 +33,7 @@ Time::Time(const char *s) : Time() {
 		else if (E_ == "W") { day = (neg ? -1 : 1) * 7 * sub.intValue(); sub.clear(); }
 		else if (E_ == "D") { day = (neg ? -1 : 1) * sub.intValue(); sub.clear(); }
 		else if (E_ == "h") { hour = (neg ? -1 : 1) * sub.intValue(); sub.clear(); }
-		else if (E_ == "s") { sec = (neg ? -1 : 1) * sub.intValue(); sub.clear(); }
+		else if (E_ == "s") { second = (neg ? -1 : 1) * sub.intValue(); sub.clear(); }
 		else if (E_ == "m") { minute = (neg ? -1 : 1) * sub.intValue(); sub.clear(); }
 		else if (E_ == u8"年") { year = (neg ? -1 : 1) * String::narrow(sub).intValue(); sub.clear(); }
 		else if (E_ == u8"月") {
@@ -44,35 +44,36 @@ Time::Time(const char *s) : Time() {
 		else if (E_ == u8"日") { day = (neg ? -1 : 1) * String::narrow(sub).intValue(); sub.clear(); }
 		else if (E_ == u8"時") { hour = (neg ? -1 : 1) * String::narrow(sub).intValue(); sub.clear(); }
 		else if (E_ == u8"分") { minute = (neg ? -1 : 1) * String::narrow(sub).intValue(); sub.clear(); }
-		else if (E_ == u8"秒") { sec = (neg ? -1 : 1) * String::narrow(sub).intValue(); sub.clear(); }
-		else if (E_ == u8"㍉秒") { sec = (neg ? -1 : 1) * String::narrow(sub).intValue(); sub.clear(); }
+		else if (E_ == u8"秒") { second = (neg ? -1 : 1) * String::narrow(sub).intValue(); sub.clear(); }
 		else if (E_ == u8"間") continue;
 		else sub += E_;
     }
 }
 Time::Time(const Time& time) : year(time.year), month(time.month), day(time.day),
-hour(time.hour), minute(time.minute), sec(time.sec) {}
+hour(time.hour), minute(time.minute), second(time.second) {}
 Time::~Time() {}
 Time &Time::operator=(const Time &time) {
     year = time.year; month = time.month; day = time.day;
-	hour = time.hour; minute = time.minute; sec = time.sec;
+	hour = time.hour; minute = time.minute; second = time.second;
 	return *this;
 }
-
 Time &Time::operator+=(const Time &time) {
     year += time.year; month += time.month; day += time.day; 
-	hour += time.hour; minute += time.minute; sec += time.sec;
-	_adjust(); return *this;
+	hour += time.hour; minute += time.minute; second += time.second;
+	_tadjust(); return *this;
 }
 Time &Time::operator-=(const Time &time) {
     year -= time.year; month -= time.month; day -= time.day; 
-	hour -= time.hour; minute -= time.minute; sec -= time.sec;
-	_adjust(); return *this;
+	hour -= time.hour; minute -= time.minute; second -= time.second;
+	_tadjust(); return *this;
 }
 Time Time::operator+(const Time &time) { return Time(*this)+=time; }
 Time Time::operator-(const Time &time) { return Time(*this)-=time; }
+Time Time::operator-() {
+	year *= -1; month *= -1; day *= -1; hour *= -1; minute *= -1; second *= -1;
+}
 void Time::init() {
-	year = 0;  month = 0; day = 0; hour = 0; minute = 0; sec = 0;
+	year = 0;  month = 0; day = 0; hour = 0; minute = 0; second = 0;
 }
 String Time::toString() const {
 	String str;
@@ -81,18 +82,17 @@ String Time::toString() const {
 	if (day) str << day << "D";
 	if (hour) str << hour << "h";
 	if (minute) str << minute << "m";
-	if (sec) str << sec << "s";
+	if (second) str << second << "s";
 	return str;
 }
 String Time::toJString() const  {
     String str;
-	
 	if (year) str << String::wide(String(year)) << u8"年";
 	if (month) str << String::wide(String(month)) << u8"ヶ月";
 	if (day) str << String::wide(String(day)) << u8"日";
 	if (hour) str << String::wide(String(hour)) << u8"時間";
 	if (minute) str << String::wide(String(minute)) << u8"分";
-	if (sec) str << String::wide(String(sec)) << u8"秒";
+	if (second) str << String::wide(String(second)) << u8"秒";
     return str;
 }
 bool Time::operator<(const Time &time) const {
@@ -101,10 +101,10 @@ bool Time::operator<(const Time &time) const {
     if (day != time.day) return day < time.day;
     if (hour != time.hour) return hour < time.hour;
     if (minute != time.minute) return minute < time.minute;
-    if (sec != time.sec) return sec < time.sec;
+    if (second != time.second) return second < time.second;
     return false;
 }
 bool Time::operator==(const Time &time) const {
     return year == time.year && month == time.month && day == time.day &&
-    hour == time.hour && minute == time.minute && sec == time.sec;
+    hour == time.hour && minute == time.minute && second == time.second;
 }

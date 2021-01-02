@@ -124,7 +124,7 @@ void SDate::_parse(const String& date, const char *form) {
 			auto count = countRepeat(it, 's');
 			if (count == 2) { readSize(tmp, dit, count); PREV_; --dit; }
 			else readTo(tmp, dit, E_);
-			Time::sec = tmp; tmp.clear();
+			Time::second = tmp; tmp.clear();
 		}
 		else if (E_ == 'Z') {
 			readSize(tmp, dit, 5); PREV_; --dit;
@@ -184,7 +184,7 @@ void SDate::_parse(const String& date, const char *form) {
 		}
 		else if (E_ == u8"秒") {
 			readTo(tmp, dit, E_);
-			Time::sec = tmp.transformed(sstyle::HALF_WIDTH);
+			Time::second = tmp.transformed(sstyle::HALF_WIDTH);
 			tmp.clear();
 		}
 		++dit;
@@ -192,9 +192,9 @@ void SDate::_parse(const String& date, const char *form) {
 	if (!Time::day) Time::day = yearday(year, month, mday);
 	if(!wday) wday = weekday(year, month, mday);
 }
-void SDate::_adjust() {
-	if (Time::sec < 0) { while (Time::sec < 0) { --Time::minute; Time::sec += 60; } }
-	while (59 < Time::sec) { ++Time::minute; Time::sec -= 60; }
+void SDate::_dadjust() {
+	if (Time::second < 0) { while (Time::second < 0) { --Time::minute; Time::second += 60; } }
+	while (59 < Time::second) { ++Time::minute; Time::second -= 60; }
 	if (Time::minute < 0) { while (Time::minute < 0) { --Time::hour; Time::minute += 60; } }
 	while (59 < Time::minute) { ++Time::hour; Time::minute -= 60; }
 	if (Time::hour < 0) { while (Time::hour < 0) { --mday; Time::hour += 24; } }
@@ -216,10 +216,11 @@ void SDate::_adjust() {
 			else if (12 < Time::month) { while (12 < Time::month) { ++Time::year; Time::month -= 12; } }
 		}
 	}
-	if (!Time::day) Time::day = yearday(year, month, mday);
+	Time::day = yearday(year, month, mday);
 	if (!wday) wday = weekday(year, month, mday);
 }
-SDate::SDate() : Time(), tzone(0xFF), mday(0), wday(0), SObject() {
+void SDate::_init() { Time::init(); tzone = 0xFF; mday = 0; wday = 0; }
+SDate::SDate() : Time(), tzone(0), mday(0), wday(0), SObject() {
 	time_t now = std::time(nullptr);
 	const struct tm* ltime;
 #if defined(MAC_OS) || defined(UNIX_OS) || defined(LINUX_OS)
@@ -236,7 +237,7 @@ SDate::SDate() : Time(), tzone(0xFF), mday(0), wday(0), SObject() {
 	Time::day = yearday(Time::year, Time::month, mday);
 	Time::hour = ltime->tm_hour;
 	Time::minute = ltime->tm_min;
-	Time::sec = ltime->tm_sec;
+	Time::second = ltime->tm_sec;
 	if (ltime->tm_isdst) tzone |= 0x80;
 	const struct tm* gmtime = std::gmtime(&now);
 	sint hm_l = ltime->tm_hour * 60 + ltime->tm_min,
@@ -267,7 +268,7 @@ SDate::SDate(suinteger ui) : Time(), tzone(0xFF), mday(0), wday(0), SObject() {
 	year = (ymd >> 9);
 	day = yearday(year, month, mday);
 	wday = weekday(year, month, mday);
-	sec = hms & 0x3F;
+	second = hms & 0x3F;
 	minute = (hms >> 6) & 0x3F;
 	hour = (hms >> 12);
 }
@@ -297,10 +298,9 @@ SDate SDate::utc() {
 	date.day = yearday(date.year, date.month, date.mday);
 	date.hour = gmtime->tm_hour;
 	date.minute = gmtime->tm_min;
-	date.sec = gmtime->tm_sec;
+	date.second = gmtime->tm_sec;
 	return date;
 }
-void SDate::init() { Time::init(); tzone = 0xFF; mday = 0; wday = 0; }
 SDate& SDate::operator = (const char* s) { _parse(s, _autoform(s)); return *this; }
 SDate& SDate::operator = (const SDate& date) {
 	tzone = date.tzone;
@@ -309,7 +309,7 @@ SDate& SDate::operator = (const SDate& date) {
 	Time::day = date.day;
 	Time::hour = date.hour;
 	Time::minute = date.minute;
-	Time::sec = date.sec;
+	Time::second = date.second;
 	mday = date.mday;
 	wday = date.wday;
 	return (*this);
@@ -320,8 +320,8 @@ SDate& SDate::operator += (const slib::Time& time) {
 	mday += time.day;
 	Time::hour += time.hour;
 	Time::minute += time.minute;
-	Time::sec += time.sec;
-	_adjust();
+	Time::second += time.second;
+	_dadjust();
 	return *this;
 }
 SDate& SDate::operator -= (const slib::Time& time) {
@@ -330,67 +330,51 @@ SDate& SDate::operator -= (const slib::Time& time) {
 	mday -= time.day;
 	Time::hour -= time.hour;
 	Time::minute -= time.minute;
-	Time::sec -= time.sec;
-	_adjust();
+	Time::second -= time.second;
+	_dadjust();
 	return *this;
 }
 SDate SDate::operator + (const slib::Time& time) const { return SDate(*this) += time; }
 SDate SDate::operator - (const slib::Time& time) const { return SDate(*this) -= time; }
 Time SDate::operator - (const SDate& date) const {
+	if (uinteger() < date.uinteger()) return -(date - (*this));
 	slib::Time dt;
-
-
-
-
-
-	sint smax = 24 * 3600, s1 = hour * 3600 + minute * 60 + sec,
-		s2 = date.hour * 3600 + date.minute * 60 + date.sec,
-		d1 = day, d2 = date.day, y1 = year, y2 = date.year;
-	if (tzone != date.tzone) {
-		if (tzone < 0xFF) s1 += lag() * 60;
-		if (date.tzone < 0xFF) s2 += date.lag() * 60;
-		if (s1 < 0) { --d1; s1 += smax; }
-		else if (smax <= s1) { ++d1; s1 -= smax; }
-		if (s2 < 0) { --d2; s2 += smax; }
-		else if (smax <= s2) { ++d2; s2 -= smax; }
-		if (d1 < 0) { d1 +=  (Time::isLeapYear(y1 - 1) ? 366 : 365); --y1; }
-		if (d2 < 0) { d2 +=  (Time::isLeapYear(y2 - 1) ? 366 : 365); --y2; }
-	}
-	if (y1 < y2) {
-		if (s2 < s1) { ++d1; s1 = s2 + smax - s1; }
-		else s1 = s2 - s1;
-		if (d2 < d1) {}
-		else d1 = d2 - d1;
-
-
-
-
-		dt.year = y1 - y2;
-	}
-	else if (y1 == y2 && d1 < d2) {
-		if (s2 < s1) { ++d1; s1 = s2 + smax - s1; }
-		else s1 = s2 - s1;
-		dt.sec = -(s1 % 60);
-		dt.minute = -(((s1 % 3600) - dt.sec) / 60);
-		dt.hour = -(s1 / 3600);
-		dt.day = d1 - d2;
+	sint s1 = hour * 3600 + minute * 60 + second + (tzone < 0xFF ? lag() : 0) * 60,
+		s2 = date.hour * 3600 + date.minute * 60 + date.second + (date.tzone ? date.lag() : 0) * 60,
+		d = mday, m = month, y = year;
+	if (s1 < s2) {
+		if (d == 1) {
+			if (m == 1) { m = 12; --y; d += speriod::DAY_OF_MONTH[m - 1]; }
+			else m--;
+			d += speriod::DAY_OF_MONTH[m - 1];
+		}
+		s1 += 24 * 3600; --d;
 	}
 	else {
-		if (s1 < s2) { s1 = s1 + smax - s2; --d1; }
-		else s1 -= s2;
-		dt.sec = s1 % 60;
-		dt.minute = ((s1 % 3600) - dt.sec) / 60;
-		dt.hour = s1 / 3600;
-		if (d1 < d2) { dt.day = (Time::isLeapYear(y1 - 1) ? 366 : 365) + d1 - d2; --y1; }
-		else dt.day = d1 - d2;
-		dt.year = y1 - y2;
+		dt.second = s1 - s2;
+		dt.minute = dt.second / 60;
+		dt.second = dt.second % 60;
+		dt.hour = dt.minute / 60;
+		dt.minute = dt.minute % 60;
+		if (23 < dt.hour) { dt.hour -= 24; ++d; }
 	}
+	if (d < date.mday) {
+		while (d < date.mday) {
+			if (m == 1) { m = 12; --y; }
+			else m--;
+			d += speriod::DAY_OF_MONTH[m - 1];
+		}
+	}
+	dt.day = d - date.mday;
+	dt.month = m - date.month;
+	dt.year = y - date.year;
+	while (dt.month < 0) { dt.month += 12; --dt.year; }
 	return dt;
 }
 bool SDate::summerTime() const { return tzone & 0x80; }
 suint SDate::ymd() const { suint val = 0; val |= mday | (month << 5) | (year << 9); return val; }
-suint SDate::hms() const { suint val = 0; val |= sec | (minute << 6) | (hour << 12); return val; }
-sinteger SDate::integer() const { auto val = ((sinteger)ymd() << 32); val |= hms(); return val; }
+suint SDate::hms() const { suint val = 0; val |= second | (minute << 6) | (hour << 12); return val; }
+suinteger SDate::uinteger() const { auto val = ((suinteger)ymd() << 32); val |= hms(); return val; }
 int SDate::lag() const { 
 	if (tzone == 0xFF) return -1;
 	return (tzone & 0x40 ? -1 : 1) * ((tzone & 0x03) * 15 + ((tzone >> 2) & 0x0F)) * 60 + (tzone & 0x80 ? 60 : 0); 
@@ -461,8 +445,8 @@ String SDate::toString(const char *form) const {
 		}
 		else if (E_ == 's') {
 			auto count = countRepeat(it, 's');
-			if (count == 2) str << String(sec).filled(2, '0', true);
-			else str << sec;
+			if (count == 2) str << String(second).filled(2, '0', true);
+			else str << second;
 			PREV_;
 		}
 		else if (E_ == 'Z') str << lagStr();
@@ -486,7 +470,7 @@ String SDate::toString(const char *form) const {
 		}
 		else if (E_ == u8"時") str << String::wide(String(hour)) << u8"時";
 		else if (E_ == u8"分") str << String::wide(String(minute)) << u8"分";
-		else if (E_ == u8"秒") str << String::wide(String(sec)) << u8"秒";
+		else if (E_ == u8"秒") str << String::wide(String(second)) << u8"秒";
 		else str << E_.toString();
 	}
 	return str;

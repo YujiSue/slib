@@ -804,7 +804,7 @@ String String::replaced(const char *ori, const char *alt) const {
     if (!ori || !alt || ori[0] == '\0') return *this;
     auto ins = _cinstance();
     if (!ins.second) return "";
-    SString str;
+    String str;
     str.reserve(capacity());
     size_t len = strlen(ori), alen = strlen(alt);
     const char *init = ins.first, *end = ins.first+ins.second, *pos = _find(ori, len, init, end);
@@ -814,6 +814,7 @@ String String::replaced(const char *ori, const char *alt) const {
         init = pos+len;
         pos = _find(ori, len, init, end);
     }
+	if (init != end) str._append(init, end - init);
     return str;
 }
 String String::replaced(const Regex &rgx, const char *alt) const {
