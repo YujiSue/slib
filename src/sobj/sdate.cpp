@@ -340,7 +340,7 @@ Time SDate::operator - (const SDate& date) const {
 	if (uinteger() < date.uinteger()) return -(date - (*this));
 	slib::Time dt;
 	sint s1 = hour * 3600 + minute * 60 + second + (tzone < 0xFF ? lag() : 0) * 60,
-		s2 = date.hour * 3600 + date.minute * 60 + date.second + (date.tzone ? date.lag() : 0) * 60,
+		s2 = date.hour * 3600 + date.minute * 60 + date.second + (date.tzone < 0xFF ? date.lag() : 0) * 60,
 		d = mday, m = month, y = year;
 	if (s1 < s2) {
 		if (d == 1) {

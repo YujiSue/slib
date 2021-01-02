@@ -70,7 +70,10 @@ Time &Time::operator-=(const Time &time) {
 Time Time::operator+(const Time &time) { return Time(*this)+=time; }
 Time Time::operator-(const Time &time) { return Time(*this)-=time; }
 Time Time::operator-() {
-	year *= -1; month *= -1; day *= -1; hour *= -1; minute *= -1; second *= -1;
+	Time t;
+	t.year = -year; t.month = -month; t.day = -day; 
+	t.hour = -hour; t.minute = -minute; t.second = -second;
+	return t;
 }
 void Time::init() {
 	year = 0;  month = 0; day = 0; hour = 0; minute = 0; second = 0;
