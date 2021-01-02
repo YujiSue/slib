@@ -49,13 +49,25 @@ void SData::asString(String& str) {
 	else str.clear();
 }
 String SData::getClass() const { return "data"; }
-String SData::toString() const {
-	if (ubytearray::size()) {
-		String str(SCode::base64CharCount(ubytearray::size()), '=');
-		SCode::encodeBASE64(ubytearray::ptr(), ubytearray::size(), &str[0]);
-		return str;
+String SData::toString() const { return toString("base64"); }
+String SData::toString(const char* f) const {
+	if (empty()) return "";
+	String format = String::lower(f), str;
+	if (format == "base64") SCode::encodeBASE64(*this, str);
+	else if (format == "binary") {
+		str.reserve(size() * 8 + 1);
+		sforeach(*this) str << SNumber::toBinary(E_);
 	}
-	else return "";
+	else if (format == "oct") {
+		str.reserve(size() * 3 + 1);
+		sforeach(*this) str << "\\" << SNumber::toOct(E_);
+
+	}
+	else if (format == "hex") {
+		str.reserve(size() * 2 + 1);
+		sforeach(*this) str << SNumber::toHex(E_);
+	}
+	return str;
 }
 SObject * SData::clone() const { return new SData(*this); }
 

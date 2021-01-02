@@ -43,6 +43,7 @@ namespace slib {
         SArrayIterator<T> &operator=(const SArrayIterator &it);
         reference operator*();
         pointer operator->();
+		pointer ptr();
         reference operator[](std::ptrdiff_t diff);
         SArrayIterator<T> &operator++();
         SArrayIterator<T> operator++(int);
@@ -97,6 +98,7 @@ namespace slib {
         SArrayCIterator& operator=(const SArrayCIterator &it);
         reference operator *();
         pointer operator ->();
+		pointer ptr();
         reference operator [](std::ptrdiff_t diff);
         SArrayCIterator<T> &operator++();
         SArrayCIterator<T> operator++(int);
@@ -131,6 +133,8 @@ namespace slib {
 	T &SArrayIterator<T>::operator*() { return *_ptr; }
     template<typename T>
 	T *SArrayIterator<T>::operator->() { return _ptr; }
+	template<typename T>
+	T* SArrayIterator<T>::ptr() { return _ptr; }
     template<typename T>
 	T &SArrayIterator<T>::operator[](std::ptrdiff_t diff) { return *(_ptr+diff); }
     template<typename T>
@@ -183,7 +187,9 @@ namespace slib {
 	const T &SArrayCIterator<T>::operator*() { return *_ptr; }
     template<typename T>
 	const T *SArrayCIterator<T>::operator->() { return _ptr; }
-    template<typename T>
+	template<typename T>
+	const T* SArrayCIterator<T>::ptr() { return _ptr; }
+	template<typename T>
 	const T &SArrayCIterator<T>::operator[](std::ptrdiff_t diff) { return *(_ptr+diff); }
     template<typename T>
 	SArrayCIterator<T> &SArrayCIterator<T>::operator++() { ++_ptr; return *this; }

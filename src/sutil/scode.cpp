@@ -341,68 +341,116 @@ void SZip::expand(SFile &ori, const char *dest, const char *decrypt) {
         ex.print();
     }
 }
-
-void SCode::urlEncode(String &str) {
-    str.replace("%", "%25");
-    str.replace(" ", "%20");
-    str.replace("!", "%21");
-    str.replace("\"", "%22");
-    str.replace("#", "%23");
-    str.replace("$", "%24");
-    str.replace("&", "%26");
-    str.replace("'", "%27");
-    str.replace("(", "%28");
-    str.replace(")", "%29");
-    str.replace("*", "%2A");
-    str.replace("+", "%2B");
-    str.replace(",", "%2C");
-    str.replace("/", "%2F");
-    str.replace(":", "%3A");
-    str.replace(";", "%3B");
-    str.replace("<", "%3C");
-    str.replace("=", "%3D");
-    str.replace(">", "%3E");
-    str.replace("?", "%3F");
-    str.replace("@", "%40");
-    str.replace("[", "%5B");
-    str.replace("]", "%5D");
-    str.replace("^", "%5E");
-    str.replace("`", "%60");
-    str.replace("{", "%7B");
-    str.replace("|", "%7C");
-    str.replace("}", "%7D");
-    str.replace("~", "%7E");
+String SCode::urlEncode(const String& str) {
+	String encoded;
+	encoded.reserve(str.size() * 3);
+	sforeach(str) {
+		switch (E_) {
+		case '%':
+			encoded << "%25"; break;
+		case ' ':
+			encoded << "%20"; break;
+		case '!':
+			encoded << "%21"; break;
+		case '\"':
+			encoded << "%22"; break;
+		case '#':
+			encoded << "%23"; break;
+		case '$':
+			encoded << "%24"; break;
+		case '&':
+			encoded << "%26"; break;
+		case '\'':
+			encoded << "%27"; break;
+		case '(':
+			encoded << "%28"; break;
+		case ')':
+			encoded << "%29"; break;
+		case '*':
+			encoded << "%2A"; break;
+		case '+':
+			encoded << "%2B"; break;
+		case ',':
+			encoded << "%2C"; break;
+		case '/':
+			encoded << "%2F"; break;
+		case ':':
+			encoded << "%3A"; break;
+		case ';':
+			encoded << "%3B"; break;
+		case '<':
+			encoded << "%3C"; break;
+		case '=':
+			encoded << "%3D"; break;
+		case '>':
+			encoded << "%3E"; break;
+		case '?':
+			encoded << "%3F"; break;
+		case '@':
+			encoded << "%40"; break;
+		case '[':
+			encoded << "%5B"; break;
+		case ']':
+			encoded << "%5D"; break;
+		case '^':
+			encoded << "%5E"; break;
+		case '`':
+			encoded << "%60"; break;
+		case '{':
+			encoded << "%7B"; break;
+		case '|':
+			encoded << "%7C"; break;
+		case '}':
+			encoded << "%7D"; break;
+		case '~':
+			encoded << "%7E"; break;
+		default:
+			encoded << E_;
+			break;
+		}
+	}
+	return encoded;
 }
-void SCode::urlDecode(String &str) {
-    str.replace("%20", " ");
-    str.replace("%21", "!");
-    str.replace("%22", "\"");
-    str.replace("%23", "#");
-    str.replace("%24", "$");
-    str.replace("%26", "&");
-    str.replace("%27", "'");
-    str.replace("%28", "(");
-    str.replace("%29", ")");
-    str.replace("%2A", "*");
-    str.replace("%2B", "+");
-    str.replace("%2C", ",");
-    str.replace("%2F", "/");
-    str.replace("%3A", ":");
-    str.replace("%3B", ";");
-    str.replace("%3C", "<");
-    str.replace("%3D", "=");
-    str.replace("%3E", ">");
-    str.replace("%3F", "?");
-    str.replace("%40", "@");
-    str.replace("%5B", "[");
-    str.replace("%5D", "]");
-    str.replace("%5E", "^");
-    str.replace("%60", "`");
-    str.replace("%7B", "{");
-    str.replace("%7C", "|");
-    str.replace("%7D", "}");
-    str.replace("%7E", "~");
-    str.replace("%25", "%");
+String SCode::urlDecode(const String& str) {
+	String decoded, code(3, '\0');
+	decoded.reserve(str.size());
+	sforeach(str) {
+		if (E_ == '%' && it < str.end() - 2) {
+			memcpy(code.ptr(), it.ptr(), 3);
+			if (code == "%20") decoded << " ";
+			else if (code == "%21") decoded << "!";
+			else if (code == "%22") decoded << "\"";
+			else if (code == "%23") decoded << "#";
+			else if (code == "%24") decoded << "$";
+			else if (code == "%25") decoded << "%";
+			else if (code == "%26") decoded << "&";
+			else if (code == "%27") decoded << "'";
+			else if (code == "%28") decoded << "(";
+			else if (code == "%29") decoded << ")";
+			else if (code == "%2A") decoded << "*";
+			else if (code == "%2B") decoded << "+";
+			else if (code == "%2C") decoded << ",";
+			else if (code == "%2F") decoded << "/";
+			else if (code == "%3A") decoded << ":";
+			else if (code == "%3B") decoded << ";";
+			else if (code == "%3C") decoded << "<";
+			else if (code == "%3D") decoded << "=";
+			else if (code == "%3E") decoded << ">";
+			else if (code == "%3F") decoded << "?";
+			else if (code == "%40") decoded << "@";
+			else if (code == "%5B") decoded << "[";
+			else if (code == "%5D") decoded << "]";
+			else if (code == "%5E") decoded << "^";
+			else if (code == "%60") decoded << "`";
+			else if (code == "%7B") decoded << "{";
+			else if (code == "%7C") decoded << "|";
+			else if (code == "%7D") decoded << "}";
+			else if (code == "%7E") decoded << "~";
+			else { decoded << code; it += 2; }
+		}
+		else decoded << E_;
+	}
+	return decoded;
 }
 const char *SCode::B64_STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 subyte SCode::b64i(const char &c) {
@@ -414,32 +462,24 @@ subyte SCode::b64i(const char &c) {
     else if (b == 0x2f) return 63;
     return 0;
 }
-void SCode::encodeB64Char(const void *data, char *encoded, size_t size) {
+void SCode::encodeB64Char(const char* ori, char *encoded, size_t size) {
     char dat[3];
     memset(dat, 0, 3);
-    memcpy(dat, data, size);
+    memcpy(dat, ori, size);
     encoded[0] = SCode::B64_STR[(dat[0]>>2)&0x3F];
     encoded[1] = SCode::B64_STR[((dat[0]&0x03)<<4)+((dat[1]>>4)&0x0F)];
     encoded[2] = size<2?'=':SCode::B64_STR[((dat[1]&0x0F)<<2)+((dat[2]>>6)&0x03)];
     encoded[3] = size<3?'=':SCode::B64_STR[dat[2]&0x3F];
 }
-size_t SCode::base64CharCount(size_t size) { return 12 + ((size - 1) / 3 + 1) * 4; }
-void SCode::decodeB64Char(const char *data, void *decoded) {
+void SCode::decodeB64Char(const char *data, char *decoded) {
     memset(decoded, 0, 3);
     subyte dec[4];
-	sforin(i, 0, 4) dec[i] = data[i] == '=' ? 0 : b64i(data[i]);
-	((char*)decoded)[0] = (dec[0] << 2) + ((dec[1] >> 4) & 0x03);
-	((char*)decoded)[1] = ((dec[1] & 0x0F) << 4) + ((dec[2] >> 2) & 0x0F);
-	((char*)decoded)[2] = ((dec[2] & 0x03) << 6) + (dec[3] & 0x3F);
+	sforin(i, 0, 4) dec[i] = (data[i] == '=' ? 0 : b64i(data[i]));
+	decoded[0] = (dec[0] << 2) + ((dec[1] >> 4) & 0x03);
+	decoded[1] = ((dec[1] & 0x0F) << 4) + ((dec[2] >> 2) & 0x0F);
+	decoded[2] = ((dec[2] & 0x03) << 6) + (dec[3] & 0x3F);
 }
-suinteger SCode::decodeCharCount(const char *base) {
-    char decode[9];
-    sforin(i, 0, 3) SCode::decodeB64Char(&base[4*i], &decode[3*i]);
-	suinteger size = 0;
-    memcpy(&size, decode, 8);
-    return size;
-}
-void SCode::encodeBASE64(const String& ori, String &base) {
+void SCode::encodeBASE64(const String& ori, String& base) {
 	base.resize((((ori.size() * 4 - 1) / 3) / 4 + 1) * 4);
 	suinteger length = ori.size() / 3;
 	auto op = ori.cstr();
@@ -450,30 +490,50 @@ void SCode::encodeBASE64(const String& ori, String &base) {
 	}
 	if (ori.size() % 3) encodeB64Char(op, bp, ori.size() % 3);
 }
-void SCode::encodeBASE64(const void *ori, size_t size, char *base) {
-    char encode[9];
-    memset(encode, 0, 9);
-    memcpy(encode, &size, 8);
-    sforin(i, 0, 3) SCode::encodeB64Char((const void *)&encode[i*3], &base[i*4], 3);
-	auto length = (size - 1) / 3 + 1;
-	sforin(i, 0, (sint)length - 1) SCode::encodeB64Char(&((char*)ori)[i * 3], &base[12 + i * 4], 3);
-    encodeB64Char(&((char *)ori)[(length-1)*3], &base[12+(length-1)*4], size-3*(length-1));
-    base[12+length*4] = '\0';
-}
-void SCode::decodeBASE64(const char *base, void *ori, const size_t &size) {
-	auto length = (size-1)/3+1;
-	sforin(i, 0, (sint)length) SCode::decodeB64Char(&base[12 + i * 4], &((char*)ori)[i * 3]);
+size_t SCode::encodeBASE64(const ubytearray& ori, String& base, bool size) {
+	if (ori.empty()) base = "";
+	else {
+		sint length = (ori.size() - 1) / 3;
+		auto optr = ori.ptr(); char* ptr = nullptr;
+		if (size) {
+			base.resize((length + 1) * 4 + 12);
+			char encode[9];
+			memset(encode, 0, 9);
+			memcpy(encode, &size, 8);
+			sforin(i, 0, 3) SCode::encodeB64Char(&encode[i * 3], &base[i * 4], 3);
+			ptr = base.ptr(12);
+		}
+		else {
+			base.resize((length + 1) * 4);
+			ptr = base.ptr();
+		}
+		sforin(i ,0, length) SCode::encodeB64Char((const char*)optr, ptr, 3); optr += 3; ptr += 4;
+		SCode::encodeB64Char((const char*)optr, ptr, ori.size() - 3 * length);
+	}
+	return ori.size();
 }
 void SCode::decodeBASE64(const String& base, String& ori) {
-	auto length = base.size() / 4;
+	sint length = base.size() / 4;
 	ori.resize(length * 3);
 	auto bp = base.cstr();
-	auto op = &ori[0];
-	sforin(i, 0, (sint)length) {
-		SCode::decodeB64Char(bp, op);
-		bp += 4; op += 3;
+	auto op = ori.ptr();
+	sforin(i, 0, length) {
+		SCode::decodeB64Char(bp, op); bp += 4; op += 3;
 	}
 	ori.resize(strlen(ori.cstr()));
+}
+void SCode::decodeBASE64(const String& base, ubytearray& ori, size_t s) {
+	auto ptr = base.ptr();
+	if (s == -1) {
+		char decode[9];
+		sforin(i, 0, 3) { SCode::decodeB64Char(ptr, &decode[3 * i]); ptr += 4; }
+		memcpy(&s, decode, 8);
+	}
+	ori.resize(((s - 1) / 3 + 1) * 3);
+	auto optr = ori.ptr();
+	sint length = (ori.size() - 1) / 3 + 1;
+	sforin(i, 0, length) { SCode::decodeB64Char(ptr, (char*)optr); ptr += 4; optr += 3; }
+	ori.resize(s);
 }
 void SCode::expandTo(ubytearray& ori, ubytearray& dest, size_t cap, sint bits, sint flush) {
 	if (ori.empty()) return;

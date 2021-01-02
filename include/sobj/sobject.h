@@ -397,7 +397,7 @@ namespace slib {
         size_t rfind(const char *que) const;
         size_t rfind(const SObjPtr &ptr) const;
         sizearray search(const Regex &rgx, size_t offset = 0) const;
-        String toString() const;
+        String toString(const sobj &format = snull) const;
         
         bool isNull() const;
         bool isHollow() const;

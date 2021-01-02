@@ -43,6 +43,7 @@ namespace slib {
 		}
 		virtual String getClass() const;
         virtual String toString() const;
+		virtual String toString(const char *f) const;
         virtual SObject *clone() const;
         bool operator < (const sobj &obj) const;
         bool operator < (const SData &data) const;

@@ -840,9 +840,11 @@ sizearray SObjPtr::search(const Regex &rgx, size_t offset) const{
     if (isStr()) return string().search(rgx, offset);
     return sizearray();
 }
-String SObjPtr::toString() const {
-    if (isNull()) return "(null)";
-    else if (isStr()) return string();
+String SObjPtr::toString(const sobj& format) const {
+	if (isNull()) return "(null)";
+	else if (isStr()) return string();
+	else if (isDate()) return format.isNull() ? date().toString() : date().toString(format);
+	else if (isDat()) return format.isNull() ? data().toString() : data().toString(format);
     return _ptr->toString();
 }
 
