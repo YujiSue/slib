@@ -373,7 +373,7 @@ void sbpos::set(const char *s, const sindex *namei) {
         sep = ":";
         auto off = str.find(sep);
         auto s_ = str.substring(0, off);
-		idx = namei?namei->at(s_):s_.intValue();
+		idx = namei?(sint)namei->at(s_):s_.intValue();
         str.clip(off+sep.length());
         if (str.contain("-")) sep = "-";
         else if (str.contain("_")) sep = "_";

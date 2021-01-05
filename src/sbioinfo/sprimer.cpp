@@ -142,86 +142,88 @@ void primer_t::matchCount(int q, sdnafile *ref, std::vector<std::vector<align_ve
     }
 }
 */
-double slib::sbio::nnEnthalpy(SBioSeq* seq) {
+double slib::sbio::nnEnthalpy(subyte* seq, size_t len) {
 	double enthalpy = 0.0;
-	sforin(i, 0, seq->length() - 1) {
-		if ((*seq)[i] == 0x01) {
-			if ((*seq)[i + 1] == 0x01) enthalpy -= 9.1;
-			else if ((*seq)[i + 1] == 0x02) enthalpy -= 6.5;
-			else if ((*seq)[i + 1] == 0x04) enthalpy -= 7.8;
-			else if ((*seq)[i + 1] == 0x08) enthalpy -= 8.6;
+	sforin(i, 0, len - 1) {
+		if ((*seq) == 0x01) {
+			if (*(seq + 1) == 0x01) enthalpy -= 9.1;
+			else if (*(seq + 1) == 0x02) enthalpy -= 6.5;
+			else if (*(seq + 1) == 0x04) enthalpy -= 7.8;
+			else if (*(seq + 1) == 0x08) enthalpy -= 8.6;
 			else return 0.0;
 		}
-		else if ((*seq)[i] == 0x02) {
-			if ((*seq)[i + 1] == 0x01) enthalpy -= 5.8;
-			else if ((*seq)[i + 1] == 0x02) enthalpy -= 11.0;
-			else if ((*seq)[i + 1] == 0x04) enthalpy -= 11.9;
-			else if ((*seq)[i + 1] == 0x08) enthalpy -= 7.8;
+		else if ((*seq) == 0x02) {
+			if (*(seq + 1) == 0x01) enthalpy -= 5.8;
+			else if (*(seq + 1) == 0x02) enthalpy -= 11.0;
+			else if (*(seq + 1) == 0x04) enthalpy -= 11.9;
+			else if (*(seq + 1) == 0x08) enthalpy -= 7.8;
 			else return 0.0;
 		}
-		else if ((*seq)[i] == 4) {
-			if ((*seq)[i + 1] == 0x01) enthalpy -= 5.6;
-			else if ((*seq)[i + 1] == 0x02) enthalpy -= 11.1;
-			else if ((*seq)[i + 1] == 0x04) enthalpy -= 11.0;
-			else if ((*seq)[i + 1] == 0x08) enthalpy -= 6.5;
+		else if ((*seq) == 4) {
+			if (*(seq + 1) == 0x01) enthalpy -= 5.6;
+			else if (*(seq + 1) == 0x02) enthalpy -= 11.1;
+			else if (*(seq + 1) == 0x04) enthalpy -= 11.0;
+			else if (*(seq + 1) == 0x08) enthalpy -= 6.5;
 			else return 0.0;
 		}
-		else if ((*seq)[i] == 0x08) {
-			if ((*seq)[i + 1] == 0x01) enthalpy -= 6.0;
-			else if ((*seq)[i + 1] == 0x02) enthalpy -= 5.6;
-			else if ((*seq)[i + 1] == 0x04) enthalpy -= 5.8;
-			else if ((*seq)[i + 1] == 0x08) enthalpy -= 9.1;
+		else if ((*seq) == 0x08) {
+			if (*(seq + 1) == 0x01) enthalpy -= 6.0;
+			else if (*(seq + 1) == 0x02) enthalpy -= 5.6;
+			else if (*(seq + 1) == 0x04) enthalpy -= 5.8;
+			else if (*(seq + 1) == 0x08) enthalpy -= 9.1;
 			else return 0.0;
 		}
 		else return 0.0;
+		++seq;
 	}
 	return enthalpy;
 }
-double slib::sbio::nnEntropy(SBioSeq* seq) {
+double slib::sbio::nnEntropy(subyte* seq, size_t len) {
 	double entropy = 0.0;
-	sforin(i, 0, seq->length() - 1) {
-		if ((*seq)[i] == 0x01) {
-			if ((*seq)[i + 1] == 0x01) entropy -= 24.0;
-			else if ((*seq)[i + 1] == 0x02) entropy -= 17.3;
-			else if ((*seq)[i + 1] == 0x04) entropy -= 20.8;
-			else if ((*seq)[i + 1] == 0x08) entropy -= 23.9;
+	sforin(i, 0, len - 1) {
+		if ((*seq) == 0x01) {
+			if (*(seq + 1) == 0x01) entropy -= 24.0;
+			else if (*(seq + 1) == 0x02) entropy -= 17.3;
+			else if (*(seq + 1) == 0x04) entropy -= 20.8;
+			else if (*(seq + 1) == 0x08) entropy -= 23.9;
 			else return 0.0;
 		}
-		else if ((*seq)[i] == 0x02) {
-			if ((*seq)[i + 1] == 0x01) entropy -= 12.9;
-			else if ((*seq)[i + 1] == 0x02) entropy -= 26.6;
-			else if ((*seq)[i + 1] == 0x04) entropy -= 27.8;
-			else if ((*seq)[i + 1] == 0x08) entropy -= 20.8;
+		else if ((*seq) == 0x02) {
+			if (*(seq + 1) == 0x01) entropy -= 12.9;
+			else if (*(seq + 1) == 0x02) entropy -= 26.6;
+			else if (*(seq + 1) == 0x04) entropy -= 27.8;
+			else if (*(seq + 1) == 0x08) entropy -= 20.8;
 			else return 0.0;
 		}
-		else if ((*seq)[i] == 0x04) {
-			if ((*seq)[i + 1] == 0x01) entropy -= 13.5;
-			else if ((*seq)[i + 1] == 0x02) entropy -= 26.7;
-			else if ((*seq)[i + 1] == 0x04) entropy -= 26.6;
-			else if ((*seq)[i + 1] == 0x08) entropy -= 17.3;
+		else if ((*seq) == 0x04) {
+			if (*(seq + 1) == 0x01) entropy -= 13.5;
+			else if (*(seq + 1) == 0x02) entropy -= 26.7;
+			else if (*(seq + 1) == 0x04) entropy -= 26.6;
+			else if (*(seq + 1) == 0x08) entropy -= 17.3;
 			else return 0.0;
 		}
-		else if ((*seq)[i] == 0x08) {
-			if ((*seq)[i + 1] == 0x01) entropy -= 16.9;
-			else if ((*seq)[i + 1] == 0x02) entropy -= 13.5;
-			else if ((*seq)[i + 1] == 0x04) entropy -= 12.9;
-			else if ((*seq)[i + 1] == 0x08) entropy -= 24.0;
+		else if ((*seq) == 0x08) {
+			if (*(seq + 1) == 0x01) entropy -= 16.9;
+			else if (*(seq + 1) == 0x02) entropy -= 13.5;
+			else if (*(seq + 1) == 0x04) entropy -= 12.9;
+			else if (*(seq + 1) == 0x08) entropy -= 24.0;
 			else return 0.0;
 		}
 		else return 0.0;
+		++seq;
 	}
 	return entropy;
 }
-void slib::sbio::tmCalc(double* tm, SBioSeq* seq) {
-	sint gc_count = sseq::gcCounti(*seq), length = seq->length();
-	tm[0] = 16.6 * log10(0.05) - 273.15 + (1000.0 * nnEnthalpy(seq)) / (-10.8 + nnEntropy(seq) + 1.987 * (log(0.125) - 6 * log(10.0)));
-	tm[1] = 4 * gc_count + 2 * (length - gc_count);
-	tm[2] = 81.5 + 16.6 * log10(0.05) + 41.0 * gc_count / length - 500.0 / length;
+void slib::sbio::tmCalc(double* tm, subyte* seq, size_t len) {
+	sint gc_count = sseq::gcCounti(seq, 0, len);
+	tm[0] = 16.6 * log10(0.05) - 273.15 + (1000.0 * nnEnthalpy(seq, len)) / (-10.8 + nnEntropy(seq, len) + 1.987 * (log(0.125) - 6 * log(10.0)));
+	tm[1] = 4 * gc_count + 2 * (len - gc_count);
+	tm[2] = 81.5 + 16.6 * log10(0.05) + 41.0 * gc_count / len - 500.0 / len;
 }
-SPrimer::SPrimer() : flag(0), seq(nullptr), dir(false) {}
-SPrimer::SPrimer(SBioSeq* s, sint p, sint l, bool d) : flag(0), seq(s), range(p, p + l - 1), dir(d) {}
+SPrimer::SPrimer() : flag(0), seq(nullptr) {}
+SPrimer::SPrimer(subyte* s, sint i, sint p, sint l, bool d) : flag(0), seq(s), pos(i, p, p + l - 1, d) {}
 SPrimer::SPrimer(const SPrimer& p) {
-	flag = p.flag; seq = p.seq; range = p.range; dir = p.dir;
+	flag = p.flag; seq = p.seq; pos = p.pos;
 	sforin(i, 0, 3) match[i] = p.match[i];
 }
 SPrimer::~SPrimer() {}
@@ -236,12 +238,11 @@ double SPrimer::score(sprimer_param *par) const {
 }
 double SPrimer::tm() const  {
 	double values[3];
-	tmCalc(values, seq);
+	tmCalc(values, seq, pos.length(true));
 	return values[0] < 20.0 ? values[1] : (values[0] < 80.0 ? values[0] : values[2]);
 }
-
 sint SPrimer::bias() const {
-	auto length = seq->length() - 3;
+	auto length = pos.length(true) - 3;
 	sint bias = 0, count = 0;
 	sforin(i, 0, length) {
 		auto count = sseq::gcCounti(*seq, i, 3);
@@ -262,4 +263,15 @@ sint SPrimer::selfcomp() const {
 	}
 	*/
 	return selfcomp;
+}
+String SPrimer::toString() const {
+	String str(pos.length(true), '\0');
+	sseq::ddecode1(seq, 0, pos.length(true), (subyte*)str.ptr());
+	if (pos.dir) sseq::dcomp(str);
+	return str;
+;}
+SDictionary SPrimer::summary() const {
+	return {
+		kv("seq", toString())
+	};
 }

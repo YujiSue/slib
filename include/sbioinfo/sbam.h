@@ -6,7 +6,6 @@
 #include "sutil/sutil.h"
 #include "sbioinfo/sbalign.h"
 #include "sbioinfo/sngs.h"
-//#include "sbioinfo/svariant.h"
 
 namespace slib {
     using namespace smath;
@@ -26,10 +25,6 @@ namespace slib {
 #define READ_FORMAT_ERR_MSG "Format is not supported."
 #define READ_SIZE_ERR_MSG "Read data length is too short."
         
-        //MAGIC
-        constexpr char GZ_MAGIC[17] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0";
-        constexpr char BAM_MAGIC[5] = "\102\101\115\001";
-        constexpr char BAI_MAGIC[5] = "\102\101\111\001";
         
         //Constant
         constexpr int DEFAULT_THREAD_COUNT = 8;
@@ -93,20 +88,16 @@ namespace slib {
             /*
              BAM read info
              */
-            //struct SBIOINFO_DLL readinfo : public ubytearray {
-			class SBIOINFO_DLL readinfo {
+            class SBIOINFO_DLL readinfo {
 			public:
-				//bool interpreted;
-                //sint length, seq_length;
 				sint seqlen, tmplen;
                 sbpos pos, next;
                 SCigarArray cigars;
                 sushort bin, flag;
                 subyte mapq;                
-				//sint next_refid, next_pos, template_length;
-                ubytearray sequence, qual, auxiliary;
-				String name;// , auxiliary;
-                
+			    ubytearray sequence, qual, auxiliary;
+				String name;
+
                 readinfo();
 				readinfo(ubytearray &dat);
                 readinfo(const readinfo &ri);
@@ -118,16 +109,11 @@ namespace slib {
 				static sushort getBin(ubytearray& data);
 				static sushort getFlag(ubytearray& data);
 				static subyte getMapQ(ubytearray& data);
-				
-				//void set(ubytearray &data);
-                void init();
-				//void interpret();
+				void init();
 				void interpret(ubytearray& data, bool aux = false);
-
 				srange range();
 				String decode();
                 String toString();
-                
                 bool operator<(const readinfo &ri) const;
                 bool operator==(const readinfo &ri) const;
             };
@@ -188,28 +174,25 @@ namespace slib {
 
         }
 
-		/*
 		class SBIOINFO_DLL SBamFile;
 		class SBIOINFO_DLL SBamData {
 		private:
 			char _magic[16];
 			SBamFile* _bam;
 			SWork _thread;
-
 		public:
-			sint idx, count, result;
+			sint idx, count;
 			sbam::voffset offset, last;
-			intarray length;
-			ubytearray raw, buffer[2], readinfo, * current;
-
-
-			subyte* rawptr, * curptr;
-
+			ushortarray ori_length;
+			intarray block_length;
+			ubytearray buffer[2], readinfo, * current;
+			Array<ubytearray> raws;
+			subyte* curptr;
+			bool async;
 		public:
 			SBamData();
-			SBamData(const SBamData &dat);
+			SBamData(sngs_param* p);
 			~SBamData();
-
 			void init();
 			void resize(sint n);
 			void setBam(SBamFile* f);
@@ -224,54 +207,41 @@ namespace slib {
 			friend SBamData;
 		private:
 			sio::SFile _file;
-			SBamData* _data;
-			Array<SBamData> _store;
+			SBamData _data, *_current;
 			SLock _lock;
-			bool _single;
-			
 		public:
 			sbam::header info;
 			sbam::bai index;
-
 		private:
-			//void _swapdat();
-			//bool _readData(void* dest, size_t size, size_t off = 0);
 			void _readHeader();
 			void _checkError();
-
 		public:
 			SBamFile();
-			SBamFile(sngs_param* par);
 			~SBamFile();
-
 			void init();
-			void setParam(sngs_param* p);
 			void open(const char* path);
 			void close();
 			void loadIndex(const char* path);
 			bool hasIndex() const;
 			void lock();
 			void unlock();
-
 			suinteger filesize() const;
 			suinteger offset();
 			void setOffset(suinteger off);
 			String path() const;
-
+			bool eof();
 			sbam::voffset voff() const;
 			void setVOff(const sbam::voffset& off);
-			void setVOff(sint idx, const sbam::voffset& off);
-			sint readBytes(void *p, size_t s);
-
+			void readBytes(void *p, size_t s);
 			//void sort();
 			//void makeIndex();
-			SBamData *getData(sint idx);
-			void setData(sint idx);
+			SBamData *getData();
+			void setData(SBamData* dat);
 			ubytearray* next(ubytearray* dat = nullptr);
 			void getReads(sbam::read_array& array, const sbpos& pos);
 			void getReads(sbam::read_array& array, sint idx, const sregion& region);
 		};
-		*/
+
 
         class SBIOINFO_DLL SBam {
 			friend sbam::bgzf_dat;

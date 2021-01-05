@@ -95,7 +95,8 @@ namespace slib {
             extern bool isGC(const char &s);
             extern bool isGCi(const subyte &b);
             extern size_t gcCount(const char *s, size_t off = 0, size_t len = -1);
-            extern size_t gcCounti(const ubytearray &s, size_t off = 0, size_t len = -1);
+			extern size_t gcCounti(const subyte* s, size_t off, size_t len);
+			extern size_t gcCounti(const ubytearray &s, size_t off = 0, size_t len = -1);
             extern bool containBase(const char &c, const char *s, size_t l);
             /*
              * DNA util

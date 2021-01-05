@@ -103,18 +103,12 @@ namespace slib {
 		
 		static const char* B64_STR;
 		static subyte b64i(const char& c);
-		static size_t base64CharCount(size_t size);
-		static suinteger decodeCharCount(const char* base);
 		static void encodeB64Char(const char* ori, char* encoded, size_t size);
 		static void decodeB64Char(const char* data, char* decoded);
-		
 		static void encodeBASE64(const String& ori, String& base);
 		static size_t encodeBASE64(const ubytearray& ori, String& base, bool size = false);
-
-		//static void encodeBASE64(const void* ori, size_t size, char* base);
 		static void decodeBASE64(const String& base, String& ori);
 		static void decodeBASE64(const String& base, ubytearray& ori, size_t s = -1);
-		//static void decodeBASE64(const char* base, void* ori, const size_t& size);
 
 		static void expandTo(ubytearray& ori, ubytearray& dest, size_t cap = -1, sint bits = 31, sint flush = Z_NO_FLUSH);
 		static void expand(ubytearray& bytes, size_t cap = -1, sint bits = 31, sint flush = Z_NO_FLUSH);

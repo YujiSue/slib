@@ -387,15 +387,14 @@ namespace slib {
 			M::shift(p + 1, p, _end - p);
 			M::assign(p, val);
 			++_end;
-			return sarr_iter<T>(p);
 		}
-		else if (p == _end) add(val);
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+		return sarr_iter<T>(p);
     }
 	template <typename T, class M>
 	sarr_iter<T> Array<T, M>::insert(sarr_iter<T> iter, const T& val) {
-		if (iter < end()) {
-			auto p = iter._ptr;
+		auto p = iter._ptr;
+		if (p < _end) {
 			auto s = _end - _begin + 1;
 			if (_capacity <= s) { 
 				auto idx = p - _begin;
@@ -404,10 +403,9 @@ namespace slib {
 			M::shift(p + 1, p, _end - p);
 			M::assign(p, val);
 			++_end;
-			return sarr_iter<T>(p);
 		}
-		else if (iter == end()) add(val);
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+		return sarr_iter<T>(p);
 	}
     template <typename T, class M>
 	sarr_iter<T> Array<T, M>::insert(size_t idx, T *val, size_t s) {

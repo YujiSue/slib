@@ -1,6 +1,7 @@
 #ifndef SLIB_STEXT_H
 #define SLIB_STEXT_H
 
+#include "sbasic/range.h"
 #include "sobj/sstring.h"
 #include "smedia/sgraphic.h"
 
@@ -30,6 +31,155 @@ namespace slib {
 	const String DEFAULT_TXT_TAG = ESC + "[0m" + ESC + "[39m" + ESC + "[49m";
 
     class SLIB_DLL SText;
+	/*
+	class SLIB_DLL STextAttribute : public Range<size_t>, public SObject {
+	public:
+		suint type;
+		String font;
+		float size;
+		smedia::SColor color, background;
+
+		STextAttribute();
+		STextAttribute(const STextAttribute &attr);
+		~STextAttribute();
+		STextAttribute& operator=(const STextAttribute& attr);
+	};
+	
+	class SLIB_DLL SText : public SObject {
+	private:
+		String _string;
+		Array<STextAttribute> _attribute;
+
+	public:
+		SText();
+		SText(const char* s);
+		SText(const char* s, SDictionary&& a);
+		SText(sobj obj);
+		SText(const SText& text);
+		~SText();
+
+		SText& operator = (const char* s);
+		SText& operator = (String&& s);
+		SText& operator = (const String& s);
+		SText& operator = (const SString& s);
+		SText& operator = (const SText& txt);
+		SText& operator += (const SText& txt);
+		SText operator + (const SText& txt);
+
+		const Array<STextAttribute>& attributes() const { return _attribute; }
+		Array<STextAttribute>& attributes() { return _attribute; }
+		bool hasAttribute(size_t pos) const {
+			if (_attribute.empty() || pos < _attribute[0].begin || _attribute[-1].end < pos) return false;
+			sforeach(_attribute) { if (E_.include(pos)) return true; }
+			return false;
+		}
+		bool hasAttribute(sranges rng) const {
+			if (_attribute.empty() || rng.end < _attribute[0].begin || _attribute[-1].end < rng.begin) return false;
+			sforeach(_attribute) { if (E_.overlap(rng)) return true; }
+			return false;
+		}
+		//STextAttribute& attribute(size_t pos) const;
+		//Range<sarr_citer<STextAttribute>> attribute(sranges rng) const;
+		//Range<sarr_iter<STextAttribute>> attribute(sranges rng);
+		void addAttribute(const STextAttribute& attr) {
+			if (_attribute.empty() || _attribute[-1].end < attr.begin) _attribute.add(attr);
+			else if (attr.end < _attribute[0].begin) _attribute.insert(0, attr);
+			else {
+				sforeach(_attribute) {
+					if (attr.end < E_.begin) break;
+					
+
+				}
+			}
+		}
+		template<class... Args>
+		void addAttribute(Args... args) { addAttribute(STextAttribute(args...)); }
+		void updateAttribute(const STextAttribute& attr) { 
+			//if (!hasAttribute(range)) return;
+		}
+		void addStyle(sranges range, sushort type) { 
+
+		}
+		void removeStyle(sranges range, sushort type) { 
+			if (!hasAttribute(range)) return;
+
+		}
+		void setBold(sranges range) { addStyle(range, sstyle::BOLD); }
+		void resetBold(sranges range) { removeStyle(range, sstyle::BOLD); }
+		void setItalic(sranges range) { addStyle(range, sstyle::ITALIC); }
+		void setUnderline(sranges range) { addStyle(range, sstyle::UNDERLINE); }
+		void setSuper(srange range) { addStyle(range, sstyle::SUPERSCRIPT); }
+		void setSub(srange range) { addStyle(range, sstyle::SUBSCRIPT); }
+		void setFont(srange range, const char* font);
+		void setSize(srange range, float size);
+		void setColor(srange range, const smedia::SColor& col);
+		void setBGColor(srange range, const smedia::SColor& col);
+		void resize(size_t s) {
+			if (!s) clear();
+			else {
+				if (s < _string.size()) {
+					auto as = _attribute.size();
+					srforeach(_attribute) {
+						if (s < E_.begin) --as;
+						else if (s < E_.end) E_.end = s - 1;
+						else if (E_.end < s) break;
+					}
+					_attribute.resize(as);
+				}
+				_string.resize(s);
+			}
+		}
+		void resize(size_t s, const char& c) {
+			auto l = _string.length();
+			resize(s);
+			if (l < s) { 
+				auto p = _string.ptr(l);
+				sforin(c, l, s) { *p = c; ++p; }
+			}
+		}
+		void clear() {
+			_string.clear();
+			_attribute.clear();
+		}
+
+		void add(const char& c);
+		void append(const char* s);
+		void append(const std::string& s);
+		void append(const String& s);
+		void append(const SString& s);
+		void append(const SText& t);
+
+		void insert(size_t idx, const char* s);
+		void insert(size_t idx, const std::string& s);
+		void insert(size_t idx, const String& s);
+		void insert(size_t idx, const SString& s);
+
+		void removeAt(size_t idx);
+		void remove(size_t off, size_t len = -1);
+		void remove(const srange& rng);
+
+		void replace(size_t off, size_t len, const char* alt);
+		void replace(const srange& rng, const char* alt);
+		void replace(const char* ori, const char* alt);
+		void replace(const Regex& rgx, const char* alt);
+		void rearrange(const Regex& rgx, const CArray<sint>& order);
+
+		void clip(size_t off, size_t len = -1);
+		void clip(const srange& rng);
+
+		SText subtext(size_t off, size_t len);
+		SText subtext(srange range);
+
+		void load(const char* path);
+		void save(const char* path);
+
+		
+		String getClass() const { return "text"; }
+		String toString() const;
+		String toString(const char *form) const;
+		SObject* clone() const;
+	};
+	*/
 
 	struct SLIB_DLL text_style {
 		suint type;

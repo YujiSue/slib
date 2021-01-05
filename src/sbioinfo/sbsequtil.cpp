@@ -64,6 +64,12 @@ size_t sseq::gcCount(const char *s, size_t off, size_t len) {
     sforin(i, 0, size) { if(isGC(s[off+i])) ++count; ++s; }
     return count;
 }
+size_t sseq::gcCounti(const subyte* s, size_t off, size_t len) {
+	size_t count = 0;
+	auto p = s + off;
+	sforin(i, 0, len) { if (isGCi(*p)) ++count; ++p; }
+	return count;
+}
 size_t sseq::gcCounti(const ubytearray &s, size_t off, size_t len) {
     size_t count = 0, size = (len == -1?s.size():len);
     auto p = s.ptr(off);

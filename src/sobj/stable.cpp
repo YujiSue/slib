@@ -136,14 +136,14 @@ void STable::saveTxt(const char *path, const char *sep) {
     file.flush();
 }
 
-bool STable::hasColumn(const char *name) const {
-    return columnIndex(name) != NOT_FOUND;
-}
 size_t STable::columnCount() const { return _columns.size(); }
+bool STable::hasColumn(const char* name) const { return columnIndex(name) != NOT_FOUND; }
 size_t STable::columnIndex(const char *name) const {
     sforeach(_columns) { if(E_._name == name) return INDEX_(_columns); }
     return NOT_FOUND;
 }
+SColumn& STable::operator[](const char* name) { return column(name); }
+const SColumn& STable::operator[](const char* name) const { return column(name); }
 SColumn& STable::columnAt(int idx) { return _columns[idx]; }
 const SColumn &STable::columnAt(int idx) const { return _columns[idx]; }
 SColumn &STable::column(const char* name) {
@@ -174,11 +174,12 @@ void STable::addColumns(const Array<SColumn>& cols) {
 }
 void STable::insertColumn(size_t idx, const SColumn& col) {
 	_columns.insert(idx, col);
-	_columns[idx].setTable(this);
+	_columns[(sint)idx].setTable(this);
 	sforeach(_rows) E_.insert(idx, snull);
 }
 void STable::setColumn(size_t idx, const SColumn& col) {
-	_columns[(sint)idx] = col; _columns[(sint)idx].setTable(this);
+	_columns[(sint)idx] = col; 
+	_columns[(sint)idx].setTable(this);
 	_columns[(sint)idx].convert(col._type);
 }
 void STable::removeColumn(size_t idx) {
@@ -206,11 +207,11 @@ void STable::resizeColumn(size_t s) {
 			++_lastcol;
 		}
 	}
-	sforeach(_rows) E_.resize(s);
+	sforeach(_rows) E_.resize(s, snull);
 }
 size_t STable::rowCount() const { return _rows.size(); }
-sobj& STable::operator[](int idx) { return _rows[idx]; }
-const sobj& STable::operator[](int idx) const { return _rows[idx]; }
+SArray& STable::operator[](int idx) { return _rows[idx].array(); }
+const SArray& STable::operator[](int idx) const { return _rows[idx].array(); }
 SArray& STable::rowAt(int idx) { return _rows[idx].array(); }
 const SArray& STable::rowAt(int idx) const { return _rows[idx].array(); }
 SArray& STable::rows() { return _rows; }
@@ -224,7 +225,8 @@ void STable::addRows(const SArray& array) {
 	sforeach(array) addRow(E_.array());
 }
 void STable::insertRow(size_t idx, const SArray& array) {
-	_rows.insert(idx, array); _rows[idx].resize(columnCount());
+	_rows.insert(idx, array); 
+	_rows[idx].resize(columnCount());
 }
 void STable::setRow(size_t idx, const SArray& array) {
 	auto& row = _rows[idx].array();
@@ -264,8 +266,8 @@ void STable::set(sint idx, sobj obj, smath::DIRECTION dir) {
 		else setColumn(idx, obj.toString().cstr());
 	}
 }
-sobj& STable::valueAt(sint r, sint c) { return _rows[r][c]; }
-const sobj& STable::valueAt(sint r, sint c) const { return _rows[r][c]; }
+sobj& STable::at(sint r, sint c) { return _rows[r][c]; }
+const sobj& STable::at(sint r, sint c) const { return _rows[r][c]; }
 sobj STable::getValue(sint r, sint c) const { return _rows[r][c]; }
 SArray STable::getValues(sint r, sint c, sint h, sint w) const {
 	SArray array;
@@ -278,7 +280,7 @@ SArray STable::getValues(sint r, sint c, sint h, sint w) const {
 	}
 	return array;
 }
-void STable::clearValue(sint r, sint c) { valueAt(r, c) = snull; }
+void STable::clearValue(sint r, sint c) { at(r, c) = snull; }
 void STable::clearValues(sint r, sint c, sint h, sint w) {
 	auto rit = _rows.begin() + r;
 	sforin(i, 0, h) {
@@ -288,7 +290,7 @@ void STable::clearValues(sint r, sint c, sint h, sint w) {
 		++rit;
 	}
 }
-void STable::setValue(sint r, sint c, sobj val) { valueAt(r, c) = val; }
+void STable::setValue(sint r, sint c, sobj val) { at(r, c) = val; }
 void STable::updateValues(sint r, const SDictionary& values) {
 	auto& row = _rows[r];
 	sforeach(values) row[columnIndex(E_.key)] = E_.value;
@@ -351,7 +353,9 @@ Range<size_t> STable::find(const sobj& obj, smath::DIRECTION dir, srange offset)
 	}
 	return Range<size_t>(NOT_FOUND, NOT_FOUND);
 }
-void STable::sortBy(size_t idx, ORDER order) {
+void STable::sortBy(const char* name, ORDER order) {
+	auto idx = columnIndex(name);
+	if (idx == NOT_FOUND) throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR);
 	_rows.sort([idx, order](const sobj& so1, const sobj& so2) {
 		if (order == ASC) return so1[idx] < so2[idx];
 		else return so2[idx] < so1[idx];

@@ -435,7 +435,7 @@ SObjPtr& SObjPtr::at(int idx) {
 	if (isNull()) { _type = ARRAY_OBJ; _ptr = new SArray(); }
 	if (isStr()) { return string().charAt(idx); }
 	if (isArray()) return array()[idx];
-	if (isTable()) return table()[idx];
+	if (isColumn()) return column()[idx];
 	//if (isCnvs()) return canvas()[idx];
 	//if (isMov()) return movie()[idx];
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
@@ -444,7 +444,7 @@ const SObjPtr& SObjPtr::at(int idx) const {
 	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
 	if (isStr()) { return string().charAt(idx); }
 	if (isArray()) return array()[idx];
-	if (isTable()) return table()[idx];
+	if (isColumn()) return column()[idx];
 	//if (isCnvs()) return canvas()[idx];
 	//if (isMov()) return movie()[idx];
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);

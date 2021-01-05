@@ -111,7 +111,7 @@ namespace slib {
             bytearray _path;
 			floatarray _score, _score2;
             intarray _maxcol, _maxrow;
-            sint _scr[4];
+            float _scr[4];
             
         public:
             floatarray scores;

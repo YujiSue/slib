@@ -230,7 +230,7 @@ String salign::alque(const String &que) {
     }
     return str;
 }
-inline int aldir(sint *score) {
+inline int aldir(float *score) {
     int idx = 0;
     sforin(i, 1, 4) { if(score[idx] < score[i]) idx = i; }
     return idx;

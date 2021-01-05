@@ -57,9 +57,9 @@ namespace slib {
             sobj toObj();
         };
 
-		extern double nnEnthalpy(SBioSeq* seq);
-		extern double nnEntropy(SBioSeq* seq);
-		extern void tmCalc(double* tm, SBioSeq* seq);
+		extern double nnEnthalpy(subyte* seq, size_t len);
+		extern double nnEntropy(subyte* seq, size_t len);
+		extern void tmCalc(double* tm, subyte* seq, size_t len);
 		extern sint crossComplement(SBioSeq* seq1, SBioSeq* seq2);
 		/*{
 			int crosscomp = 0;
@@ -76,14 +76,13 @@ namespace slib {
 		*/
 		class SBIOINFO_DLL SPrimer {
 			sushort flag;
-			SBioSeq* seq;
-			srange range;
-			bool dir;
+			subyte* seq;
+			String ref;
+			sbpos pos;
 			Array<sbpos> match[3];
 
 			SPrimer();
-			SPrimer(SBioSeq* s, sint p, sint l, bool d);
-			SPrimer(const char *seq);
+			SPrimer(subyte* s, sint i, sint p, sint l, bool d);
 			SPrimer(const SPrimer&p);
             ~SPrimer();
 
@@ -92,6 +91,7 @@ namespace slib {
 			sint bias() const;
 			sint selfcomp() const;
 			String toString() const;
+			SDictionary summary() const;
         };
 		extern bool checkPrimer(SPrimer* p, sprimer_param* par);
 		

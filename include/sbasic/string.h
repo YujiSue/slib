@@ -246,25 +246,24 @@ namespace slib {
 #ifdef LINUX_OS
         String &operator<<(sinteger i);
 #endif
-        String &operator<<(float f);
-        String &operator<<(double d);
-        String &operator<<(sbyte i);
-        String &operator<<(subyte ui);
-        String &operator<<(sshort i);
-        String &operator<<(sushort ui);
-        String &operator<<(char c);
-        String &operator<<(const char *s);
-        String &operator<<(const std::string &s);
-        String &operator<<(const String &s);
-        String &operator<<(const SString &s);
+		String& operator<<(float f);
+		String& operator<<(double d);
+		String& operator<<(sbyte i);
+		String& operator<<(subyte ui);
+		String& operator<<(sshort i);
+		String& operator<<(sushort ui);
+		String& operator<<(char c);
+		String& operator<<(const char* s);
+		String& operator<<(const std::string& s);
+		String& operator<<(const String& s);
+		String& operator<<(const SString& s);
 		String& operator<<(const SText& t);
 		String& operator<<(const sio::SFile& f);
-        String &operator<<(SObjPtr obj);
-        
-        String &operator*=(int num);
-        String &operator*=(size_t num);
-        String operator*(int num) const;
-        String operator*(size_t num) const;
+		String& operator<<(SObjPtr obj);
+		String& operator*=(int num);
+		String& operator*=(size_t num);
+		String operator*(int num) const;
+		String operator*(size_t num) const;
         
         bool isNumeric() const;
         bool isQuoted() const;
@@ -289,12 +288,12 @@ namespace slib {
         
 		void interpret(subyte* bytes, size_t size);
         void copy(const char *dat, size_t size = -1);
-        void clear();
-        void resize(size_t s);
-        void resize(size_t s, const char &c);
-        void reserve(size_t s);
-        void swap(String &str);
-        
+		void swap(String& str);
+		void reserve(size_t s);
+		virtual void resize(size_t s);
+		virtual void resize(size_t s, const char& c);
+		virtual void clear();
+		
         SArrayIterator<char> begin();
         SArrayCIterator<char> begin() const;
         SArrayIterator<char> end();

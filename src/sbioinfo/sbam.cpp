@@ -411,74 +411,104 @@ void SBam::getReads(sbam::read_array& array, sint idx, const sregion& region) {
 	}
 }
 
-/*
-SBamData::SBamData() { init(); }
-SBamData::SBamData(const SBamData& dat) : SBamData() {
-	_bam = dat._bam;
-	idx = dat.idx;
-	count = dat.count;
-	offset = dat.offset;
-	last = dat.last;
-	length = dat.length;
-	raw = dat.raw;
-	buffer[0] = dat.buffer[0];
-	buffer[1] = dat.buffer[1];
-	readinfo = dat.readinfo;
-	current = dat.current;
-	rawptr = dat.rawptr;
-	curptr = dat.curptr;
-}
-SBamData::~SBamData() {
-
-}
+SBamData::SBamData() : count(2), async(false) { init(); }
+SBamData::SBamData(sngs_param *p) : count(p->block), async(p->parallele) { init(); }
+SBamData::~SBamData() {}
 void SBamData::init() {
 	memset(_magic, 0, 16);
 	_bam = nullptr;
 	_thread.setSize(1);
 	idx = 0;
-	result = 0;
-	buffer[0].reserve(BGZF_MAX_BLOCK_SIZE);
-	buffer[1].reserve(BGZF_MAX_BLOCK_SIZE);
+	buffer[0].resize(BGZF_MAX_BLOCK_SIZE);
+	buffer[1].resize(BGZF_MAX_BLOCK_SIZE);
 	current = buffer;
 	curptr = current->ptr();
-	resize(2);
+	resize(count);
 }
 void SBamData::resize(sint n) {
 	count = n;
-	raw.reserve((size_t)BGZF_MAX_BLOCK_SIZE * n);
-	rawptr = raw.ptr();
-	length.resize(n);
+	raws.resize(n);
+	sforeach(raws) E_.resize((size_t)BGZF_MAX_BLOCK_SIZE);
+	ori_length.resize(n);
+	block_length.resize(n);
 }
 void SBamData::setBam(SBamFile* f) { _bam = f; }
-
-void SBamData::load() { 
-	if (!_bam) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "_bam");
-	_bam->lock();
-	raw.clear();
-	rawptr = raw.ptr();
-	length.reset(0);
+inline void deflateBGZF(ubytearray* ori, ubytearray* dest) {
+	SCode::expandTo(*ori, *dest, BGZF_MAX_BLOCK_SIZE, -15, Z_FINISH);
+}
+void SBamData::load() {
+	if (!_bam) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "linked bam file");
+	if (async) _bam->lock();
+	idx = 0;
 	offset = sbam::voffset(_bam->offset(), 0);
+	ori_length.reset(0);
+	block_length.reset(0);
 	sforin(i, 0, count) {
-		result = _bam->readBytes(&length[i], 4);
-		if (result) throw SBioInfoException(ERR_INFO, SLIB_READ_ERROR);
-		raw.resize(raw.size() + length[i]);
-		result = _bam->readBytes(rawptr, length[i]);
-		rawptr += length[i];
+		if (_bam->eof()) break;
+		_bam->readBytes(_magic, 16);
+		if (memcmp(GZ_MAGIC, _magic, 16) != 0)
+			throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, _magic, "BGZF");
+		auto& raw = raws[i];
+		_bam->_file.readUShort(ori_length[i]);
+		raw.resize(ori_length[i] - 25);
+		_bam->_file.readBytes(raw.ptr(), raw.size());
+		_bam->_file.readInt(block_length[i]);
+		_bam->_file.readInt(block_length[i]);
+	}
+	SCode::expandTo(raws[0], buffer[0], BGZF_MAX_BLOCK_SIZE, -15, Z_FINISH);
+	_thread.addTask(deflateBGZF, &raws[1], &buffer[1]);
+	last = sbam::voffset(_bam->offset(), 0);
+	current = buffer;
+	curptr = current->ptr();
+	if (async) _bam->unlock();
+}
+void SBamData::update() {
+	if (!_bam) throw SBioInfoException(ERR_INFO, SLIB_NULL_ERROR, "linked bam file");
+	if (async) {
+		_bam->lock();
+		if (_bam->offset() != last.file_offset) _bam->setOffset(last.file_offset);
+	}
+	idx = 0;
+	offset = sbam::voffset(last.file_offset, 0);
+	ori_length.reset(0);
+	block_length.reset(0);
+	sforin(i, 0, count) {
+		if (_bam->eof()) break;
+		_bam->readBytes(_magic, 16);
+		if (memcmp(GZ_MAGIC, _magic, 16) != 0)
+			throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, _magic, "BGZF");
+		auto& raw = raws[i];
+		_bam->_file.readUShort(ori_length[i]);
+		raw.resize(ori_length[i] - 25);
+		_bam->_file.readBytes(raw.ptr(), raw.size());
+		_bam->_file.readInt(block_length[i]);
+		_bam->_file.readInt(block_length[i]);
 	}
 	last = sbam::voffset(_bam->offset(), 0);
-	_bam->unlock();
+	SCode::expandTo(raws[0], buffer[0], BGZF_MAX_BLOCK_SIZE, -15, Z_FINISH);
+	_thread.addTask(deflateBGZF, &raws[1], &buffer[1]);
+	current = buffer;
+	curptr = current->ptr();
+	if (async) _bam->unlock();
+}
+void SBamData::setOffset(sushort o) {
+	if (o < block_length[idx]) {
+		curptr = current->ptr(o);
+		offset.block_offset = o;
+	}
+	else throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR);
 }
 void SBamData::copy(void* p, size_t s) {
-	if (offset.block_offset + s < current->size()) {
+	if (offset.block_offset + s < block_length[idx]) {
 		memcpy(p, (const void *)curptr, s);
 		curptr += s; offset.block_offset += s;
 	}
 	else {
-		auto left = current->size() - offset.block_offset;
+		auto left = block_length[idx] - offset.block_offset;
 		memcpy(p, (const void*)curptr, left);
 		p = (void*)((unsigned char*)p + left);
 		swap();
-		memcpy(p, (const void*)curptr, s - left);
+		copy(p, s - left);
 	}
 }
 ubytearray* SBamData::next() {
@@ -490,79 +520,61 @@ ubytearray* SBamData::next() {
 	return &readinfo;
 }
 void SBamData::swap() {
-
-
 	if (idx == count - 1) update();
 	else {
-		offset.file_offset += length[idx];
+		offset.file_offset += ori_length[idx];
 		offset.block_offset = 0;
 		++idx;
 		_thread.complete();
-		if (current == &buffer[1]) {
-			current = &buffer[0];
-			if (idx < count - 1) _thread.addTask()
+		if (current == buffer) {
+			current = &buffer[1];
+			if (idx < count - 1) _thread.addTask(deflateBGZF, &raws[idx + 1], &buffer[0]);
 		}
 		else {
-			current = &buffer[1];
-
+			current = &buffer[0];
+			if (idx < count - 1) _thread.addTask(deflateBGZF, &raws[idx + 1], &buffer[1]);
 		}
-		curptr = 
+		curptr = current->ptr();
 	}
 }
 SBamFile::SBamFile() {
-	_single = true;
-	_store.resize(1);
-	_data->setBam(this);
-	_data = &_store[0];
+	_data.setBam(this);
+	_current = &_data;
 }
-SBamFile::SBamFile(sngs_param* par) { setParam(par); }
-SBamFile::~SBamFile() {
-	close();
-}
+SBamFile::~SBamFile() { close(); }
 void SBamFile::_readHeader() {
 	char s[4];
-	_data->copy(s, 4);
+	_current->copy(s, 4);
 	if (memcmp(BAM_MAGIC, s, 4) != 0)
 		throw SBioInfoException(ERR_INFO, SLIB_FORMAT_ERROR, s, "BAM");
 	sint tmp;
-	_data->copy(&tmp, 4);
+	_current->copy(&tmp, 4);
 	info.text.resize(tmp);
-	_data->copy(&info.text[0], tmp);
-	_data->copy(&tmp, 4);
+	_current->copy(&info.text[0], tmp);
+	_current->copy(&tmp, 4);
 	info.set(tmp);
 	sforin(i, 0, info.ref_num) {
-		_data->copy(&tmp, 4);
+		_current->copy(&tmp, 4);
 		info.ref_name[i].resize((size_t)tmp, '\0');
-		_data->copy(&info.ref_name[i][0], tmp);
+		_current->copy(&info.ref_name[i][0], tmp);
 		info.ref_name[i].resize((size_t)tmp - 1);
-		_data->copy(&(info.ref_length[i]), 4);
+		_current->copy(&(info.ref_length[i]), 4);
 	}
 }
+/*
 void SBamFile::_checkError() {
 	if (_data->result == Z_STREAM_ERROR || _data->result == Z_DATA_ERROR || _data->result == Z_BUF_ERROR)
 		throw SBioInfoException(ERR_INFO, SLIB_EXEC_ERROR, "inflate", std::to_string(_data->result).c_str());
 }
+*/
 void SBamFile::init() {
 	if (_file.isOpened()) _file.close();
 	index.init();
 }
-void SBamFile::setParam(sngs_param* p) {
-	_single = !p->parallele;
-	if (_single) {
-		_store.resize(1);
-		_data->setBam(this);
-		_data->resize(p->block);
-	}
-	else {
-		_store.resize(p->count);
-		sforeach(_store) { E_.setBam(this); E_.resize(p->block); }
-	}
-	_data = &_store[0];
-}
 void SBamFile::open(const char* path) {
 	if (_file.isOpened()) _file.close();
 	_file.open(path);
-	_data->load();
+	_current->load();
 	_checkError();
 	info.init();
 	loadIndex(String(path) + ".bai");
@@ -582,40 +594,29 @@ suinteger SBamFile::filesize() const { return _file.size(); }
 suinteger SBamFile::offset() { return _file.offset(); }
 void SBamFile::setOffset(suinteger off) { return _file.setOffset(off); }
 String SBamFile::path() const { return _file.path(); }
-
-
-sbam::voffset SBamFile::voff() const { return _data->offset; }
-
-
+bool SBamFile::eof() { return _file.eof(); }
+sbam::voffset SBamFile::voff() const { return _current->offset; }
 void SBamFile::setVOff(const sbam::voffset& off) {
 	if (_file.eof()) _file.clear();
-	lock();
 	_file.setOffset(off.file_offset);
-	_data->load(); 
-	_data->setOffset(off.block_offset);
-	unlock();
+	_current->load(); 
+	_current->setOffset(off.block_offset);
 }
-void SBamFile::setVOff(sint idx, const sbam::voffset& off) {
-	lock();
-	if (_file.eof()) _file.clear();
-	_file.setOffset(off.file_offset);
-	_store[idx].load(); 
-	_store[idx].setOffset(off.block_offset);
-	unlock();
-}
+void SBamFile::readBytes(void* p, size_t s) { _file.readBytes(p, s); }
 //void SBamFile::sort() {}
 //void SBamFile::createIndex() {}
-ubytearray* SBamFile::next(ubytearray* dat) { return _data->next(); }
-SBamData* SBamFile::getData(sint idx) { return &_store[idx]; }
-void SBamFile::setData(sint idx) {
-	lock();
-	_data = &_store[idx];
-	unlock();
+SBamData* SBamFile::getData() { return _current; }
+void SBamFile::setData(SBamData* dat) {
+	if (dat) _current = dat;
+	else _current = &_data;
 }
+ubytearray* SBamFile::next(ubytearray* dat) { return _current->next(); }
 void SBamFile::getReads(sbam::read_array& array, const sbpos& pos) {
 	array.clear();
 	if (!hasIndex()) return;
 	ushortarray bins;
+	ubytearray *nxt;
+	sbam::readinfo ri;
 	sbiutil::getBins(bins, pos);
 	if (bins.empty()) return;
 	sforeach(bins) {
@@ -624,10 +625,10 @@ void SBamFile::getReads(sbam::read_array& array, const sbpos& pos) {
 		sforeach_(cit, chunks) {
 			setVOff(cit->begin);
 			do {
-				if (!next()) break;
-				sbam::readinfo ri(read);
+				if (!(nxt = next())) break;
+				ri.interpret(*nxt);
 				if (E_ == ri.bin && pos.overlap(ri.range())) array.add(ri);
-			} while (_data->offset < cit->end);
+			} while (_current->offset < cit->end);
 		}
 	}
 }
@@ -635,6 +636,8 @@ void SBamFile::getReads(sbam::read_array& array, sint idx, const sregion& region
 	array.clear();
 	if (!hasIndex()) return;
 	ushortarray bins;
+	ubytearray* nxt;
+	sbam::readinfo ri; 
 	sbiutil::getBins(bins, region);
 	if (bins.empty()) return;
 	sforeach(bins) {
@@ -643,11 +646,10 @@ void SBamFile::getReads(sbam::read_array& array, sint idx, const sregion& region
 		sforeach_(cit, chunks) {
 			setVOff(cit->begin);
 			do {
-				if (!next()) break;
-				sbam::readinfo ri(read);
+				if (!(nxt = next())) break;
+				ri.interpret(*nxt);
 				if (E_ == ri.bin && region.overlap(ri.range())) array.add(ri);
-			} while (_data->offset < cit->end);
+			} while (_current->offset < cit->end);
 		}
 	}
 }
-*/

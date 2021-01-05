@@ -4,6 +4,7 @@
 #include "sobj/sobject.h"
 #include "sobj/sstring.h"
 #include "sobj/sarray.h"
+#include "sutil/ssearch.h"
 #include "smath.h"
 
 namespace slib {
@@ -24,7 +25,7 @@ namespace slib {
 	constexpr sushort IMG_COLUMN = 0x0800;
 
 	class SLIB_DLL STable;
-	class SLIB_DLL SColumn : public SObject { //: public SArray {
+	class SLIB_DLL SColumn : public SObject {
 		friend STable;
 	private:
 		sushort _type;
@@ -101,6 +102,8 @@ namespace slib {
 		size_t columnCount() const;
 		bool hasColumn(const char* name) const;
 		size_t columnIndex(const char* name) const;
+		SColumn& operator[](const char *name);
+		const SColumn& operator[](const char *name) const;
 		SColumn& columnAt(int idx);
 		const SColumn& columnAt(int idx) const;
 		SColumn& column(const char* name);
@@ -119,10 +122,8 @@ namespace slib {
 		void resizeColumn(size_t s);
 		
 		size_t rowCount() const;
-		sobj& operator[](int idx);
-		const sobj& operator[](int idx) const;
-		sobj& at(int idx);
-		const sobj& at(int idx) const;
+		SArray& operator[](int idx);
+		const SArray& operator[](int idx) const;
 		SArray& rowAt(int idx);
 		const SArray& rowAt(int idx) const;
 		SArray& rows();
@@ -143,9 +144,8 @@ namespace slib {
 		void add(sobj obj, smath::DIRECTION dir);
 		void insert(sint idx, sobj obj, smath::DIRECTION dir);
 		void set(sint idx, sobj obj, smath::DIRECTION dir);
-
-		sobj& valueAt(sint r, sint c);
-		const sobj& valueAt(sint r, sint c) const;
+		sobj& at(sint r, sint c);
+		const sobj& at(sint r, sint c) const;
 		sobj getValue(sint r, sint c) const;
 		SArray getValues(sint r, sint c, sint h, sint w) const;
 		void clearValue(sint r, sint c);
@@ -155,15 +155,12 @@ namespace slib {
 		void setValues(sint r, sint c, const SArray &values);
 		void resize(size_t r, size_t c);
 		Range<size_t> find(const sobj& obj, smath::DIRECTION dir = HORIZONTAL, srange offset = srange(0, 0));
-		void sortBy(size_t idx, slib::ORDER order = ASC);
-		//STable& where();
-		//size_t count();
-		//SArray search();
+		void sortBy(const char *name, slib::ORDER order = ASC);
 		void clearAll();
-		//void toMatrix(smat<sobj>& mat);
-
+		
 		String getClass() const;
 		String toString() const;
+		String toString(const char *f) const;
 		SObject* clone() const;
 	};
 }

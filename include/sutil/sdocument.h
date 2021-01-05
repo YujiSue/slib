@@ -5,6 +5,17 @@
 #include "sio/sio.h"
 
 namespace slib {
+	template<class Cls>
+	struct reference_table {
+
+		suinteger offset;
+		Cls object;
+		reference_table();
+		reference_table(const reference_table &tbl);
+		~reference_table();
+		reference_table& operator=(const reference_table& tbl);
+	};
+
 	template<class Node>
 	class SDocument : public SObject {
 	protected:

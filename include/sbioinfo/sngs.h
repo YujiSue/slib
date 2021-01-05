@@ -8,6 +8,10 @@
 
 namespace slib {
     namespace sbio {
+		//MAGIC
+		constexpr char GZ_MAGIC[17] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0";
+		constexpr char BAM_MAGIC[5] = "\102\101\115\001";
+		constexpr char BAI_MAGIC[5] = "\102\101\111\001";
 		constexpr char BSM_MAGIC[5] = "\102\123\115\002";
 
 		struct SBIOINFO_DLL sngs_param {

@@ -29,8 +29,8 @@ namespace slib {
         constexpr sushort ITALIC = 0x0004;
         constexpr sushort SHADOW = 0x0008;
         
-        constexpr sushort UPPER = 0x0010;
-        constexpr sushort LOWER = 0x0020;
+        constexpr sushort SUPERSCRIPT = 0x0010;
+        constexpr sushort SUBSCRIPT = 0x0020;
         constexpr sushort RUBY = 0x0040;
         constexpr sushort COMMENT = 0x0080;
         
