@@ -384,7 +384,6 @@ namespace slib {
         void removeAt(int idx);
         void remove(const char *key);
         void remove(const size_t &off, const size_t &len);
-        void remove(const srange &range);
         void clear();
         
         bool contain(const char *que) const;
@@ -398,7 +397,7 @@ namespace slib {
         size_t rfind(const SObjPtr &ptr) const;
         sizearray search(const Regex &rgx, size_t offset = 0) const;
         String toString(const sobj &format = snull) const;
-        
+		String getClass() const;
         bool isNull() const;
         bool isHollow() const;
         bool isNumeric() const;

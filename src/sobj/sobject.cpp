@@ -784,12 +784,6 @@ void SObjPtr::remove(const size_t &off, const size_t &len) {
     else if (isTable()) table().removeRows(off, len);
     else throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-void SObjPtr::remove(const srange &range) {
-    if (isStr()) string().remove(range);
-    else if (isArray()) string().remove(range);
-    else if (isTable()) table().removeRows(range);
-    else throw SException(ERR_INFO, SLIB_CAST_ERROR);
-}
 void SObjPtr::clear() {
 	if (isNull()) return;
     else if (isStr()) string().clear();
@@ -847,7 +841,10 @@ String SObjPtr::toString(const sobj& format) const {
 	else if (isDat()) return format.isNull() ? data().toString() : data().toString(format);
     return _ptr->toString();
 }
-
+String SObjPtr::getClass() const {
+	if (isNull()) return "null";
+	return _ptr->getClass();
+}
 bool SObjPtr::isNull() const { return !_ptr; }
 bool SObjPtr::isNumeric() const {
     if (isNull()) return false;
