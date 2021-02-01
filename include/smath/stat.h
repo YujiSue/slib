@@ -218,9 +218,9 @@ namespace slib {
 			v2d sum;
 			sfortill(it, beg, end) {
 				sum += v2d(cos(E_), sin(E_));
-				sgeom::normalize(sum);
+				sla::normalize(sum);
 			}
-			return sgeom::argument(sum);
+			return sla::argument(sum);
 		}
 		template<size_t D, typename T>
 		extern inline T product(const sla::SVectorND<D, T>& vec) {
@@ -346,72 +346,22 @@ namespace slib {
 			return mat / vec.size();
 		}
 		*/
-		template<typename T>
-		extern inline mat2d covmat(const sla::SVector<sla::SVectorND<2, T>, RMemory<sla::SVectorND<2, T>>>& vec) {
+
+		template<size_t D, typename T>
+		extern inline sla::SMatrixND<D, T> covmat(const sla::SVector<sla::SVectorND<D, T>, RMemory<sla::SVectorND<D, T>>>& vec) {
 			auto sum = sstat::sum(vec);
-			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
-			mat2d mat;
-			double dx, dy;
+			sla::SVectorND<D, T> ave(sum[0] / vec.size(), sum[1] / vec.size()), diff;
+			sla::SMatrixND<D, T> mat;
+			T dx, dy;
 			sforeach(vec) {
-				dx = (double)E_.x - ave.x;
-				dy = (double)E_.y - ave.y;
-				mat.elements[0] += dx * dx;
-				mat.elements[1] += dx * dy;
-				mat.elements[3] += dy * dy;
+				sforin(i, 0, D) diff[i] = E_[i] - ave[i];
+				sforin(j, 0, D) {
+					sforin(k, j, D) { mat[j][k] += diff[j] * diff[k]; }
+				}
 			}
-			mat.elements[2] = mat.elements[1];
-			return mat / vec.size();
-		}
-		template<typename T>
-		extern inline mat3d covmat(const sla::SVector<sla::SVectorND<3, T>, RMemory<sla::SVectorND<3, T>> > & vec) {
-			auto sum = sstat::sum(vec);
-			v3d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size());
-			mat3d mat;
-			double dx, dy, dz;
-			sforeach(vec) {
-				dx = (double)E_.x - ave.x;
-				dy = (double)E_.y - ave.y;
-				dz = (double)E_.z - ave.z;
-				mat.elements[0] += dx * dx;
-				mat.elements[1] += dx * dy;
-				mat.elements[2] += dx * dz;
-				mat.elements[4] += dy * dy;
-				mat.elements[5] += dy * dz;
-				mat.elements[8] += dz * dz;
+			sforin(l, 1, D) {
+				sforin(m, 0, l) { mat[l][m] = mat[m][l]; }
 			}
-			mat.elements[3] = mat.elements[1];
-			mat.elements[6] = mat.elements[2];
-			mat.elements[7] = mat.elements[5];
-			return mat / vec.size();
-		}
-		template<typename T>
-		extern inline mat4d covmat(const sla::SVector<sla::SVectorND<4, T>, RMemory<sla::SVectorND<4, T>>>& vec) {
-			auto sum = sstat::sum(vec);
-			v4d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size(), (double)sum.w / vec.size());
-			mat4d mat;
-			double dx, dy, dz, dw;
-			sforeach(vec) {
-				dx = (double)E_.x - ave.x;
-				dy = (double)E_.y - ave.y;
-				dz = (double)E_.z - ave.z;
-				dw = (double)E_.w - ave.w;
-				mat.elements[0] += dx * dx;
-				mat.elements[1] += dx * dy;
-				mat.elements[2] += dx * dz;
-				mat.elements[3] += dx * dw;
-				mat.elements[5] += dy * dy;
-				mat.elements[6] += dy * dz;
-				mat.elements[7] += dy * dw;
-				mat.elements[10] += dz * dz;
-				mat.elements[11] += dz * dw;
-				mat.elements[15] += dw * dw;
-			}
-			mat.elements[4] = mat.elements[1];
-			mat.elements[8] = mat.elements[2];
-			mat.elements[9] = mat.elements[6];
-			mat.elements[12] = mat.elements[3];
-			mat.elements[13] = mat.elements[7];
-			mat.elements[14] = mat.elements[11];
 			return mat / vec.size();
 		}
 		template<typename T, class M>

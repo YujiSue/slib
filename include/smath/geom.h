@@ -497,7 +497,7 @@ namespace slib {
 				else {
 					auto c = sla::SVectorND<D, T>();
 					sforeach(Shape<D, B, T>::_vertex) c += E_;
-					c /= shaShape<D, B, T>pe::count();
+					c /= Shape<D, B, T>::count();
 					return c;
 				}
 			}

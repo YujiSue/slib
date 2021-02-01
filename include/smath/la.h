@@ -1009,15 +1009,15 @@ namespace slib {
 					if (tmp1 < smath::D_EPS) ratio = v2d(0.0, 0.0);
 					else ratio = v2d(evec[r + 1][r] / tmp1, evec[r][r] / tmp1);
 					sforin(c, r + 1, mat.row) {
-						tmp2 = evec[r][c] * ratio.y + evec[r + 1][c] * ratio.x;
-						evec[r + 1][c] = -evec[r][c] * ratio.x + evec[r + 1][c] * ratio.y;
+						tmp2 = evec[r][c] * ratio[1] + evec[r + 1][c] * ratio[0];
+						evec[r + 1][c] = -evec[r][c] * ratio[0] + evec[r + 1][c] * ratio[1];
 						evec[r][c] = tmp2;
 					}
 					evec[r + 1][r] = 0.0;
 					evec[r][r] = tmp1;
 					sforin(c, 0, mat.col) {
-						tmp2 = qmat[c][r] * ratio.y + qmat[c][r] * ratio.x;
-						qmat[c][r + 1] = qmat[c][r] * ratio.x + qmat[c][r + 1] * ratio.y;
+						tmp2 = qmat[c][r] * ratio[1] + qmat[c][r] * ratio[0];
+						qmat[c][r + 1] = qmat[c][r] * ratio[0] + qmat[c][r + 1] * ratio[1];
 						qmat[c][r] = tmp2;
 					}
 
