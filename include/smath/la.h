@@ -706,7 +706,7 @@ namespace slib {
 			const T& at(size_t row, size_t col) const { return vector::at(_index(row, col)); }
 			SMatrix submat(size_t r, size_t c, size_t rn, size_t cn) const {
 				SMatrix<T, M> mat(rn, cn);
-				auto p1 = vector::ptr(_index(r, c)), *p1_;
+				auto p1 = vector::ptr(_index(r, c)), p1_ = p1;
 				auto p2 = mat.ptr();
 				sforin(r, 0, rn) { 
 					p1_ = p1;
