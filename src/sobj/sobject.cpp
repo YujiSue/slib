@@ -868,8 +868,10 @@ bool SObjPtr::isDict() const { return _type == DICT_OBJ; }
 bool SObjPtr::isText() const { return _type == TEXT_OBJ; }
 bool SObjPtr::isFile() const { return _type == FILE_OBJ; }
 bool SObjPtr::isFunc() const { return _type == FUNC_OBJ; }
+bool SObjPtr::isRow() const { return _type == ROW_OBJ; }
 bool SObjPtr::isColumn() const { return _type == COLUMN_OBJ; }
 bool SObjPtr::isTable() const { return _type == TABLE_OBJ; }
+bool SObjPtr::isRecord() const { return _type == RECORD_OBJ; }
 bool SObjPtr::isDB() const { return _type == DB_OBJ; }
 bool SObjPtr::isNode() const { return _type == NODE_OBJ; }
 bool SObjPtr::isColor() const { return _type == COLOR_OBJ; }
