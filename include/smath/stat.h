@@ -254,7 +254,7 @@ namespace slib {
 		}
 		template<typename T>
 		extern inline sla::SVectorND<0, T> difference(const sla::SVectorND<1, T>& vec, sint i = 1) {
-			return sla::SVectorND<0, T>;
+			return sla::SVectorND<0, T>();
 		}
 		template<typename T, class M>
 		extern inline sla::SVector<T, M> difference(const sla::SVector<T, M>& vec, sint i = 1) {

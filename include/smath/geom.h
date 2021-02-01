@@ -476,9 +476,9 @@ namespace slib {
 		template<size_t D, class B, typename T>
 		class SLIB_DLL Point : public Shape<D, B, T> {
 		public:
-			Point() : shape(sshape::POINT, 1) {}
-			Point(const sla::SVectorND<D, T>& p) : shape(sshape::POINT) { Shape<D, B, T>::addPoint(p); }
-			Point(const Point& p) : shape(p) {}
+			Point() : Shape<D, B, T>(sshape::POINT, 1) {}
+			Point(const sla::SVectorND<D, T>& p) : Shape<D, B, T>(sshape::POINT) { Shape<D, B, T>::addPoint(p); }
+			Point(const Point& p) : Shape<D, B, T>(p) {}
 			virtual ~Point() {}
 			Point& operator=(const Point& p) {
 				Shape<D, B, T>::_type = p._type;
@@ -544,7 +544,7 @@ namespace slib {
 			Curve(std::initializer_list<sla::SVectorND<D, T>> li) : shape(sshape::CURVE) {
 				if (li.size() == R) {
 					Shape<D, B, T>::_vertex.resize(li.size());
-					sforeach2(Shape<D, B, T>::_vertex, li) E1_ = E2_;
+					sforeach2((Shape<D, B, T>::_vertex), li) E1_ = E2_;
 					Shape<D, B, T>::_resetBoundary();
 				}
 				else throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR);
