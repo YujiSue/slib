@@ -142,7 +142,8 @@ void primer_t::matchCount(int q, sdnafile *ref, std::vector<std::vector<align_ve
     }
 }
 */
-double slib::sbio::nnEnthalpy(subyte* seq, size_t len) {
+
+inline double nnEnthalpy(subyte* seq, size_t len) {
 	double enthalpy = 0.0;
 	sforin(i, 0, len - 1) {
 		if ((*seq) == 0x01) {
@@ -178,7 +179,7 @@ double slib::sbio::nnEnthalpy(subyte* seq, size_t len) {
 	}
 	return enthalpy;
 }
-double slib::sbio::nnEntropy(subyte* seq, size_t len) {
+inline double nnEntropy(subyte* seq, size_t len) {
 	double entropy = 0.0;
 	sforin(i, 0, len - 1) {
 		if ((*seq) == 0x01) {
@@ -214,64 +215,115 @@ double slib::sbio::nnEntropy(subyte* seq, size_t len) {
 	}
 	return entropy;
 }
-void slib::sbio::tmCalc(double* tm, subyte* seq, size_t len) {
+sfrac slib::sbio::sseq::baseBias(subyte* seq, size_t len) {
+	sint bias = 0, count = 0;
+	sforin(i, 0, len - 1) {
+		auto count = sseq::gcCounti(seq, i, 2);
+		if (!count || count == 2) ++bias;
+	}
+	return sfrac(bias, len - 1);
+}
+double slib::sbio::sseq::tmCalc(double* tm, subyte* seq, size_t len) {
 	sint gc_count = sseq::gcCounti(seq, 0, len);
 	tm[0] = 16.6 * log10(0.05) - 273.15 + (1000.0 * nnEnthalpy(seq, len)) / (-10.8 + nnEntropy(seq, len) + 1.987 * (log(0.125) - 6 * log(10.0)));
 	tm[1] = 4 * gc_count + 2 * (len - gc_count);
 	tm[2] = 81.5 + 16.6 * log10(0.05) + 41.0 * gc_count / len - 500.0 / len;
+	return tm[0] < 20.0 ? tm[1] : (tm[0] < 80.0 ? tm[0] : tm[2]);
 }
-SPrimer::SPrimer() : flag(0), seq(nullptr) {}
-SPrimer::SPrimer(subyte* s, sint i, sint p, sint l, bool d) : flag(0), seq(s), pos(i, p, p + l - 1, d) {}
-SPrimer::SPrimer(const SPrimer& p) {
-	flag = p.flag; seq = p.seq; pos = p.pos;
+sregion slib::sbio::sseq::selfComp(subyte* seq, size_t len) {
+	sregion reg;
+	ubytearray comp;
+	comp.copy(seq, len);
+	sseq::dcompi(comp);
+	auto p1 = seq;
+	sforin(i, 0, len - 2) {
+		auto p2 = comp.ptr();
+		sforin(j, 0, len - 2) {
+			bool match = true;
+			sforin(k, 0, 3) {
+				if ((*(p1 + k)) != (*(p2 + k))) { match = false; break; }
+			}
+			if (match) reg.add(i, j);
+			++p2;
+		}
+		++p1;
+	}
+	return reg;
+}
+sregion crossComp(subyte* seq1, size_t len1, subyte* seq2, size_t len2) {
+	sregion reg;
+	ubytearray comp;
+	comp.copy(seq2, len2);
+	sseq::dcompi(comp);
+	auto p1 = seq1;
+	sforin(i, 0, len1 - 2) {
+		auto p2 = comp.ptr();
+		sforin(j, 0, len2 - 2) {
+			bool match = true;
+			sforin(k, 0, 3) {
+				if ((*(p1 + k)) != (*(p2 + k))) { match = false; break; }
+			}
+			if (match) reg.add(i, j);
+			++p2;
+		}
+		++p1;
+	}
+	return reg;
+}
+
+SPrimer::SPrimer() : score(0) {}
+SPrimer::SPrimer(const char* s, bool dir) : SPrimer() {
+	seq.resize(strlen(s));
+	sseq::dencode1((const subyte*)s, 0, seq.size(), seq.ptr());
+	if (dir) sseq::dcompi(seq);
+}
+SPrimer::SPrimer(subyte* s, size_t len, bool dir) : SPrimer() {
+	seq.resize(len);
+	memcpy(seq.ptr(), s, len);
+	if (dir) sseq::dcompi(seq);
+}
+SPrimer::SPrimer(const SPrimer& p) : SPrimer() {
+	score = p.score;
 	sforin(i, 0, 3) match[i] = p.match[i];
 }
 SPrimer::~SPrimer() {}
-
-double SPrimer::score(sprimer_param *par) const {
-	double value = 0.0;
-
-
-
-	return value;
-
-}
+size_t SPrimer::length() const { return seq.size(); }
 double SPrimer::tm() const  {
+	if (seq.empty()) return 0;
 	double values[3];
-	tmCalc(values, seq, pos.length(true));
-	return values[0] < 20.0 ? values[1] : (values[0] < 80.0 ? values[0] : values[2]);
+	return sseq::tmCalc(values, seq.ptr(), seq.size());
 }
-sint SPrimer::bias() const {
-	auto length = pos.length(true) - 3;
-	sint bias = 0, count = 0;
-	sforin(i, 0, length) {
-		auto count = sseq::gcCounti(*seq, i, 3);
-		if (!count || count == 3) ++bias;
-	}
-	return bias;
+sfrac SPrimer::bias() const {
+	if (seq.empty()) return 0;
+	return sseq::baseBias(seq.ptr(), seq.size());
 }
-sint SPrimer::selfcomp() const {
-	sint selfcomp = 0;
-	/*
-	std::string raw = seq.raw(), sub;
-	size_t length = seq.length() - 3;
-	for (int i = 0; i < length; ++i) {
-		size_t pos = 0;
-		sub = seq.decode(i, 3);
-		dcomp(&sub[0]);
-		while ((pos = raw.find(sub, pos)) != std::string::npos) { ++selfcomp; ++pos; }
-	}
-	*/
-	return selfcomp;
-}
-String SPrimer::toString() const {
-	String str(pos.length(true), '\0');
-	sseq::ddecode1(seq, 0, pos.length(true), (subyte*)str.ptr());
-	if (pos.dir) sseq::dcomp(str);
+String SPrimer::sequence() const {
+	String str(seq.size(), '\0');
+	sseq::ddecode1(seq.ptr(), 0, seq.size(), (subyte*)str.ptr());
 	return str;
-;}
-SDictionary SPrimer::summary() const {
+}
+sint SPrimer::scoring(sprimer_param* par) {
+	score = 0;
+
+
+	return score;
+}
+sobj SPrimer::summary() const {
+	double temp[3];
+	auto tm = sseq::tmCalc(temp, seq.ptr(), seq.size());
+	sarray sc;
+	auto reg = sseq::selfComp(seq.ptr(), seq.size());
+	if (!reg.empty()) {
+		sforeach(reg) sc.add(sarray({ E_.begin, E_.end }));
+	}
 	return {
-		kv("seq", toString())
+		kv("seq", sequence()), 
+		kv("gc", sseq::gcCounti(seq)),
+		kv("temp", V({ temp[0], temp[1], temp[2] })),
+		kv("tm", tm),
+		kv("bias", bias()),
+		kv("selfcomp", sc.empty()?snull:sc),
+		kv("terminal", V({ kv("gc", sseq::isGCi(seq[-1])), kv("t", seq[-1]==sbio::DNA_BASE16_INDEX['T']) })),
+		kv("score", score)
 	};
 }

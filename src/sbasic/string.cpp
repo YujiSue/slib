@@ -175,9 +175,9 @@ void String::_append(const char *s, size_t l) {
         memcpy(ptr(tmp), s, l);
     }
 }
-void String::_insert(const size_t idx, const char *s, size_t l) {
+void String::_insert(sinteger idx, const char *s, size_t l) {
     if (l) {
-        auto tmp = size();
+        sinteger tmp = (sinteger)size();
         if (idx < tmp) {
             resize(tmp+l);
             auto p = ptr();
@@ -533,26 +533,26 @@ char *String::ptr(size_t idx) { return _isLong()?&_str._ls.str[idx]:_str._ss.str
 const char *String::ptr(size_t idx) const { return _isLong()?&_str._ls.str[idx]:_str._ss.str+idx; }
 const char *String::cstr() const { return _isLong()?_str._ls.str:_str._ss.str; }
 std::string String::toStr() const { return std::string(cstr()); }
-char &String::operator[] (int idx) { return at(idx); }
-const char &String::operator[] (int idx) const { return at(idx); }
-char& String::at(int idx) {
+char &String::operator[] (sinteger idx) { return at(idx); }
+const char &String::operator[] (sinteger idx) const { return at(idx); }
+char& String::at(sinteger idx) {
 	if (_isLong()) {
-		int p = idx < 0 ? (int)_str._ls.size + idx : idx;
+		auto p = idx < 0 ? (sinteger)_str._ls.size + idx : idx;
 		if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
 	}
 	else {
-		int p = idx < 0 ? (_str._ss.size >> 1) + idx : idx;
+		auto p = idx < 0 ? (sinteger)(_str._ss.size >> 1) + idx : idx;
 		if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
 	}
 	throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 }
-const char& String::at(int idx) const {
+const char& String::at(sinteger idx) const {
 	if (_isLong()) {
-		int p = idx < 0 ? (int)_str._ls.size + idx : idx;
+		auto p = idx < 0 ? (sinteger)_str._ls.size + idx : idx;
 		if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
 	}
 	else {
-		int p = idx < 0 ? (_str._ss.size >> 1) + idx : idx;
+		auto p = idx < 0 ? (sinteger)(_str._ss.size >> 1) + idx : idx;
 		if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
 	}
 	throw SException(ERR_INFO, SLIB_RANGE_ERROR);
@@ -680,10 +680,10 @@ void String::append(const char *s) { if (s) _append(s, strlen(s)); }
 void String::append(const std::string &s) { _append(s.c_str(), s.length()); }
 void String::append(const String &s) { auto ins = s._cinstance(); _append(ins.first, ins.second); }
 void String::append(const SString &s) { auto ins = s._cinstance(); _append(ins.first, ins.second); }
-void String::insert(size_t idx, const char *s) { if (s) _insert(idx, s, strlen(s)); }
-void String::insert(size_t idx, const std::string &s) { _insert(idx, s.c_str(), s.length()); }
-void String::insert(size_t idx, const String &s) { auto ins = s._cinstance(); _insert(idx, ins.first, ins.second); }
-void String::removeAt(size_t idx) { remove(idx, 1); }
+void String::insert(sinteger idx, const char *s) { if (s) _insert(idx, s, strlen(s)); }
+void String::insert(sinteger idx, const std::string &s) { _insert(idx, s.c_str(), s.length()); }
+void String::insert(sinteger idx, const String &s) { auto ins = s._cinstance(); _insert(idx, ins.first, ins.second); }
+void String::removeAt(sinteger idx) { remove(idx, 1); }
 void String::remove(size_t off, size_t len) {
     auto ins = _instance();
     if (off < ins.second) {
@@ -693,8 +693,11 @@ void String::remove(size_t off, size_t len) {
     }
 }
 void String::remove(const srange& rng) { remove(rng.begin, (sinteger)rng.end - rng.begin); }
-void String::replace(const srange &rng, const char *alt) { replace(rng.begin, (sinteger)rng.end - rng.begin, alt); }
-void String::replace(size_t off, size_t len, const char *alt) {
+String& String::replace(const srange &rng, const char *alt) { 
+	replace(rng.begin, (sinteger)rng.end - rng.begin, alt); 
+	return *this;
+}
+String& String::replace(size_t off, size_t len, const char *alt) {
     if (alt) {
         auto ins = _instance();
         if (off < ins.second) {
@@ -711,13 +714,13 @@ void String::replace(size_t off, size_t len, const char *alt) {
             else CMemory<char>::copy(&ins.first[off], alt, len);
         }
     }
+	return *this;
 }
-void String::replace(const char *ori, const char *alt) {
+String& String::replace(const char *ori, const char *alt) {
     if (ori && alt && ori[0] != '\0') {
         auto len = strlen(ori), alen = strlen(alt);
-        auto pos = search(ori);//findAll(ori);
-        if (pos.empty()) return;
-        else {
+        auto pos = search(ori);
+        if (!pos.empty()) {
             String tmp;
             tmp.reserve(capacity());
             size_t off = 0;
@@ -731,42 +734,57 @@ void String::replace(const char *ori, const char *alt) {
             swap(tmp);
         }
     }
+	return *this;
 }
-void String::replace(const Regex &rgx, const char *alt) {
-    *this = rgx.replace(cstr(), alt);
+String& String::replace(const Regex &rgx, const char *alt) {
+	*this = rgx.replace(cstr(), alt); return *this;
 }
-void String::rearrange(const Regex &rgx, const CArray<sint> &order) {
-    *this = rgx.rearrange(cstr(), order);
+String& String::rearrange(const Regex &rgx, const CArray<sint> &order) {
+	*this = rgx.rearrange(cstr(), order); return *this;
 }
-void String::clip(size_t off, size_t len) {
+String& String::clip(size_t off, size_t len) {
     auto ins = _instance();
     if (off < ins.second) {
         if (off) remove(0, off);
         if (len == -1 || ins.second < off+len) len = ins.second-off;
         resize(len);
     }
+	return *this;
 }
-void String::clip(const srange &rng) { clip(rng.begin, (sinteger)rng.end-rng.begin); }
-void String::fill(size_t s, char fill, bool head) {
+String& String::clip(const srange& rng) { clip(rng.begin, (sinteger)rng.end - rng.begin); return *this; }
+String& String::fill(size_t s, char fill, subyte lack) {
     auto tmp = size();
     if (tmp < s) {
-        resize(s, fill);
-        if (head) {
-            auto p = ptr();
-            CMemory<char>::shift(&p[s-tmp], p, tmp);
-            sforin(i, tmp, s) { *p = fill; ++p; }
-        }
+		resize(s, fill);
+		size_t dif = 0;
+		switch (lack) {
+		case String::HEAD_PART:
+			dif = s - tmp; 
+			break;
+		case String::BOTH_PART:
+			dif = (s - tmp) / 2;
+			break;
+		default:
+			break;
+		}
+		if (dif) {
+			auto p = ptr();
+			CMemory<char>::shift(&p[dif], p, tmp);
+			sforin(i, 0, dif) { *p = fill; ++p; }
+		}
     }
+	return *this;
 }
-void String::trimming() {
+String& String::trimming() {
     auto ins = _instance();
     auto beg = ins.first, end = &ins.first[ins.second];
     while (beg < end && Char::isWSChar(*beg)) ++beg;
     while (beg < end && Char::isWSChar(*(end-1))) --end;
     if (ins.first < beg) remove(0, beg-ins.first);
     resize(end-beg);
+	return *this;
 }
-void String::transform(subyte trans) {
+String& String::transform(subyte trans) {
     auto ins = _instance();
     auto beg = ins.first, en = &ins.first[ins.second];
     if (trans& slib::sstyle::DELETE_QUOTE) { ++beg; --en; }
@@ -786,6 +804,7 @@ void String::transform(subyte trans) {
 		String tmp = String::narrow(cstr());
 		this->swap(tmp);
     }
+	return *this;
 }
 String String::substring(size_t off, size_t len) const {
     auto ins = _cinstance();
@@ -823,13 +842,24 @@ String String::replaced(const Regex &rgx, const char *alt) const {
 String String::rearranged(const Regex &rgx, const intarray &order) const {
     return rgx.rearrange(cstr(), order);
 }
-String String::filled(size_t size, char fill, bool head) const {
+String String::filled(size_t size, char fill, subyte dir) const {
     String str;
     auto ins = _cinstance();
     if (ins.second < size) {
         str.resize(size, fill);
-        if (head) CMemory<char>::copy(str.ptr(size-ins.second), ins.first, ins.second);
-        else CMemory<char>::copy(str.ptr(), ins.first, ins.second);
+		switch (dir) {
+		case String::HEAD_PART:
+			CMemory<char>::copy(str.ptr(size - ins.second), ins.first, ins.second);
+			break;
+		case String::TAIL_PART:
+			CMemory<char>::copy(str.ptr(), ins.first, ins.second);
+			break;
+		case String::BOTH_PART:
+			CMemory<char>::copy(str.ptr((size - ins.second) / 2), ins.first, ins.second);
+			break;
+		default:
+			break;
+		}
     }
     else str = *this;
     return str;

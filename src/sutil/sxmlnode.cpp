@@ -231,16 +231,16 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
     String transform = "";
 	auto& trans = fig->transformer();
 	if (trans.rotation != 0.0f) {
-		transform << "rotate(" << smath::rad2deg(trans.rotation) << "," << fig->center().x << "," << fig->center().y << ") ";
+		transform << "rotate(" << smath::rad2deg(trans.rotation) << "," << fig->center()[0] << "," << fig->center()[1] << ") ";
 	}
-	if (trans.skew.x != 0.0f)
-		transform << "skewX(" << trans.skew.x << ") ";
-	if (trans.skew.y != 0.0f)
-		transform << "skewY(" << trans.skew.y << ") ";
+	if (trans.skew[0] != 0.0f)
+		transform << "skewX(" << trans.skew[0] << ") ";
+	if (trans.skew[1] != 0.0f)
+		transform << "skewY(" << trans.skew[1] << ") ";
 	if (!(trans.translate == v2f(0.0f, 0.0f)))
-		transform << "translate(" << trans.translate.x << "," << trans.translate.y << ") ";
+		transform << "translate(" << trans.translate[0] << "," << trans.translate[1] << ") ";
 	if (!(trans.scale == v2f(1.0f, 1.0f)))
-		transform << "scale(" << trans.scale.x << "," << trans.scale.y << ") ";
+		transform << "scale(" << trans.scale[0] << "," << trans.scale[1] << ") ";
 	if (transform.length()) transform.resize(transform.size() - 1);
 
     switch (fig->type()) {
@@ -251,10 +251,10 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         case sshape::LINE:
         {
             node->tag = "line";
-            node->attribute["x1"] = String(fig->vertex()[0].x);
-            node->attribute["y1"] = String(fig->vertex()[0].y);
-            node->attribute["x2"] = String(fig->vertex()[1].x);
-            node->attribute["y2"] = String(fig->vertex()[1].y);
+            node->attribute["x1"] = String(fig->vertex()[0][0]);
+            node->attribute["y1"] = String(fig->vertex()[0][1]);
+            node->attribute["x2"] = String(fig->vertex()[1][0]);
+            node->attribute["y2"] = String(fig->vertex()[1][1]);
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (transform.length())
                 node->attribute["transform"] = transform;
@@ -266,10 +266,10 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             String path;
             if (fig->vcount()) {
                 sforeach(fig->vertex()) {
-                    path<<"M"<<E_.x<<","<<E_.y; ++it;
-                    path<<"C"<<E_.x<<","<<E_.y<<" "; ++it;
-                    path<<E_.x<<","<<E_.y<<" "; ++it;
-                    path<<E_.x<<","<<E_.y;
+                    path<<"M"<<E_[0]<<","<<E_[1]; ++it;
+                    path<<"C"<<E_[0]<<","<<E_[1]<<" "; ++it;
+                    path<<E_[0]<<","<<E_[1]<<" "; ++it;
+                    path<<E_[0]<<","<<E_[1];
                 }
             }
             node->attribute["d"] = path;
@@ -289,27 +289,29 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             String path;
             if (fig->childCount()) {
                 sforeach(fig->children()) {
-					if (E_->type() == sshape::LINE) {
+					auto type = E_->type() & 0x0FFF;
+					if (type == sshape::LINE) {
 						if (!E_->vertex().empty()) {
 							auto vit = E_->vertex().begin();
-							path << "M" << (*vit).x << "," << (*vit).y;
+							path << "M" << (*vit)[0] << "," << (*vit)[1];
 							++vit;
 							while (vit < E_->vertex().end()) {
-								path << " L" << (*vit).x << "," << (*vit).y;
+								path << " L" << (*vit)[0] << "," << (*vit)[1];
 								++vit;
 							}
 						}
 					}
-					else if (E_->type() == sshape::CURVE) {
+					else if (type == sshape::CURVE) {
 						if (!E_->vertex().empty()) {
 							sforeach_(vit, fig->vertex()) {
-								path << "M" << (*vit).x << "," << (*vit).y; ++vit;
-								path << "C" << (*vit).x << "," << (*vit).y << " "; ++vit;
-								path << (*vit).x << "," << (*vit).y << " "; ++vit;
-								path << (*vit).x << "," << (*vit).y;
+								path << "M" << (*vit)[0] << "," << (*vit)[1]; ++vit;
+								path << "C" << (*vit)[0] << "," << (*vit)[1] << " "; ++vit;
+								path << (*vit)[0] << "," << (*vit)[1] << " "; ++vit;
+								path << (*vit)[0] << "," << (*vit)[1];
 							}
 						}
 					}
+					if (fig->type() & sshape::CLOSED) path << "z";
                 }
             }
             node->attribute["d"] = path;
@@ -328,7 +330,7 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             node->tag = "polygon";
             String pts;
             if (fig->vcount()) {
-                sforeach(fig->vertex()) pts<<E_.x<<" "<<E_.y<<" ";
+                sforeach(fig->vertex()) pts<<E_[0]<<" "<<E_[1]<<" ";
             }
             if (pts.size()) pts.resize(pts.size()-1);
             node->attribute["points"] = pts;
@@ -344,10 +346,10 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         case sshape::RECTANGLE:
         {
             node->tag = "rect";
-            node->attribute["x"] = fig->vertex()[0].x;
-            node->attribute["y"] = fig->vertex()[0].y;
-            node->attribute["width"] = fig->vertex()[2].x-fig->vertex()[0].x;
-            node->attribute["height"] = fig->vertex()[2].y-fig->vertex()[0].y;
+            node->attribute["x"] = fig->vertex()[0][0];
+            node->attribute["y"] = fig->vertex()[0][1];
+            node->attribute["width"] = fig->vertex()[2][0]-fig->vertex()[0][0];
+            node->attribute["height"] = fig->vertex()[2][1]-fig->vertex()[0][1];
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == slib::sstyle::LINEAR_GRAD ||
                 fig->brush().type == slib::sstyle::RADIAL_GRAD) {
@@ -362,8 +364,8 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
         {
             node->tag = "circle";
             auto circ = dynamic_cast<const SEllipse *>(fig);
-            node->attribute["cx"] = circ->center().x;
-            node->attribute["cy"] = circ->center().y;
+            node->attribute["cx"] = circ->center()[0];
+            node->attribute["cy"] = circ->center()[1];
             node->attribute["r"] = circ->width()/2.0f;
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == slib::sstyle::LINEAR_GRAD ||
@@ -381,8 +383,8 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             auto elps = static_cast<const SEllipse *>(fig);
             auto cent = elps->center();
             auto w = ss(elps->width()), h = ss(elps->height());
-            node->attribute["cx"] = elps->center().x;
-            node->attribute["cy"] = elps->center().y;
+            node->attribute["cx"] = elps->center()[0];
+            node->attribute["cy"] = elps->center()[1];
             node->attribute["rx"] = elps->width();
             node->attribute["ry"] = elps->height();
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
@@ -403,11 +405,11 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
             auto rw = arc->width()/2.0f, rh = arc->height()/2.0f;
             auto angle = arc->phase();
             String path;
-            path<<"M"<<cent.x+rw*cos(smath::deg2rad(angle[0]))<<","<<
-            cent.y+(arc->direction()==CCW?-1:1)*rh*sin(smath::deg2rad(angle[0]));
+            path<<"M"<<cent[0]+rw*cos(smath::deg2rad(angle[0]))<<","<<
+            cent[1]+(arc->direction()==CCW?-1:1)*rh*sin(smath::deg2rad(angle[0]));
             path<<"A"<<rw<<","<<rh<<",0,0,0,";
-            path<<cent.x+rw*cos(smath::deg2rad(angle[1]))<<","<<
-            cent.y+(arc->direction()==CCW?-1:1)*rh*sin(smath::deg2rad(angle[1]));
+            path<<cent[0]+rw*cos(smath::deg2rad(angle[1]))<<","<<
+            cent[1]+(arc->direction()==CCW?-1:1)*rh*sin(smath::deg2rad(angle[1]));
             node->attribute["d"] = path;
             SXmlNode::strokeSVG(node->attribute, fig->stroke());
             if (fig->brush().type == slib::sstyle::LINEAR_GRAD ||
@@ -426,8 +428,8 @@ sxnode SXmlNode::svgNode(SFigure *fig) {
 			auto &col = style.color;
             node->type = xml::START_TAG;
             node->tag = "text";
-            node->attribute["x"] = fig->vertex()[0].x;
-            node->attribute["y"] = fig->vertex()[0].y;
+            node->attribute["x"] = fig->vertex()[0][0];
+            node->attribute["y"] = fig->vertex()[0][1];
             SXmlNode::txtstyleSVG(node->attribute, txt->style());
             node->content = txt->text();
 			if (transform.length())
@@ -653,4 +655,5 @@ String SXmlNode::toString(bool formed) const {
 			return xstr;
 		}
 	}
+	return "";
 }

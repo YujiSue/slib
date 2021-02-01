@@ -119,10 +119,10 @@ Char &Char::operator=(const SObjPtr &obj) {
     }
     return *this;
 }
-Char& Char::operator+=(int p) { sforin(i, 0, p) ++(*this); return *this; }
-Char& Char::operator-=(int p) { sforin(i, 0, p) --(*this); return *this; }
-Char Char::operator+(int p) { Char ch(*this); sforin(i, 0, p) ++ch; return ch; }
-Char Char::operator-(int p) { Char ch(*this); sforin(i, 0, p) --ch; return ch; }
+Char& Char::operator+=(sinteger p) { sforin(i, 0, p) ++(*this); return *this; }
+Char& Char::operator-=(sinteger p) { sforin(i, 0, p) --(*this); return *this; }
+Char Char::operator+(sinteger p) { Char ch(*this); sforin(i, 0, p) ++ch; return ch; }
+Char Char::operator-(sinteger p) { Char ch(*this); sforin(i, 0, p) --ch; return ch; }
 Char& Char::operator ++() { if (_str) { _ptr += u8size(_ptr); } return *this; }
 Char &Char::operator --() {
 	if (_str) { do { --_ptr; } while (u8size(_ptr) < 0); }

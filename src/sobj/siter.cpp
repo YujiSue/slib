@@ -26,6 +26,9 @@ slib::SIterator::SIterator(const slib::SIterator &it) : _type(it._type), _obj(it
         case ARRAY_OBJ:
             _it._ait = it._it._ait;
             break;
+		case ROW_OBJ:
+			_it._ait = it._it._ait;
+			break;
         case DICT_OBJ:
             _it._mit = it._it._mit;
             break;
@@ -41,6 +44,9 @@ slib::SIterator::~SIterator() {
         case ARRAY_OBJ:
             _it._ait.~SArrayIterator<sobj>();
             break;
+		case ROW_OBJ:
+			_it._ait.~SArrayIterator<sobj>();
+			break;
         case DICT_OBJ:
             _it._mit.~SMapIterator<String, sobj>();
             break;
@@ -58,7 +64,10 @@ slib::SIterator& slib::SIterator::operator=(const slib::SIterator &it) {
         case ARRAY_OBJ:
             _it._ait = it._it._ait;
             break;
-        case DICT_OBJ:
+		case ROW_OBJ:
+			_it._ait = it._it._ait;
+			break;
+		case DICT_OBJ:
             _it._mit = it._it._mit;
             break;
         default:
@@ -74,7 +83,10 @@ slib::SObjPtr &slib::SIterator::operator *() {
         case ARRAY_OBJ:
             return *_it._ait;
             break;
-        case DICT_OBJ:
+		case ROW_OBJ:
+			return *_it._ait;
+			break;
+		case DICT_OBJ:
             _obj.pair() = *_it._mit;
             break;
         default:

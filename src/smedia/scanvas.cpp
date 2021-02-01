@@ -47,12 +47,12 @@ void SCanvas::save(const char *path) {
      */
 }
 
-size_t SCanvas::width() const { return (size_t)_size.x; }
-size_t SCanvas::height() const { return (size_t)_size.y; }
-v2i SCanvas::size() const { return _size; }
+size_t SCanvas::width() const { return (size_t)_size[0]; }
+size_t SCanvas::height() const { return (size_t)_size[1]; }
+v2f SCanvas::size() const { return _size; }
 sareaf SCanvas::frame() const { return _frame; }
 const SColor &SCanvas::background() const { return _background; }
-void SCanvas::resize(size_t w, size_t h) { _size = v2i((sint)w, (sint)h); }
+void SCanvas::resize(size_t w, size_t h) { _size = v2f((float)w, (float)h); }
 void SCanvas::setBackGround(const SColor &col) { _background = col; }
 void SCanvas::setFrame(sareaf area) { _frame = area; }
 

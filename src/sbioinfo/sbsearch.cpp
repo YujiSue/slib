@@ -183,7 +183,7 @@ inline void seq_search(int r, ubytearray *ref, SBQuery *que, sregion *region, sb
 inline void search_i(int i, SBioSeq *ref, SBQuery *que, sbsearch_param *par,
                      SBSearch::match_array *matches, Array<salign> *vec) {
     sregion region;
-    if (ref->isMasked() && !ref->mask().empty()) region = complement(srange(0, ref->length()-1), ref->mask());
+	if (ref->isMasked() && !ref->mask().empty()) region = srange(0, ref->length() - 1) ^ ref->mask();// complement(srange(0, ref->length() - 1), ref->mask());
     else region.add(srange(0, ref->length()-1));
     seq_search(i, ref, que, &region, par, matches, vec);
 }
@@ -234,7 +234,7 @@ void SBSearch::searchEx(SBSeqList* ref, SBQuery* que) {
 }
 inline void _align(salign *al, sbsearch_param *par, SBQuery *que) {
     al->cigars.add(scigar(scigar::PMATCH, al->aligned.length()+1));
-    if (par->ref_type&DNA_SEQ) al->score = par->aln_par.pm_score*(al->aligned.length()+1);
+	if (par->ref_type & DNA_SEQ) al->score = par->aln_par.pm_score * (al->aligned.length() + 1);
     else {
         /*
          */

@@ -419,8 +419,12 @@ void SObjPtr::swap(SObjPtr &ptr) {
     auto t = _type; _type = ptr._type; ptr._type = t;
     auto p = _ptr; _ptr = ptr._ptr; ptr._ptr = p;
 }
-SObjPtr& SObjPtr::operator[](int idx) { return at(idx); }
-const SObjPtr &SObjPtr::operator[](int idx) const { return at(idx); }
+SObjPtr& SObjPtr::operator[](int idx) { return at((sinteger)idx); }
+const SObjPtr& SObjPtr::operator[](int idx) const { return at((sinteger)idx); }
+SObjPtr& SObjPtr::operator[](size_t idx) { return at((sinteger)idx); }
+const SObjPtr& SObjPtr::operator[](size_t idx) const { return at((sinteger)idx); }
+SObjPtr& SObjPtr::operator[](sinteger idx) { return at(idx); }
+const SObjPtr &SObjPtr::operator[](sinteger idx) const { return at(idx); }
 SObjPtr &SObjPtr::operator[](const char *key) { return at(key); }
 const SObjPtr &SObjPtr::operator[](const char *key) const { return at(key); }
 SObjPtr &SObjPtr::operator[](const std::string &key) { return at(key); }
@@ -431,7 +435,7 @@ SObjPtr &SObjPtr::operator[](const SString &key) { return at(key); }
 const SObjPtr &SObjPtr::operator[](const SString &key) const { return at(key); }
 SObjPtr &SObjPtr::operator[](const SObjPtr &obj) { return at(obj); }
 const SObjPtr &SObjPtr::operator[](const SObjPtr &obj) const { return at(obj); }
-SObjPtr& SObjPtr::at(int idx) {
+SObjPtr& SObjPtr::at(sinteger idx) {
 	if (isNull()) { _type = ARRAY_OBJ; _ptr = new SArray(); }
 	if (isStr()) { return string().charAt(idx); }
 	if (isArray()) return array()[idx];
@@ -440,7 +444,7 @@ SObjPtr& SObjPtr::at(int idx) {
 	//if (isMov()) return movie()[idx];
 	throw SException(ERR_INFO, SLIB_CAST_ERROR);
 }
-const SObjPtr& SObjPtr::at(int idx) const {
+const SObjPtr& SObjPtr::at(sinteger idx) const {
 	if (isNull()) throw SException(ERR_INFO, SLIB_NULL_ERROR);
 	if (isStr()) { return string().charAt(idx); }
 	if (isArray()) return array()[idx];

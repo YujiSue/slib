@@ -31,7 +31,9 @@ slib::smath::SMathException::SMathException(const char* f, sint l, const char* f
 slib::smath::SMathException::~SMathException() {}
 bool slib::smath::isInteger(const float& f) { return f == floorf(f) || f == ceilf(f); }
 bool slib::smath::isInteger(const double& d) { return d == floor(d) || d == ceil(d); }
-double slib::smath::rootN(double val, int n) {
+double slib::smath::rootN(double val, size_t n) {
+	if (n == 0) return 1.0;
+	else if (n == 1) return val;
 	double r = pow(val, 1.0 / n);
 	return (r * (n - 1) + val / (pow(r, n - 1))) / n;
 }
@@ -44,20 +46,31 @@ size_t slib::smath::decim(double d) {
 	size_t pos = str.find(".");
 	return pos == std::string::npos ? str.length() : pos;
 }
-int slib::smath::gcd(int n1, int n2) {
-	int ori = n1, div = n2, res = n1 % n2;
+sinteger slib::smath::gcd(sinteger n1, sinteger n2) {
+	sinteger ori = n1, div = n2, res = n1 % n2;
 	while (res) { ori = div; div = res; res = ori % div; }
 	return div;
 }
-int slib::smath::lcm(int n1, int n2) { return n1 * n2 / gcd(n1, n2); }
-void slib::smath::reduction(int& n1, int& n2) { int g = gcd(n1, n2); n1 /= g; n2 /= g; }
-int slib::smath::factorial(int val, int n) {
-	int f = 1;
-	sforin(i, 0, n) f *= (val - i);
+sinteger slib::smath::lcm(sinteger n1, sinteger n2) { return n1 * n2 / gcd(n1, n2); }
+sinteger slib::smath::factorial(sinteger n, sinteger k) {
+	sinteger f = 1;
+	sforin(i, 0, k) { f *= n; n--; }
 	return f;
 }
-int slib::smath::factorial(int val) { return factorial(val, val); }
-int slib::smath::combination(int n, int k) { return factorial(n) / (factorial(k) * factorial(n - k)); }
+sinteger slib::smath::factorial(sinteger n) { return factorial(n, n); }
+sinteger slib::smath::combination(sinteger n, sinteger k) {
+	if (k <= n - k) {
+		std::pair<sinteger, sinteger> frac(1, 1);
+		while (1 < k) {
+			frac.first *= n;
+			frac.second *= k;
+			reduction(frac.first, frac.second);
+			--n; --k;
+		}
+		return frac.first;
+	}
+	else return combination(n, n - k);
+}
 
 double slib::smath::deg2rad(double deg) { return deg * smath::PI / 180.0; }
 double slib::smath::rad2deg(double rad) { return rad * 180.0 / smath::PI; }

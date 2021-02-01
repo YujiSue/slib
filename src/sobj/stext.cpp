@@ -99,7 +99,7 @@ srange SText::aindexAt(size_t idx) const {
 SText &SText::append(const SText &txt) {
     int len = _string.length();
     _string.append(txt.string());
-    sforeach(txt._attribute) _attribute.add(std::make_pair(E_.first.shifted(len), E_.second));
+    sforeach(txt._attribute) _attribute.add(std::make_pair((E_.first >> len), E_.second));
     return *this;
 }
 

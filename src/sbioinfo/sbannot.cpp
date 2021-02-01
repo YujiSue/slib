@@ -141,7 +141,7 @@ gene_site::gene_site(sobj& obj) : gene_site() { set(obj); }
 gene_site::gene_site(gene_info* gi) : gene_site() {
 	info = gi; type = gi->type; gid = gi->gene_id; name = gi->name;
 }
-gene_site::gene_site(gene_info* gi, srange* range) : gene_site(gi) { check(range); }
+gene_site::gene_site(gene_info* gi, sbpos* range) : gene_site(gi) { check(range); }
 gene_site::gene_site(const gene_site& g) {
 	info = g.info; type = g.type; gid = g.gid; name = g.name;
 	mutation = g.mutation; transcripts = g.transcripts;
@@ -156,17 +156,17 @@ sushort gene_site::annotatedSite() const {
 	sforeach(transcripts) site |= E_.site;
 	return site;
 }
-void gene_site::check(srange* range) {
+void gene_site::check(sbpos* pos) {
 	if (!info) return;
 	if (transcripts.empty()) {
 		sforeach(info->transcripts) {
 			transcript_site ts(E_);
 			sforeach_(sit, E_->structures) {
-				if (sit->overlap(*range)) {
+				if (sit->overlap(*pos)) {
 					ts.site |= sit->type;
 					if (sit->type == INTRON) {
-						if (range->include(sit->begin) || range->include(sit->begin + 1) ||
-							range->include(sit->end) || range->include(sit->end - 1)) ts.site |= SPLICE_SITE;
+						if (pos->include(sit->begin) || pos->include(sit->begin + 1) ||
+							pos->include(sit->end) || pos->include(sit->end - 1)) ts.site |= SPLICE_SITE;
 					}
 				}
 			}
@@ -176,11 +176,11 @@ void gene_site::check(srange* range) {
 	else {
 		sforeach2(transcripts, info->transcripts) {
 			sforeach_(sit, E2_->structures) {
-				if (sit->overlap(*range)) {
+				if (sit->overlap(*pos)) {
 					E1_.site |= sit->type;
 					if (sit->type == INTRON) {
-						if (range->include(sit->begin) || range->include(sit->begin + 1) ||
-							range->include(sit->end) || range->include(sit->end - 1)) E1_.site |= SPLICE_SITE;
+						if (pos->include(sit->begin) || pos->include(sit->begin + 1) ||
+							pos->include(sit->end) || pos->include(sit->end - 1)) E1_.site |= SPLICE_SITE;
 					}
 				}
 			}
@@ -566,6 +566,12 @@ inline void searchPos(const sbpos &pos, Array<Array<CArray<Info *>>> &index, Map
             if (info->overlap(pos)) array.add(info);
         }
     }
+	array.sort([](const Info* i1, const Info *i2) {
+		if (i1->idx != i2->idx) return i1->idx < i2->idx;
+		else if (i1->begin != i2->begin) return i1->begin < i2->begin;
+		else if (i1->end != i2->end) return i1->end < i2->end;
+		return i2->dir ? true : false;
+		});
 }
 void SBAnnotDB::ctgInfo(ctgparray &array, const sbpos &pos, bool append) {
     if (!append) array.clear();
@@ -733,6 +739,59 @@ void SBAnnotDB::geneInfo(geneparray &array, const char *name, bool trans, subyte
 			de.print();
         }
     }
+}
+void SBAnnotDB::nearestGeneInfo(geneparray& array, const sbpos& pos, size_t range, bool trans, bool append) {
+	if (!append) array.clear();
+	sbpos pos_ = pos; pos_.begin -= range; pos_.end += range;
+	if (_mode & LOAD_GENE) {
+		if (trans && !(_mode & LOAD_TRANS)) setMode(_mode | LOAD_TRANS);
+		searchPos(pos_, _gene_index, _bin_order[pos_.idx], array);
+	}
+	else {
+		try {
+			auto condition = RANGE_CONDITION(pos_);
+			genes.resize((*this)["GENE"].count(condition));
+			if (genes.empty()) return;
+			integerarray gene_ids;
+			(*this)["GENE"].getRecordPrepare({ "*" }, condition, START_ASC_QUE);
+			sforeach(genes) {
+				auto& row = getRow();
+				toGeneInfo(&E_, row);
+				gene_ids.add(row["ID"]);
+				array.add(&E_);
+			}
+			commit();
+			if (trans) {
+				transcripts.clear();
+				auto condition = sql::condition("GENE_ID IN (" + slib::toString(gene_ids, ",") + ")");
+				transcripts.resize((*this)["TRANSCRIPT"].count(condition));
+				if (transcripts.empty()) return;
+				int t = 0;
+				sforeachi(gene_ids) {
+					auto& tarray = (*this)["TRANSCRIPT"].getRecords({ "*" }, sql::condition(String("GENE_ID=") << gene_ids[i]), START_ASC_QUE);
+					if (tarray.empty()) continue;
+					sforeach(tarray) {
+						toAnnotInfo(&transcripts[t], E_.dict());
+						transcripts[t].gene = &genes[i];
+						genes[i].addTranscript(&transcripts[t]);
+						if (E_["STRUCTURE"]) {
+							auto struct_ids = String::dequot(E_["STRUCTURE"]).split(",");
+							sforeachi_(s, struct_ids) {
+								auto& row = (*this)["STRUCTURE"].getRecordAt(struct_ids[s].intValue());
+								struct_info si;
+								toAnnotInfo(&si, row);
+								transcripts[t].structures.add(si);
+							}
+						}
+						++t;
+					}
+				}
+			}
+		}
+		catch (SDBException de) {
+			de.print();
+		}
+	}
 }
 void SBAnnotDB::transcriptInfo(trsparray &array, const sbpos &pos, bool gene, bool append) {
 	if (!append) array.clear();

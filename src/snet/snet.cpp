@@ -23,6 +23,12 @@ size_t slib::writeCallback(void *buf, size_t size, size_t nmemb, void *ptr) {
     dat->append((subyte *)buf, block);
     return block;
 }
+size_t slib::writeToFileCallback(void* buf, size_t size, size_t nmemb, void* ptr) {
+	size_t block = size * nmemb;
+	sio::SFile *file = static_cast<sio::SFile*>(ptr);
+	file->writeBytes((subyte*)buf, block);
+	return block;
+}
 
 SNetWork::SNetWork() { curl_global_init(CURL_GLOBAL_ALL); }
 SNetWork::~SNetWork() { curl_global_cleanup(); }
@@ -84,4 +90,17 @@ void SNetWork::connect(const SDictionary &dict) {
 	if (_res) throw SNetException(ERR_INFO, SLIB_EXEC_ERROR, "curl_easy_perform", CURL_ERR_TEXT(_res, curl_easy_strerror(_res)));
     curl_easy_cleanup(_curl);
 	curl_global_cleanup();
+}
+void SNetWork::download(const char* path, const char* url, const char* user, const char* pswd) {
+	_curl = curl_easy_init();
+	if (!_curl) throw SNetException(ERR_INFO, SLIB_EXEC_ERROR);
+	sio::SFile file(path, sio::CREATE|sio::WRITE);
+	curl_easy_setopt(_curl, CURLOPT_URL,url);
+	curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, writeToFileCallback);
+	curl_easy_setopt(_curl, CURLOPT_WRITEDATA, &file);
+	if (user) curl_easy_setopt(_curl, CURLOPT_USERNAME, user);
+	if (pswd) curl_easy_setopt(_curl, CURLOPT_PASSWORD, pswd);
+	//curl_easy_setopt(_curl, CURLOPT_VERBOSE, 1L);
+	_res = curl_easy_perform(_curl);
+	curl_easy_cleanup(_curl);
 }

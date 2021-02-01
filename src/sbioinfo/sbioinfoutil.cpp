@@ -428,6 +428,10 @@ double sbpos::absolute(const intarray* length) {
 	}
 	return (double)tmp / total;
 }
+bool sbpos::overlap(const sbpos& p) const {
+	if (idx == p.idx && begin <= p.end && p.begin <= end) return true;
+	else return false;
+}
 String sbpos::toString(stringarray *names) const {
 	return names ? names->at(idx) : String(idx) << "," << begin << "," << end << "," << (dir ? "-" : "+");
 }
@@ -443,4 +447,32 @@ bool sbpos::operator == (const sbpos &p) const {
 }
 bool sbpos::operator != (const sbpos &p) const {
     return !(*this == p);
+}
+sbposex::sbposex() : sbpos(), score(0) {}
+sbposex::sbposex(const sbpos& p) : sbpos(p), score(0) {}
+sbposex::sbposex(const sbposex& p) : sbpos(p) {
+	ref = p.ref; name = p.name; score = p.score; attribute = p.attribute;
+}
+sbposex::~sbposex() {}
+sbposex& sbposex::operator = (const sbposex& p) {
+	idx = p.idx; begin = p.begin; end = p.end; dir = p.dir;
+	ref = p.ref; name = p.name; score = p.score; attribute = p.attribute;
+	return *this;
+}
+void sbposex::init() {
+	sbpos::init();
+	ref = ""; name = ""; score = 0; if(attribute) attribute.clear();
+}
+
+bool sbposex::operator < (const sbposex& p) const {
+	if (idx != p.idx) return idx < p.idx;
+	if (begin != p.begin) return begin < p.begin;
+	if (end != p.end) return end < p.end;
+	return  dir < p.dir;
+}
+bool sbposex::operator == (const sbposex& p) const {
+	return idx == p.idx && begin == p.begin && end == p.end && dir == p.dir;
+}
+bool sbposex::operator != (const sbposex& p) const {
+	return !(*this == p);
 }

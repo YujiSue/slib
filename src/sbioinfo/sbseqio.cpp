@@ -130,6 +130,7 @@ void SBSeqIO::loadABI(sio::SFile &file, SBioSeq *seq) {
 	seq->name = file.filename(false);
 }
 void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
+	String indent = SPACE * 12, findent = SPACE * 21;
 	seq->clearAll();
 	seq->attribute["format"] = "GenBank";
 	if (!file.isOpened()) file.open();
@@ -169,7 +170,7 @@ void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 		if (row.beginWith("DEFINITION")) {
 			seq->attribute["definition"] = row.substring(12);
 			file.readLine(row);
-			while (!file.eof() && row[0] != ' ') {
+			while (!file.eof() && row.beginWith(indent)) {
 				seq->attribute["definition"].string() += " " + row.substring(12);
 				file.readLine(row);
 			}
@@ -196,14 +197,14 @@ void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 			seq->attribute["source"] = data;
 			file.readLine(row);
 			if (row.beginWith("  ORGANISM")) {
-				seq->attribute["organism"] = SArray({ row.substring(12) });
+				seq->attribute["organism"] = row.substring(12);
+				seq->attribute["taxonomy"] = sarray();
 				file.readLine(row);
-				while (!file.eof() && row[0] != ' ') {
+				while (!file.eof() && row.beginWith(indent)) {
 					auto list = data.split(";");
 					sforeach(list) {
-						if (E_.first() == ' ') seq->attribute["organism"].add(E_.substring(1));
-						else if (E_.last() == '.') seq->attribute["organism"].add(E_.substring(0, E_.length() - 1));
-						else seq->attribute["organism"].add(E_);
+						if (E_.last() == '.') seq->attribute["taxonomy"].add(E_.substring(0, E_.length() - 1));
+						else seq->attribute["taxonomy"].add(E_);
 					}
 					file.readLine(row);
 				}
@@ -217,24 +218,29 @@ void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 				if (row.beginWith("  AUTHORS")) {
 					data = row.substring(12);
 					file.readLine(row);
-					while (!file.eof() && row.beginWith("   ")) {
+					while (!file.eof() && row.beginWith(indent)) {
 						data += row.substring(12);
 						file.readLine(row);
 					}
 					dict["authors"] = sarray(data.split(", "));
-				}
+				}	
 				if (row.beginWith("  TITLE")) {
 					data = row.substring(12);
 					file.readLine(row);
-					while (!file.eof() && row.beginWith("   ")) {
-						data += " " + row.substring(12);
+					while (!file.eof() && row.beginWith(indent)) {
+						data += SPACE + row.substring(12);
 						file.readLine(row);
 					}
 					dict["title"] = data;
 				}
 				if (row.beginWith("  JOURNAL")) {
-					dict["journal"] = row.substring(12);
+					data = row.substring(12);
 					file.readLine(row);
+					while (!file.eof() && row.beginWith(indent)) {
+						data += SPACE + row.substring(12);
+						file.readLine(row);
+					}
+					dict["journal"] = data;
 				}
 				if (row.beginWith("  PUBMED")) {
 					dict["pubmed"] =row.substring(12).integer();
@@ -245,17 +251,14 @@ void SBSeqIO::loadGBK(sio::SFile& file, SBioSeq* seq) {
 		}
 		if (row.beginWith("FEATURES")) {
 			file.readLine(row);
-			while (!file.eof() && row.beginWith("     ")) {
+
+			while (!file.eof() && row.beginWith(findent)) {
 
 
 
 
 				file.readLine(row);
 			}
-
-			//21
-
-
 		}
 		if (row.beginWith("ORIGIN")) {
 			data.clear();

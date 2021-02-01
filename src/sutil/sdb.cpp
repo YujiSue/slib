@@ -12,6 +12,60 @@ SDBException::SDBException(const char* f, sint l, const char* func, sint e, cons
 }
 SDBException::~SDBException() {}
 
+search_query::search_query() : operation(0) {}
+search_query::search_query(const char* k, suint op, const sobj& v) : key(k), operation(op), value(v) {}
+search_query::search_query(const search_query& que) : key(que.key), operation(que.operation), value(que.value) {}
+search_query::~search_query() {}
+search_query& search_query::operator=(const search_query& que) {
+	key = que.key; operation = que.operation; value = que.value; return *this;
+}
+search_sorter::search_sorter() : order(DESC) {}
+search_sorter::search_sorter(const char* k, slib::ORDER o) : key(k), order(o) {}
+search_sorter::search_sorter(const search_sorter& sorter) : key(sorter.key), order(sorter.order) {}
+search_sorter::~search_sorter() {}
+search_sorter& search_sorter::operator=(const search_sorter& sorter) {
+	key = sorter.key; order = sorter.order; return *this;
+}
+SSearchQuery::SSearchQuery() : _andor(false) {}
+SSearchQuery::~SSearchQuery() {}
+void SSearchQuery::addQuery(const search_query& que) {
+	if (_andor) _queries.add({ que });
+	else {
+		if (_queries.empty())  _queries.add({ que });
+		else _queries.last().add(que);
+	}
+}
+void SSearchQuery::andQuery() { _andor = false; }
+void SSearchQuery::orQuery() { _andor = true; }
+void SSearchQuery::setQueries(SDictionary& que) {
+
+}
+void SSearchQuery::addSorter(const search_sorter& sorter) { _sorters.add(sorter); }
+void SSearchQuery::addKey(const char* key) { _keys.add(key); }
+void SSearchQuery::addKeys(const stringarray& keys) { _keys.append(keys); }
+void SSearchQuery::setKeys(SArray& keys) { sforeach(keys) _keys.add(E_); }
+void SSearchQuery::setOffset(suinteger i) { _range.begin = i; }
+void SSearchQuery::setLimit(suinteger i) { _range.end = _range.begin + i; }
+void SSearchQuery::setRange(Range<suinteger> r) { _range = r; }
+void SSearchQuery::setConditions(SDictionary& cond) {
+	/*
+	*/
+}
+String SSearchQuery::toString(DB_MODE m) const {
+	String str;
+	switch (m)
+	{
+	case SQLITE_DB:
+	{
+
+		break;
+	}
+	default:
+		break;
+	}
+	return str;
+}
+
 String sql::colTypeName(int type) {
     String name = String::upper(SColumn::colTypeStr(type&0x0FFF));
     if(type & KEY_COLUMN) name += " PRIMARY KEY";

@@ -25,6 +25,7 @@ inline void _decode(String &str) {
 		str = cur.path();
 	}
 	else if (str.beginWith("." + PATH_SEPARATOR)) str.replace(0, 1, sio::CURRENT_PATH);
+
 }
 inline void _encode(String &str) {
 	str.replace("\"", "\\\"");
@@ -130,7 +131,16 @@ SFile &SFile::operator=(const char *path) {
     close(); _size = 0; _mode = 0; _setPath(path); return *this;
 }
 SFile &SFile::operator=(const SFile &file) {
-    close(); _path = file._path; _size = file._size; _mode = file._mode; return *this;
+    close(); 
+	_path = file._path; 
+	_size = file._size; 
+	_mode = file._mode; 
+	if (_mode || _mode == sio::DIRECTORY) return *this;
+	else {
+		if (_mode & sio::CREATE) _make();
+		else _open();
+		return *this;
+	}
 }
 SFile &SFile::operator+=(const char *s) { _setPath(_path + s); return *this; }
 SFile SFile::operator+(const char *s) const { SFile file(*this); return file += s; }
@@ -138,6 +148,11 @@ SFile SFile::current() { return SDirectory(CURRENT_PATH); }
 SFile SFile::home() { return SDirectory(HOME_PATH); }
 SFile SFile::createFile(const char *path) { return SFile(path, sio::CREATE); }
 SFile SFile::makeDir(const char *path) { return SFile(path, sio::CREATE|sio::DIRECTORY); }
+String SFile::absolute(const char* path) {
+	String apath(path);
+	_decode(apath);
+	return apath;
+}
 String SFile::path() const { return _path; }
 suinteger SFile::size() const { return _size; }
 int SFile::mode() const { return _mode; }
@@ -869,16 +884,23 @@ bool SFile::operator==(const SFile &file) const { return _path == file._path; }
 
 
 slib::sio::siostream::siostream(int i) :_mode(i) {}
-slib::sio::siostream::siostream(const char* s) : _mode(1) { _file = sio::SFile(s, sio::READ | sio::CREATE); }
+slib::sio::siostream::siostream(const char* s) : _mode(1) { _file.open(s, sio::READ | sio::WRITE | sio::CREATE); }
 slib::sio::siostream::~siostream() {}
-void slib::sio::siostream::setStdMode() { _mode = 0; }
-void slib::sio::siostream::setPath(const char* s) { _mode = 1; _file = sio::SFile(s, sio::READ | sio::CREATE); }
+void slib::sio::siostream::setStdMode() { 
+	_mode = 0; 
+	if(_file.isOpened()) _file.close(); 
+}
+void slib::sio::siostream::setPath(const char* s) { 
+	_mode = 1; 
+	if (_file.isOpened()) _file.close();
+	_file.open(s, sio::READ | sio::WRITE | sio::CREATE);
+}
 void slib::sio::siostream::read(slib::String& s) {
 	if (_mode) _file >> s;
 	else std::cin >> s;
 }
 void slib::sio::siostream::_output1() {
-	if (_mode) { _file; _file.flush(); }
+	if (_mode) { _file.flush(); }
 	else std::cout << std::flush;
 }
 void slib::sio::siostream::_output2() {

@@ -22,18 +22,18 @@ SColor::SColor(sushort t, void* bytes) : SColor(t) {
 }
 SColor::SColor(subyte col) : SColor(GRAY8, &col) {}
 SColor::SColor(suint col) : SColor(RGBA, &col) {}
-SColor::SColor(const col3i& col) : SColor(RGB24) { _data[0] = col.x & 0xFF; _data[1] = col.y & 0xFF; _data[2] = col.z & 0xFF; }
-SColor::SColor(const col4i& col) : SColor(RGBA) { _data[0] = col.x & 0xFF; _data[1] = col.y & 0xFF; _data[2] = col.z & 0xFF; _data[3] = col.w & 0xFF; }
+SColor::SColor(const col3i& col) : SColor(RGB24) { _data[0] = col[0] & 0xFF; _data[1] = col[1] & 0xFF; _data[2] = col[2] & 0xFF; }
+SColor::SColor(const col4i& col) : SColor(RGBA) { _data[0] = col[0] & 0xFF; _data[1] = col[1] & 0xFF; _data[2] = col[2] & 0xFF; _data[3] = col[3] & 0xFF; }
 SColor::SColor(const col3f& col) : SColor(RGBF) {
-	CMemory<subyte>::copy(&_data[0], reinterpret_cast<const subyte*>(&col.x), sizeof(float));
-	CMemory<subyte>::copy(&_data[4], reinterpret_cast<const subyte*>(&col.y), sizeof(float));
-	CMemory<subyte>::copy(&_data[8], reinterpret_cast<const subyte*>(&col.z), sizeof(float));
+	CMemory<subyte>::copy(&_data[0], reinterpret_cast<const subyte*>(&col[0]), sizeof(float));
+	CMemory<subyte>::copy(&_data[4], reinterpret_cast<const subyte*>(&col[1]), sizeof(float));
+	CMemory<subyte>::copy(&_data[8], reinterpret_cast<const subyte*>(&col[2]), sizeof(float));
 }
 SColor::SColor(const col4f& col) : SColor(RGBAF) {
-	CMemory<subyte>::copy(&_data[0], reinterpret_cast<const subyte*>(&col.x), sizeof(float));
-	CMemory<subyte>::copy(&_data[4], reinterpret_cast<const subyte*>(&col.y), sizeof(float));
-	CMemory<subyte>::copy(&_data[8], reinterpret_cast<const subyte*>(&col.z), sizeof(float));
-	CMemory<subyte>::copy(&_data[12], reinterpret_cast<const subyte*>(&col.w), sizeof(float));
+	CMemory<subyte>::copy(&_data[0], reinterpret_cast<const subyte*>(&col[0]), sizeof(float));
+	CMemory<subyte>::copy(&_data[4], reinterpret_cast<const subyte*>(&col[1]), sizeof(float));
+	CMemory<subyte>::copy(&_data[8], reinterpret_cast<const subyte*>(&col[2]), sizeof(float));
+	CMemory<subyte>::copy(&_data[12], reinterpret_cast<const subyte*>(&col[3]), sizeof(float));
 }
 SColor::SColor(int r, int g, int b, int a) : SColor(RGBA) {
 	_data[0] = r & 0xFF; _data[1] = g & 0xFF; _data[2] = b & 0xFF; _data[3] = a & 0xFF;
@@ -213,7 +213,7 @@ col4i SColor::toVec4i() const {
 		}
 		else col = col4i(_data[0], _data[1], _data[2], 255);
 	}
-	if (hasAlpha()) col.w = alpha();
+	if (hasAlpha()) col[3] = alpha();
 	return col;
 }
 col3f SColor::toVec3f() const {
@@ -248,7 +248,7 @@ col4f SColor::toVec4f() const {
 		}
 		else col = col4f(b2fcolor(_data[0]), b2fcolor(_data[1]), b2fcolor(_data[2]), 1.0f);
 	}
-	if(hasAlpha()) col.w = alphaf();
+	if(hasAlpha()) col[3] = alphaf();
 	return col;
 }
 subyte SColor::red() const {
@@ -394,9 +394,9 @@ void SColor::convert(sushort t) {
 		{
 			_data.resize(12);
 			auto cf3 = toVec3f();
-			CMemory<subyte>::copy(&_data[0], reinterpret_cast<subyte*>(&cf3.x), 4);
-			CMemory<subyte>::copy(&_data[4], reinterpret_cast<subyte*>(&cf3.y), 4);
-			CMemory<subyte>::copy(&_data[8], reinterpret_cast<subyte*>(&cf3.z), 4);
+			CMemory<subyte>::copy(&_data[0], reinterpret_cast<subyte*>(&cf3[0]), 4);
+			CMemory<subyte>::copy(&_data[4], reinterpret_cast<subyte*>(&cf3[1]), 4);
+			CMemory<subyte>::copy(&_data[8], reinterpret_cast<subyte*>(&cf3[2]), 4);
 			break;
 		}
 		case RGBA:
@@ -410,10 +410,10 @@ void SColor::convert(sushort t) {
 		{
 			_data.resize(16);
 			auto cf4 = toVec4f();
-			CMemory<subyte>::copy(&_data[0], reinterpret_cast<subyte*>(&cf4.x), 4);
-			CMemory<subyte>::copy(&_data[4], reinterpret_cast<subyte*>(&cf4.y), 4);
-			CMemory<subyte>::copy(&_data[8], reinterpret_cast<subyte*>(&cf4.z), 4);
-			CMemory<subyte>::copy(&_data[12], reinterpret_cast<subyte*>(&cf4.z), 4);
+			CMemory<subyte>::copy(&_data[0], reinterpret_cast<subyte*>(&cf4[0]), 4);
+			CMemory<subyte>::copy(&_data[4], reinterpret_cast<subyte*>(&cf4[1]), 4);
+			CMemory<subyte>::copy(&_data[8], reinterpret_cast<subyte*>(&cf4[2]), 4);
+			CMemory<subyte>::copy(&_data[12], reinterpret_cast<subyte*>(&cf4[2]), 4);
 			break;
 		}
 		case CMYK:
@@ -487,11 +487,11 @@ String SColor::toString(COLOR_TEXT_MODE mode) const {
 	{
 		if (hasAlpha()) {
 			auto tmp = toVec4i();
-			str << "rgba(" << tmp.x << "," << tmp.y << "," << tmp.z << "," << tmp.w << ")";
+			str << "rgba(" << tmp[0] << "," << tmp[1] << "," << tmp[2] << "," << tmp[3] << ")";
 		}
 		else {
 			auto tmp = toVec3i();
-			str << "rgb(" << tmp.x << "," << tmp.y << "," << tmp.z << ")";
+			str << "rgb(" << tmp[0] << "," << tmp[1] << "," << tmp[2] << ")";
 		}
 		break;
 	}

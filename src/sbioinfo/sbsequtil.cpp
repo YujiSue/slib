@@ -46,6 +46,7 @@ char sseq::maskChar(sushort type) {
 	else if (t == AA_SEQ) return 'X';
 	return '*';
 }
+
 bool sseq::isATGC(const char &s) {
     return s == 'a' || s == 'A' || s == 't' || s == 'T' ||
     s == 'g' || s == 'G' || s == 'c' || s == 'C';
@@ -79,6 +80,57 @@ size_t sseq::gcCounti(const ubytearray &s, size_t off, size_t len) {
 bool sseq::containBase(const char &c, const char *s, size_t l) {
     sforin(i, 0, l) { if(*s == c) return true; else ++s; }
     return false;
+}
+void sseq::rev(String &seq) {
+	sforin(i, 0, seq.length() / 2) {
+		auto tmp = seq[i];
+		seq[i] = seq[-i];
+		seq[-i] = tmp;
+	}
+}
+void sseq::revi(ubytearray& seq) {
+	sforin(i, 0, seq.size() / 2) {
+		auto tmp = seq[i];
+		seq[i] = seq[-i];
+		seq[-i] = tmp;
+	}
+}
+String sseq::revseq(String& seq) {
+	String rseq(seq.size(), '\0');
+	auto p = rseq.ptr();
+	srforeach(seq) { *p = E_; ++p; }
+	return rseq;
+}
+ubytearray sseq::revseqi(ubytearray& seq) {
+	ubytearray rseq(seq.size());
+	auto p = rseq.ptr();
+	srforeach(seq) { *p = E_; ++p; }
+	return rseq;
+}
+spath sseq::seqlogo(const char& c, float size) {
+	smedia::SPath2D logo;
+	switch (c) {
+	case 'A':
+		/*
+		logo.addFigure(sline({
+			v2f(0.2 * size, 0.0),
+			v2f(0.0, size),
+			v2f(0.1 * size, size),
+			v2f(0.25 * size, 0.25 * size),
+			v2f(0.4 * size, size),
+			v2f(0.5 * size, size),
+			v2f(0.3 * size, 0.0) }));
+		logo.addFigure(sline({
+			v2f(0.18 * size, 0.6 * size),
+			v2f(0.32 * size, 0.6 * size),
+			v2f(0.34 * size, 0.7 * size),
+			v2f(0.16 * size, 0.7 * size) }));
+			*/
+		break;
+	default:
+		return snull;
+	}
+	return logo;
 }
 void slib::sbio::rawcopy(const subyte *ori, size_t pos, size_t len, subyte *seq) {
     memcpy(seq, &ori[pos], len);
@@ -124,9 +176,9 @@ void sseq::denc04(subyte &b, const char *s) {
     (DNA_BASE4_INDEX[s[2]])<<2|DNA_BASE4_INDEX[s[3]];
 }
 subyte sseq::b24(subyte s) {
-    int8_t c = -1; while (0 < s) { s>>=1; ++c; } return c<0?0:c;
+	int8_t c = -1; while (0 < s) { s >>= 1; ++c; } return c < 0 ? 0 : c;
 }
-subyte sseq::b42(subyte s) { return 1<<s; }
+subyte sseq::b42(subyte s) { return 1 << s; }
 void sseq::ddec21(const subyte &b, subyte *s) {
     s[1] = b&0x0F; s[0] = (b>>4)&0x0F;
 }
@@ -269,6 +321,66 @@ void sseq::drecode44(const subyte *ori, size_t pos, size_t length, subyte *seq) 
     dexpand4(ori, pos, length, tmp.ptr());
     dcompress4(tmp.ptr(), 0, length, seq);
 }
+suint sseq::dhashi(const subyte* ori, size_t pos, size_t length, bool dir) {
+	if (15 < length) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR);
+	suint hash = 0;
+	if (dir) {
+		auto p = ori + pos + length - 1;
+		hash = DNA_COMPLEMENT_IDX[sseq::b24(*p)]; --p;
+		sforin(i, 1, length) {
+			hash <<= 2;
+			hash |= DNA_COMPLEMENT_IDX[sseq::b24(*p)];
+			--p;
+		}
+	}
+	else {
+		auto p = ori + pos;
+		hash = sseq::b24(*p); ++p;
+		sforin(i, 1, length) {
+			hash <<= 2;
+			hash |= sseq::b24(*p);
+			++p;
+		}
+	}
+	return hash;
+}
+suinteger sseq::dhashl(const subyte* ori, size_t pos, size_t length, bool dir) {
+	if (31 < length) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR);
+	suint hash = 0;
+	if (dir) {
+		auto p = ori + pos + length - 1;
+		hash = DNA_COMPLEMENT_IDX[sseq::b24(*p)]; --p;
+		sforin(i, 1, length) {
+			hash <<= 2;
+			hash |= DNA_COMPLEMENT_IDX[sseq::b24(*p)];
+			--p;
+		}
+	}
+	else {
+		auto p = ori + pos;
+		hash = sseq::b24(*p); ++p;
+		sforin(i, 1, length) {
+			hash <<= 2;
+			hash |= sseq::b24(*p);
+			++p;
+		}
+	}
+	return hash;
+}
+void sseq::dunhashi(suint hash, subyte* seq, size_t length) {
+	if (15 < length) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR);
+	auto p = seq + length - 1;
+	sforin(i, 0, length) {
+		*p = (hash & 0x03); hash >>= 2; --p;
+	}
+}
+void sseq::dunhashl(suinteger hash, subyte* seq, size_t length) {
+	if (31 < length) throw SBioInfoException(ERR_INFO, SLIB_RANGE_ERROR);
+	auto p = seq + length - 1;
+	sforin(i, 0, length) {
+		*p = (hash & 0x03); hash >>= 2; --p;
+	}
+}
 void sseq::dcomp(char *seq, size_t s) {
     auto size = s==-1?strlen(seq):s;
     auto beg = seq, end = seq+size-1;
@@ -318,6 +430,64 @@ ubytearray sseq::dcompseqi(ubytearray &seq) {
     ubytearray cseq(seq.size());
     sseq::dcpycompi(seq, cseq);
     return cseq;
+}
+void sseq::dshuffle(ubytearray& seq, sint n, sint klet, const char* m) {
+	auto method = String::lower(m);
+	smath::SRandom rand;
+	if (method == "simple") {
+		sforin(i, 0, n) {
+			auto j = rand.iruni(0, seq.size() - 2 * klet);
+			sforin(k, 0, klet) {
+				auto tmp = seq[-klet + k];
+				seq[-klet + k] = seq[j + k];
+				seq[j + k] = tmp;
+			}
+		}
+	}
+	else if (method == "markov") {}
+	else if (method == "swapping") {
+
+
+
+	}
+}
+scnvs sseq::dbaselogo(v4fvec& freq, float size, bool info, const Array<smedia::SColor>& colors) {
+	auto canvas = scnvs(size * 0.5 * freq.size(), size);
+	sfig haxis(sshape::GROUP), vaxis(sshape::GROUP), logos(sshape::GROUP);
+	sforeachi(freq) {
+		float height = size;
+		double ent = 0.0f;
+		if (info) {
+			sforin(j, 0, 4) { ent += freq[i][j] ? freq[i][j] * log2(freq[i][j]) : 0; }
+			ent = 2.0 - (-ent + 3.0 / (2.0 * log(2.0) * freq.size()));
+		}
+		else ent = 2.0;
+		sforin(k, 0, 4) {
+			auto hscale = freq[i][k] * ent / 2.0;
+			/*
+			if (size * hscale < 1.0) continue;
+			auto seq = sseq::seqlogo(sbio::DNA_BASE4[k], size);
+			seq->setFillColor(colors[k]);
+			seq->setScale(v2f(1.0, hscale));
+			seq->setTranslate(v2f(size * i * 0.5f, height));
+			height += hscale * size;
+
+			*/
+			scalligraphy seq(0, 0, String(sbio::DNA_BASE4[k]));
+			seq->setScale(v2f(1.0f, hscale));
+			seq->setTranslate(v2f(size * i * 0.5f, height));
+			height -= hscale * size * 0.6;
+			seq->style().size = size;
+			seq->style().font = "Courier";
+			seq->style().color = colors[k];
+			
+			logos->addFigure(seq);
+		}
+	}
+	//canvas->drawFigure(haxis);
+	//canvas->drawFigure(vaxis);
+	canvas->drawFigure(logos);
+	return canvas;
 }
 Map<char, subyte> slib::sbio::RNA_BASE_INDEX = {
     cu('A',0), cu('a',0), cu('C',1), cu('c',1),

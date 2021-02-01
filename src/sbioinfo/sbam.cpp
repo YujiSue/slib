@@ -386,7 +386,7 @@ void SBam::getReads(sbam::read_array& array, const sbpos& pos) {
 			do {
 				if (!next()) break;
 				sbam::readinfo ri(read);
-				if(E_ == ri.bin && pos.overlap(ri.range())) array.add(ri);
+				if(E_ == ri.bin && pos.overlap(ri.pos)) array.add(ri);
 			} while (_data->offset < cit->end);
 		}
 	}
@@ -575,7 +575,7 @@ void SBamFile::open(const char* path) {
 	if (_file.isOpened()) _file.close();
 	_file.open(path);
 	_current->load();
-	_checkError();
+	//_checkError();
 	info.init();
 	loadIndex(String(path) + ".bai");
 	_readHeader();
@@ -627,7 +627,7 @@ void SBamFile::getReads(sbam::read_array& array, const sbpos& pos) {
 			do {
 				if (!(nxt = next())) break;
 				ri.interpret(*nxt);
-				if (E_ == ri.bin && pos.overlap(ri.range())) array.add(ri);
+				if (E_ == ri.bin && pos.overlap(ri.pos)) array.add(ri);
 			} while (_current->offset < cit->end);
 		}
 	}

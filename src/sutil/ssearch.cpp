@@ -32,7 +32,7 @@ void SSearchCondition::addSorter(const SearchSorter& sorter) { sorters.add(sorte
 void SSearchCondition::setOffset(size_t o) { range.begin = o; }
 void SSearchCondition::setLimit(size_t l) { range.end = range.begin + l; }
 void SSearchCondition::setRange(sranges r) { range = r; }
-void SSearchCondition::reset() {
+void SSearchCondition::clear() {
 	queries.resize(1);
 	query = queries.ptr();
 	query->clear();

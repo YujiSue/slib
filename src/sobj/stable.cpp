@@ -13,20 +13,17 @@ STable::STable(const Array<SColumn> &cols, const SArray &rows) : STable() {
 STable::STable(const sobj &obj) : STable() {
     if (obj.isTable()) *this = obj.table();
     if (obj.isDict()) {
-        //_name = obj["name"];
         if (obj.hasKey("columns")) { sforeach(obj["columns"]) addColumn(SColumn(E_["type"], E_["name"])); }
         if (obj.hasKey("rows")) _rows = obj["rows"];
     }
 }
 STable::STable(const STable &table) : STable() {
-    //_name = table._name;
 	_columns = table.columns();	
 	_rows = table.rows();
 }
 STable::~STable() {}
 STable &STable::operator=(const STable &table) {
     clearAll();
-    //_name = table._name;
     _columns = table._columns;
 	_rows = table._rows;
     return *this;
@@ -53,9 +50,9 @@ void STable::load(sobj obj) {
     clearAll();
     if (!obj["path"]) return;
     if (obj["type"]) {
-        if (obj["type"] == "TSV") loadTxt(obj["path"], "\t", obj["header"]);
-        else if (obj["type"] == "CSV") loadTxt(obj["path"], ",", obj["header"]);
-        else if (obj["type"] == "JSON") {
+        if (obj["type"] == "tsv") loadTxt(obj["path"], "\t", obj["header"]);
+        else if (obj["type"] == "csv") loadTxt(obj["path"], ",", obj["header"]);
+        else if (obj["type"] == "json") {
             SJson tbl; 
 			tbl.load(obj["path"]);
 			initWithDict(tbl.dict());
@@ -65,13 +62,13 @@ void STable::load(sobj obj) {
 }
 void STable::load(const char *path) {
     clearAll();
-    auto ext = SFile(path).extension();
+    auto ext = String::lower(SFile(path).extension());
     if (ext == "csv") loadTxt(path, ",", true);
-    else if (ext == "txt") loadTxt(path, "\t", true);
+	else if (ext == "tsv") loadTxt(path, ",", true);
     else if (ext == "json") {
 		SJson tbl;
 		tbl.load(path);
-		*this = tbl;
+		initWithDict(tbl.dict());
     }
     //else if (ext == "xls" || ext == "xlsx") loadXls();
 }
@@ -86,7 +83,7 @@ void STable::loadTxt(const char *path, const char *sep, bool header) {
         sforeach(values) addColumn(SColumn(E_.isNumeric()?NUMBER_COLUMN:TEXT_COLUMN, E_));
     }
     else {
-        sforeachi(values) addColumn(SColumn(values[i].isNumeric()?NUMBER_COLUMN:TEXT_COLUMN, SString("col")+(i+1)));
+		sforeachi(values) addColumn(SColumn(values[i].isNumeric() ? NUMBER_COLUMN : TEXT_COLUMN, String("col") + (i + 1)));
         addRow(sarray(values));
     }
     while (!file.eof()) {
@@ -99,9 +96,9 @@ void STable::loadTxt(const char *path, const char *sep, bool header) {
 void STable::save(sobj obj) {
 	if (!obj["path"]) return;
 	if (obj["type"]) {
-		if (obj["type"] == "TSV") saveTxt(obj["path"], "\t");
-		else if (obj["type"] == "CSV") saveTxt(obj["path"], ",");
-		else if (obj["type"] == "JSON") {
+		if (obj["type"] == "tsv") saveTxt(obj["path"], "\t");
+		else if (obj["type"] == "csv") saveTxt(obj["path"], ",");
+		else if (obj["type"] == "json") {
 			SJson tbl(*this);
 			tbl.save(obj["path"]);
 		}
@@ -113,7 +110,8 @@ void STable::save(const char *path) {
     if (ext == "csv") saveTxt(path, ",");
     else if (ext == "txt") saveTxt(path, "\t");
 	else if (ext == "json") {
-
+		SJson tbl(*this);
+		tbl.save(path);
 	}
     //else if (ext == "xls" || ) saveXls();
 }
@@ -139,60 +137,56 @@ void STable::saveTxt(const char *path, const char *sep) {
 size_t STable::columnCount() const { return _columns.size(); }
 bool STable::hasColumn(const char* name) const { return columnIndex(name) != NOT_FOUND; }
 size_t STable::columnIndex(const char *name) const {
-    sforeach(_columns) { if(E_._name == name) return INDEX_(_columns); }
+    sforeach(_columns) { if(E_.name() == name) return INDEX_(_columns); }
     return NOT_FOUND;
 }
 SColumn& STable::operator[](const char* name) { return column(name); }
 const SColumn& STable::operator[](const char* name) const { return column(name); }
-SColumn& STable::columnAt(int idx) { return _columns[idx]; }
-const SColumn &STable::columnAt(int idx) const { return _columns[idx]; }
+SColumn& STable::columnAt(sinteger idx) { return _columns[idx].column(); }
+const SColumn &STable::columnAt(sinteger idx) const { return _columns[idx].column(); }
 SColumn &STable::column(const char* name) {
-	sforeach(_columns) { if (E_._name == name) return E_; }
+	sforeach(_columns) { if (E_.name() == name) return E_.column(); }
 	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR, name, "columns");
 }
 const SColumn &STable::column(const char *name) const {
-	sforeach(_columns) { if (E_._name == name) return E_; }
+	sforeach(_columns) { if (E_.name() == name) return E_.column(); }
 	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR, name, "columns");
 }
-Array<SColumn>& STable::columns() { return _columns; }
-const Array<SColumn>&STable::columns() const { return _columns; }
+SArray& STable::columns() { return _columns; }
+const SArray& STable::columns() const { return _columns; }
 void STable::addColumn(const char* s) {
 	if (s) _columns.add(SColumn(OBJECT_COLUMN, s));
 	else { _columns.add(SColumn(OBJECT_COLUMN, String("column") + (_lastcol + 1))); ++_lastcol; }
 }
 void STable::addColumn(const SColumn& col) {
 	_columns.add(col);
-	_columns.last().setTable(this);
+	_columns.last().column().setTable(this);
 	auto size = _columns.size();
 	sforeach(_rows) E_.resize(size);
 }
 void STable::addColumns(const Array<SColumn>& cols) {
 	if (cols.empty()) return;
-	sforeach(cols) { _columns.add(E_); _columns.last().setTable(this); }
+	sforeach(cols) { _columns.add(E_); _columns.last().column().setTable(this); }
 	auto size = _columns.size();
 	sforeach(_rows) E_.resize(size);
 }
-void STable::insertColumn(size_t idx, const SColumn& col) {
+void STable::insertColumn(sinteger idx, const SColumn& col) {
 	_columns.insert(idx, col);
-	_columns[(sint)idx].setTable(this);
+	_columns[idx].column().setTable(this);
 	sforeach(_rows) E_.insert(idx, snull);
 }
-void STable::setColumn(size_t idx, const SColumn& col) {
-	_columns[(sint)idx] = col; 
-	_columns[(sint)idx].setTable(this);
-	_columns[(sint)idx].convert(col._type);
+void STable::setColumn(sinteger idx, const SColumn& col) {
+	_columns[idx] = col; 
+	_columns[idx].column().setTable(this);
+	_columns[idx].convert(col._type);
 }
-void STable::removeColumn(size_t idx) {
+void STable::removeColumn(sinteger idx) {
 	_columns.removeAt(idx);
     sforeach(_rows) E_.removeAt(idx);
 }
 void STable::removeColumns(size_t off, size_t len) {
 	_columns.remove(off, len);
     sforeach(_rows) E_.remove(off, len);
-}
-void STable::removeColumns(const srange &range) {
-	_columns.remove(range);
-    sforeach(_rows) E_.remove(range);
 }
 void STable::swapColumns(size_t i1, size_t i2) {
 	_columns.exchange(i1, i2);
@@ -238,7 +232,6 @@ void STable::updateRow(size_t idx, const SDictionary& dict) {
 }
 void STable::removeRow(int idx) { _rows.removeAt(idx); }
 void STable::removeRows(size_t off, size_t len) { _rows.remove(off, len); }
-void STable::removeRows(const srange& range) { _rows.remove(range); }
 void STable::clearRows() { _rows.clear(); }
 void STable::swapRows(size_t i1, size_t i2) { _rows[i1].swap(_rows[i2]); }
 void STable::resizeRow(size_t s) { _rows.resize(s); }
@@ -370,7 +363,7 @@ String STable::getClass() const { return "table"; }
 String STable::toString() const {
 	String str;
 	if (columnCount()) {
-		sforeach(_columns) str << E_._name << TAB;
+		sforeach(_columns) str << E_.name() << TAB;
 		str << NEW_LINE;
     }
     if (rowCount()) {
