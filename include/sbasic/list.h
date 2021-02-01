@@ -18,11 +18,9 @@ namespace slib {
 		list_data<T>* _fill(const T &val);
 		void _vacate(list_data<T>* p);
 		size_t _index(sli_iter<T> iter);
-
     protected:
         size_t _capacity, _size;
         list_data<T> *_begin, *_end, *_vacant;
-        
     public:
         List();
         List(size_t s);
@@ -31,13 +29,12 @@ namespace slib {
         List(List &&list);
         List(const List &list);
         ~List();
-        
         List &operator = (const List &list);
         List &operator = (List &&list);
-        T &operator[] (int idx);
-        const T &operator[] (int idx) const;
-        T &at(int idx);
-        const T &at(int idx) const;
+        T &operator[] (sinteger idx);
+        const T &operator[] (sinteger idx) const;
+        T &at(sinteger idx);
+        const T &at(sinteger idx) const;
         T &first();
         const T &first() const;
         T &last();
@@ -63,23 +60,22 @@ namespace slib {
         void pile(const T *val, size_t s);
         void append(const List &list);
         void pile(const List &list);
-        void set(size_t idx, const T &val);
+        void set(sinteger idx, const T &val);
         void set(sli_iter<T> iter, const T &val);
         void exchange(sli_iter<T> iter1, sli_iter<T> iter2);
         void exchange(size_t idx1, size_t idx2);
-		sli_iter<T> insert(size_t idx, const T &val);
+		sli_iter<T> insert(sinteger idx, const T &val);
 		sli_iter<T> insert(sli_iter<T> iter, const T &val);
+		sli_iter<T> remove(const T &val);
         sli_iter<T> remove(sli_iter<T> beg, sli_iter<T> end);
-        sli_iter<T> remove(srange range);
         sli_iter<T> remove(size_t off, size_t len);
-        sli_iter<T> removeAt(size_t idx);
+        sli_iter<T> removeAt(sinteger idx);
         void trim(size_t s);
         void cut(size_t s);
-        T get();
+		T get(sinteger idx) const;
+        T pop();
         T pick();
-		T pull(int idx);
-		T pull(sli_iter<T> iter);
-        void clear();
+		void clear();
         void reset(const T &val);
         void sort(Comparer comp=sortAsc<T>);
         void copy(const T *ptr, size_t s);
@@ -87,7 +83,9 @@ namespace slib {
         void moveTo(List &list);
         void swap(List &list);
         bool contain(const T &val) const;
-        size_t find(const T &val, size_t off = 0) const;
+		sli_iter<T> locate(const T& val, size_t off = 0);
+		sli_citer<T> locate(const T& val, size_t off = 0) const;
+		size_t find(const T &val, size_t off = 0) const;
         size_t rfind(const T &val, size_t off = 0) const;
         void resize(size_t s);
         void resize(size_t s, const T &val);
@@ -124,7 +122,7 @@ namespace slib {
 		auto p = _vacant;
 		_vacant = p->next;
 		_vacant->prev = nullptr;
-		p->init(std::forward(val));
+		p->init(std::forward<T&&>(val));
 		return p;
 	}
 	template <typename T>
@@ -163,14 +161,9 @@ namespace slib {
     }
     template <typename T>
     List<T>::List(std::initializer_list<T> li) : List<T>(li.size()) {
-        if (_size) {
-			auto p = _begin;
-            auto it = li.begin();
-			while (p < _end) { 
-				p->value() = E_; 
-				p = p->next; 
-				NEXT_; }
-        }
+		if (_size) {
+			sforeach2(*this, li) E1_ = E2_;
+		}
     }
     template <typename T>
     List<T>::List(List<T> &&list) : List<T>() {
@@ -184,9 +177,7 @@ namespace slib {
     template <typename T>
     List<T>::List(const List<T> &list) : List<T>(list.size()) {
         if (!list.empty()) {
-			auto p = _begin;
-			auto it = list.begin();
-			while (p < _end) { p->value() = E_; p = p->next; NEXT_; }
+			sforeach2(*this, list) E1_ = E2_;
         }
     }
     template <typename T>
@@ -195,9 +186,7 @@ namespace slib {
     List<T> &List<T>::operator = (const List<T> &list) {
         resize(list.size());
         if (_size) {
-			auto p = _begin;
-			auto it = list.begin();
-			while (p < _end) { p->value() = E_; p = p->next; NEXT_; }
+			sforeach2(*this, list) E1_ = E2_;
         }
 		return *this;
     }
@@ -213,11 +202,11 @@ namespace slib {
         return *this;
     }
     template <typename T>
-    T &List<T>::operator[] (int idx) { return at(idx); }
+    T &List<T>::operator[] (sinteger idx) { return at(idx); }
     template <typename T>
-    const T &List<T>::operator[] (int idx) const { return at(idx); }
+    const T &List<T>::operator[] (sinteger idx) const { return at(idx); }
     template <typename T>
-    T &List<T>::at(int idx) {
+    T &List<T>::at(sinteger idx) {
         if (_size) {
 			if (idx < 0 && -idx <= _size) return *(end() - (-idx));
 			else if (idx < _size) return *(begin() + idx);
@@ -225,7 +214,7 @@ namespace slib {
         throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     }
     template <typename T>
-    const T &List<T>::at(int idx) const {
+    const T &List<T>::at(sinteger idx) const {
         if (_size) {
 			if (idx < 0 && -idx < _size) return *(end() - (-idx));
 			else if (idx < _size) return *(begin() + idx);
@@ -250,7 +239,7 @@ namespace slib {
     sli_citer<T> List<T>::end() const { return sli_citer<T>(_end); }
     template <typename T>
     List<T> List<T>::sublist(size_t off, size_t len) {
-		return sublist(begin() + off, begin() + off + len);
+		return sublist(begin() + off, len == -1 ? end() : begin() + off + len);
     }
     template <typename T>
     List<T> List<T>::sublist(sli_iter<T> beg, sli_iter<T> end) {
@@ -267,7 +256,7 @@ namespace slib {
     template <typename T>
 	void List<T>::add(T&& val) {
 		if (_capacity <= _size + 2) _expand(_size + 2);
-		auto p = _fill(val);
+		auto p = _fill(std::forward<T&&>(val));
 		_end->insertPrev(p);
 		if (!_size) _begin = _end->prev;
 		++_size;
@@ -283,7 +272,7 @@ namespace slib {
 	template <typename T>
 	void List<T>::put(T&& val) {
 		if (_capacity <= _size + 2) _expand(_size + 2);
-		auto p = _fill(val);
+		auto p = _fill(std::forward<T&&>(val));
 		_begin->insertPrev(p);
 		_begin = p;
 		++_size;
@@ -321,7 +310,7 @@ namespace slib {
 		}
 	}
     template <typename T>
-	void List<T>::set(size_t idx, const T& val) { set(begin() + idx, val); }
+	void List<T>::set(sinteger idx, const T& val) { set((idx < 0 ? end() : begin()) + idx, val); }
     template <typename T>
 	void List<T>::set(sli_iter<T> iter, const T& val) { 
 		iter._ptr->release();
@@ -336,33 +325,23 @@ namespace slib {
 		exchange(begin() + idx1, begin() + idx2);
 	}
     template <typename T>
-	sli_iter<T> List<T>::insert(size_t idx, const T &val) {
-		if (_capacity <= _size + 2) _expand(_size + 2);
-		auto it = begin() + idx;
-		auto p = it._ptr;
-        if (p < _end) {
+	sli_iter<T> List<T>::insert(sinteger idx, const T& val) { return insert((idx < 0 ? end() : begin()) + idx, val); }
+	template <typename T>
+	sli_iter<T> List<T>::insert(sli_iter<T> iter, const T& val) {
+		if (iter < end()) {
+			if (_capacity <= _size + 2) {
+				auto idx = _index(iter);
+				_expand(_size + 2);
+				iter = begin() + idx;
+			}
+			auto p = iter.ptr();
 			auto p_ = _fill(val);
 			p->insertPrev(p_);
 			if (!(p_->prev)) _begin = p_;
 			++_size;
 			return sli_iter<T>(p_);
-        }
+		}
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-	}
-	template <typename T>
-	sli_iter<T> List<T>::insert(sli_iter<T> iter, const T& val) {
-		if (_capacity <= _size + 2) {
-			auto idx = _index(iter);
-			_expand(_size + 2);
-			return insert(idx, val);
-		}
-		else {
-			auto p_ = _fill(val);
-			iter._ptr->insertPrev(p_);
-			if (!(p_->prev)) _begin = p_;
-			++_size;
-			return sli_iter<T>(p_);
-		}
 	}
     template <typename T>
 	sli_iter<T> List<T>::remove(sli_iter<T> beg, sli_iter<T> end) {
@@ -375,16 +354,14 @@ namespace slib {
 		}
         return sli_iter<T>(p->next);
 	}
-    template <typename T>
-	sli_iter<T> List<T>::remove(srange range) { 
-		return remove(begin()+range.begin, begin()+range.end); 
-	}
+	template <typename T>
+	sli_iter<T> remove(const T& val);
     template <typename T>
 	sli_iter<T> List<T>::remove(size_t off, size_t len) {
-		return remove(begin()+off, begin()+off+len); 
+		return remove(begin() + off, len == -1 ? end() : begin() + off + len);
 	}
     template <typename T>
-	sli_iter<T> List<T>::removeAt(size_t idx) { return remove(idx, 1); }
+	sli_iter<T> List<T>::removeAt(sinteger idx) { return remove((idx < 0 ? end() : begin()) + idx, (idx < 0 ? end() : begin()) + idx + 1); }
     template <typename T>
     void List<T>::trim(size_t s) { 
 		if (s <= _size) remove(end() - s, end());
@@ -395,8 +372,10 @@ namespace slib {
 		if (s <= _size) remove(begin(), begin() + s);
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     }
-    template <typename T>
-    T List<T>::get() {
+	template <typename T>
+	T List<T>::get(sinteger idx) const { return at(idx); }
+	template <typename T>
+    T List<T>::pop() {
         if (!empty()) { 
 			auto val = last();
 			trim(1);
@@ -414,23 +393,6 @@ namespace slib {
         else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
     }
 	template <typename T>
-	T List<T>::pull(int idx) {
-		if (_size) {
-			if (idx < 0 && -idx < _size) pull(end() + idx);
-			else if (idx < _size) pull(begin() + idx);
-		}
-		throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-	}
-	template <typename T>
-	T List<T>::pull(sli_iter<T> iter) {
-		if (iter < end()) {
-			auto val = *iter;
-			remove(iter, iter + 1);
-			return val;
-		}
-		throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-	}
-    template <typename T>
     void List<T>::clear() { resize(0); }
     template <typename T>
     void List<T>::reset(const T &val) { sforeach(*this) E_ = val; }
@@ -445,12 +407,12 @@ namespace slib {
     void List<T>::copyTo(List<T> &list) const {
         if (_size) {
             list.resize(_size);
-            auto it_ = begin();
-            sforeach (list) {  E_ = *it_; ++it_; }
+			sforeach2(list, *this) E1_ = E2_;
         }
     }
     template <typename T>
     void List<T>::moveTo(List<T> &list) {
+		list.release();
         list._capacity = _capacity;
         list._size = _size;
         list._begin = _begin;
@@ -468,7 +430,19 @@ namespace slib {
     }
     template <typename T>
     bool List<T>::contain(const T &val) const { return find(val) != NOT_FOUND; }
-    template <typename T>
+	template <typename T>
+	sli_iter<T> List<T>::locate(const T& val, size_t off) {
+		auto it = begin() + off;
+		while (it < end()) { if (E_ == val) return it; else NEXT_; }
+		return end();
+	}
+	template <typename T>
+	sli_citer<T> List<T>::locate(const T& val, size_t off) const {
+		auto it = begin() + off;
+		while (it < end()) { if (E_ == val) return it; else NEXT_; }
+		return end();
+	}
+	template <typename T>
     size_t List<T>::find(const T &val, size_t off) const {
 		auto it = begin() + off;
 		while (it < end()) { if (E_ == val) return it - begin(); else NEXT_; }
@@ -556,23 +530,18 @@ namespace slib {
     template <typename T>
     bool List<T>::operator < (const List &list) const {
 		if (size() != list.size()) return size() < list.size();
-		auto it_ = list.begin();
-		sforeach(*this) {
-			if (!(E_ == (*it_))) return E_ < (*it_);
-			NEXT_; ++it_;
+		sforeach2(*this, list) {
+			if (!(E1_ == E2_)) return E1_ < E2_;
 		}
 		return false;
 	}
     template <typename T>
 	bool List<T>::operator == (const List& list) const {
 		if (size() != list.size()) return false;
-		auto it_ = list.begin();
-		sforeach (*this) {
-			if (!(E_ == (*it_))) return false;
-			NEXT_; ++it_;
+		sforeach2(*this, list) {
+			if (!(E1_ == E2_)) return false;
 		}
 		return true;
 	}
 }
-
 #endif

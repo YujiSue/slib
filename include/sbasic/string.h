@@ -31,17 +31,14 @@ namespace slib {
 	namespace sio {
 		class SLIB_DLL SFile;
 	}
-	
     class SLIB_DLL Regex {
     private:
         std::regex _rgx;
         bool _global;
-        
     public:
         Regex();
         Regex(const char *s);
         ~Regex();
-        
         bool match(const char *s) const;
         bool equal(const char *s) const;
         void search(CArray<size_t>&array, const char *s, const char *e) const;
@@ -53,7 +50,6 @@ namespace slib {
 
     class SLIB_DLL String {
         friend Char;
-        
     public:
         static String trim(const char *s);
         static String squot(const char *s);
@@ -67,8 +63,10 @@ namespace slib {
 #ifdef WIN_OS
 		static String toUTF8(const wchar_t* ws);
 		static String toUTF8(const char* s);
-#endif
-        
+#endif  
+		static const subyte HEAD_PART = 0x01;
+		static const subyte TAIL_PART = 0x02;
+		static const subyte BOTH_PART = 0x03;
     private:
         struct short_string {
             sbyte size;
@@ -92,7 +90,7 @@ namespace slib {
         std::pair<char *, size_t> _instance();
         std::pair<const char *, size_t> _cinstance() const;
         void _append(const char *s, size_t l);
-        void _insert(const size_t idx, const char *s, size_t l);
+        void _insert(sinteger idx, const char *s, size_t l);
         const char *_find(const char *que, size_t s, const char *current, const char *end) const;
         const char *_rfind(const char *que, size_t s, const char *begin, const char *current) const;
         
@@ -136,7 +134,6 @@ namespace slib {
         String(const SString &s);
         String(const SObjPtr &obj);
         virtual ~String();
-        
         String &operator=(bool b);
         String &operator=(int i);
         String &operator=(unsigned int ui);
@@ -264,10 +261,8 @@ namespace slib {
 		String& operator*=(size_t num);
 		String operator*(int num) const;
 		String operator*(size_t num) const;
-        
         bool isNumeric() const;
         bool isQuoted() const;
-        
         bool empty() const;
         size_t size() const;
         size_t length() const;
@@ -276,16 +271,14 @@ namespace slib {
         const char *ptr(size_t idx = 0) const;
         const char *cstr() const;
         std::string toStr() const;
-        
-        char &operator[] (int idx);
-        const char &operator[] (int idx) const;
-        char &at(int idx);
-        const char &at(int idx) const;
+        char &operator[] (sinteger idx);
+        const char &operator[] (sinteger idx) const;
+        char &at(sinteger idx);
+        const char &at(sinteger idx) const;
         char &first();
         const char &first() const;
         char &last();
         const char &last() const;
-        
 		void interpret(subyte* bytes, size_t size);
         void copy(const char *dat, size_t size = -1);
 		void swap(String& str);
@@ -293,64 +286,52 @@ namespace slib {
 		virtual void resize(size_t s);
 		virtual void resize(size_t s, const char& c);
 		virtual void clear();
-		
         SArrayIterator<char> begin();
         SArrayCIterator<char> begin() const;
         SArrayIterator<char> end();
         SArrayCIterator<char> end() const;
-        
         void add(const char &c);
         void append(const char *s);
         void append(const std::string &s);
         void append(const String &s);
         void append(const SString &s);
-        
-        void insert(size_t idx, const char *s);
-        void insert(size_t idx, const std::string &s);
-        void insert(size_t idx, const String &s);
-        void insert(size_t idx, const SString &s);
-        
-        void removeAt(size_t idx);
+        void insert(sinteger idx, const char *s);
+        void insert(sinteger idx, const std::string &s);
+        void insert(sinteger idx, const String &s);
+        void insert(sinteger idx, const SString &s);
+        void removeAt(sinteger idx);
         void remove(size_t off, size_t len = -1);
         void remove(const srange &rng);
-        
-        void replace(size_t off, size_t len, const char *alt);
-        void replace(const srange &rng, const char *alt);
-        void replace(const char *ori, const char *alt);
-        void replace(const Regex &rgx, const char *alt);
-        void rearrange(const Regex &rgx, const CArray<sint>&order);
-        
-        void clip(size_t off, size_t len = -1);
-        void clip(const srange &rng);
-        
-        void fill(size_t s, char fill = ' ', bool head = false);
-        void trimming();
-        void transform(subyte trans);
-        
+		String& replace(size_t off, size_t len, const char* alt);
+		String& replace(const srange& rng, const char* alt);
+		String& replace(const char* ori, const char* alt);
+		String& replace(const Regex& rgx, const char* alt);
+		String& rearrange(const Regex& rgx, const CArray<sint>& order);
+		String& clip(size_t off, size_t len = -1);
+		String& clip(const srange& rng);
+		String& fill(size_t s, char fill = ' ', subyte dir = String::TAIL_PART);
+		String& trimming();
+		String& transform(subyte trans);
         String substring(size_t off, size_t len = -1) const;
         String substring(const srange &range) const;
         String replaced(const char *ori, const char *alt) const;
         String replaced(const Regex &rgx, const char *alt) const;
         String rearranged(const Regex &rgx, const CArray<sint> &order) const;
-        String filled(size_t size, char fill = ' ', bool head = false) const;
+        String filled(size_t size, char fill = ' ', subyte dir = String::TAIL_PART) const;
         String transformed(subyte trans) const;
-        
         //UTF-8
         size_t charCount() const;
         size_t charIndex(size_t idx) const;
         Char u8charAt(size_t idx) const;
         String strAt(size_t idx) const;
-        
         SUtf8Iterator ubegin();
         SUtf8CIterator ubegin() const;
         SUtf8Iterator uend();
         SUtf8CIterator uend() const;
-        
         size_t count(const char *s, size_t offset = 0) const;
         bool contain(const char *que, size_t offset = 0) const;
         bool match(const Regex &rgx, size_t offset = 0) const;
         bool equal(const Regex &rgx) const;
-        
         size_t find(const char *que, size_t offset = 0) const;
         size_t rfind(const char *que, size_t offset = 0) const;
 		slib::CArray<size_t> search(const char *que, size_t offset = 0) const;
@@ -362,7 +343,6 @@ namespace slib {
 		slib::Map<slib::String, slib::String> parse(const char *sep , const char *part, bool trim = true) const;
         bool beginWith(const char *que) const;
         bool endWith(const char *que) const;
-        
         bool boolean() const;
         sbyte byteValue() const;
         subyte ubyteValue() const;
@@ -381,12 +361,10 @@ namespace slib {
         suinteger uinteger() const;
         sreal real() const;
         SNumber number() const;
-		
 #if defined(WIN32_OS) || defined(WIN64_OS)
 		std::wstring unicode() const;
 		String localize() const;
-#endif
-        
+#endif  
         operator bool() const;
         operator sbyte() const;
         operator subyte() const;
@@ -410,9 +388,7 @@ namespace slib {
 #endif
         operator float() const;
         operator double() const;
-        
         operator const char *() const;
-        
         bool operator < (const char *s) const;
         bool operator < (const std::string &s) const;
         bool operator < (const String &s) const;
@@ -476,5 +452,4 @@ namespace std {
 		}
 	};
 }
-
 #endif

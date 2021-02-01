@@ -50,7 +50,7 @@ namespace slib {
     template<typename T>
     void Memory<T>::dealloc(T *data) { if (data) free(data); }
     template<typename T>
-    void Memory<T>::init(T * data, size_t size) {}
+    void Memory<T>::init(T * data, size_t size) { memset(data, 0, size * sizeof(T)); }
     template<typename T>
     void Memory<T>::release(T *data, size_t size) {}
 	template<typename T>

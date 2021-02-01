@@ -299,7 +299,7 @@ namespace slib {
 			void set(const char* s, const sindex* namei = nullptr);
 			void set(double d, const intarray* length);
 			double absolute(const intarray* length);
-
+			bool overlap(const sbpos& p) const;
 			String toString(stringarray* names = nullptr) const;
 			void init();
 
@@ -307,16 +307,13 @@ namespace slib {
 			bool operator == (const sbpos& p) const;
 			bool operator != (const sbpos& p) const;
 		};
-
 		struct SBIOINFO_DLL sbposex : public sbpos {
-			String name;
-			sushort score;
-			srange thick;
-			bool join;
-			sbposex* root, * next;
+			String ref, name;
+			sint score;
 			sdict attribute;
 
 			sbposex();
+			sbposex(const sbpos& p);
 			sbposex(const sbposex& p);
 			~sbposex();
 			sbposex& operator = (const sbposex& p);
@@ -326,16 +323,6 @@ namespace slib {
 			bool operator < (const sbposex& p) const;
 			bool operator == (const sbposex& p) const;
 			bool operator != (const sbposex& p) const;
-		};
-		class SBIOINFO_DLL sbregion {
-		private:
-			Array<Array<sbposex>> _regions;
-
-
-		public:
-
-
-
 		};
 
 	}

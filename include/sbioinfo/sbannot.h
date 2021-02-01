@@ -108,13 +108,13 @@ namespace slib {
 			gene_site();
 			gene_site(sobj& obj);
 			gene_site(gene_info* gi);
-			gene_site(gene_info* gi, srange *range);
+			gene_site(gene_info* gi, sbpos*range);
 			gene_site(const gene_site& g);
 			~gene_site();
 
 			gene_site& operator=(const gene_site& g);
 			sushort annotatedSite() const;
-			void check(srange* range);
+			void check(sbpos* pos);
 			void set(sobj obj);
 			sobj toObj();
 		};
@@ -284,7 +284,7 @@ namespace slib {
             
             void geneInfo(geneparray & array, const sbpos &pos, bool trans = true, bool append = false);
             void geneInfo(geneparray& array, const char *name, bool trans = true, subyte match = EXACT_MATCH, bool append = false);
-            
+			void nearestGeneInfo(geneparray& array, const sbpos& pos, size_t range, bool trans = true, bool append = false);
             void transcriptInfo(trsparray & array, const sbpos &pos, bool gene = false, bool append = false);
             void transcriptInfo(trsparray& array, const char *name, bool gene = false, subyte match = EXACT_MATCH, bool append = false);
             

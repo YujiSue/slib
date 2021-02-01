@@ -8,6 +8,14 @@
 namespace slib {
     namespace smedia {
         
+		class SLIB_DLL SDot {
+		public:
+			sushort shape;
+			float size;
+
+
+		};
+
         class SLIB_DLL SStroke {
         public:
             sushort type;
@@ -64,6 +72,7 @@ namespace slib {
 
 		class SLIB_DLL SPaint {
         public:
+			SDot dot;
             SStroke stroke;
             SBrush brush;
             SFilter filter;

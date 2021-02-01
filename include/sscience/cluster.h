@@ -64,14 +64,16 @@ namespace slib {
 		} HCLUSTER_METHOD;
 		struct scluster;
 		extern inline void printHC(stringarray& strs, srange range, ssci::scluster* node);
+		extern inline void arrangeHC(intarray& orders, srange range, ssci::scluster* node);
 		struct scluster {
 			sint index, layer;
+			String name;
 			scluster* parent, *elements[2];
 			double distance;
 
 			scluster() : index(-1), layer(0), parent(nullptr), distance(0.0) { memset(elements, 0, sizeof(scluster*) * 2); }
 			scluster(sint i) : scluster() {
-				index = i; elements[0] = this;
+				index = i; name << "#" << index; elements[0] = this;
 			}
 			scluster(scluster* c1, scluster *c2, double d) : scluster() {
 				c1->parent = this; c2->parent = this;
@@ -94,16 +96,28 @@ namespace slib {
 				if (elements[0] != this) elements[0]->increment(); 
 				if (elements[1]) elements[1]->increment();
 			}
+			void makeOrder(intarray& order) {
+				srange range(0, order.size());
+				arrangeHC(order, range, this);
+			}
 			void toStrs(stringarray &array) {
 				srange range(0, array.size());
 				printHC(array, range, this);
 			}
 		};
-		void printHC(stringarray& strs, srange range, ssci::scluster* node) {
-			if (node->isOrigin()) strs[range.begin] << SPACE * (node->layer * 2) << "- #" << (node->index + 1);
+		void arrangeHC(intarray& orders, srange range, ssci::scluster* node) {
+			if (node->isOrigin()) orders[range.begin] = node->index;
 			else {
 				auto count = node->elements[0]->count();
-				strs[range.begin + 2 * count - 1] << SPACE * (node->layer * 2) << "-|";
+				arrangeHC(orders, srange(range.begin, range.begin + count - 1), node->elements[0]);
+				arrangeHC(orders, srange(range.begin + count, range.end), node->elements[1]);
+			}
+		}
+		void printHC(stringarray& strs, srange range, ssci::scluster* node) {
+			if (node->isOrigin()) strs[range.begin] << SPACE * (node->layer * 2) << "- " << node->name;
+			else {
+				auto count = node->elements[0]->count();
+				strs[range.begin + 2 * count - 1] << SPACE * (node->layer * 2) << "-|" << TAB << node->distance;
 				printHC(strs, srange(range.begin, range.begin + 2 * (count - 1)), node->elements[0]);
 				printHC(strs, srange(range.begin + 2 * count, range.end), node->elements[1]);
 				auto r = range.begin + 2 * count - 2;
@@ -146,7 +160,7 @@ namespace slib {
 				++ptr;
 			}
 		}
-		extern inline void LWUpdate(sint c1, sint c2, Array<scluster> &clusters, Array<scluster *> &tree, svecd &dist, svecd &newdist, HCLUSTER_METHOD method) {
+		extern void LWUpdate(sint c1, sint c2, Array<scluster> &clusters, Array<scluster *> &tree, svecd &dist, svecd &newdist, HCLUSTER_METHOD method) {
 			double a[4];
 			double d = dist[distIndex(c1, c2, tree.size())];
 			auto size = tree.size();
@@ -196,14 +210,13 @@ namespace slib {
 				}
 				dist.swap(newdist);
 			}
-			
 			clusters.add(scluster(tree[c1], tree[c2], d));
 			tree.add(&clusters.last());
 			tree.removeAt(c2);
 			tree.removeAt(c1);
 		}
 		template<typename T>
-		extern inline void hcluster(svec<T>& data, Array<scluster>& clusters, Array<scluster*>& tree, HCLUSTER_METHOD method = WARD,
+		extern void hcluster(svec<T>& data, Array<scluster>& clusters, Array<scluster*>& tree, HCLUSTER_METHOD method = WARD,
 			SFunction<double(T&, T&)> distance = EuclidDistance<T>) {
 			svecd dist(data.size() * (data.size() - 1) / 2, 0.0), newdist;
 			sint integrate[2];
@@ -234,7 +247,7 @@ namespace slib {
 
 		public:
 			HClusterAnalysis(svec<T>& dat) {
-				data = &dat; clusters.reserve(dat.size() * 2);
+				method = ssci::WARD; data = &dat; clusters.reserve(dat.size() * 2 + 1);
 			}
 			~HClusterAnalysis() {}
 
@@ -247,7 +260,7 @@ namespace slib {
 			//void plot();
 			String summary(intarray& array) {
 				String str;
-				array.reserve(data->size());
+				array.reserve(data->size() + 1);
 				auto beg = clusters.ptr(data->size());
 				auto it = sarr_iter<scluster>(beg);
 				while (it < clusters.end()) {
@@ -267,13 +280,16 @@ namespace slib {
 				return str;
 			}
 			void order(intarray& array) {
-				array.reserve(data->size());
+				array.resize(data->size());
+				tree[0]->makeOrder(array);
+				/*
 				auto it = clusters.begin() + data->size();
 				while (it < clusters.end()) {
 					if (E_.elements[0]->isOrigin()) array.add(E_.elements[0]->index);
 					if (E_.elements[1]->isOrigin()) array.add(E_.elements[1]->index);
 					NEXT_;
 				}
+				*/
 			}
 			void structure(stringarray& array) {
 				array.resize(data->size() * 2);

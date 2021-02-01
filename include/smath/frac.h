@@ -4,9 +4,10 @@
 #include "smath/calc.h"
 #include "sbasic/string.h"
 
+#define sfrac slib::smath::Fraction<sint>
+
 namespace slib {
 	namespace smath {
-#define sfrac Fraction<sint>
 		template<typename T>
 		struct Fraction {
 			T numerator, denominator;
@@ -18,6 +19,12 @@ namespace slib {
 			Fraction(const Fraction& frac);
 			~Fraction();
 			Fraction& operator=(const Fraction& f);
+			/*
+			Fraction& operator+=(const int& i);
+			Fraction& operator+=(const sinteger& i);
+			Fraction& operator+=(const float& f);
+			Fraction& operator+=(const double& d);
+			*/
 			Fraction& operator+=(const Fraction& f);
 			Fraction& operator-=(const Fraction& f);
 			Fraction& operator*=(const Fraction& f);
@@ -34,6 +41,9 @@ namespace slib {
 			int intValue() const;
 			float floatValue() const;
 			double doubleValue() const;
+			//operator int() const;
+			//operator float() const;
+			//operator double() const;
 			String rounded(size_t size, smath::ROUND rnd = smath::DEFAULT) const;
 			String toString() const;
 			bool operator < (int t) const;
@@ -46,17 +56,17 @@ namespace slib {
 		template<typename T>
 		extern Fraction<T> operator+(T t, const Fraction<T>& f) { return Fraction<T>(t) + f; }
 		template<typename T>
-		extern Fraction<T> operator*(T t, const Fraction<T>& f) { return Fraction<T>(t) - f; }
+		extern Fraction<T> operator-(T t, const Fraction<T>& f) { return Fraction<T>(t) - f; }
 		template<typename T>
-		extern Fraction<T> operator-(T t, const Fraction<T>& f) { return Fraction<T>(t) * f; }
+		extern Fraction<T> operator*(T t, const Fraction<T>& f) { return Fraction<T>(t) * f; }
 		template<typename T>
 		extern Fraction<T> operator/(T t, const Fraction<T>& f) { return Fraction<T>(t) / f; }
 		template<typename T>
-		extern bool operator<(T t, const Fraction<T>& f) { return sfrac(t) < f; }
+		extern bool operator<(T t, const Fraction<T>& f) { return Fraction<T>(t) < f; }
 		template<typename T>
-		extern bool operator==(T t, const Fraction<T>& f) { return sfrac(t) == f; }
+		extern bool operator==(T t, const Fraction<T>& f) { return Fraction<T>(t) == f; }
 		template<typename T>
-		extern std::ostream& operator<<(std::ostream& os, const smath::Fraction<T>& frac) { return os << frac.numerator << "/" << frac.denominator; }
+		extern std::ostream& operator<<(std::ostream& os, const smath::Fraction<T>& frac) { return os << frac.toString(); }
 
 		/*============================================================*/
 
@@ -73,7 +83,7 @@ namespace slib {
 			else smath::reduction(f.numerator, f.denominator);
 		}
 		template<typename T>
-		Fraction<T>::Fraction() : numerator(1), denominator(1) {}
+		Fraction<T>::Fraction() : numerator(0), denominator(1) {}
 		template<typename T>
 		Fraction<T>::Fraction(T n, T d, bool r) {
 			if (!d) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR, "denominator");
@@ -137,9 +147,12 @@ namespace slib {
 		Fraction<T>& Fraction<T>::operator=(const Fraction<T>& f) { numerator = f.numerator; denominator = f.denominator; return *this; }
 		template<typename T>
 		Fraction<T>& Fraction<T>::operator+=(const Fraction<T>& f) {
-			int d = smath::lcm(denominator, f.denominator);
-			int n = numerator * d / denominator + f.numerator * d / f.denominator;
-			*this = Fraction(n, d);
+			if (denominator != f.denominator) {
+				auto d = smath::lcm(denominator, f.denominator);
+				numerator = numerator * d / denominator + f.numerator * d / f.denominator;
+				denominator = d;
+			}
+			else { numerator += f.numerator; smath::reduction(numerator, denominator); }
 			return *this;
 		}
 		template<typename T>
@@ -190,6 +203,12 @@ namespace slib {
 		float Fraction<T>::floatValue() const { return (float)numerator / denominator; }
 		template<typename T>
 		double Fraction<T>::doubleValue() const { return (double)numerator / denominator; }
+		//template<typename T>
+		//Fraction<T>::operator int() const { return intValue(); }
+		//template<typename T>
+		//Fraction<T>::operator float() const { return floatValue(); }
+		//template<typename T>
+		//Fraction<T>::operator double() const { return doubleValue(); }
 		template<typename T>
 		String Fraction<T>::rounded(size_t size, smath::ROUND rnd) const {
 			if (!denominator) return "NaN";
@@ -239,7 +258,8 @@ namespace slib {
 		template<typename T>
 		String Fraction<T>::toString() const {
 			if (!denominator) return "NaN";
-			return String(numerator) + "/" + String(denominator);
+			else if (denominator == 1) return String(numerator);
+			else return String(numerator) + "/" + String(denominator);
 		}
 		template<typename T>
 		bool Fraction<T>::operator < (int t) const { return *this < sfrac(t); }

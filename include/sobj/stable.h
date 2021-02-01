@@ -42,6 +42,7 @@ namespace slib {
 		SColumn(const SColumn& column);
 		~SColumn();
 		SColumn& operator=(const SColumn& col);
+		
 		static sushort colType(const sobj& obj);
 		static String colTypeStr(int t);
 		static sushort colTypeIndex(const char* t);
@@ -50,32 +51,61 @@ namespace slib {
 		const String& name() const;
 		size_t size() const;
 		bool empty() const;
-		sobj& at(sint i);
-		const sobj& at(sint i) const;
-		sobj& operator[](sint i);
-		const sobj& operator[](sint i) const;
-		sobj getValue(sint i) const;
-		SArray getValues(sint r, sint h) const;
-		void clearValue(sint i) const;
-		void clearValues(sint r, sint h) const;
+		sobj& at(sinteger i);
+		const sobj& at(sinteger i) const;
+		sobj& operator[](sinteger i);
+		const sobj& operator[](sinteger i) const;
+		sobj get(sinteger i) const;
+		SArray get(sinteger r, sinteger h) const;
 		void convert(sushort t);
 		void setName(const char* n);
-		void setValue();
-		void setValues();
+		void set(sinteger i, sobj v) const;
+		void set(sinteger r, sinteger h, sobj v) const;
+		void clear(sinteger i) const;
+		void clear(sinteger r, sinteger h) const;
 		
 		String getClass() const;
 		String toString() const;
 		SObject* clone() const;
 	};
+	class SLIB_DLL SRow : public SObject, public Array<SObjPtr> {
+		friend STable;
+	private:
+		STable* _table;
 
+	private:
+		void setTable(STable* tbl);
+	public:
+		SRow();
+		SRow(size_t size);
+		SRow(std::initializer_list<SObjPtr> li);
+		SRow(const stringarray& strarray);
+		SRow(const sobj& obj);
+		SRow(SRow&& row) noexcept;
+		SRow(const SRow& row);
+		~SRow();
+
+		SObjPtr& operator[](const char* s);
+		const SObjPtr& operator[](const char* s) const;
+		sobj get(sinteger i) const;
+		SArray get(sinteger c, sinteger w) const;
+		void set(sinteger i, sobj v);
+		void set(sinteger c, sinteger w, sobj v);
+		void clear(sinteger i);
+		void clear(sinteger c, sinteger w);
+
+		String getClass() const;
+		String toString() const;
+		SObject* clone() const;
+	};
 	class SLIB_DLL STable : public SObject {
 		friend SColumn;
+		friend SRow;
 	private:
 		sint _lastcol;
 
 	protected:
-		Array<SColumn> _columns;
-		SArray _rows;
+		SArray _columns, _rows;
 
 	public:
 		STable();
@@ -93,10 +123,12 @@ namespace slib {
 		void load(sobj obj);
 		void load(const char* path);
 		void loadTxt(const char* path, const char* sep, bool header);
+		void loadJson(const char* path);
 
 		void save(sobj obj);
 		void save(const char* path);
 		void saveTxt(const char* path, const char* sep);
+		void saveJson(const char* path);
 
 
 		size_t columnCount() const;
@@ -104,20 +136,19 @@ namespace slib {
 		size_t columnIndex(const char* name) const;
 		SColumn& operator[](const char *name);
 		const SColumn& operator[](const char *name) const;
-		SColumn& columnAt(int idx);
-		const SColumn& columnAt(int idx) const;
+		SColumn& columnAt(sinteger idx);
+		const SColumn& columnAt(sinteger idx) const;
 		SColumn& column(const char* name);
 		const SColumn& column(const char* name) const;
-		Array<SColumn>& columns();
-		const Array<SColumn>& columns() const;
+		SArray& columns();
+		const SArray& columns() const;
 		void addColumn(const char *s = nullptr);
 		void addColumn(const SColumn& col);
 		void addColumns(const Array<SColumn>& cols);
-		void insertColumn(size_t idx, const SColumn& col);
-		void setColumn(size_t idx, const SColumn& col);
-		void removeColumn(size_t idx);
+		void insertColumn(sinteger idx, const SColumn& col);
+		void setColumn(sinteger idx, const SColumn& col);
+		void removeColumn(sinteger idx);
 		void removeColumns(size_t off, size_t len);
-		void removeColumns(const srange& range);
 		void swapColumns(size_t i1, size_t i2);
 		void resizeColumn(size_t s);
 		
@@ -136,7 +167,6 @@ namespace slib {
 		void updateRow(size_t idx, const SDictionary& dict);
 		void removeRow(int idx);
 		void removeRows(size_t off, size_t len);
-		void removeRows(const srange& range);
 		void clearRows();
 		void swapRows(size_t i1, size_t i2);
 		void resizeRow(size_t s);

@@ -47,6 +47,8 @@
 #define uintegerarray3d slib::Array<uintegerarray2d>
 #define voidarray3d slib::Array<voidarray2d>
 
+#define MAX_ARRAY_SIZE 0x7FFFFFFFFFFFFFFF
+
 namespace slib {
 	class SLIB_DLL String;
 	class SLIB_DLL SData;
@@ -56,14 +58,15 @@ namespace slib {
 	public:
 		typedef T value_type;
         typedef std::function<bool(const T &t1, const T &t2)> Comparer;
-        
     private:
         void _expand(size_t s);
-        
+		void _set(T* p, const T& v);
+		sarr_iter<T> _insert(T* p, const T* v, size_t s);
+		sarr_iter<T> _remove(T* b, T* e);
+		Array<T, M> _subarray(const T* b, const T* e) const;
     protected:
         size_t _capacity;
         T *_begin, *_end;
-        
     public:
         Array();
         Array(size_t s);
@@ -71,13 +74,13 @@ namespace slib {
         Array(std::initializer_list<T> li);
         Array(Array &&array) noexcept;
         Array(const Array &array);
-        ~Array();
+        virtual ~Array();
         Array &operator = (const Array &array);
         Array &operator = (Array &&array);
-        T &operator[] (int idx);
-        const T &operator[] (int idx) const;
-        T &at(int idx);
-        const T &at(int idx) const;
+        T &operator[] (sinteger idx);
+        const T &operator[] (sinteger idx) const;
+        T &at(sinteger idx);
+        const T &at(sinteger idx) const;
         T &first();
         const T &first() const;
         T &last();
@@ -100,20 +103,20 @@ namespace slib {
         void add(Args... args) { add(T(args...)); }
         void append(const T *val, size_t s);
         void append(const Array &array);
-        void set(size_t idx, const T &val);
+        void set(sinteger idx, const T &val);
         void set(sarr_iter<T> iter, const T &val);
         void exchange(sarr_iter<T> iter1, sarr_iter<T> iter2);
         void exchange(size_t idx1, size_t idx2);
-		sarr_iter<T> insert(size_t idx, const T &val);
+		sarr_iter<T> insert(sinteger idx, const T &val);
 		sarr_iter<T> insert(sarr_iter<T> iter, const T& val);
-		sarr_iter<T> insert(size_t idx, T *val, size_t s);
-		sarr_iter<T> insert(size_t idx, const Array &array);
-		sarr_iter<T> erase(const T &val);
+		sarr_iter<T> insert(sinteger idx, T *val, size_t s);
+		sarr_iter<T> insert(sinteger idx, const Array &array);
+		sarr_iter<T> remove(const T &val);
         sarr_iter<T> remove(sarr_iter<T> beg, sarr_iter<T> end);
-        sarr_iter<T> remove(srange range);
         sarr_iter<T> remove(size_t off, size_t len);
-        sarr_iter<T> removeAt(size_t idx);
-        T get();
+        sarr_iter<T> removeAt(sinteger idx);
+		T pop();
+		T get(sinteger idx) const;
         void clear();
         void shrink();
         void reset(const T &val);
@@ -123,7 +126,9 @@ namespace slib {
         void moveTo(Array &array);
         void swap(Array &array);
         bool contain(const T &val) const;
-        size_t find(const T &val, size_t off = 0) const;
+		sarr_iter<T> locate(const T& val, size_t off = 0);
+		sarr_citer<T> locate(const T& val, size_t off = 0) const;
+		size_t find(const T &val, size_t off = 0) const;
         size_t rfind(const T &val, size_t off = 0) const;
         void resize(size_t s);
         void resize(size_t s, const T &val);
@@ -215,6 +220,41 @@ namespace slib {
             reserve(cap);
         }
     }
+	template <typename T, class M>
+	void Array<T, M>::_set(T *p, const T &v) {
+		if (_begin <= p && p < _end) {
+			M::release(p, 1); M::assign(p, v);
+		}
+		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+	}
+	template <typename T, class M>
+	sarr_iter<T> Array<T, M>::_insert(T* p, const T* v, size_t s) {
+		if (_begin <= p && p < _end) {
+			auto s_ = _end - _begin + s;
+			if (_capacity <= s_) { auto i = p - _begin; _expand(s); p = _begin + i; }
+			M::shift(p + s, p, _end - p);
+			M::copy(p, v, s); _end += s;
+			return sarr_iter<T>(p);
+		}
+		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+	}
+	template <typename T, class M>
+	sarr_iter<T> Array<T, M>::_remove(T* b, T* e) {
+		if (_begin <= b && e < _end) {
+			auto len = e - b;
+			M::release(b, len); M::shift(b, e, _end - e); _end -= len;
+			return sarr_iter<T>(b);
+		}
+		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+	}
+	template <typename T, class M>
+	Array<T, M> Array<T, M>::_subarray(const T* beg, const T* end) const {
+		if (end < beg || beg < _begin || end < _begin || _end < beg || _end < end) throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+		Array<T, M> array(end - beg);
+		auto ptr = array.ptr();
+		while (beg < end) { M::assign(ptr, *beg); ++beg; ++ptr; }
+		return array;
+	}
     template <typename T, class M>
     Array<T, M>::Array() : _capacity(0), _begin(nullptr), _end(nullptr) {}
     template <typename T, class M>
@@ -252,12 +292,12 @@ namespace slib {
     Array<T, M>::~Array() { release(); }
     template <typename T, class M>
     Array<T, M> &Array<T, M>::operator=(const Array<T, M> &array) {
-        if (!array.empty()) {
+		if (array.empty()) clear();
+		else {
             resize(array.size());
 			auto p = _begin, p_ = array._begin;
 			while (p < _end) { M::assign(p, *p_); ++p; ++p_; }
-        }
-        else clear();
+        } 
         return (*this);
     }
     template <typename T, class M>
@@ -270,18 +310,18 @@ namespace slib {
         return (*this);
     }
     template <typename T, class M>
-	T &Array<T, M>::operator[] (int idx) { return at(idx); }
+	T &Array<T, M>::operator[] (sinteger idx) { return at(idx); }
     template <typename T, class M>
-	const T &Array<T, M>::operator[] (int idx) const { return at(idx); }
+	const T &Array<T, M>::operator[] (sinteger idx) const { return at(idx); }
     template <typename T, class M>
-    T &Array<T, M>::at(int idx) {
+    T &Array<T, M>::at(sinteger idx) {
 		auto p = idx < 0 ? _end + idx : _begin + idx;
         if (p < _begin || _end <= p)
             throw SException(ERR_INFO, SLIB_RANGE_ERROR, std::to_string(idx).c_str(), std::string(RANGE_TEXT(0, size())).c_str());
         return *p;
     }
     template <typename T, class M>
-	const T &Array<T, M>::at(int idx) const {
+	const T &Array<T, M>::at(sinteger idx) const {
 		auto p = idx < 0 ? _end + idx : _begin + idx;
         if (p < _begin || _end <= p)
             throw SException(ERR_INFO, SLIB_RANGE_ERROR);
@@ -307,23 +347,17 @@ namespace slib {
 	sarr_iter<T> Array<T, M>::end() { return SArrayIterator<T>(_end); }
     template <typename T, class M>
 	sarr_citer<T> Array<T, M>::end() const { return SArrayCIterator<T>(_end); }
-    template <typename T, class M>
+	template <typename T, class M>
 	Array<T, M> Array<T, M>::subarray(size_t off, size_t len) const {
-		return subarray(begin() + off, begin() + off + len);
+		return _subarray(_begin + off, len == -1 ? _end : _begin + off + len);
     }
     template <typename T, class M>
 	Array<T, M> Array<T, M>::subarray(sarr_citer<T> beg, sarr_citer<T> end) const {
-        auto b = beg._ptr, e = end._ptr;
-        if (_end <= b) return Array<T, M>();
-        if (_end <= e) e = _end;
-		Array<T, M> array(e - b);
-        auto p = array._begin;
-        while(b < e) { M::assign(p, *b); ++p; ++b; }
-        return array;
+        return _subarray(beg.ptr(), end.ptr());
     }
     template <typename T, class M>
 	Array<T, M> Array<T, M>::subarray(srange range) const {
-		return subarray(begin() + range.begin, begin() + range.end);
+		return _subarray(_begin + range.begin, _begin + range.end);
     }
     template <typename T, class M>
 	bool Array<T, M>::empty() const { return _begin == _end; }
@@ -336,8 +370,7 @@ namespace slib {
         if (!_capacity) reserve(16);
 		size_t s = _end - _begin + 1;
         if (_capacity == s) _expand(s);
-		M::init(_end, 1);
-		new(_end) T(std::forward<T>(val));
+		new(_end) T(std::forward<T &&>(val));
 		++_end;
     }
     template <typename T, class M>
@@ -361,102 +394,50 @@ namespace slib {
 		if (!array.empty()) append(array._begin, array.size());
     }
     template <typename T, class M>
-	void Array<T, M>::set(size_t idx, const T& val) { set(begin() + idx, val); }
+	void Array<T, M>::set(sinteger idx, const T& val) { _set((idx < 0 ? _end : _begin) + idx, val); }
     template <typename T, class M>
-	void Array<T, M>::set(sarr_iter<T> iter, const T &val) {
-        if (_begin <= iter._ptr && iter._ptr < _end) { 
-			M::release(iter._ptr, 1); 
-			M::assign(iter._ptr, val); 
-		}
-        else add(val);
-    }
+	void Array<T, M>::set(sarr_iter<T> iter, const T &val) { _set(iter.ptr(), val); }
     template <typename T, class M>
-	void Array<T, M>::exchange(sarr_iter<T> iter1, sarr_iter<T> iter2) {
-		iter1.swap(iter1, iter2);
-    }
+	void Array<T, M>::exchange(sarr_iter<T> iter1, sarr_iter<T> iter2) { iter1.swap(iter1, iter2); }
     template <typename T, class M>
-	void Array<T, M>::exchange(size_t idx1, size_t idx2) {
-		exchange(begin() + idx1, begin() + idx2);
-    }
+	void Array<T, M>::exchange(size_t idx1, size_t idx2) { exchange(begin() + idx1, begin() + idx2); }
     template <typename T, class M>
-	sarr_iter<T> Array<T, M>::insert(size_t idx, const T &val) {
-		auto p = _begin + idx;
-		if (p < _end) {
-			size_t s = _end - _begin + 1;
-			if (_capacity <= s) { _expand(s); p = _begin + idx; }
-			M::shift(p + 1, p, _end - p);
-			M::assign(p, val);
-			++_end;
-		}
-		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-		return sarr_iter<T>(p);
+	sarr_iter<T> Array<T, M>::insert(sinteger idx, const T& val) { return _insert((idx < 0 ? _end : _begin) + idx, &val, 1); }
+	template <typename T, class M>
+	sarr_iter<T> Array<T, M>::insert(sarr_iter<T> iter, const T& val) { return _insert(iter.ptr(), &val, 1); }
+    template <typename T, class M>
+	sarr_iter<T> Array<T, M>::insert(sinteger idx, T* val, size_t s) { return s ? _insert((idx < 0 ? _end : _begin) + idx, val, s) : begin() + idx; }
+    template <typename T, class M>
+	sarr_iter<T> Array<T, M>::insert(sinteger idx, const Array<T, M> &array) {
+		if (array.empty()) return begin() + idx;
+		else return _insert((idx < 0 ? _end : _begin) + idx, array.ptr(), array.size());
     }
 	template <typename T, class M>
-	sarr_iter<T> Array<T, M>::insert(sarr_iter<T> iter, const T& val) {
-		auto p = iter._ptr;
-		if (p < _end) {
-			auto s = _end - _begin + 1;
-			if (_capacity <= s) { 
-				auto idx = p - _begin;
-				_expand(s); p = _begin + idx;
-			}
-			M::shift(p + 1, p, _end - p);
-			M::assign(p, val);
-			++_end;
-		}
-		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-		return sarr_iter<T>(p);
+	sarr_iter<T> Array<T, M>::remove(const T& val) {
+		auto it = locate(val);
+		return _remove(it.ptr(), it.ptr() + 1);
 	}
     template <typename T, class M>
-	sarr_iter<T> Array<T, M>::insert(size_t idx, T *val, size_t s) {
-		auto p = _begin + idx;
-        if (p < _end) {
-			auto s_ = _end - _begin + s;
-            if (_capacity <= s_)  { _expand(s); p = _begin+idx; }
-            M::shift(p+s, p, _end-p);
-            M::copy(p, val, s); _end += s;
-			return sarr_iter<T>(p);
-        }
-		else { append(val, s); return end() - s; }
-    }
-    template <typename T, class M>
-	sarr_iter<T> Array<T, M>::insert(size_t idx, const Array<T, M> &array) {
-		return insert(idx, array._begin, array.size());
-    }
-	template <typename T, class M>
-	sarr_iter<T> Array<T, M>::erase(const T& val) {
-		return removeAt(find(val));
-	}
-    template <typename T, class M>
-	SArrayIterator<T> Array<T, M>::remove(sarr_iter<T> beg, sarr_iter<T> end) {
-        auto b = beg._ptr, e = end._ptr;
-        if (_end <= b) return sarr_iter<T>(_end);
-        if (_end <= e) e = _end;
-        auto len = e - b; 
-		M::release(b, len);
-        if (e < _end) M::shift(b, e, _end-e); 
-		_end -= len;
-        return sarr_iter<T>(b);
-    }
-    template <typename T, class M>
-	sarr_iter<T> Array<T, M>::remove(srange range) {
-		return remove(begin() + range.begin, begin() + range.end);
-    }
+	sarr_iter<T> Array<T, M>::remove(sarr_iter<T> beg, sarr_iter<T> end) { return _remove(beg.ptr(), end.ptr()); }
     template <typename T, class M>
 	sarr_iter<T> Array<T, M>::remove(size_t off, size_t len) {
-		return remove(begin() + off, begin() + off + len);
+		return _remove(_begin + off, len == -1 ? _end : _begin + off + len);
     }
     template <typename T, class M>
-	sarr_iter<T> Array<T, M>::removeAt(size_t idx) { return remove(idx, 1); }
-    template <typename T, class M>
-	T Array<T, M>::get() {
-        if (!empty()) {
-            T tmp = last();
-            resize(size()-1);
-            return tmp;
-        }
-        throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-    }
+	sarr_iter<T> Array<T, M>::removeAt(sinteger idx) { 
+		return _remove((idx < 0 ? _end : _begin) + idx, (idx < 0 ? _end : _begin) + idx + 1); 
+	}
+	template <typename T, class M>
+	T Array<T, M>::pop() {
+		if (!empty()) {
+			T tmp = last();
+			resize(size() - 1);
+			return tmp;
+		}
+		throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+	}
+	template <typename T, class M>
+	T Array<T, M>::get(sinteger idx) const { return at(idx); }
     template <typename T, class M>
 	void Array<T, M>::clear() { resize(0); }
     template <typename T, class M>
@@ -489,6 +470,7 @@ namespace slib {
     }
     template <typename T, class M>
 	void Array<T, M>::moveTo(Array<T, M> &array) {
+		array.release();
         array._capacity = _capacity;
         array._begin = _begin;
         array._end = _end;
@@ -502,6 +484,24 @@ namespace slib {
     }
     template <typename T, class M>
 	bool Array<T, M>::contain(const T &val) const { return find(val) != NOT_FOUND; }
+	template <typename T, class M>
+	sarr_iter<T> Array<T, M>::locate(const T& val, size_t off) {
+		auto p = _begin + off;
+		while (p < _end) {
+			if (*p == val) return sarr_iter<T>(p);
+			++p;
+		}
+		return end();
+	}
+	template <typename T, class M>
+	sarr_citer<T> Array<T, M>::locate(const T& val, size_t off) const {
+		auto p = _begin + off;
+		while (p < _end) {
+			if (*p == val) return sarr_citer<T>(p);
+			++p;
+		}
+		return end();
+	}
     template <typename T, class M>
 	size_t Array<T, M>::find(const T &val, size_t off) const {
 		auto it = _begin + off;
@@ -536,6 +536,7 @@ namespace slib {
     }
     template <typename T, class M>
 	void Array<T, M>::reserve(size_t s) {
+		if (MAX_ARRAY_SIZE < s) throw SException(ERR_INFO, SLIB_RANGE_ERROR);
         if (_capacity < s) {
             if (_begin) {
                 auto s_ = size();

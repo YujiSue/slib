@@ -38,9 +38,59 @@ namespace slib {
 	} OPERATION;
 	*/
 
+	struct SLIB_DLL search_query {
+		String key;
+		suint operation;
+		sobj value;
 
-	
+		search_query();
+		search_query(const char* k, const char* op, const sobj& v);
+		search_query(const char* k, suint op, const sobj& v);
+		search_query(const search_query& que);
+		~search_query();
+		search_query& operator=(const search_query& que);
+	};
+	struct SLIB_DLL search_sorter {
+		String key;
+		slib::ORDER order;
 
+		search_sorter();
+		search_sorter(const char* k, slib::ORDER o = DESC);
+		search_sorter(const search_sorter& sorter);
+		~search_sorter();
+		search_sorter& operator=(const search_sorter& sorter);
+	};
+
+	class SLIB_DLL SSearchQuery {
+	private:
+		stringarray _keys;
+		Array<Array<search_query>> _queries;
+		Array<search_sorter> _sorters;
+		Range<suinteger> _range;
+		bool _andor;
+
+	public:
+		SSearchQuery();
+		~SSearchQuery();
+		
+		void addQuery(const search_query& que);
+		template<class... Args>
+		void addQuery(Args... args) { addQuery(search_query(args...)); }
+		void andQuery();
+		void orQuery();
+		void setQueries(SDictionary &que);
+		void addSorter(const search_sorter &sorter);
+		template<class... Args>
+		void addSorter(Args... args) { addSorter(search_sorter(args...)); }
+		void addKey(const char* key);
+		void addKeys(const stringarray& keys);
+		void setKeys(SArray& keys);
+		void setOffset(suinteger i);
+		void setLimit(suinteger i);
+		void setRange(Range<suinteger> r);
+		void setConditions(SDictionary& cond);
+		String toString(DB_MODE m) const;
+	};
 	namespace sql {
 		constexpr subyte INNER_JOIN = 1;
 		constexpr subyte OUTER_JOIN = 2;
@@ -58,110 +108,6 @@ namespace slib {
 		extern SLIB_DLL String colNames(const SArray& cols);
 		extern SLIB_DLL String escaped(const char* que);
 		extern SLIB_DLL String value(sobj obj, bool like = true, subyte match = 0);
-		extern inline String sqlValue(const SearchQuery& que) {
-			if (que.value.isNull()) return "NULL";
-			else if (que.value.isNum()) return que.value.toString();
-			else if (que.value.isArray()) {
-				if (que.operation & BETWEEN) return que.value[0].replace("\'", "\'\'") + " AND " + que.value[1].replace("\'", "\'\'");
-				else if (que.operation & CONTAIN) return "(" + slib::toString(que.value.array(), ",").replaced("\'", "\'\'") + ")";
-				else return SQUOT + slib::toString(que.value.array(), ",").replaced("\'", "\'\'") + SQUOT;
-			}
-			else if (que.value.isDict()) return slib::toString(que.value.dict(), "&", "=").replaced("\'", "\'\'");
-			else {
-				if (que.operation & MATCH) {
-					if (que.operation & PREFIX) return String::dquot(que.value.replace("\'", "\'\'") + "*");
-					else if (que.operation & POSTFIX) return String::dquot("*" + que.value.replace("\'", "\'\'"));
-					else if (que.operation & PARTIAL) return String::dquot("*" + que.value.replace("\'", "\'\'") + "*");
-					else return String::dquot(que.value.replace("\'", "\'\'"));
-				}
-				else if (que.operation & LIKE) {
-					if (que.operation & PREFIX) return String::squot(que.value.replace("\'", "\'\'") + "%");
-					else if (que.operation & POSTFIX) return String::squot("%" + que.value.replace("\'", "\'\'"));
-					else if (que.operation & PARTIAL) return String::squot("%" + que.value.replace("\'", "\'\'") + "%");
-					else return String::squot(que.value.replace("\'", "\'\'"));
-				}
-				else return String::squot(que.value.replace("\'", "\'\'"));
-			}
-		}
-		extern inline String sqlQuery(const SearchQuery& que) {
-			String str = que.key.replaced("\'", "\'\'");
-			if (que.operation == EQ) {
-				if (que.value.isNull()) str << " IS NULL";
-				else str << " == " << sqlValue(que);
-			}
-			else if (que.operation == LT) str << " < " << sqlValue(que);
-			else if (que.operation == GT) str << " > " << sqlValue(que);
-			else if (que.operation == ELT) str << " <= " << sqlValue(que);
-			else if (que.operation == EGT) str << " >= " << sqlValue(que);
-			else if (que.operation == NEQ) str << " != " << sqlValue(que);
-			else if (que.operation & BETWEEN) {
-				if (que.operation & NOT) str << " NOT BETWEEN " << sqlValue(que);
-				else str << " BETWEEN " << sqlValue(que);
-			}
-			else if (que.operation & CONTAIN) {
-				if (que.operation & NOT) str << " NOT IN " << sqlValue(que);
-				else str << " IN " << sqlValue(que);
-			}
-			else if (que.operation & LIKE) {
-				if (que.operation & NOT) str << " NOT LIKE " << sqlValue(que);
-				else str << " LIKE " << sqlValue(que);
-			}
-			else if (que.operation & MATCH) {
-				if (que.operation & NOT) str << " NOT GLOB " << sqlValue(que);
-				else str << " GLOB " << sqlValue(que);
-			}
-			return str;
-		}
-		extern inline String sqlCondition(const SSearchCondition &sc) {
-			String str;
-			if (sc.queries[0].size()) {
-				str << " WHERE ";
-				sforeach(sc.queries) {
-					if (E_.empty()) continue;
-					str << "(";
-					sforeach_(ait, E_) {
-						str << sqlQuery(*ait);
-						if (ait < E_.end() - 1) str << " AND ";
-					}
-					str << ")";
-					if (it < sc.queries.end() - 1) str << " OR ";
-				}
-			}
-			if (!sc.sorters.empty()) {
-				str << " ORDER BY ";
-				sforeach(sc.sorters) { 
-					str << E_.key << SPACE << (E_.order == ASC ? "ASC" : "DESC");
-					if (it < sc.sorters.end() - 1) str << ",";
-				}
-			}
-			if (sc.range.end == -1) {
-				if (sc.range.begin) str << " OFFSET" << sc.range.begin;
-			}
-			else {
-				if (sc.range.begin) str << " LIMIT " << sc.range.begin << "," << sc.range.length();
-				else str << " LIMIT " << sc.range.length();
-			}
-			return str;
-		}
-		/*
-		extern inline String sqlCase(const SCaseCondition& sc) {
-			if (sc.queries.empty()) return "";
-			else {
-				String str = " CASE";
-				sforeach2(sc.queries, sc.values) {
-					str << " WHEN " << sqlQuery(E1_) << " THEN " << (E2_.isNum() ? E2_.toString() : String::squot(E2_));
-				}
-				if (sc.exception.size()) str << " ELSE " << sc.exception;
-				str << " END";
-				if (sc.as.size()) str << " AS " << sc.as;
-			}
-		}
-		*/
-		class SLIB_DLL SJoinCondition {
-		public:
-
-		};
-
 
 		inline void addConditionQuery(String& que) {}
 		template <class First, class... Args>
@@ -197,19 +143,17 @@ namespace slib {
 	}
 	class SLIB_DLL SDataBase;
 
-	//class SJoinQuery
 	class SLIB_DLL SRecord : public SObject {
 		friend SDataBase;
 	private:
 		suint _type;
 		SDataBase* _db;
 		String _name;
-		sobj _value;
-		
+		SSearchQuery _query;
+
 	public:
 		SRecord();
 		~SRecord();
-
 		/*
 		sobj get(size_t count = -1);
 		sobj get(const stringarray& columns, size_t count = -1);

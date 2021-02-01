@@ -9,7 +9,6 @@
 namespace slib {
 	template<typename T>
 	class List;
-
     template<typename T>
     struct list_data {
 		subyte data[sizeof(T)];
@@ -59,7 +58,7 @@ namespace slib {
         SListIterator &operator-=(std::ptrdiff_t diff);
         SListIterator operator +(std::ptrdiff_t diff);
         SListIterator operator -(std::ptrdiff_t diff);
-        int operator-(const SListIterator it) const;
+		sinteger operator-(const SListIterator it) const;
 		list_data<T>* ptr();
         void swap(SListIterator it1, SListIterator it2);
         bool operator<(const SListIterator &it) const;
@@ -98,7 +97,7 @@ namespace slib {
         SListCIterator &operator-=(std::ptrdiff_t diff);
         SListCIterator operator +(std::ptrdiff_t diff);
         SListCIterator operator -(std::ptrdiff_t diff);
-        int operator-(const SListCIterator it) const;
+		sinteger operator-(const SListCIterator it) const;
 		list_data<T>* ptr();
         void swap(SListCIterator it1, SListCIterator it2);
         bool operator<(const SListCIterator &it) const;
@@ -129,25 +128,25 @@ namespace slib {
 		return *this;
 	}
 	template<typename T>
-	inline T& list_data<T>::value() { return *(reinterpret_cast<T*>(&data[0])); }
+	T& list_data<T>::value() { return *(reinterpret_cast<T*>(&data[0])); }
 	template<typename T>
-	inline const T& list_data<T>::value() const { return *(reinterpret_cast<T*>(&data[0])); }
+	const T& list_data<T>::value() const { return *(reinterpret_cast<T*>(&data[0])); }
 	template<typename T>
-	inline void list_data<T>::init() { new(reinterpret_cast<T*>(&data[0])) T(); }
+	void list_data<T>::init() { new(reinterpret_cast<T*>(&data[0])) T(); }
 	template<typename T>
-	inline void list_data<T>::init(T&& t) { new(reinterpret_cast<T*>(&data[0])) T(std::forward(t)); }
+	void list_data<T>::init(T&& t) { new(reinterpret_cast<T*>(&data[0])) T(std::forward<T&&>(t)); }
 	template<typename T>
-	inline void list_data<T>::init(const T& t) { new(reinterpret_cast<T*>(&data[0])) T(t); }
+	void list_data<T>::init(const T& t) { new(reinterpret_cast<T*>(&data[0])) T(t); }
 	template<typename T>
-	inline void list_data<T>::release() { (reinterpret_cast<T*>(&data[0]))->~T(); }
+	void list_data<T>::release() { (reinterpret_cast<T*>(&data[0]))->~T(); }
 	template<typename T>
-	inline void list_data<T>::insertNext(list_data* nxt) {
+	void list_data<T>::insertNext(list_data* nxt) {
 		nxt->next = next; 
 		if (next) next->prev = nxt;
 		next = nxt; nxt->prev = this; 
 	}
 	template<typename T>
-	inline void list_data<T>::insertPrev(list_data* prv) {
+	void list_data<T>::insertPrev(list_data* prv) {
 		if (prev) prev->next = prv; 
 		prv->prev = prev;
 		prev = prv;
@@ -164,11 +163,11 @@ namespace slib {
     template<typename T>
     SListIterator<T>::~SListIterator() {}
     template<typename T>
-	inline T &SListIterator<T>::operator*() { return _ptr->value(); }
+	T &SListIterator<T>::operator*() { return _ptr->value(); }
     template<typename T>
-	inline T *SListIterator<T>::operator->() { return reinterpret_cast<T*>(&(_ptr->data[0])); }
+	T *SListIterator<T>::operator->() { return reinterpret_cast<T*>(&(_ptr->data[0])); }
     template<typename T>
-	inline T &SListIterator<T>::operator[](std::ptrdiff_t diff) {
+	T &SListIterator<T>::operator[](std::ptrdiff_t diff) {
         auto tmp = _ptr;
         sforin(i, 0, diff) {
             if (!tmp->next) break;
@@ -177,34 +176,34 @@ namespace slib {
         return tmp->value();
     }
     template<typename T>
-	inline SListIterator<T> &SListIterator<T>::operator ++() { _ptr = _ptr->next; return *this; }
+	SListIterator<T> &SListIterator<T>::operator ++() { _ptr = _ptr->next; return *this; }
     template<typename T>
-	inline SListIterator<T> SListIterator<T>::operator ++(int) { return SListIterator<T>(_ptr->next); }
+	SListIterator<T> SListIterator<T>::operator ++(int) { return SListIterator<T>(_ptr->next); }
     template<typename T>
-	inline SListIterator<T> &SListIterator<T>::operator --() { _ptr = _ptr->prev; return *this; }
+	SListIterator<T> &SListIterator<T>::operator --() { _ptr = _ptr->prev; return *this; }
     template<typename T>
-	inline SListIterator<T> SListIterator<T>::operator --(int) { return SListIterator<T>(_ptr->prev); }
+	SListIterator<T> SListIterator<T>::operator --(int) { return SListIterator<T>(_ptr->prev); }
     template<typename T>
-	inline SListIterator<T> &SListIterator<T>::operator +=(std::ptrdiff_t diff) {
+	SListIterator<T> &SListIterator<T>::operator +=(std::ptrdiff_t diff) {
         if(_ptr) {
             sforin(i, 0, diff) { if(_ptr) _ptr = _ptr->next; else break; }
         }
         return *this;
     }
     template<typename T>
-	inline SListIterator<T> &SListIterator<T>::operator -=(std::ptrdiff_t diff) {
+	SListIterator<T> &SListIterator<T>::operator -=(std::ptrdiff_t diff) {
         if(_ptr->prev) {
             sforin(i, 0, diff) { if(_ptr->prev) _ptr = _ptr->prev; else break; }
         }
         return *this;
     }
     template<typename T>
-	inline SListIterator<T> SListIterator<T>::operator +(std::ptrdiff_t diff) { return SListIterator<T>(*this)+=diff; }
+	SListIterator<T> SListIterator<T>::operator +(std::ptrdiff_t diff) { return SListIterator<T>(*this)+=diff; }
     template<typename T>
-	inline SListIterator<T> SListIterator<T>::operator -(std::ptrdiff_t diff) { return SListIterator<T>(*this)-=diff; }
+	SListIterator<T> SListIterator<T>::operator -(std::ptrdiff_t diff) { return SListIterator<T>(*this)-=diff; }
     template<typename T>
-	inline int SListIterator<T>::operator -(const SListIterator<T> it) const {
-        size_t count = 0;
+	sinteger SListIterator<T>::operator -(const SListIterator<T> it) const {
+		sinteger count = 0;
         auto tmp = _ptr;
         while (tmp != it._ptr) {
             ++count; tmp = tmp->prev;
@@ -212,23 +211,23 @@ namespace slib {
         return count;
     }
 	template<typename T>
-	inline list_data<T>* SListIterator<T>::ptr() { return _ptr; }
+	list_data<T>* SListIterator<T>::ptr() { return _ptr; }
     template<typename T>
-	inline void SListIterator<T>::swap(SListIterator<T> it1, SListIterator<T> it2) {
+	void SListIterator<T>::swap(SListIterator<T> it1, SListIterator<T> it2) {
 		auto temp = *it1; *it1 = *it2; *it2 = temp;
     }
     template<typename T>
-	inline bool SListIterator<T>::operator<(const SListIterator<T> &it) const { return _ptr < it._ptr; }
+	bool SListIterator<T>::operator<(const SListIterator<T> &it) const { return _ptr < it._ptr; }
 	template<typename T>
-	inline bool SListIterator<T>::operator<=(const SListIterator<T>& it) const { return _ptr <= it._ptr; }
+	bool SListIterator<T>::operator<=(const SListIterator<T>& it) const { return _ptr <= it._ptr; }
 	template<typename T>
-	inline bool SListIterator<T>::operator>(const SListIterator<T>& it) const { return it._ptr < _ptr; }
+	bool SListIterator<T>::operator>(const SListIterator<T>& it) const { return it._ptr < _ptr; }
 	template<typename T>
-	inline bool SListIterator<T>::operator>=(const SListIterator<T>& it) const { return it._ptr <= _ptr; }
+	bool SListIterator<T>::operator>=(const SListIterator<T>& it) const { return it._ptr <= _ptr; }
     template<typename T>
-	inline bool SListIterator<T>::operator==(const SListIterator<T> &it) const { return _ptr == it._ptr; }
+	bool SListIterator<T>::operator==(const SListIterator<T> &it) const { return _ptr == it._ptr; }
     template<typename T>
-	inline bool SListIterator<T>::operator!=(const SListIterator<T> &it) const { return _ptr != it._ptr; }
+	bool SListIterator<T>::operator!=(const SListIterator<T> &it) const { return _ptr != it._ptr; }
     
     /*============================================================*/
     
@@ -241,11 +240,11 @@ namespace slib {
     template<typename T>
     SListCIterator<T> &SListCIterator<T>::operator=(const SListCIterator<T> &it) { _ptr = it._ptr; return *this; }
     template<typename T>
-	inline  const T &SListCIterator<T>::operator *() { return _ptr->value(); }
+	 const T &SListCIterator<T>::operator *() { return _ptr->value(); }
     template<typename T>
-	inline const T *SListCIterator<T>::operator ->() { return reinterpret_cast<const T*>(&(_ptr->data[0])); }
+	const T *SListCIterator<T>::operator ->() { return reinterpret_cast<const T*>(&(_ptr->data[0])); }
     template<typename T>
-	inline const T &SListCIterator<T>::operator [](std::ptrdiff_t diff) {
+	const T &SListCIterator<T>::operator [](std::ptrdiff_t diff) {
         auto tmp = _ptr;
         sforin(i, 0, diff) {
             if (!tmp->next) break;
@@ -254,34 +253,34 @@ namespace slib {
         return tmp->value();
     }
     template<typename T>
-	inline SListCIterator<T> &SListCIterator<T>::operator ++() { _ptr = _ptr->next; return *this; }
+	SListCIterator<T> &SListCIterator<T>::operator ++() { _ptr = _ptr->next; return *this; }
     template<typename T>
-	inline SListCIterator<T> SListCIterator<T>::operator ++(int) { return SListCIterator<T>(_ptr->next); }
+	SListCIterator<T> SListCIterator<T>::operator ++(int) { return SListCIterator<T>(_ptr->next); }
     template<typename T>
-	inline SListCIterator<T> &SListCIterator<T>::operator --() { _ptr = _ptr->prev; return *this; }
+	SListCIterator<T> &SListCIterator<T>::operator --() { _ptr = _ptr->prev; return *this; }
     template<typename T>
-	inline SListCIterator<T> SListCIterator<T>::operator --(int) { return SListCIterator<T>(_ptr->prev); }
+	SListCIterator<T> SListCIterator<T>::operator --(int) { return SListCIterator<T>(_ptr->prev); }
     template<typename T>
-	inline SListCIterator<T> &SListCIterator<T>::operator +=(std::ptrdiff_t diff) {
+	SListCIterator<T> &SListCIterator<T>::operator +=(std::ptrdiff_t diff) {
         if(_ptr) {
             sforin(i, 0, diff) { if(_ptr->next) _ptr = _ptr->next; else break; }
         }
         return *this;
     }
     template<typename T>
-	inline SListCIterator<T> &SListCIterator<T>::operator -=(std::ptrdiff_t diff) {
+	SListCIterator<T> &SListCIterator<T>::operator -=(std::ptrdiff_t diff) {
         if(_ptr->prev) {
             sforin(i, 0, diff) { if(_ptr->prev) _ptr = _ptr->prev; else break; }
         }
         return *this;
     }
     template<typename T>
-	inline SListCIterator<T> SListCIterator<T>::operator +(std::ptrdiff_t diff) { return SListCIterator<T>(*this)+=diff; }
+	SListCIterator<T> SListCIterator<T>::operator +(std::ptrdiff_t diff) { return SListCIterator<T>(*this)+=diff; }
     template<typename T>
-	inline SListCIterator<T> SListCIterator<T>::operator -(std::ptrdiff_t diff) { return SListCIterator<T>(*this)-=diff; }
+	SListCIterator<T> SListCIterator<T>::operator -(std::ptrdiff_t diff) { return SListCIterator<T>(*this)-=diff; }
     template<typename T>
-	inline int SListCIterator<T>::operator -(const SListCIterator<T> it) const {
-		int count = 0;
+	sinteger SListCIterator<T>::operator -(const SListCIterator<T> it) const {
+		sinteger count = 0;
         auto tmp = _ptr;
         while (tmp != it._ptr) {
             ++count; tmp = tmp->prev;
@@ -289,23 +288,22 @@ namespace slib {
         return count;
     }
 	template<typename T>
-	inline list_data<T>* SListCIterator<T>::ptr() { return _ptr; }
+	list_data<T>* SListCIterator<T>::ptr() { return _ptr; }
 	template<typename T>
-	inline void SListCIterator<T>::swap(SListCIterator<T> it1, SListCIterator<T> it2) {
+	void SListCIterator<T>::swap(SListCIterator<T> it1, SListCIterator<T> it2) {
 		auto temp = *it1; *it1 = *it2; *it2 = temp;
     }
     template<typename T>
-	inline bool SListCIterator<T>::operator<(const SListCIterator<T> &it) const { return _ptr < it._ptr; }
+	bool SListCIterator<T>::operator<(const SListCIterator<T> &it) const { return _ptr < it._ptr; }
 	template<typename T>
-	inline bool SListCIterator<T>::operator<=(const SListCIterator<T>& it) const { return _ptr <= it._ptr; }
+	bool SListCIterator<T>::operator<=(const SListCIterator<T>& it) const { return _ptr <= it._ptr; }
 	template<typename T>
-	inline bool SListCIterator<T>::operator>(const SListCIterator<T>& it) const { return it._ptr < _ptr; }
+	bool SListCIterator<T>::operator>(const SListCIterator<T>& it) const { return it._ptr < _ptr; }
 	template<typename T>
-	inline bool SListCIterator<T>::operator>=(const SListCIterator<T>& it) const { return it._ptr <= _ptr; }
+	bool SListCIterator<T>::operator>=(const SListCIterator<T>& it) const { return it._ptr <= _ptr; }
     template<typename T>
-	inline bool SListCIterator<T>::operator==(const SListCIterator<T> &it) const { return _ptr == it._ptr; }
+	bool SListCIterator<T>::operator==(const SListCIterator<T> &it) const { return _ptr == it._ptr; }
     template<typename T>
-	inline bool SListCIterator<T>::operator!=(const SListCIterator<T> &it) const { return _ptr != it._ptr; }
-    
+	bool SListCIterator<T>::operator!=(const SListCIterator<T> &it) const { return _ptr != it._ptr; }
 }
 #endif

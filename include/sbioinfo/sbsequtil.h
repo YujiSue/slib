@@ -34,7 +34,7 @@ namespace slib {
         
         #define cc(X,Y) std::pair<char,char>((X),(Y))
         #define cu(X,Y) std::pair<char,subyte>((X),(Y))
-        #define CODON_TABLE smat<svec4d<sbyte>>
+        #define CODON_TABLE smat<v4b>
         
 		//------------------------------------------------------------
 
@@ -87,6 +87,12 @@ namespace slib {
 			extern subyte seqType(String& str);
 			extern subyte maskByte(sushort type);
 			extern char maskChar(sushort type);
+			extern void rev(String& seq);
+			extern void revi(ubytearray& seq);
+			extern String revseq(String& seq);
+			extern ubytearray revseqi(ubytearray& seq);
+			extern spath seqlogo(const char& c, float size);
+			
             /*
              * NA util
              */
@@ -129,6 +135,10 @@ namespace slib {
             extern void drecode24(const subyte *ori, size_t pos, size_t length, subyte *seq);
             extern void drecode42(const subyte *ori, size_t pos, size_t length, subyte *seq);
             extern void drecode44(const subyte *ori, size_t pos, size_t length, subyte *seq);
+			extern suint dhashi(const subyte* ori, size_t pos, size_t length, bool dir = false);
+			extern suinteger dhashl(const subyte* ori, size_t pos, size_t length, bool dir = false);
+			extern void dunhashi(suint hash, subyte* seq, size_t length);
+			extern void dunhashl(suinteger hash, subyte* seq, size_t length);
             extern void dcomp(char *seq, size_t s = -1);
             extern void dcomp(String &seq);
             //extern void dcomp(std::string &seq);
@@ -137,8 +147,11 @@ namespace slib {
             extern String dcompseq(const char *seq);
             extern void dcpycompi(ubytearray &seq, ubytearray &cseq);
             extern ubytearray dcompseqi(ubytearray &seq);
-            
-            /*
+			extern void dshuffle(ubytearray& seq, sint num, sint k = 1, const char* method = "simple");
+			extern scnvs dbaselogo(v4fvec& freq, float size, bool info, const Array<smedia::SColor>& colors = { "green", "blue", "black", "red" });
+        
+
+			/*
              * RNA util
              */
             extern void rdecode(const subyte *ori, size_t pos, size_t length, subyte *seq);

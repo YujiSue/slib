@@ -3,10 +3,6 @@
 
 #include "sconfig.h"
 
-#define szone slib::Zone<sint>
-#define szonef slib::Zone<float>
-#define szoned slib::Zone<double>
-
 namespace slib {
     template<typename T>
     struct Zone {
@@ -16,14 +12,15 @@ namespace slib {
         Zone(const T &x, const T &y, const T &z, const T &w, const T &h, const T &d);
         Zone(const Zone &z);
         ~Zone();
-        
         Zone &operator =(const Zone &z);
         T volume() const;
         bool include(const T &x, const T &y, const T &z) const;
         bool include(const Zone &z) const;
         bool overlap(const Zone &z) const;
-        void merge(const Zone &z);
-        Zone conjunction(const Zone &z);
+		Zone& shift(const T& s1, const T& s, const T& s3);
+		Zone& magnify(const T& m1, const T& m2, const T& m3);
+		Zone& merge(const Zone& zone);
+		Zone& mask(const Zone& zone);
         bool operator < (const Zone &z) const;
         bool operator == (const Zone &z) const;
         bool operator != (const Zone &z) const;
@@ -31,6 +28,9 @@ namespace slib {
 	template<typename T>
 	extern std::ostream& operator<<(std::ostream& os, const Zone<T>& zone) { return os << "(" << zone.ori_x << ", " << zone.ori_y << ", " << zone.ori_z << ", " << zone.width << ", " << zone.height << ", " << zone.depth << ")"; }
 
+	using szone = Zone<sint>;
+	using szonef = Zone<float>;
+	using szoned = Zone<double>;
     /*============================================================*/
     template<typename T>
     Zone<T>::Zone()
@@ -70,8 +70,16 @@ namespace slib {
         ori_y <= (z.ori_y + z.height) && z.ori_y <= (ori_y + height) &&
         ori_z <= (z.ori_z + z.depth) && z.ori_z <= (ori_z + depth);
     }
-    template<typename T>
-	inline void Zone<T>::merge(const Zone<T> &z) {
+	template<typename T>
+	Zone<T>& Zone<T>::shift(const T& s1, const T& s2, const T& s3) {
+		ori_x += s1; ori_y += s2; ori_z += s3; return *this;
+	}
+	template<typename T>
+	Zone<T>& Zone<T>::magnify(const T& m1, const T& m2, const T& m3) {
+		width *= m1; height *= m2; depth *= m3; return *this;
+	}
+	template<typename T>
+	Zone<T>& Zone<T>::merge(const Zone<T>& z) {
 		T x1_ = ori_x < z.ori_x ? ori_x : z.ori_x,
 			y1_ = ori_y < z.ori_y ? ori_y : z.ori_y,
 			z1_ = ori_z < z.ori_z ? ori_z : z.ori_z,
@@ -79,10 +87,11 @@ namespace slib {
 			y2_ = (ori_y + height) < (z.ori_y + z.height) ? (z.ori_y + z.height) : (ori_y + height),
 			z2_ = (ori_z + depth) < (z.ori_z + z.depth) ? (z.ori_z + z.depth) : (ori_z + depth);
 		ori_x = x1_; ori_y = y1_; ori_z = z1_; width = x2_ - x1_; height = y2_ - y1_; depth = z2_ - z1_;
-    }
-    template<typename T>
-	inline Zone<T> Zone<T>::conjunction(const Zone<T> &z) {
-		if (include(z)) return z;
+		return *this;
+	}
+	template<typename T>
+	Zone<T>& Zone<T>::mask(const Zone<T>& z) {
+		if (include(z)) *this = z;
 		else if (overlap(z)) {
 			T x1_ = ori_x < z.ori_x ? z.ori_x : ori_x,
 				y1_ = ori_y < z.ori_y ? z.ori_y : ori_y,
@@ -90,9 +99,10 @@ namespace slib {
 				x2_ = (ori_x + width) < (z.ori_x + z.width) ? (ori_x + width) : (z.ori_x + z.width),
 				y2_ = (ori_y + height) < (z.ori_y + z.height) ? (ori_y + height) : (z.ori_y + z.height),
 				z2_ = (ori_z + depth) < (z.ori_z + z.depth) ? (ori_z + depth) : (z.ori_z + z.depth);
-			return Zone(x1_, y1_, z1_, x2_ - x1_, y2_ - y1_, z2_ - z1_);
+			ori_x = x1_; ori_y = y1_; ori_z = z1_; width = x2_ - x1_; height = y2_ - y1_; depth = z2_ - z1_;
 		}
-		else return Zone();
+		else *this = Zone<T>();
+		return *this;
     }
     template<typename T>
 	inline bool Zone<T>::operator < (const Zone<T> &z) const {

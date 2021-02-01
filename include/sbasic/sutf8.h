@@ -15,16 +15,13 @@ namespace slib {
         typedef std::ptrdiff_t difference_type;
         typedef Char* pointer;
         typedef Char& reference;
-        
     protected:
         Char _char;
-        
     public:
         SUtf8Iterator();
         SUtf8Iterator(String *s, const char *c);
         SUtf8Iterator(const SUtf8Iterator &uit);
         ~SUtf8Iterator();
-        
         SUtf8Iterator& operator=(const SUtf8Iterator &uit);
         reference operator *();
         pointer operator ->();
@@ -54,16 +51,13 @@ namespace slib {
         typedef std::ptrdiff_t difference_type;
         typedef const Char* pointer;
         typedef const Char& reference;
-        
     protected:
         Char _char;
-        
     public:
         SUtf8CIterator();
         SUtf8CIterator(const String *s, const char *c);
         SUtf8CIterator(const SUtf8CIterator &uit);
         ~SUtf8CIterator();
-        
         SUtf8CIterator& operator=(const SUtf8CIterator &uit);
         reference operator *() const;
         pointer operator ->() const;
@@ -86,5 +80,4 @@ namespace slib {
         bool operator >=(const SUtf8CIterator &uit) const;
     };
 }
-
 #endif

@@ -9,8 +9,8 @@ namespace slib {
 	class Node {
 	protected:
 		Elem* _parent;
+		bool _leaf;
 		List<Child> _children;
-
 	public:
 		Node();
 		Node(const Node<Elem, Child>& node);
@@ -193,5 +193,4 @@ namespace slib {
 	template<class Elem, typename Child>
 	void Node<Elem, Child>::clearChildren() { _children.clear(); }
 }
-
 #endif

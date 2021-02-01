@@ -14,19 +14,25 @@ namespace slib {
 		DATA_OBJ = 0x0005,
 		ARRAY_OBJ = 0x0006,
 		DICT_OBJ = 0x0007,
+		//LIST_OBJ = 0x0016,
+		//TREE_OBJ = 0x0017,
 		FUNC_OBJ = 0x0008,
 		FILE_OBJ = 0x0009,
 		TEXT_OBJ = 0x000A,
-		COLUMN_OBJ = 0x000B,
-		TABLE_OBJ = 0x000C,
-		CHAR_OBJ = 0x000D,
-		PAIR_OBJ = 0x000E,
+		ROW_OBJ = 0x000B,
+		COLUMN_OBJ = 0x000C,
+		TABLE_OBJ = 0x000D,
+
 		NODE_OBJ = 0x000F,
 
-		DOC_OBJ = 0x0011,
+		CHAR_OBJ = 0x0011,
+		PAIR_OBJ = 0x0012,
 		
-		DB_OBJ = 0x0013,
+		RECORD_OBJ = 0x0013,
+		DB_OBJ = 0x0014,
 
+		DOC_OBJ = 0x001F,
+		
 		COLOR_OBJ = 0x0020,
 		PIXEL_OBJ = 0x0021,
 		IMAGE_OBJ = 0x0022,
@@ -75,10 +81,14 @@ namespace slib {
 	class SFunction;
 	template<class Return, class... Args>
 	using sfunc = SClsPtr<SFunction<Return, Args...>, FUNC_OBJ>;
-    class SLIB_DLL SColumn;
+	class SLIB_DLL SRow;
+	using srow = SClsPtr<SRow, ROW_OBJ>;
+	class SLIB_DLL SColumn;
 	using scolumn = SClsPtr<SColumn, COLUMN_OBJ>;
     class SLIB_DLL STable;
 	using stable = SClsPtr<STable, TABLE_OBJ>;
+	class SLIB_DLL SRecord;
+	using srecord = SClsPtr<SRecord, RECORD_OBJ>;
 	class SLIB_DLL SDataBase;
 	using sdb = SClsPtr<SDataBase, DB_OBJ>;
 
@@ -187,8 +197,10 @@ namespace slib {
 		SObjPtr(const std::function<Return(Args...)>& func) : _type(FUNC_OBJ), _ptr(new SFunction<Return(Args...)>(func)) {}
 		template<class Return, class... Args>
 		SObjPtr(const SFunction<Return(Args...)>& func) : _type(FUNC_OBJ), _ptr(new SFunction<Return(Args...)>(func)) {}
+		SObjPtr(const SRow& row);
 		SObjPtr(const SColumn& col);
 		SObjPtr(const STable& tbl);
+		SObjPtr(const SRecord& rec);
 		SObjPtr(const SDataBase& db);
 
 		SObjPtr(const sio::SFile& file);
@@ -313,6 +325,10 @@ namespace slib {
 
 		SObjPtr& operator[](int idx);
 		const SObjPtr& operator[](int idx) const;
+		SObjPtr& operator[](size_t idx);
+		const SObjPtr& operator[](size_t idx) const;
+		SObjPtr& operator[](sinteger idx);
+		const SObjPtr& operator[](sinteger idx) const;
 		SObjPtr& operator[](const char* key);
 		const SObjPtr& operator[](const char* key) const;
 		SObjPtr& operator[](const ::std::string& key);
@@ -323,8 +339,8 @@ namespace slib {
 		const SObjPtr& operator[](const SString& key) const;
 		SObjPtr& operator[](const SObjPtr& obj);
 		const SObjPtr& operator[](const SObjPtr& obj) const;
-		SObjPtr& at(int idx);
-		const SObjPtr& at(int idx) const;
+		SObjPtr& at(sinteger idx);
+		const SObjPtr& at(sinteger idx) const;
 		SObjPtr& at(const char* key);
 		const SObjPtr& at(const char* key) const;
 		SObjPtr& at(const ::std::string& key);
@@ -412,8 +428,10 @@ namespace slib {
 		bool isText() const;
 		bool isFile() const;
         bool isFunc() const;
-        bool isColumn() const;
+		bool isRow() const;
+		bool isColumn() const;
         bool isTable() const;
+		bool isRecord() const;
 		bool isDB() const;
         bool isNode() const;
 		bool isColor() const;
@@ -523,8 +541,12 @@ namespace slib {
 		}
         SColumn &column();
         const SColumn &column() const;
-        STable &table();
+		SRow& row();
+		const SRow& row() const;
+		STable &table();
         const STable &table() const;
+		SRecord& record();
+		const SRecord& record() const;
 		SDataBase& db();
 		const SDataBase& db() const;
 		smedia::SColor& color();

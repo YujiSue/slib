@@ -214,7 +214,7 @@ namespace slib {
 			sbam::bai index;
 		private:
 			void _readHeader();
-			void _checkError();
+			//void _checkError();
 		public:
 			SBamFile();
 			~SBamFile();

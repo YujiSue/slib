@@ -119,24 +119,25 @@ namespace slib {
 	};
 
 	/*
-	class SFileNode : public SNode<SFileNode> {
-	protected:
-		String _name;
-		bool _dir;
+	class SNode : public Node<SNode> {
+	public:
+		suint type, flag;
+		String name;
+		sobj value;
+		sdict attribute;
 
 	public:
-		SFileNode();
-		SFileNode(const char* name, bool dir = false);
-		SFileNode(const SFileNode &node);
-		~SFileNode();
+		SNode();
+		SNode(const char* name, bool dir = false);
+		SNode(const SNode &node);
+		~SNode();
 
-		SFileNode(const SFileNode& node);
+		SNode(const SNode& node);
 
-		static SFileNode rootNode();
+		static SNode rootNode();
 		void loadChildren(bool recurrent = false);
 
-		sio::SFile fileAt(const char *name);
-
+		
 		String getClass() const;
 		String toString() const;
 		SObject* clone() const;

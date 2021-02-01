@@ -24,7 +24,7 @@ namespace slib {
             int mov_type;
             SFile mov_file;
             uint32_t mov_width, mov_height, frame_count, current_frame;
-            sarray frames;
+            SArray frames;
             integerarray frame_offset, key_frames;
             bool load_frames, buffering;
             

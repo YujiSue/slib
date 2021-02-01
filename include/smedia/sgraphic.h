@@ -9,34 +9,7 @@
 namespace slib {
     using namespace smath;
 
-    namespace sshape {
-        constexpr int MULTIPLE = 0x0100;
-        constexpr int ROUND = 0x0200;
-        constexpr int CIRCULAR = 0x0400;
-        constexpr int REGULAR = 0x0800;
-        constexpr int CONCAVE = 0x1000;
-
-        constexpr int TEXTURE = 0x4000;
-        constexpr int GROUP = 0x8000;
-
-        constexpr int POINT = 0x0001;
-        constexpr int MULTI_POINT = MULTIPLE|POINT;
-        constexpr int LINE = 0x0002;
-        constexpr int CURVE = ROUND|LINE;
-        constexpr int PATH = MULTIPLE|LINE;
-
-        constexpr int RECTANGLE = 0x0004;
-        constexpr int SQUARE = REGULAR|RECTANGLE;
-        constexpr int PLANE = 0x0004;
-        constexpr int POLYGON = 0x0008;
-        constexpr int STAR = CONCAVE|POLYGON;
-        constexpr int ELLIPSE = CIRCULAR|RECTANGLE;
-        constexpr int CIRCLE = REGULAR|CIRCULAR|RECTANGLE;
-        constexpr int ARC = CIRCULAR|LINE;
-
-        constexpr int PICTURE = TEXTURE|RECTANGLE;
-        constexpr int TEXT = 0x0010;
-    }
+    
 
         namespace smedia {
 
@@ -44,23 +17,23 @@ namespace slib {
 
                 extern inline v2f oriPos(sareaf& area, sgeom::ORIGIN ori) {
                         switch (ori) {
-                        case sgeom::UP_LEFT:
+                        case sgeom::UPPER_LEFT:
                                 return v2f(area.ori_x, area.ori_y);
                                 break;
-                        case sgeom::DOWN_LEFT:
+                        case sgeom::LOWER_LEFT:
                                 return v2f(area.ori_x, area.ori_y + area.height);
                                 break;
-                        case sgeom::UP_RIGHT:
+                        case sgeom::UPPER_RIGHT:
                                 return v2f(area.ori_x + area.width, area.ori_y);
                                 break;
-                        case sgeom::DOWN_RIGHT:
+                        case sgeom::LOWER_RIGHT:
                                 return v2f(area.ori_x + area.width, area.ori_y + area.height);
                                 break;
                         case sgeom::MASS_CENTER:
                                 return v2f(area.ori_x + area.width / 2.0f, area.ori_y + area.height / 2.0f);
                                 break;
                         default:
-                                return v2f(0, 0);
+                                return v2f(0.f, 0.f);
                                 break;
                         }
                 }
@@ -85,10 +58,10 @@ namespace slib {
                         void clear();
                 };
 
-#define col3i svec3d<subyte>
-#define col3f svec3d<float>
-#define col4i svec4d<subyte>
-#define col4f svec4d<float>
+#define col3i v3ub
+#define col3f v3f
+#define col4i v4ub
+#define col4f v4f
 
 #define kui kvpair<String, suint>
                 extern Map<String, suint> ColorMap;

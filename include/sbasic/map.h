@@ -9,7 +9,6 @@
 #define ii(X,Y) slib::kvpair<sinteger, sinteger>((X),(Y))
 #define ki(X,Y) slib::kvpair<slib::String, suinteger>((X),(Y))
 #define ks(X,Y) slib::kvpair<slib::String, slib::String>((X),(Y))
-
 #define sorder slib::Map<sinteger, sinteger>
 #define sindex slib::Map<slib::String, suinteger>
 #define sattribute slib::Map<slib::String, slib::String>
@@ -19,16 +18,13 @@ namespace slib {
     class Map {
     public:
         typedef Array<Key> keyarray;
-        
     protected:
         size_t _seed, _size;
 		map_data<Key, Val>* _begin, * _end, * _vacant;
-        
     private:
         void _remap(size_t s);
         map_data<Key, Val> *_find(const Key &key);
         const map_data<Key, Val> *_cfind(const Key &key) const;
-        
     public:
         Map();
         Map(std::initializer_list<std::pair<Key, Val>> li);
@@ -37,28 +33,23 @@ namespace slib {
         Map(const Map &map);
         ~Map();
         Map &operator=(const Map &map);
-        
         Val &operator[](const Key &key);
         const Val &operator[](const Key &key) const;
         Val &at(const Key &key);
         const Val &at(const Key &key) const;
-        
         smap_iter<Key, Val> begin();
         smap_citer<Key, Val> begin() const;
         smap_iter<Key, Val> end();
         smap_citer<Key, Val> end() const;
-        
         map_data<Key, Val> *ptr();
         const map_data<Key, Val> *ptr() const;
         bool empty() const;
         size_t size() const;
         size_t capacity() const;
         void swap(Map &map);
-        
         keyarray keyset() const;
         Key rlookup(const Val &val) const;
         bool hasKey(const Key &key) const;
-        
         void set(const Key &key, const Val &val);
         void insert(const std::pair<Key, Val> &pair);
         void insert(const kvpair<Key, Val> &pair);
@@ -68,7 +59,6 @@ namespace slib {
         void reserve(size_t s);
 		void release();
 		void discard();
-
         bool operator < (const Map &map) const;
         bool operator==(const Map &map) const;
     };
@@ -93,9 +83,7 @@ namespace slib {
 	extern inline std::ostream& operator<<(std::ostream& os, const Map<Key, Val>& map) { return os << toString(map); }
     /*============================================================*/
     template<class Key>
-    inline size_t hashIdx(const Key &key, const size_t &seed) {
-		return std::hash<Key>{}(key) % seed;
-    }
+    inline size_t hashIdx(const Key &key, const size_t &seed) { return std::hash<Key>{}(key) % seed; }
     template<class Key, class Val>
     void Map<Key, Val>::_remap(size_t s) {
         Map tmp;
@@ -107,42 +95,28 @@ namespace slib {
     map_data<Key, Val> *Map<Key, Val>::_find(const Key &key) {
 		auto ptr = _begin + hashIdx(key, _seed);
 		if (ptr->filled && ptr->pair().key == key) return ptr;
-		if (ptr->next < _begin) {
-			auto tmp = ptr;
-			while (tmp->next && tmp->next < _begin) {
-				tmp = tmp->next;
-				if (tmp->pair().key == key) return tmp;
-			}
+		while (ptr->next && ptr->next < _begin) {
+			ptr = ptr->next;
+			if (ptr->pair().key == key) return ptr;
 		}
 		if (_vacant->next == _begin) {
 			_remap(((capacity() - 1) << 1) + 1);
 			ptr = _begin + hashIdx(key, _seed);
 		}
 		if (ptr->filled) {
-			auto tmp = _vacant;
-			_vacant = tmp->next;
-			tmp->init(key);
-			ptr->insert(tmp);
-			++_size;
-			return tmp;
+			auto ptr_ = _vacant; _vacant = ptr_->next;
+			ptr_->init(key); ptr->insert(ptr_); ++_size; return ptr_;
 		}
-		else {
-			ptr->init(key);
-			++_size;
-			return ptr;
-		}
+		else { ptr->init(key); ++_size; return ptr; }
     }
     template<class Key, class Val>
     const map_data<Key, Val> *Map<Key, Val>::_cfind(const Key &key) const {
         if (!_size) return nullptr;
-		map_data<Key, Val>* ptr = _begin + hashIdx(key, _seed);
+		auto ptr = _begin + hashIdx(key, _seed);
 		if (ptr->filled && ptr->pair().key == key) return ptr;
-		if (ptr->next < _begin) {
-			auto tmp = ptr;
-			while (tmp->next && tmp->next < _begin) {
-				tmp = tmp->next;
-				if (tmp->pair().key == key) return tmp;
-			}
+		while (ptr->next && ptr->next < _begin) {
+			ptr = ptr->next;
+			if (ptr->pair().key == key) return ptr;
 		}
         return nullptr;
     }
@@ -252,9 +226,7 @@ namespace slib {
     template<class Key, class Val>
     void Map<Key, Val>::remove(const Key &key) {
 		auto ptr = _begin + hashIdx(key, _seed);
-		if (ptr->filled && ptr->pair().key == key) {
-			ptr->release(); --_size;
-		}
+		if (ptr->filled && ptr->pair().key == key) { ptr->release(); --_size; }
 		else if (ptr->next < _begin) {
 			auto tmp = ptr;
 			while (ptr->next < _begin) {
@@ -324,5 +296,4 @@ namespace slib {
         return true;
     }
 }
-
 #endif

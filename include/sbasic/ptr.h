@@ -3,8 +3,6 @@
 
 #include "sbasic/exception.h"
 
-#define sptr slib::Pointer
-
 namespace slib {
     template<typename T>
     class Pointer {
@@ -35,7 +33,6 @@ namespace slib {
             _ptr = dynamic_cast<T *>(obj);
         }
         Pointer &operator=(const Pointer &ptr);
-        Pointer &operator=(Pointer &&ptr);
         T *ptr() const;
         T *operator->() const;
         T &operator*();
@@ -56,7 +53,10 @@ namespace slib {
 		bool operator<(const Pointer& p) const;
 		bool operator==(const Pointer& p) const;
     };
-    
+
+	template<typename T>
+	using sptr = Pointer<T>;
+
     /*============================================================*/
     template<typename T>
     Pointer<T>::Pointer() : _ptr(nullptr) {
@@ -91,10 +91,6 @@ namespace slib {
     template<typename T>
     Pointer<T> &Pointer<T>::operator=(const Pointer &ptr) {
         release(); _scope = ptr._scope; _ptr = ptr._ptr; share(); return *this;
-    }
-    template<typename T>
-    Pointer<T> &Pointer<T>::operator=(Pointer &&ptr) {
-        release(); _scope = ptr._scope; _ptr = ptr._ptr; ptr.discard(); return *this;
     }
     template<typename T>
 	T *Pointer<T>::ptr() const { return _ptr; }

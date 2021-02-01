@@ -8,49 +8,39 @@ namespace slib {
 	public:
 		typedef T value_type;
 		typedef std::function<bool(const T & t1, const T & t2)> Comparer;
-
     protected:
         T *_begin, _end;
-        
     public:
         FixedArray();
         FixedArray(const T &val);
         FixedArray(std::initializer_list<T> li);
         FixedArray(const FixedArray &s);
         ~FixedArray();
-        
         FixedArray &operator=(const FixedArray &array);
-        
-        T &operator[] (int idx);
-        const T &operator[] (int idx) const;
-        T &at(int idx);
-        const T &at(int idx) const;
+        T &operator[] (sinteger idx);
+        const T &operator[] (sinteger idx) const;
+        T &at(sinteger idx);
+        const T &at(sinteger idx) const;
         T &first();
         const T &first() const;
         T &last();
         const T &last() const;
-        
         T *ptr() const;
         T *ptr(size_t idx) const;
-        
         sarr_iter<T> begin();
         sarr_citer<T> begin() const;
         sarr_iter<T> end();
         sarr_citer<T> end() const;
-        
         size_t size() const;
         size_t capacity() const;
-        
         void reset(const T &val);
         void copy(const T *ptr);
         void copyTo(FixedArray &array) const;
         void moveTo(FixedArray &array);
         void swap(FixedArray &array);
-        
         bool contain(const T &val) const;
         size_t find(const T &val, size_t off = 0) const;
         size_t rfind(const T &val, size_t off = 0) const;
-        
         bool operator<(const FixedArray<T, S, M> &array) const;
         bool operator==(const FixedArray<T, S, M> &array) const;
     };
@@ -79,18 +69,18 @@ namespace slib {
 		sforeach2(*this, array) E1_ = E2_; return *this;
     }
     template <typename T, size_t S, class M>
-    T &FixedArray<T, S, M>::operator[] (int idx) { return at(idx); }
+    T &FixedArray<T, S, M>::operator[] (sinteger idx) { return at(idx); }
     template <typename T, size_t S, class M>
-    const T &FixedArray<T, S, M>::operator[] (int idx) const { return at(idx); }
+    const T &FixedArray<T, S, M>::operator[] (sinteger idx) const { return at(idx); }
     template <typename T, size_t S, class M>
-    T &FixedArray<T, S, M>::at(int idx) {
+    T &FixedArray<T, S, M>::at(sinteger idx) {
 		auto p = idx < 0 ? _end + idx : _begin + idx;
         if (p < _begin || _end <= p)
             throw SException(ERR_INFO, SLIB_RANGE_ERROR);
         return *p;
     }
     template <typename T, size_t S, class M>
-    const T &FixedArray<T, S, M>::at(int idx) const {
+    const T &FixedArray<T, S, M>::at(sinteger idx) const {
 		auto p = idx < 0 ? _end + idx : _begin + idx;
 		if (p < _begin || _end <= p)
             throw SException(ERR_INFO, SLIB_RANGE_ERROR);
@@ -169,5 +159,4 @@ namespace slib {
         return true;
     }
 }
-
 #endif

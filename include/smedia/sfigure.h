@@ -95,7 +95,7 @@ namespace slib {
 			virtual void setBrush(const SBrush &f);
 			virtual void setPaint(const SPaint &p);
 			virtual void setAttribute(const SDictionary &dic);
-            
+			
 			virtual void expand(v2f s);
             virtual void shift(v2f t);
 			virtual void shear(v2f s);
@@ -128,13 +128,29 @@ namespace slib {
 			bool cross(Cls c) const {
 				return _boundary.overlap(c->boundary());
 			}
+			/*
+			SPoint& point();
+			SLine& line();
+			SCurve& curve();
+			SPath& path();
+			SRectangle &rect();
+			SPolygon& polygon();
+			SEllipse& ellipse();
+			SCircle& circle();
+			SArc& arc();
+			SPicture& pict();
+			SCalligraphy& calligraph();
+			SFigureGroup &group();
+
+
+			*/
 
             virtual String getClass() const;
             virtual String toString() const;
             virtual SObject *clone() const;
         };
         
-        
+		//class SLIB_DLL SPoint : public SFigure {
         class SLIB_DLL SPoint2D : public SFigure {
         protected:
             sushort _shape;
@@ -143,6 +159,7 @@ namespace slib {
         public:
             SPoint2D();
             SPoint2D(v2f v, sushort s = sshape::CIRCLE, float f = 1.0f, const SPaint &paint = SPaint());
+			//SPoint2D(std::initializer_list<v2f> &vecs, sushort s = sshape::CIRCLE, float f = 1.0f, const SPaint& paint = SPaint());
             SPoint2D(v2f v, const SDictionary &dic);
             SPoint2D(const SPoint2D &p);
             ~SPoint2D();
@@ -169,6 +186,7 @@ namespace slib {
         public:
             SLine2D();
             SLine2D(v2f p1, v2f p2, const SStroke &stroke = SStroke());
+			//SLine2D(std::initializer_list<v2f> vecs, const SStroke& stroke = SStroke());
             SLine2D(v2f p1, v2f p2, const SDictionary &dic);
             SLine2D(const SLine2D &l);
             ~SLine2D();
@@ -180,7 +198,7 @@ namespace slib {
             v2f center() const;
             double length() const;
             double area() const;
-            
+			//void closePath();
             bool include(v2f v) const;
             
             String getClass() const;
@@ -192,6 +210,7 @@ namespace slib {
              BEZIER_2
              BEZIER_3
              B_SPLINE
+
              */
             
         public:
@@ -204,7 +223,7 @@ namespace slib {
             //slib::smath::v2f center() const;
             //double length() const;
             //double area() const;
-            
+			//void closePath();
             //bool include(float x, float y) const;
             //bool cross(sfig fig) const;
             
@@ -216,6 +235,7 @@ namespace slib {
         class SLIB_DLL SPath2D : public SFigure {
         protected:
             bool _closed;
+
             
         public:
             SPath2D();
@@ -233,6 +253,11 @@ namespace slib {
             
             //bool include(float x, float y) const;
             //bool cross(sfig fig) const;
+
+			//SPath2D &moveTo(v2f v);
+			//SPath2D &lineTo(v2f v);
+			//SPath2D &curveTo(v2f v);
+
             
             String getClass() const;
             String toString() const;
@@ -240,6 +265,8 @@ namespace slib {
         };
         
         class SLIB_DLL SRectangle : public SFigure {
+
+
         public:
             SRectangle();
             SRectangle(float x, float y, float w, float h, const SPaint &paint = SPaint());
@@ -256,6 +283,9 @@ namespace slib {
         };
         
         class SLIB_DLL SEllipse : public SRectangle {
+			//v2f focus[2];
+			//float radius;
+
         public:
             SEllipse();
             SEllipse(float x, float y, float rad, const SPaint &paint = SPaint());
@@ -266,7 +296,7 @@ namespace slib {
             SEllipse(const SEllipse &elps);
             ~SEllipse();
             
-            svec2d<v2f> focus() const;
+            sla::SVectorND<2, v2f> focus() const;
             double length() const;
             double area() const;
             bool include(v2f v) const;
@@ -366,10 +396,12 @@ namespace slib {
             SObject *clone() const;
         };
 
+		//class SLIB_DLL SFigureNode {};
+
 
 
 #define scnvs scobj<slib::smedia::SCanvas, CANVAS_OBJ>
-
+		//class SLIB_DLL SCanvas : public SDocument<SFigureNode> {
 		class SLIB_DLL SCanvas : public SDocument<SFigure> {
 		protected:
 			v2f _size;
@@ -394,7 +426,7 @@ namespace slib {
 
 			size_t width() const;
 			size_t height() const;
-			v2i size() const;
+			v2f size() const;
 			sareaf frame() const;
 			const SColor& background() const;
 			void resize(size_t w, size_t h);
@@ -416,6 +448,7 @@ namespace slib {
 			void drawText(const scalligraphy& cal);
 			*/
 			void drawFigure(sfig fig);
+			//simg rasterize();
 			
 			String getClass() const;
 			String toString() const;

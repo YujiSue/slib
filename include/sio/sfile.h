@@ -207,8 +207,8 @@ namespace slib {
     }
 	extern sio::siostream SIO_;
 }
-#define STDIO_MODE SIO_.setStdMode();
-#define FILEIO_MODE(X) SIO_.setPath(X);
+#define STDIO_MODE SIO_.setStdMode()
+#define FILEIO_MODE(X) SIO_.setPath(X)
 #define SRead(X) SIO_.read(X)
 #define SWrite(...) SIO_.write(__VA_ARGS__)
 #define SPrint(...) SIO_.print(__VA_ARGS__)

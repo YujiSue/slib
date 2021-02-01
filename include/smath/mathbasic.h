@@ -62,6 +62,7 @@ namespace slib {
 		constexpr suint MAX_UINT = 0xFFFFFFFF;
 		constexpr suinteger MAX_ULONG = 0xFFFFFFFFFFFFFFFF;
 		constexpr double PI = M_PI;
+		constexpr double E = M_E;
 		constexpr float F_EPS = FLT_EPSILON;
 		constexpr double D_EPS = DBL_EPSILON;
 		constexpr float F_INF = HUGE_VALF;

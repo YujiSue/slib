@@ -4,7 +4,7 @@
 #include "sobj.h"
 #include "sapp/sglapp.h"
 
-#define DEFAULT_RENDERER &displayGL
+//#define DEFAULT_RENDERER &displayGL
 
 namespace slib {
 	namespace ssci {

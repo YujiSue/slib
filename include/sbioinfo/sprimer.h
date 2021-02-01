@@ -56,45 +56,31 @@ namespace slib {
             ~sprimer_param();
             sobj toObj();
         };
-
-		extern double nnEnthalpy(subyte* seq, size_t len);
-		extern double nnEntropy(subyte* seq, size_t len);
-		extern void tmCalc(double* tm, subyte* seq, size_t len);
-		extern sint crossComplement(SBioSeq* seq1, SBioSeq* seq2);
-		/*{
-			int crosscomp = 0;
-			std::string cstr = seq2.raw(), sub;
-			dcomp(cstr);
-			size_t length = seq1.length() - 3, pos = 0;
-			for (int i = 0; i < length; ++i) {
-				sub = seq1.decode(i, 3);
-				while ((pos = cstr.find(sub, pos)) != std::string::npos) { ++crosscomp; ++pos; }
-				pos = 0;
-			}
-			return crosscomp;
+		extern bool checkPrimer(subyte* seq, size_t len, sprimer_param* par);
+		namespace sseq {
+			extern sfrac baseBias(subyte* seq, size_t len);
+			extern double tmCalc(double* tm, subyte* seq, size_t len);
+			extern sregion selfComp(subyte* seq, size_t len);
+			extern sregion crossComp(subyte* seq1, size_t len1, subyte* seq2, size_t len2);
 		}
-		*/
 		class SBIOINFO_DLL SPrimer {
-			sushort flag;
-			subyte* seq;
-			String ref;
-			sbpos pos;
+			sint score;
+			ubytearray seq;
 			Array<sbpos> match[3];
 
 			SPrimer();
-			SPrimer(subyte* s, sint i, sint p, sint l, bool d);
+			SPrimer(const char *s, bool dir = false);
+			SPrimer(subyte* s, size_t len, bool dir = false);
 			SPrimer(const SPrimer&p);
             ~SPrimer();
 
-			double score(sprimer_param* par) const;
+			size_t length() const;
+			String sequence() const;
 			double tm() const;
-			sint bias() const;
-			sint selfcomp() const;
-			String toString() const;
-			SDictionary summary() const;
+			sfrac bias() const;
+			sint scoring(sprimer_param* par);			
+			sobj summary() const;
         };
-		extern bool checkPrimer(SPrimer* p, sprimer_param* par);
-		
     }
 }
 

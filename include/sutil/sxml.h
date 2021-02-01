@@ -7,7 +7,7 @@
 #include "smedia/sfigure.h"
 
 namespace slib {
-    
+	//namespace sxml {
 	namespace xml {
 		constexpr sushort DEFINITION_NODE = 0x0100;
 		constexpr sushort DOCTYPE_NODE = 0x0200;

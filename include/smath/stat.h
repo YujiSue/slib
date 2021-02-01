@@ -6,69 +6,47 @@
 
 namespace slib {
 	namespace sstat {
-		template<typename T>
-		extern inline sint argmax(sla::SVector2D<T>& vec) { return vec.x < vec.y ? 1 : 0; }
-		template<typename T>
-		extern inline sint argmax(sla::SVector3D<T>& vec) { 
-			if (vec.x < vec.y) {
-				if (vec.y < vec.z) return 2;
-				else return 1;
-			}
-			else {
-				if (vec.x < vec.z) return 2;
-				else return 0;
-			}
+		template<size_t D, typename T>
+		extern inline sinteger argmax(const sla::SVectorND<D, T>& vec) { 
+			sinteger i = 0; T max = vec[0];
+			sforin(d, 1, D) { if (max < vec[d]) { i = d; max = vec[d]; } }
+			return i;
 		}
 		template<typename T>
-		extern inline sint argmax(sla::SVector4D<T>& vec) { 
-			if (vec.x < vec.y) {
-				if (vec.y < vec.z) {
-					if (vec.z < vec.w) return 3;
-					else return 2;
-				}
-				else {
-					if (vec.y < vec.w) return 3;
-					else return 1;
-				}
-			}
-			else {
-				if (vec.x < vec.z) {
-					if (vec.z < vec.w) return 3;
-					else return 2;
-				}
-				else {
-					if (vec.x < vec.w) return 3;
-					else return 0;
-				}
-			}
-		}
-		template<typename T>
-		extern inline sint argmax(T* val, size_t s) {
-			sint idx = 0; T max = *val;
-			sforin(i, 0, s) {
-				if (max < *val) { max = *val; idx = i; }
+		extern inline sinteger argmax(T* val, size_t s) {
+			sinteger i = 0; T max = *val;
+			sforin(k, 0, s) {
+				if (max < *val) { max = *val; i = k; }
 				++val;
 			}
-			return idx;
+			return i;
+		}
+		template<typename T, class M>
+		extern inline sinteger argmax(const sla::SVector<T, M>& vec) {
+			sinteger i = 0; T max = vec[0];
+			sforeach(vec) { if (max < E_) { i = INDEX_(vec); max = E_; } }
+			return i;
 		}
 		template<typename T>
-		extern inline sint argmax(sarr_citer<T> beg, sarr_citer<T> end) {
+		extern inline sinteger argmax(sarr_citer<T> beg, sarr_citer<T> end) {
 			sint idx = 0; T max = *beg;
 			sforin(it, beg + 1, end) { if (max < E_) { max = E_; idx = it - beg; } }
 			return idx;
 		}
 		template<typename T>
-		extern inline sint argmax(scyc_citer<T> beg, scyc_citer<T> end) {
+		extern inline sinteger argmax(scyc_citer<T> beg, scyc_citer<T> end) {
 			sint idx = 0; T max = *beg;
 			sfortill(it, beg + 1, end) { if (max < E_) { max = E_; idx = E_.current; } }
 			return idx;
 		}
-		template<typename T, class M>
-		extern inline sint argmax(const sla::SVector<T, M>& vec) {
-			return argmax(vec.begin(), vec.end());
+		template<size_t D, typename T>
+		extern inline T maxValue(const sla::SVectorND<D, T>& vec) {
+			T max = vec[0];
+			sforin(d, 1, D) { if (max < vec[d]) max = vec[d]; }
+			return max;
 		}
 		template<typename T>
-		extern inline T maxv(T* val, size_t s) {
+		extern inline T maxValue(T* val, size_t s) {
 			T max = *val;
 			sforin(i, 0, s) {
 				if (max < *val) max = *val;
@@ -76,24 +54,32 @@ namespace slib {
 			}
 			return max;
 		}
+		template<typename T, class M>
+		extern inline T maxValue(const sla::SVector<T, M>& vec) {
+			T max = vec[0];
+			sforeach(vec) { if (max < E_) max = E_; }
+			return max;
+		}
 		template<typename T>
-		extern inline T maxv(sarr_citer<T> beg, sarr_citer<T> end) {
+		extern inline T maxValue(sarr_citer<T> beg, sarr_citer<T> end) {
 			T max = *beg;
 			sforin(it, beg + 1, end) { if (max < E_) max = E_; }
 			return max;
 		}
 		template<typename T>
-		extern inline T maxv(scyc_citer<T> beg, scyc_citer<T> end) {
+		extern inline T maxValue(scyc_citer<T> beg, scyc_citer<T> end) {
 			T max = *beg;
 			sfortill(it, beg + 1, end) { if (max < E_) max = E_; }
 			return max;
 		}
-		template<typename T, class M>
-		extern inline T maxv(const sla::SVector<T, M>& vec) {
-			return maxv(vec.begin(), vec.end());
+		template<size_t D, typename T>
+		extern inline sinteger argmin(const sla::SVectorND<D, T>& vec) {
+			sinteger i = 0; T min = vec[0];
+			sforin(d, 1, D) { if (vec[d] < min) { i = d; min = vec[d]; } }
+			return i;
 		}
 		template<typename T>
-		extern inline sint argmin(T* val, size_t s) {
+		extern inline sinteger argmin(T* val, size_t s) {
 			sint idx = 0; T min = *val;
 			sforin(i, 0, s) {
 				if ((*val) < min) { min = *val; idx = i; }
@@ -101,24 +87,32 @@ namespace slib {
 			}
 			return idx;
 		}
+		template<typename T, class M>
+		extern inline sinteger argmin(const sla::SVector<T, M>& vec) {
+			sinteger i = 0; T min = vec[0];
+			sforeach(vec) { if (E_ < min) { i = INDEX_(vec); min = E_; } }
+			return i;
+		}
 		template<typename T>
-		extern inline sint argmin(sarr_citer<T> beg, sarr_citer<T> end) {
+		extern inline sinteger argmin(sarr_citer<T> beg, sarr_citer<T> end) {
 			sint idx = 0; T min = *beg;
 			sforin(it, beg + 1, end) { if (E_ < min) { min = E_; idx = it - beg; } }
 			return idx;
 		}
 		template<typename T>
-		extern inline sint argmin(scyc_citer<T> beg, scyc_citer<T> end) {
+		extern inline sinteger argmin(scyc_citer<T> beg, scyc_citer<T> end) {
 			sint idx = 0; T min = *beg;
 			sfortill(it, beg + 1, end) { if (E_ < min) { min = E_; idx = it - beg; } }
 			return idx;
 		}
-		template<typename T, class M>
-		extern inline sint argmin(const sla::SVector<T, M>& vec) {
-			return argmin(vec.begin(), vec.end());
+		template<size_t D, typename T>
+		extern inline T minValue(const sla::SVectorND<D, T>& vec) {
+			T min = vec[0];
+			sforin(d, 1, D) { if (vec[d] < min) min = vec[d]; }
+			return min;
 		}
 		template<typename T>
-		extern inline T minv(T* val, size_t s) {
+		extern inline T minValue(T* val, size_t s) {
 			T min = *val;
 			sforin(i, 0, s) {
 				if (*val < min) min = *val;
@@ -126,26 +120,40 @@ namespace slib {
 			}
 			return min;
 		}
+		template<typename T, class M>
+		extern inline T minValue(const sla::SVector<T, M>& vec) {
+			T min = vec[0];
+			sforeach(vec) { if (E_ < min) min = E_; }
+			return min;
+		}
 		template<typename T>
-		extern inline T minv(sarr_citer<T> beg, sarr_citer<T> end) {
+		extern inline T minValue(sarr_citer<T> beg, sarr_citer<T> end) {
 			T min = *beg;
 			sforin(it, beg + 1, end) { if (E_ < min) min = E_; }
 			return min;
 		}
 		template<typename T>
-		extern inline T minv(scyc_citer<T> beg, scyc_citer<T> end) {
+		extern inline T minValue(scyc_citer<T> beg, scyc_citer<T> end) {
 			T min = *beg;
 			sfortill(it, beg + 1, end) { if (E_ < min) min = E_; }
 			return min;
 		}
-		template<typename T, class M>
-		extern inline T minv(const sla::SVector<T, M>& vec) {
-			return minv(vec.begin(), vec.end());
+		template<size_t D, typename T>
+		extern inline T sum(const sla::SVectorND<D, T>& vec) {
+			T s = initVal<T>();
+			sforin(d, 0, D) s += vec[d];
+			return s;
 		}
 		template<typename T>
 		extern inline T sum(T* val, size_t size) {
 			T s = initVal<T>();
-			sforin(i, 0, size) { s += *val; ++val; }
+			sforin(i, 0, size) { s += (*val); ++val; }
+			return s;
+		}
+		template<typename T, class M>
+		extern inline T sum(const sla::SVector<T, M>& vec) {
+			T s = initVal<T>();
+			sforeach(vec) s += E_;
 			return s;
 		}
 		template<typename T>
@@ -160,16 +168,19 @@ namespace slib {
 			sfortill(it, beg, end) s += E_;
 			return s;
 		}
-		template<typename T, class M>
-		extern inline T sum(const sla::SVector<T, M>& vec) {
-			return sum(vec.begin(), vec.end());
-		}
-		extern inline double Mean(int* val, size_t len) {
-			return ((double)(sum(val, len))) / len;
+		template<size_t D, typename T>
+		extern inline T average(const sla::SVectorND<D, T>& vec) {
+			if (!D) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+			return sum(vec) / D;
 		}
 		template<typename T>
 		extern inline T average(T* val, size_t len) {
 			return sum<T>(val, len) / len;
+		}
+		template<typename T, class M>
+		extern inline T average(const sla::SVector<T, M>& vec) {
+			if (vec.empty()) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+			return sum(vec) / vec.size();
 		}
 		template<typename T>
 		extern inline T average(sarr_citer<T> beg, sarr_citer<T> end) {
@@ -180,24 +191,27 @@ namespace slib {
 		extern inline T average(scyc_citer<T> beg, scyc_citer<T> end) {
 			if (end - beg) return (sumIn(beg, end)) / (end - beg);
 			throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+		}		
+		template<size_t D, typename T>
+		extern inline T angaverage(const sla::SVectorND<D, T>& vec) {
+			sla::svec2d<T> sum;
+			sforin(d, 0, D) sum += sla::svec2d<T>(cos(vec[d]), sin(vec[d]));
+			return sla::argument(sum);
 		}
 		template<typename T, class M>
-		extern inline T average(const sla::SVector<T, M>& vec) {
-			if (vec.empty()) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
-			return sum(vec) / vec.size();
-		}
-		extern inline double Mean(const sveci& vec) {
-			if (vec.empty()) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
-			return ((double)(sstat::sum(vec))) / vec.size();
+		extern inline T angaverage(const sla::SVector<T, M>& vec) {
+			sla::svec2d<T> sum;
+			sforeach(vec) sum += sla::svec2d<T>(cos(E_), sin(E_));
+			return sla::argument(sum);
 		}
 		template<typename T>
 		extern inline T angaverage(sarr_citer<T> beg, sarr_citer<T> end) {
 			v2d sum;
 			sforin(it, beg, end) {
 				sum += v2d(cos(E_), sin(E_));
-				sgeom::normalize(sum);
+				sla::normalize(sum);
 			}
-			return sgeom::argument(sum);
+			return sla::argument(sum);
 		}
 		template<typename T>
 		extern inline T angaverage(scyc_citer<T> beg, scyc_citer<T> end) {
@@ -208,9 +222,17 @@ namespace slib {
 			}
 			return sgeom::argument(sum);
 		}
+		template<size_t D, typename T>
+		extern inline T product(const sla::SVectorND<D, T>& vec) {
+			T prod = unitVal<T>();
+			sforin(d, 0, D) { prod *= vec[d]; }
+			return prod;
+		}
 		template<typename T, class M>
-		extern inline T angaverage(const sla::SVector<T, M>& vec) {
-			return angaverage(vec.begin(), vec.end());
+		extern inline T product(const sla::SVector<T, M>& vec) {
+			T prod = unitVal<T>();
+			sforeach(vec) { prod *= E_; }
+			return prod;
 		}
 		template<typename T>
 		extern inline T product(sarr_citer<T> beg, sarr_citer<T> end) {
@@ -224,13 +246,21 @@ namespace slib {
 			sfortill(it, beg, end) prod *= E_;
 			return prod;
 		}
-		template<typename T, class M>
-		extern inline T product(const sla::SVector<T, M>& vec) {
-			return product(vec.begin(), vec.end());
+		template<size_t D, typename T>
+		extern inline sla::SVectorND<D-1, T> difference(const sla::SVectorND<D, T>& vec, sint i = 1) {
+			sla::SVectorND<D - i, T> dif;
+			sforin(d, i, D) { dif[d - i] = vec[d] - vec[d - i]; }
+			return dif;
+		}
+		template<typename T>
+		extern inline sla::SVectorND<0, T> difference(const sla::SVectorND<1, T>& vec, sint i = 1) {
+			return sla::SVectorND<0, T>;
 		}
 		template<typename T, class M>
-		extern inline void difference(const sla::SVector<T, M>& vec, sla::SVector<T, M>& diff) {
-			sforin(it, vec.begin(), vec.end() - 1) diff.add(E_NEXT - E_);
+		extern inline sla::SVector<T, M> difference(const sla::SVector<T, M>& vec, sint i = 1) {
+			sla::SVector<T, M> dif(vec.size() - i);
+			sforeach2(dif, vec) { E1_ = *(it2.second + i) - E2_; }
+			return dif;
 		}
 		template<typename T, class M>
 		extern inline void maverage(const sla::SVector<T, M>& vec, sla::SVector<T, M>& ma, size_t bin, bool imputation = false) {
@@ -265,25 +295,27 @@ namespace slib {
 				}
 			}
 		}
-		template<size_t Dim, typename T>
+		template<size_t D, typename T, class M>
+		extern inline T moment(const sla::SVector<T, M>& vec, size_t d) {
+			T mom = initVal<T>();
+			sforeach(vec) mom += smath::power(E_, D);
+			return mom;
+		}
+		template<size_t D, typename T>
 		extern inline T moment(sarr_citer<T> beg, sarr_citer<T> end) {
 			T mom = initVal<T>();
-			sforin(it, beg, end) mom += smath::power(E_, Dim);
+			sforin(it, beg, end) mom += smath::power(E_, D);
 			return mom;
 		}
-		template<size_t Dim, typename T>
+		template<size_t D, typename T>
 		extern inline T moment(scyc_citer<T> beg, scyc_citer<T> end) {
 			T mom = initVal<T>();
-			sfortill(it, beg, end) mom += smath::power(E_, Dim);
+			sfortill(it, beg, end) mom += smath::power(E_, D);
 			return mom;
 		}
-		template<size_t Dim, typename T, class M>
-		extern inline T moment(const sla::SVector<T, M>& vec) {
-			return moment<Dim, T>(vec.begin(), vec.end());
-		}
-		extern inline double Var(const sveci& vec, bool unbiased = false) {
-			return ((double)moment<2, sint, CMemory<sint>>(vec) - smath::power(Mean(vec), 2)) / (unbiased ? vec.size() - 1 : vec.size());
-		}
+		//extern inline double Var(const sveci& vec, bool unbiased = false) {
+		//	return ((double)moment<2, sint, CMemory<sint>>(vec) - smath::power((vec), 2)) / (unbiased ? vec.size() - 1 : vec.size());
+		//}
 		template<typename T, class M>
 		extern inline T variance(const sla::SVector<T, M>& vec, bool unbiased = false) {
 			return (moment<2, T, M>(vec) - smath::power(average(vec), 2)) / (unbiased ? vec.size() - 1 : vec.size());
@@ -296,8 +328,9 @@ namespace slib {
 			sforeach2(v1, v2) cov += ((double)E1_ - ave1) * ((double)E2_ - ave2);
 			return cov / v1.size();
 		}
-		template<typename T>
-		extern inline mat2d covmat(const sla::SVector<svec2d<T>, RMemory<svec2d<T>>>& vec) {
+		/*
+		template<size_t D, typename T>
+		extern inline sla::MatrixND<D, T> covariance(const sla::SVector<sla::SVectorND<D, T>, RMemory<sla::SVectorND<2, T>>>& vec) {
 			auto sum = sstat::sum(vec);
 			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
 			mat2d mat;
@@ -305,15 +338,32 @@ namespace slib {
 			sforeach(vec) {
 				dx = (double)E_.x - ave.x;
 				dy = (double)E_.y - ave.y;
-				mat.element[0] += dx * dx;
-				mat.element[1] += dx * dy;
-				mat.element[3] += dy * dy;
+				mat.elements[0] += dx * dx;
+				mat.elements[1] += dx * dy;
+				mat.elements[3] += dy * dy;
 			}
-			mat.element[2] = mat.element[1];
+			mat.elements[2] = mat.elements[1];
+			return mat / vec.size();
+		}
+		*/
+		template<typename T>
+		extern inline mat2d covmat(const sla::SVector<sla::SVectorND<2, T>, RMemory<sla::SVectorND<2, T>>>& vec) {
+			auto sum = sstat::sum(vec);
+			v2d ave((double)sum.x / vec.size(), (double)sum.y / vec.size());
+			mat2d mat;
+			double dx, dy;
+			sforeach(vec) {
+				dx = (double)E_.x - ave.x;
+				dy = (double)E_.y - ave.y;
+				mat.elements[0] += dx * dx;
+				mat.elements[1] += dx * dy;
+				mat.elements[3] += dy * dy;
+			}
+			mat.elements[2] = mat.elements[1];
 			return mat / vec.size();
 		}
 		template<typename T>
-		extern inline mat3d covmat(const sla::SVector<svec3d<T>, RMemory<svec3d<T>>>& vec) {
+		extern inline mat3d covmat(const sla::SVector<sla::SVectorND<3, T>, RMemory<sla::SVectorND<3, T>> > & vec) {
 			auto sum = sstat::sum(vec);
 			v3d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size());
 			mat3d mat;
@@ -322,20 +372,20 @@ namespace slib {
 				dx = (double)E_.x - ave.x;
 				dy = (double)E_.y - ave.y;
 				dz = (double)E_.z - ave.z;
-				mat.element[0] += dx * dx;
-				mat.element[1] += dx * dy;
-				mat.element[2] += dx * dz;
-				mat.element[4] += dy * dy;
-				mat.element[5] += dy * dz;
-				mat.element[8] += dz * dz;
+				mat.elements[0] += dx * dx;
+				mat.elements[1] += dx * dy;
+				mat.elements[2] += dx * dz;
+				mat.elements[4] += dy * dy;
+				mat.elements[5] += dy * dz;
+				mat.elements[8] += dz * dz;
 			}
-			mat.element[3] = mat.element[1];
-			mat.element[6] = mat.element[2];
-			mat.element[7] = mat.element[5];
+			mat.elements[3] = mat.elements[1];
+			mat.elements[6] = mat.elements[2];
+			mat.elements[7] = mat.elements[5];
 			return mat / vec.size();
 		}
 		template<typename T>
-		extern inline mat4d covmat(const sla::SVector<svec4d<T>, RMemory<svec4d<T>>>& vec) {
+		extern inline mat4d covmat(const sla::SVector<sla::SVectorND<4, T>, RMemory<sla::SVectorND<4, T>>>& vec) {
 			auto sum = sstat::sum(vec);
 			v4d ave((double)sum.x / vec.size(), (double)sum.y / vec.size(), (double)sum.z / vec.size(), (double)sum.w / vec.size());
 			mat4d mat;
@@ -345,23 +395,23 @@ namespace slib {
 				dy = (double)E_.y - ave.y;
 				dz = (double)E_.z - ave.z;
 				dw = (double)E_.w - ave.w;
-				mat.element[0] += dx * dx;
-				mat.element[1] += dx * dy;
-				mat.element[2] += dx * dz;
-				mat.element[3] += dx * dw;
-				mat.element[5] += dy * dy;
-				mat.element[6] += dy * dz;
-				mat.element[7] += dy * dw;
-				mat.element[10] += dz * dz;
-				mat.element[11] += dz * dw;
-				mat.element[15] += dw * dw;
+				mat.elements[0] += dx * dx;
+				mat.elements[1] += dx * dy;
+				mat.elements[2] += dx * dz;
+				mat.elements[3] += dx * dw;
+				mat.elements[5] += dy * dy;
+				mat.elements[6] += dy * dz;
+				mat.elements[7] += dy * dw;
+				mat.elements[10] += dz * dz;
+				mat.elements[11] += dz * dw;
+				mat.elements[15] += dw * dw;
 			}
-			mat.element[4] = mat.element[1];
-			mat.element[8] = mat.element[2];
-			mat.element[9] = mat.element[6];
-			mat.element[12] = mat.element[3];
-			mat.element[13] = mat.element[7];
-			mat.element[14] = mat.element[11];
+			mat.elements[4] = mat.elements[1];
+			mat.elements[8] = mat.elements[2];
+			mat.elements[9] = mat.elements[6];
+			mat.elements[12] = mat.elements[3];
+			mat.elements[13] = mat.elements[7];
+			mat.elements[14] = mat.elements[11];
 			return mat / vec.size();
 		}
 		template<typename T, class M>
@@ -388,9 +438,6 @@ namespace slib {
 		extern inline T stddev(const sla::SVector<T, M>& vec, bool corrected = false) {
 			return sqrt(variance(vec, corrected));
 		}
-		extern inline double StdDev(const sveci& vec, bool corrected = false) {
-			return sqrt(Var(vec, corrected));
-		}
 		template<typename T, class M>
 		extern inline T skew(const sla::SVector<T, M>& vec) {
 			return moment<3, T, M>(vec) / smath::power(stddev(vec, true), 3);
@@ -401,17 +448,17 @@ namespace slib {
 		}
 		template<typename T, class M>
 		extern inline T median(const sla::SVector<T, M>& vec) {
-			svec<T, M> vec_;
-			vec.copyTo(vec_);
-			vec_.sort();
-			return vec_[vec.size() / 2];
+			svec<T, M> v;
+			vec.copyTo(v);
+			v.sort();
+			return v[vec.size() / 2];
 		}
 		template<typename T, class M>
-		extern svec3d<T> quartile(const sla::SVector<T, M>& vec) {
-			svec<T, M> vec_;
-			vec.copyTo(vec_);
-			vec_.sort();
-			return svec3d<T>(vec_[vec.size() / 4], vec_[vec.size() / 2], vec_[3 * vec.size() / 4]);
+		extern sla::SVectorND<3, T> quartile(const sla::SVector<T, M>& vec) {
+			svec<T, M> v;
+			vec.copyTo(v);
+			v.sort();
+			return sla::SVectorND<3, T>(v[vec.size() / 4], v[vec.size() / 2], v[3 * vec.size() / 4]);
 		}
 
 		template<typename T, class M>
@@ -429,14 +476,32 @@ namespace slib {
 				return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
 			};
 		}
-		extern inline double norm(double x, double m = 0.0, double s = 1.0) {
-			return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-(x - m) * (x - m) / (2.0 * s));
+		extern inline double dnorm(double x, double m = 0.0, double s = 1.0) {
+			return 1.0 / (sqrt(2 * smath::PI) * s) * exp(-smath::power(x - m, 2) / (2.0 * smath::power(s, 2)));
 		}
 		extern inline double pnorm(double x, double m = 0.0, double s = 1.0);
 		extern inline double qnorm(double x, double m = 0.0, double s = 1.0);
 
+		extern inline double dbinom(sinteger n, sinteger k, double p) {
+			double d = log(p) * k + log(1.0 - p) * (n - k);
+			sforin(i, 0, k) { d += log(n); --n; }
+			while(1 < k) { d -= log(k); --k; }
+			return exp(d);
+		}
+		extern inline double pbinom(double x, double m = 0.0, double s = 1.0);
+		extern inline double qbinom(double x, double m = 0.0, double s = 1.0);
+		extern inline double binomTest(sinteger n, sinteger k, double p) {
+			double pval = 0.0;
+			if (k < n - k) {
+				sforin(i, 0, k) { pval += dbinom(n, i, p); }
+				pval = pval < 1.0 ? 1.0 - pval : 0.0;
+			}
+			else { sforin(i, k, n) { pval += dbinom(n, i, p); } }
+			return pval;
+		}
+
 		extern inline std::function<double(double)> chisqFunc(double x, double n);
-		extern inline double chisq(double x, double n);
+		extern inline double dchisq(double x, double n);
 		extern inline double pchisq(double x, double n);
 		extern inline double qchisq(double x, double n);
 
@@ -454,7 +519,14 @@ namespace slib {
 		extern inline std::function<double(int)> poisFunc(double l) {
 			return [l](int x) { return (pow(l, x) * exp(-l)) / smath::factorial(x); };
 		}
-		extern inline double pois(int x, double l) { return (pow(l, x) * exp(-l)) / smath::factorial(x); }
+		extern inline double dpois(int x, double l) { 
+			if (12 < x) {
+				double p = x * log(l) - l;
+				sforin(i, 2, x + 1) p -= log(i);
+				return exp(p);
+			}
+			else return (pow(l, x) * exp(-l)) / smath::factorial(x); 
+		}
 		extern inline double ppois(int x, double l);
 		extern inline double qpois(int x, double l);
 

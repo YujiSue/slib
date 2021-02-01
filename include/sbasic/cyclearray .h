@@ -10,16 +10,13 @@ namespace slib {
 	public:
 		typedef T value_type;
 		typedef std::function<bool(const T & t1, const T & t2)> Comparer;
-        
     protected:
         size_t _size, _capacity;
         T *_begin, *_off, *_end;
-        
     private:
 		size_t _remain() const;
         void _expandHead(size_t s);
         void _expandTail(size_t s);
-        
     public:
 		CycleArray();
 		CycleArray(size_t s);
@@ -28,10 +25,8 @@ namespace slib {
 		CycleArray(CycleArray<T> &&carray);
 		CycleArray(const CycleArray<T> &carray);
         ~CycleArray();
-        
 		CycleArray&operator = (CycleArray &&barray);
 		CycleArray&operator = (const CycleArray &barray);
-        
         T &operator[] (int idx);
         const T &operator[] (int idx) const;
         const T &at(int idx) const;
@@ -96,7 +91,8 @@ namespace slib {
         
         void trim(size_t s);
         void cut(size_t s);
-        T get();
+		T get(sinteger idx) const;
+        T pop();
         T pick();
         void clear();
         void reset(const T &val);
