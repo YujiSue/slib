@@ -31,7 +31,7 @@ String SRectangle::getClass() const {
 String SRectangle::toString() const {
     String str = getClass()+":{";
     if (vcount()) {
-        sforeach(_vertex) str<<"("<<E_.x<<","<<E_.y<<"),";
+        sforeach(_vertex) str<<"("<<E_[0]<<","<<E_[1]<<"),";
         str.last() = '}';
     }
     str+="}";
@@ -53,17 +53,17 @@ SEllipse::SEllipse(const SEllipse &elps) : SRectangle(elps) {
 }
 SEllipse::~SEllipse() {}
 
-svec2d<v2f> SEllipse::focus() const {
+sla::SVectorND<2, v2f> SEllipse::focus() const {
     v2f f1 = center(), f2 = center();
     if (width() < height()) {
         float dis = sqrt(_boundary.height*_boundary.height-_boundary.width*_boundary.width);
-        f1.y += dis; f2.y -= dis;
+        f1[1] += dis; f2[1] -= dis;
     }
     else {
         float dis = sqrt(_boundary.width*_boundary.width-_boundary.height*_boundary.height);
-        f1.x += dis; f2.x -= dis;
+        f1[0] += dis; f2[0] -= dis;
     }
-    return svec2d<v2f>(f1, f2);
+    return sla::SVectorND<2, v2f>(f1, f2);
 }
 double SEllipse::length() const {
     float ratio = width()<height()?width()/height():height()/width();
@@ -75,7 +75,7 @@ bool SEllipse::include(v2f v) const {
     if (_type==sshape::CIRCLE) return sgeom::distance(v, center()) < width();
     else {
         auto f = focus(); auto l = width()<height()?height():width();
-        return sgeom::distance(v, f.x)+sgeom::distance(v, f.y) < 2*l;
+        return sgeom::distance(v, f[0])+sgeom::distance(v, f[1]) < 2*l;
     }
 }
 String SEllipse::getClass() const {
@@ -84,35 +84,35 @@ String SEllipse::getClass() const {
 String SEllipse::toString() const {
     String str = getClass()+":";
     if (_type==sshape::CIRCLE)
-        str<<"("<<center().x<<","<<center().y<<");"<<width()<<")";
+        str<<"("<<center()[0]<<","<<center()[1]<<");"<<width()<<")";
     else {
         auto f = focus();
-        str<<"("<<f.x.x<<","<<f.x.y<<"),("<<f.y.x<<","<<f.y.y<<");"<<width()<<","<<height()<<")";
+        str<<"("<<f[0][0]<<","<<f[0][1]<<"),("<<f[1][0]<<","<<f[1][1]<<");"<<width()<<","<<height()<<")";
     }
     return str;
 }
 SObject *SEllipse::clone() const { return new SEllipse(*this); }
 
 SArc::SArc() : SEllipse() {
-    _type = sshape::ARC; _phase.x = 0.0f; _phase.y = 360.0f;
+    _type = sshape::ARC; _phase[0] = 0.0f; _phase[1] = 360.0f;
 }
 SArc::SArc(float x, float y, float rad, float init, float end, smath::ROTATION r, const SPaint &paint)
 : SEllipse(x, y, rad, paint) {
-    _type = sshape::ARC; _phase.x = init; _phase.y = end; _dir = r;
+    _type = sshape::ARC; _phase[0] = init; _phase[1] = end; _dir = r;
 }
 SArc::SArc(float x, float y, float rad, float init, float end, smath::ROTATION r, const SDictionary &dic)
 : SEllipse(x, y, rad, dic) {
-    _type = sshape::ARC; _phase.x = init; _phase.y = end; _dir = r;
+    _type = sshape::ARC; _phase[0] = init; _phase[1] = end; _dir = r;
 }
 SArc::SArc(float x, float y, float hrad, float vrad,
            float init, float end, smath::ROTATION r, const SPaint &paint)
 : SEllipse(x, y, hrad, vrad, paint) {
-    _type = sshape::ARC; _phase.x = init; _phase.y = end; _dir = r;
+    _type = sshape::ARC; _phase[0] = init; _phase[1] = end; _dir = r;
 }
 SArc::SArc(float x, float y, float hrad, float vrad,
            float init, float end, smath::ROTATION r, const SDictionary &dic)
 : SEllipse(x, y, hrad, vrad, dic) {
-    _type = sshape::ARC; _phase.x = init; _phase.y = end; _dir = r;
+    _type = sshape::ARC; _phase[0] = init; _phase[1] = end; _dir = r;
 }
 SArc::SArc(const SArc &arc) : SEllipse(arc) {
     _type = sshape::ARC; _phase = arc._phase; _dir = arc._dir;
@@ -131,7 +131,7 @@ String SArc::getClass() const {
 String SArc::toString() const {
     String str = getClass()+":";
     auto f = focus();
-    str<<"("<<f.x.x<<","<<f.x.y<<"),("<<f.y.x<<","<<f.y.y<<");"<<width()<<","<<height()<<";"<<_phase.x<<","<<_phase.y<<":"<<(_dir==CW?"CW":"CCW")<<")";
+    str<<"("<<f[0][0]<<","<<f[0][1]<<"),("<<f[1][0]<<","<<f[1][1]<<");"<<width()<<","<<height()<<";"<<_phase[0]<<","<<_phase[1]<<":"<<(_dir==CW?"CW":"CCW")<<")";
     return str;
 }
 SObject *SArc::clone() const { return new SArc(*this); }

@@ -475,30 +475,29 @@ namespace slib {
 		};
 		template<size_t D, class B, typename T>
 		class SLIB_DLL Point : public Shape<D, B, T> {
-			typedef Shape<D, B, T> shape;
 		public:
 			Point() : shape(sshape::POINT, 1) {}
-			Point(const sla::SVectorND<D, T>& p) : shape(sshape::POINT) { shape::addPoint(p); }
+			Point(const sla::SVectorND<D, T>& p) : shape(sshape::POINT) { Shape<D, B, T>::addPoint(p); }
 			Point(const Point& p) : shape(p) {}
 			virtual ~Point() {}
 			Point& operator=(const Point& p) {
-				shape::_type = p._type;
-				shape::_boundary = p._boundary;
-				shape::_vertex = p._vertex;
-				shape::_origin = p._origin;
-				shape::_transform = p._transform;
+				Shape<D, B, T>::_type = p._type;
+				Shape<D, B, T>::_boundary = p._boundary;
+				Shape<D, B, T>::_vertex = p._vertex;
+				Shape<D, B, T>::_origin = p._origin;
+				Shape<D, B, T>::_transform = p._transform;
 				return *this;
 			}
 			virtual void dot(const sla::SVectorND<D, T>& p) {
-				if (!(Shape<D, B, T>::_type& sshape::MULTIPLE)) shape::_type |= sshape::MULTIPLE;
-				shape::addPoint(p);
+				if (!(Shape<D, B, T>::_type& sshape::MULTIPLE)) Shape<D, B, T>::_type |= sshape::MULTIPLE;
+				Shape<D, B, T>::addPoint(p);
 			}
 			virtual sla::SVectorND<D, T> center() const {
-				if (shape::count() < 2) return shape::_vertex[0];
+				if (Shape<D, B, T>::count() < 2) return Shape<D, B, T>::_vertex[0];
 				else {
 					auto c = sla::SVectorND<D, T>();
-					sforeach(shape::_vertex) c += E_;
-					c /= shape::count();
+					sforeach(Shape<D, B, T>::_vertex) c += E_;
+					c /= shaShape<D, B, T>pe::count();
 					return c;
 				}
 			}
@@ -517,11 +516,11 @@ namespace slib {
 			Line(const Line& l) : Shape<D, B, T>(l) {}
 			virtual ~Line() {}
 			Line& operator=(const Line& l) {
-				shape::_type = l._type;
-				shape::_boundary = l._boundary;
-				shape::_vertex = l._vertex;
-				shape::_origin = l._origin;
-				shape::_transform = l._transform;
+				Shape<D, B, T>::_type = l._type;
+				Shape<D, B, T>::_boundary = l._boundary;
+				Shape<D, B, T>::_vertex = l._vertex;
+				Shape<D, B, T>::_origin = l._origin;
+				Shape<D, B, T>::_transform = l._transform;
 				return *this;
 			}
 			virtual void setStart(const sla::SVectorND<D, T>& p) { Shape<D, B, T>::setPoint(0, p); }
@@ -544,9 +543,9 @@ namespace slib {
 			Curve() : shape(sshape::CURVE, R) {}
 			Curve(std::initializer_list<sla::SVectorND<D, T>> li) : shape(sshape::CURVE) {
 				if (li.size() == R) {
-					shape::_vertex.resize(li.size());
-					sforeach2(shape::_vertex, li) E1_ = E2_;
-					shape::_resetBoundary();
+					Shape<D, B, T>::_vertex.resize(li.size());
+					sforeach2(Shape<D, B, T>::_vertex, li) E1_ = E2_;
+					Shape<D, B, T>::_resetBoundary();
 				}
 				else throw smath::SMathException(ERR_INFO, smath::DIMENSION_SIZE_ERR);
 			}
@@ -630,15 +629,14 @@ namespace slib {
 		};
 		template<typename T>
 		class SLIB_DLL Plane : public Shape<3, Zone<T>, T> {
-			typedef Shape<3, Zone<T>, T> shape;
 		protected:
 			T _width, _height;
 			sla::SVectorND<3, T> _horizontal, _vertical;
 		public:
-			Plane() : shape(sshape::RECTANGLE, 4) {}
+			Plane() : Shape<3, Zone<T>, T>(sshape::RECTANGLE, 4) {}
 			Plane(const T& x, const T& y, const T& w, const T& h,
 				const sla::SVectorND<3, T>& H, const sla::SVectorND<3, T>& V)
-				: shape(sshape::PLANE,
+				: Shape<3, Zone<T>, T>(sshape::PLANE,
 					{
 						sla::SVectorND<2, T>(x, y),
 						sla::SVectorND<2, T>(x, y + h),

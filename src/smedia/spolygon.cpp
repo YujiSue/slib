@@ -25,13 +25,13 @@ v2f SPolygon::center() const {
 double SPolygon::length() const {
     double len = 0.0;
     auto cyc = SCycleIterator<v2f>(_vertex.ptr(), 0, vcount());
-    do { len += sgeom::length(*(cyc+1)-(*cyc)); ++cyc; } while (cyc.index());
+    do { len += sla::length(*(cyc+1)-(*cyc)); ++cyc; } while (cyc.index());
     return len;
 }
 double SPolygon::area() const {
     double area = 0.0;
     auto cyc = SCycleIterator<v2f>(_vertex.ptr(), 0, vcount());
-    do { area += (cyc->x-(cyc+1)->x)*(cyc->y+(cyc+1)->y); ++cyc;
+    do { area += (cyc->x()-(cyc+1)->x())*(cyc->y()+(cyc+1)->y()); ++cyc;
     } while (cyc.index());
     return area*0.5;
 }
@@ -39,7 +39,7 @@ String SPolygon::getClass() const { return "polygon"; }
 String SPolygon::toString() const {
     String str = getClass()+":{";
     if (vcount()) {
-        sforeach(_vertex) str<<"("<<E_.x<<","<<E_.y<<"),";
+        sforeach(_vertex) str<<"("<<E_[0]<<","<<E_[1]<<"),";
         str.last() = '}';
     }
     else str<<"}";
@@ -108,9 +108,9 @@ void SCalligraphy::setText(const char *s) {
 	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
 	addVertex(init);
-	addVertex(v2f(init.x, init.y - h));
-	addVertex(v2f(init.x + w, init.y - h));
-	addVertex(v2f(init.x + w, init.y));
+	addVertex(v2f(init[0], init[1] - h));
+	addVertex(v2f(init[0] + w, init[1] - h));
+	addVertex(v2f(init[0] + w, init[1]));
 }
 void SCalligraphy::setFont(const char *font, float size) {
     _attribute = text_style(slib::sstyle::PLAIN, font, size, color::BLACK, color::CLEAR);
@@ -119,9 +119,9 @@ void SCalligraphy::setFont(const char *font, float size) {
 	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
 	addVertex(init);
-	addVertex(v2f(init.x, init.y - h));
-	addVertex(v2f(init.x + w, init.y - h));
-	addVertex(v2f(init.x + w, init.y));
+	addVertex(v2f(init[0], init[1] - h));
+	addVertex(v2f(init[0] + w, init[1] - h));
+	addVertex(v2f(init[0] + w, init[1]));
 }
 void SCalligraphy::setStyle(uint16_t type, const char *font, float size, SColor col, SColor bg) {
     _attribute = text_style(type, font, size, col, bg);
@@ -130,9 +130,9 @@ void SCalligraphy::setStyle(uint16_t type, const char *font, float size, SColor 
 	auto w = _strWidth(_text, _attribute.size);
     auto h = _attribute.size;
 	addVertex(init);
-	addVertex(v2f(init.x, init.y - h));
-	addVertex(v2f(init.x + w, init.y - h));
-	addVertex(v2f(init.x + w, init.y));
+	addVertex(v2f(init[0], init[1] - h));
+	addVertex(v2f(init[0] + w, init[1] - h));
+	addVertex(v2f(init[0] + w, init[1]));
 }
 String SCalligraphy::getClass() const {
     return "calligraphy";

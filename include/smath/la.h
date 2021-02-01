@@ -1000,9 +1000,9 @@ namespace slib {
 				sub[2] = evec[r_ - 1][r_ - 2];
 				sub[3] = evec[r_ - 1][r_ - 1];
 				sol = solveEq2c(v3d(1, sub[0] + sub[3], sub[0] * sub[3] - sub[1] * sub[2]));
-				if (abs(sub[3] - sol.x.real) < abs(sub[3] - sol.y.real))
-					mu = sub[3] - sol.x.real;
-				else  mu = sub[3] - sol.y.real;
+				if (abs(sub[3] - sol[0].real) < abs(sub[3] - sol[1].real))
+					mu = sub[3] - sol[0].real;
+				else  mu = sub[3] - sol[1].real;
 				sforeach(evec) E_ -= mu;
 				sforin(r, 0, mat.row - 1) {
 					tmp1 = sqrt(smath::power(evec[r][r], 2) + smath::power(evec[r + 1][r], 2));

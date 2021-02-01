@@ -24,18 +24,18 @@ SFigure::~SFigure() {}
 
 void SFigure::_makeBoundary(v2f pt) {
 	if (_vertex.empty()) {
-		_boundary.ori_x = pt.x; _boundary.ori_y = pt.y;
+		_boundary.ori_x = pt[0]; _boundary.ori_y = pt[1];
 	}
 	else {
-		if (_boundary.ori_x + _boundary.width < pt.x) _boundary.width = pt.x - _boundary.ori_x;
-		if (_boundary.ori_y + _boundary.height < pt.y) _boundary.height = pt.y - _boundary.ori_y;
-		if (pt.x < _boundary.ori_x) {
-			_boundary.width += _boundary.ori_x - pt.x;  
-			_boundary.ori_x = pt.x;
+		if (_boundary.ori_x + _boundary.width < pt[0]) _boundary.width = pt[0] - _boundary.ori_x;
+		if (_boundary.ori_y + _boundary.height < pt[1]) _boundary.height = pt[1] - _boundary.ori_y;
+		if (pt[0] < _boundary.ori_x) {
+			_boundary.width += _boundary.ori_x - pt[0];  
+			_boundary.ori_x = pt[0];
 		}
-		if (pt.y < _boundary.ori_y) {
-			_boundary.height += _boundary.ori_y - pt.y;
-			_boundary.ori_y = pt.y;
+		if (pt[1] < _boundary.ori_y) {
+			_boundary.height += _boundary.ori_y - pt[1];
+			_boundary.ori_y = pt[1];
 		}
 	}
 }
@@ -48,7 +48,7 @@ void SFigure::_resetBoundary() {
 		}
 	}
 	if (_vertex.size()) {
-		_boundary = sareaf(_vertex[0].x, _vertex[0].y, 0.0f, 0.0f);
+		_boundary = sareaf(_vertex[0][0], _vertex[0][1], 0.0f, 0.0f);
 		sforeach(_vertex) _makeBoundary(E_);
 	}
 }
@@ -131,7 +131,7 @@ void SFigure::reflect(subyte ref) {
 	_resetBoundary(); _updateBoundary();
 }
 void SFigure::addVertex(v2f v) {
-    if (_vertex.empty()) { _boundary.ori_x = v.x; _boundary.ori_y = v.y; }
+    if (_vertex.empty()) { _boundary.ori_x = v[0]; _boundary.ori_y = v[1]; }
 	_makeBoundary(v); _updateBoundary(); _vertex.add(v);
 }
 void SFigure::setVertex(size_t idx, v2f v) { _makeBoundary(v); _updateBoundary(); _vertex.set(idx, v); }
@@ -158,7 +158,7 @@ double SFigure::length() const {
     return 2.0*(_boundary.width+_boundary.height);
 }
 double SFigure::area() const { return _boundary.width*_boundary.height; }
-bool SFigure::include(v2f v) const { return _boundary.include(v.x, v.y); }
+bool SFigure::include(v2f v) const { return _boundary.include(v[0], v[1]); }
 bool SFigure::cross(sfig fig) const { return _boundary.overlap(fig->_boundary); }
 
 String SFigure::getClass() const { return "figure"; }

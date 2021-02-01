@@ -28,7 +28,7 @@ v2f SPoint2D::center() const { return _vertex[0]; }
 double SPoint2D::length() const { return 0.0f; }
 double SPoint2D::area() const { return 0.0f; }
 
-bool SPoint2D::include(v2f v) const { return _boundary.ori_x == v.x && _boundary.ori_y == v.y; }
+bool SPoint2D::include(v2f v) const { return _boundary.ori_x == v[0] && _boundary.ori_y == v[1]; }
 bool SPoint2D::cross(sfig fig) const {
     return fig->include(_vertex[0]);
 }
@@ -37,7 +37,7 @@ String SPoint2D::getClass() const {
 }
 String SPoint2D::toString() const {
     String str = getClass()+":";
-    return str<<"("<<_vertex[0].x<<","<<_vertex[0].y<<")";
+	return str << "(" << _vertex[0][0] << "," << _vertex[0][1] << ")";
 }
 SObject *SPoint2D::clone() const { return new SPoint2D(*this); }
 
@@ -72,7 +72,7 @@ v2f SLine2D::center() const {
 double SLine2D::length() const { return sgeom::distance(_vertex[0], _vertex[1]); }
 double SLine2D::area() const { return 0.0; }
 bool SLine2D::include(v2f v) const {
-    return (v.x-_vertex[0].x)*(_vertex[1].y-_vertex[0].y)==(v.y-_vertex[0].y)*(_vertex[1].x-_vertex[0].x);
+    return (v[0]-_vertex[0][0])*(_vertex[1][1]-_vertex[0][1])==(v[1]-_vertex[0][1])*(_vertex[1][0]-_vertex[0][0]);
 }
 
 String SLine2D::getClass() const {
@@ -80,7 +80,7 @@ String SLine2D::getClass() const {
 }
 String SLine2D::toString() const {
 	String str = getClass() + ":{";
-    return str<<"("<<_vertex[0].x<<","<<_vertex[0].y<<"),("<<_vertex[1].x<<","<<_vertex[1].y<<")}";
+    return str<<"("<<_vertex[0][0]<<","<<_vertex[0][1]<<"),("<<_vertex[1][0]<<","<<_vertex[1][1]<<")}";
 }
 SObject *SLine2D::clone() const { return new SLine2D(*this); }
 

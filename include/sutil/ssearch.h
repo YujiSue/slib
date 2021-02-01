@@ -83,19 +83,80 @@ namespace slib {
 		void setOffset(size_t o);
 		void setLimit(size_t l);
 		void setRange(sranges r);
-		void reset();
+		void clear();
 	};
 
 	class SLIB_DLL SCaseCondition {
 	public:
 		String key, as;
 		Array<SearchQuery> queries;
-		SArray values;
-		sobj exception;
+		sobj value, exception;
 
 	public:
 		SCaseCondition();
 		~SCaseCondition();
+
+
+	};
+
+	template<typename T>
+	class SLIB_DLL STNode {
+	public:
+		Range<T*> range;
+		STNode* parent, *root;
+		Array<STNode*> children;
+
+		STNode() : range(nullptr, nullptr), parent(nullptr), root(this) {}
+		STNode(T* beg, T* end) : range(beg, end) {}
+		virtual ~STNode() {}
+
+		STNode *child(T& val) {
+			if (!children.empty()) {
+				sforeach(children) { if (*(E_->range.begin) == val) return E_; }
+			}
+			return nullptr;
+		}
+		void addChild(STNode* node) {
+			node->parent = this;
+			node->root = this->root;
+			children.add(node);
+		}
+		
+
+	};
+	template<typename T>
+	class SLIB_DLL SuffixTree {
+		STNode<T> _root;
+		Array<STNode<T>*> _nodes;
+
+	public:
+		SuffixTree() {}
+		SuffixTree(T* data, size_t s) { insert(data, data + s, &_root); }
+		virtual ~SuffixTree() {}
+		void arrange(T* data, T* end, STNode<T>* current) {
+
+		}
+		void insert(T* data, T* end, STNode<T>* current) {
+			auto ch = current->child(*data);
+			if (ch) {
+
+			}
+			else {
+				_nodes.add(new STNode<T>(data, end));
+				current->addChild(_nodes.last());
+				arrange(data + 1, end, _nodes.last());
+			}
+		}
+	};
+
+	class SLIB_DLL SSuffixTree : public SuffixTree<char> {
+	public:
+		SSuffixTree();
+		SSuffixTree(const char* s);
+		SSuffixTree(const String& s);
+		SSuffixTree(const SString& s);
+		~SSuffixTree();
+
 	};
 
 }

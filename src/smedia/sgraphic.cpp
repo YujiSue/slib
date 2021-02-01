@@ -6,8 +6,8 @@ using namespace slib::smedia;
 
 inline void update2(const mat3f &m, v2fvec &points, Area<float> &boundary) {
     sforeach(points) {
-        v3f v_(E_.x, E_.y, 1); v_ = m * v_;
-        E_.x = v_.x; E_.y = v_.y;
+        v3f v_(E_[0], E_[1], 1); v_ = m * v_;
+        E_[0] = v_[0]; E_[1] = v_[1];
     }
     v3f corner[4]; v4f corner_;
     corner[0] = v3f(boundary.ori_x, boundary.ori_y, 1.0f);
@@ -16,18 +16,18 @@ inline void update2(const mat3f &m, v2fvec &points, Area<float> &boundary) {
     corner[3] = v3f(boundary.ori_x+boundary.width, boundary.ori_y, 1.0f);
     sforin(i, 0, 4) {
         corner[i] = corner[i]*m;
-        if (corner[i].x < boundary.ori_x) corner_.x = corner[i].x;
-        if (corner[i].y < boundary.ori_y) corner_.y = corner[i].y;
-        if (boundary.ori_x+boundary.width < corner[i].x) corner_.z = corner[i].x;
-        if (boundary.ori_y+boundary.height < corner[i].y) corner_.w = corner[i].y;
+        if (corner[i][0] < boundary.ori_x) corner_[0] = corner[i][0];
+        if (corner[i][1] < boundary.ori_y) corner_[1] = corner[i][1];
+        if (boundary.ori_x+boundary.width < corner[i][0]) corner_[2] = corner[i][0];
+        if (boundary.ori_y+boundary.height < corner[i][1]) corner_[3] = corner[i][1];
     }
-    boundary.ori_x = corner_.x; boundary.width = corner_.z-corner_.x;
-    boundary.ori_y = corner_.y; boundary.height = corner_.w-corner_.y;
+    boundary.ori_x = corner_[0]; boundary.width = corner_[2]-corner_[0];
+    boundary.ori_y = corner_[1]; boundary.height = corner_[3]-corner_[1];
 }
 void STransform2D::expand(v2f& s, v2fvec& vertex, v2f ori) {
 	ori *= -1.0;
 	shift(ori, vertex);
-	mat2f mat(s.x, 0, 0, s.y);
+	mat2f mat(s[0], 0, 0, s[1]);
 	sforeach(vertex) E_ = mat * E_;
 	ori *= -1.0;
     shift(ori, vertex);
@@ -38,7 +38,7 @@ void STransform2D::shift(v2f& t, v2fvec& vertex) {
 void STransform2D::shear(v2f& s, v2fvec& vertex, v2f ori) {
 	ori *= -1.0;
 	shift(ori, vertex);
-	mat2f mat(1, tan(s.x), tan(s.y), 1);
+	mat2f mat(1, tan(s[0]), tan(s[1]), 1);
 	sforeach(vertex) E_ = mat * E_;
 	ori *= -1.0;
 	shift(ori, vertex);

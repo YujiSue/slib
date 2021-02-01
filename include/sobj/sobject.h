@@ -445,7 +445,7 @@ namespace slib {
             if (_ptr) return instanceOf<Cls>(_ptr);
 			return false;
         }
-        //Convert
+        //Class cast
 		template<class Cls>
 		inline Cls* toClassPtr() { return _ptr ? dynamic_cast<Cls*>(_ptr) : nullptr; }
 		template<class Cls>
@@ -705,29 +705,23 @@ namespace slib {
         typedef ::std::ptrdiff_t difference_type;
         typedef sobj* pointer;
         typedef sobj& reference;
-        
-        
         union Iter {
             SArrayIterator<sobj> _ait;
             SUtf8Iterator _uit;
             SMapIterator<String, sobj> _mit;
-
             Iter() : _ait(nullptr) {}
             ~Iter() {}
         };
-        
     private:
         OBJ_TYPE _type;
         Iter _it;
         sobj _obj;
-        
     public:
         SIterator(SArrayIterator<SObjPtr> ait);
         SIterator(SUtf8Iterator uit);
         SIterator(SMapIterator<String, SObjPtr> mit);
         SIterator(const SIterator &it);
         ~SIterator();
-        
         SIterator& operator=(const SIterator &it);
         reference operator *();
         pointer operator ->();
@@ -749,7 +743,6 @@ namespace slib {
         bool operator >(const SIterator &sit) const;
         bool operator >=(const SIterator &sit) const;
     };
-    
     class SLIB_DLL SCIterator {
     public:
         typedef ::std::random_access_iterator_tag iterator_category;
@@ -757,28 +750,23 @@ namespace slib {
         typedef ::std::ptrdiff_t difference_type;
         typedef const sobj* pointer;
         typedef const sobj& reference;
-        
         union CIter {
             SArrayCIterator<sobj> _ait;
             SUtf8CIterator _uit;
             SMapCIterator<String, sobj> _mit;
-            
 			CIter() : _ait(nullptr) {}
             ~CIter() {}
         };
-        
     private:
 		OBJ_TYPE _type;
 		CIter _it;
         sobj _obj;
-        
     public:
         SCIterator(SArrayCIterator<SObjPtr> ait);
         SCIterator(SUtf8CIterator uit);
         SCIterator(SMapCIterator<String, SObjPtr> mit);
         SCIterator(const SCIterator &it);
         ~SCIterator();
-        
         SCIterator& operator=(const SCIterator &it);
         reference operator *();
         pointer operator ->();
