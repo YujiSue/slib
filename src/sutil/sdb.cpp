@@ -86,7 +86,7 @@ String sql::colInfos(const Array<SColumn>& cols) {
 String sql::colInfos(const SArray& cols) {
 	String str;
 	if (cols.empty()) return str;
-	sforeach(cols) str << colInfo(E_.dict()) << ",";
+	sforeach(cols) str << colInfo(E_.column()) << ",";
 	if (str.length()) str.resize(str.length() - 1);
 	return str;
 }
