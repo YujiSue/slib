@@ -4,7 +4,6 @@
 #include "sobj/sobject.h"
 #include "sobj/sstring.h"
 #include "sobj/sarray.h"
-#include "sutil/ssearch.h"
 #include "smath.h"
 
 namespace slib {
