@@ -236,6 +236,7 @@ namespace slib {
 			M::copy(p, v, s); _end += s;
 			return sarr_iter<T>(p);
 		}
+		else if (p == _end) Array<T, M>::append(v, s);
 		else throw SException(ERR_INFO, SLIB_RANGE_ERROR);
 	}
 	template <typename T, class M>
