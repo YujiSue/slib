@@ -90,12 +90,10 @@ summary_data::summary_data() {
 }
 summary_data::~summary_data() {}
 suinteger summary_data::total() {
-	if (target.empty()) return sstat::sum(reflen);
-	else {
-		suinteger sum = 0;
-		sforeach(target) sum += E_.length(true);
-		return sum;
-	}
+	suinteger sum = 0;
+	if (target.empty()) { sforeach(reflen) sum += E_; }
+	else { sforeach(target) sum += E_.length(true); }
+	return sum;
 }
 void summary_data::init() {
 	reads = 0;
