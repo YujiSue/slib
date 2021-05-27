@@ -603,6 +603,7 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 			else if (*cit == "Len" || *cit == "Len1") {
 				if (E_->type & DELETION || E_->type == INVERSION || E_->type == DUPLICATION || E_->type == MULTIPLICATION) file << E_->pos[0].length(true) << TAB;
 				else if (E_->type == INSERTION && E_->pos[1].idx < 0) file << E_->alt.length() << TAB;
+				else if (E_->type == SNV || E_->type == MNV) file << E_->alt.length() << TAB;
 				else file << "0" << TAB;
 			}
 			else if (*cit == "Len2") {
@@ -614,6 +615,7 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 					if (E_->type & INSERTION) file << E_->pos[1].length() << TAB;
 					else if ((E_->type & TRANSLOCATION) && (E_->type & DELETION)) file << E_->pos[1].length(false) - 1 << TAB;
 					else if (E_->type & INVERSION) file << E_->pos[1].length(true) << TAB;
+					else if (E_->type == SNV || E_->type == MNV) file << E_->alt.length() << TAB;
 					else file << E_->pos[1].length() << TAB;
 				}
 			}
@@ -637,6 +639,18 @@ void SVarIO::saveTSV(sio::SFile& file, SVarList* list, const stringarray& col) {
 						gnames.add(git->name); ++count;
 					}
 					file << slib::toString(gnames) << (E_->genes.size() > 5 ? " etc...":"") << TAB;
+				}
+				else file << "-" << TAB;
+			}
+			else if (*cit == "Transcript") {
+				if (!E_->genes.empty()) {
+					stringarray ttypes;
+					auto count = 0;
+					sforeach_(git, E_->genes) {
+						if (count == 5) break;
+						ttypes.add(sbiutil::geneType(git->type)); ++count;
+					}
+					file << slib::toString(ttypes) << (E_->genes.size() > 5 ? " etc..." : "") << TAB;
 				}
 				else file << "-" << TAB;
 			}

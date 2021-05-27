@@ -31,11 +31,11 @@ namespace slib {
 		bool include(const T& val) const;
 		bool include(const Range& rng) const;
 		bool overlap(const Range& rng) const;
-		Range shift(const T& s) const;
-		Range expand(const T& e) const;
-		Range merge(const Range& rng) const;
-		Range exclude(const Range& rng) const;
-		Range mask(const Range& rng) const;
+		void shift(const T& s);
+		void expand(const T& e);
+		void merge(const Range& rng);
+		void exclude(const Range& rng);
+		void mask(const Range& rng);
 
 		bool operator < (const T& pos) const;
 		bool operator < (const Range& rng) const;
@@ -119,24 +119,23 @@ namespace slib {
 	template<typename T>
 	bool Range<T>::overlap(const Range<T>& rng) const { return begin <= rng.end && rng.begin <= end; }
 	template<typename T>
-	Range<T> Range<T>::shift(const T& t) const { return (*this) >> t; }
+	void Range<T>::shift(const T& t) { begin += t; end += t; }
 	template<typename T>
-	Range<T> Range<T>::expand(const T& t) const { return (*this) + t; }
+	void Range<T>::expand(const T& t) { end += t; }
 	template<typename T>
-	Range<T> Range<T>::merge(const Range& rng) const {
-		return Range<T>((rng.begin < begin ? rng.begin : begin), (end < rng.end ? rng.end : end));
+	void Range<T>::merge(const Range& rng) {
+		*this = Range<T>((rng.begin < begin ? rng.begin : begin), (end < rng.end ? rng.end : end));
 	}
 	template<typename T>
-	Range<T> Range<T>::exclude(const Range& rng) const {
-		if (!overlap(rng)) return *this;
-		else return Range<T>((include(rng.end) ? rng.end + 1 : begin), (include(rng.begin) ? rng.begin - 1 : end));
+	void Range<T>::exclude(const Range& rng) {
+		if (overlap(rng)) *this = Range<T>((include(rng.end) ? rng.end + 1 : begin), (include(rng.begin) ? rng.begin - 1 : end));
 	}
 	template<typename T>
-	Range<T> Range<T>::mask(const Range<T>& rng) const {
-		if (include(rng)) return rng;
+	void Range<T>::mask(const Range<T>& rng) {
+		if (include(rng)) *this = rng;
 		else if (overlap(rng))
-			return Range<T>((begin < rng.begin ? begin : rng.begin), (rng.end < end ? rng.end : end));
-		else return Range<T>();
+			*this = Range<T>((begin < rng.begin ? begin : rng.begin), (rng.end < end ? rng.end : end));
+		else *this = Range<T>();
 	}
 	template<typename T>
 	bool Range<T>::operator < (const T& pos) const { return end < pos; }

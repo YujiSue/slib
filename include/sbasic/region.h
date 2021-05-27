@@ -34,12 +34,12 @@ namespace slib {
         bool overlap(const Range<T> &rng) const;
         bool overlap(const Region &reg) const;
         Region subregion(const Range<T> &rng) const;
-		Region& shift(const T& len);
-		Region& expand(const T& off, const T& len);
-		Region& merge(const Range<T>& rng);
-		Region& merge(const Region& reg);
-		Region& mask(const Range<T>& rng);
-		Region& exclude(const Range<T>& rng);
+		void shift(const T& len);
+		void expand(const T& off, const T& len);
+		void merge(const Range<T>& rng);
+		void merge(const Region& reg);
+		void mask(const Range<T>& rng);
+		void exclude(const Range<T>& rng);
         sarr_iter<Range<T>> seek(const T &val);
         Range<sarr_iter<Range<T>>> seek(const Range<T> &rng);
         bool operator < (const Region &reg) const;
@@ -162,24 +162,22 @@ namespace slib {
         return reg;
     }
     template <typename T>
-	Region<T>& Region<T>::shift(const T& len) {
+	void Region<T>::shift(const T& len) {
 		if (!array::empty()) {
 			sforeach(*this) E_.shift(len);
 		}
-		return *this;
     }
     template <typename T>
-	Region<T>& Region<T>::expand(const T &off, const T &len) {
+	void Region<T>::expand(const T &off, const T &len) {
 		if (!array::empty()) {
 			sforeach(*this) {
 				if (off <= E_.begin) E_.shift(len);
 				else if (off <= E_.end) E_.expand(len);
 			}
 		}
-		return *this;
     }
     template <typename T>
-	Region<T>& Region<T>::merge(const Range<T> &rng) {
+	void Region<T>::merge(const Range<T> &rng) {
 		if (array::empty() || array::last().end < rng.begin) array::add(rng);
 		else if (rng.end < array::first().begin) array::insert(0, rng);
 		else {
@@ -204,10 +202,9 @@ namespace slib {
 				else if (rng.end < E_.begin) { array::insert(INDEX_(*this), rng); break; }
 			}
 		}
-		return *this;
     }
     template <typename T>
-	Region<T>& Region<T>::merge(const Region<T> &reg) {
+	void Region<T>::merge(const Region<T> &reg) {
 		array::append(reg);
 		array::sort();
 		auto it = array::begin(), end = array::end();
@@ -217,16 +214,14 @@ namespace slib {
 			if (it + 1 < it_) it = array::remove(it + 1, it_);
 			else NEXT_;
 		}
-		return *this;
     }
     template <typename T>
-	Region<T>& Region<T>::mask(const Range<T> &rng) {
+	void Region<T>::mask(const Range<T> &rng) {
 		auto reg = subregion(rng);
 		array::swap(reg);
-		return *this;
 	}
     template <typename T>
-	Region<T>& Region<T>::exclude(const Range<T> &rng) {
+	void Region<T>::exclude(const Range<T> &rng) {
 		auto rng_ = range();
 		if (rng.include(rng_)) array::clear();
 		else {
@@ -261,7 +256,6 @@ namespace slib {
 			}
 			if (init < end) array::remove(init, end);
 		}
-		return *this;
 /*
         if (range().overlap(rng)) {
             sforeach(*this) {

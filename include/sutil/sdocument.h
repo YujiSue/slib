@@ -7,7 +7,6 @@
 namespace slib {
 	template<class Cls>
 	struct reference_table {
-
 		suinteger offset;
 		Cls object;
 		reference_table();
@@ -21,6 +20,7 @@ namespace slib {
 	protected:
 		suint _type;
 		String _title, _author;
+		stringarray _keywords;
 		SDate _created, _revised;
 		SDictionary _attribute;
 		Node _root;

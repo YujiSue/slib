@@ -14,7 +14,7 @@ SVarList::SVarList(const SVarList &vl) : Array<svar>(vl) {
 SVarList::~SVarList() {}
 
 void SVarList::load(const char *path, SBSeqList *ref, const sattribute* converter) {
-	sio::SFile file(path);
+	sio::SFile file(path, sio::READ);
 	auto ext = file.extension();
 	if (ext == "vcf") SVarIO::loadVCF(file, this, ref, converter);
 	else if (ext == "txt") SVarIO::loadTxt(file, this, ref);
@@ -22,7 +22,7 @@ void SVarList::load(const char *path, SBSeqList *ref, const sattribute* converte
 
 }
 void SVarList::save(const char *path, SBSeqList *ref) {
-	sio::SFile file(path);
+	sio::SFile file(path, sio::WRITE);
 	auto ext = file.extension();
 	if (ext == "vcf") SVarIO::saveVCF(file, this, ref);
 	else if (ext == "txt") SVarIO::saveTxt(file, this);

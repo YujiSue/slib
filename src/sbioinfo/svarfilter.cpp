@@ -59,7 +59,7 @@ inline void _compareDEL(String* ori, String* alt, transcript_site* trs, sint off
 		trs->pos = 1; trs->ori << ori->at(0); trs->alt << "-"; return;
 	}
 	else if (trs->mutation == CTERM_LESION) {
-		trs->pos = off + 1; trs->ori << ori->at(off); trs->alt << "-"; return;
+		trs->pos = off + 1; trs->ori << ori->at(off-1); trs->alt << "-"; return;
 	}
 	sint len = ori->size(), alen = alt->size();
 	char* oc = ori->ptr(off), * ac = alt->ptr(off);
@@ -243,7 +243,6 @@ inline void _annotSmallDEL(SVariant* var, gene_site* gene, SBSeqList* ref, Strin
 	sforeach_(tit, gene->transcripts) {
 		if (tit->site & CDS) {
 			auto region = tit->info->codingRegion();
-			region.shift(-tit->info->begin);
 			*ori = ref->at(var->pos[0].idx)->raw((size_t)tit->info->begin - 1, tit->info->length(true));
 			*alt = *ori;
 			sint off = var->pos[0].begin - tit->info->begin;
@@ -251,7 +250,7 @@ inline void _annotSmallDEL(SVariant* var, gene_site* gene, SBSeqList* ref, Strin
 				if ((off + i) < 0 || (sint)alt->length() <= (off + i)) continue;
 				alt->at(off + i) = '-';
 			}
-			_splice(ori, alt, gene->info->dir, region, &off);
+			region.shift(-tit->info->begin);
 			if (alt->first() == '-') tit->mutation = NTERM_LESION;
 			else if (alt->last() == '-') tit->mutation = CTERM_LESION;
 			_removeDeleted(alt);
@@ -463,8 +462,10 @@ void SVarFilter::subtract(Array<svar_data>& variants1, Array<svar_data>& variant
 }
 void SVarFilter::merge(SVarList& vl1, SVarList& vl2) {
 	auto dist = _par ? _par->max_dist : 0;
-	sforeach(vl2.attribute) {
-		if (!vl1.attribute.hasKey(E_.key())) vl1.attribute.insert(E_);
+	if (!vl2.attribute.empty()) {
+		sforeach(vl2.attribute) {
+			if (!vl1.attribute.hasKey(E_.key())) vl1.attribute.insert(E_);
+		}
 	}
 	vl1.name += "_" + vl2.name + "_merged";
 	vl1.append(vl2);
