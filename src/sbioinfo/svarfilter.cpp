@@ -251,6 +251,7 @@ inline void _annotSmallDEL(SVariant* var, gene_site* gene, SBSeqList* ref, Strin
 				alt->at(off + i) = '-';
 			}
 			region.shift(-tit->info->begin);
+			_splice(ori, alt, gene->info->dir, region, &off);
 			if (alt->first() == '-') tit->mutation = NTERM_LESION;
 			else if (alt->last() == '-') tit->mutation = CTERM_LESION;
 			_removeDeleted(alt);
