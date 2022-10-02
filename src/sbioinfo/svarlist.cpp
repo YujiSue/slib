@@ -22,7 +22,7 @@ void SVarList::load(const char *path, SBSeqList *ref, const sattribute* converte
 
 }
 void SVarList::save(const char *path, SBSeqList *ref) {
-	sio::SFile file(path, sio::WRITE);
+	sio::SFile file(path, sio::CREATE);
 	auto ext = file.extension();
 	if (ext == "vcf") SVarIO::saveVCF(file, this, ref);
 	else if (ext == "txt") SVarIO::saveTxt(file, this);
