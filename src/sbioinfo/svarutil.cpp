@@ -567,7 +567,7 @@ void SVarIO::loadVCF(sio::SFile& file, SVarList* list, SBSeqList* ref, const sat
 	String row;
 	while (!file.eof()) {
 		file.readLine(row);
-		if (row.empty()) break;
+		if (row.empty()) continue;
 		if (row.beginWith("##")) _readVCFHeader(row, list);
 		else if (row[0] == '#') _readVCFTitle(row, list, format);
 		else {
