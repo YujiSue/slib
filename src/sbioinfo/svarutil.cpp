@@ -435,7 +435,7 @@ inline void _VCFToDEL(SVariant &var, String& alt, stringarray& data) {
 		data[3][(sint)data[3].length() - off] == alt[(sint)alt.length() - off]) ++off;
 	var.pos[0].begin += (sint)alt.length() - off + 1;
 	var.pos[0].end = var.pos[0].begin + len - 1;
-	var.attribute["Ref"] = data[3].substring(data[3].length() - off + 1, len);
+	var.attribute["Ref"] = data[3].substring((sint)alt.length() - off + 1, len);
 }
 inline void _VCFToINS(SVariant &var, String& alt, stringarray& data) {
 	var.type = INSERTION;
