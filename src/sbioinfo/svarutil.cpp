@@ -467,7 +467,7 @@ inline void _setVCFInfo(Array<SVariant>& variants, String& data, sobj& info_attr
 	sforeach(infos) {
 		if (info_attr[E_.key]["Number"] == "A") {
 			stringarray vals = E_.value.split(",");
-			if (vals.size() != variants.size()) {
+			if (vals.size() < variants.size()) {
 				std::cout << "err vcfinfo" << std::endl;
 				throw SBioInfoException(ERR_INFO);
 			}
