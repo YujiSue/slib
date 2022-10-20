@@ -585,7 +585,7 @@ void String::copy(const char *dat, size_t s) {
         }
         else {
             reserve((((len>>4)+1)<<4)|0x01);
-            CMemory<char>::copy(ptr(), dat, s);
+            memcpy(ptr(), dat, s);
             _str._ls.str[s] = '\0';
             _str._ls.size = s;
         }
@@ -657,7 +657,7 @@ void String::swap(String &str) {
     else {
         auto tmps = _str._ss.size;
         char tmpc[SHORT_STRING_CAPACITY];
-        CMemory<char>::copy(tmpc, _str._ss.str, SHORT_STRING_CAPACITY);
+        memcpy(tmpc, _str._ss.str, SHORT_STRING_CAPACITY);
         if (str._isLong()) {
             _str._ls.capacity = str._str._ls.capacity;
             _str._ls.size = str._str._ls.size;
@@ -665,10 +665,10 @@ void String::swap(String &str) {
         }
         else {
             _str._ss.size = str._str._ss.size;
-            CMemory<char>::copy(_str._ss.str, str._str._ss.str, SHORT_STRING_CAPACITY);
+            memcpy(_str._ss.str, str._str._ss.str, SHORT_STRING_CAPACITY);
         }
         str._str._ss.size = tmps;
-        CMemory<char>::copy(str._str._ss.str, tmpc, SHORT_STRING_CAPACITY);
+        memcpy(str._str._ss.str, tmpc, SHORT_STRING_CAPACITY);
     }
 }
 SArrayIterator<char> String::begin() { return SArrayIterator<char>(ptr()); }
@@ -812,7 +812,7 @@ String String::substring(size_t off, size_t len) const {
         if (len == -1 || ins.second < off+len) len = ins.second-off;
         if (len) {
             String sub(len, 0);
-            CMemory<char>::copy(&sub[0], &ins.first[off], len);
+            memcpy(&sub[0], &ins.first[off], len);
             return sub;
         }
     }
