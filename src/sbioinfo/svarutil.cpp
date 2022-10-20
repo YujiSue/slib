@@ -534,7 +534,11 @@ inline void _readVCFData(String& row, SVarList* list, Array<SVariant>& variants,
 	else if (data.size() < 8) throw SBioInfoException(ERR_INFO);
 	stringarray alts = data[4].split(",");
 	auto vcount = alts.size();
+	sforin(i, 0, vcount) { 
+		if (alts[i] == "<NON_REF>") --vcount;
+	}
 	variants.resize(vcount);
+	if (vcount == 0) return;
 	sforin(i, 0, vcount) _VCFToVar(variants[i], alts[i], data, list->refname);
 	_setVCFInfo(variants, data[7], list->attribute["INFO"]);
 	if (format) _setVCFFormat(variants, data[8], data[9], list->attribute["FORMAT"]);
