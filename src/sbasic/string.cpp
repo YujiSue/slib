@@ -812,7 +812,7 @@ String String::substring(size_t off, size_t len) const {
         if (len == -1 || ins.second < off+len) len = ins.second-off;
         if (len) {
             String sub(len, 0);
-            CMemory<char>::copy(sub.ptr(), &ins.first[off], len);
+            CMemory<char>::copy(&sub[0], &ins.first[off], len);
             return sub;
         }
     }
