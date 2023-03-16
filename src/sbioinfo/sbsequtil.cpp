@@ -491,8 +491,8 @@ scnvs sseq::dbaselogo(v4fvec& freq, float size, bool info, const Array<smedia::S
 }
 Map<char, subyte> slib::sbio::RNA_BASE_INDEX = {
     cu('A',0), cu('a',0), cu('C',1), cu('c',1),
-    cu('G',2), cu('g',2), cu('T',3), cu('t',3),
-    cu('N',4), cu('n',4)
+    cu('G',2), cu('g',2), cu('U',3), cu('u',3),
+    cu('T',3), cu('t',3), cu('N',4), cu('n',4)
 };
 Map<char, char> slib::sbio::RNA_COMPLEMENT_CHAR = {
     cc('a','u'), cc('A','U'), cc('u','a'), cc('U','A'),
