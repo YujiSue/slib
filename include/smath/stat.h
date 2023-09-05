@@ -248,7 +248,7 @@ namespace slib {
 		}
 		template<size_t D, typename T>
 		extern inline sla::SVectorND<D-1, T> difference(const sla::SVectorND<D, T>& vec, sint i = 1) {
-			sla::SVectorND<D - i, T> dif;
+			sla::SVectorND<D - 1, T> dif;
 			sforin(d, i, D) { dif[d - i] = vec[d] - vec[d - i]; }
 			return dif;
 		}
