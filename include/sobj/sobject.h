@@ -239,6 +239,7 @@ namespace slib {
 		SObjPtr& operator += (const T& val) {
 			if (isNum()) number() += val;
 			else if (isStr()) string() += val;
+			return *this;
 		}
 		SObjPtr& operator -= (const Time& t);
 		SObjPtr& operator -= (const SObjPtr& obj);
