@@ -23,6 +23,7 @@ namespace slib {
 		SData& operator = (const Array<T, CMemory<T>>& array) {
 			ubytearray::resize(array.size() * sizeof(T));
 			CMemory<subyte>::copy(ubytearray::_begin, reinterpret_cast<subyte*>(array._begin), ubytearray::size());
+			return *this;
 		}
         SData &operator = (const sobj &obj);
         SData &operator = (const SData &dat);
