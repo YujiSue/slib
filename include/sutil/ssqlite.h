@@ -5,7 +5,7 @@
 #include "sobj/stable.h"
 extern "C" {
 #include "sqlite/sqlite3.h"
-//#include "sqlite/sqlite3ext.h"
+#include "sqlite/sqlite3ext.h"
 }
 namespace slib {
 	namespace sdb {
