@@ -1,63 +1,33 @@
 #ifndef SLIB_SFUNC_H
 #define SLIB_SFUNC_H
-
-#include "sobj/sobject.h"
-#include "sbasic/set.h"
-
+#include "sbasic/tuple.h"
+#include "sobj/sobjptr.h"
 namespace slib {
-    template<class Return, class... Args>
-    class SFunction<Return(Args...)> : public SObject {
-	public:
-		typedef Set<Args...> args_type;
+	template<class Ret, class... Args>
+	class SFunction : public SObject {
 	protected:
-		std::function<Return(Args...)> _func;
+		std::function<Ret(Args...)> _func;
 	public:
-		SFunction();
-		SFunction(const std::function<Return(Args...)>& func);
-		template<class Func>
-		SFunction(const Func &f) : _func(f) {}
-		SFunction(const SFunction<Return(Args...)>& func);
-		~SFunction();
-
-		SFunction<Return(Args...)>& operator=(const SFunction<Return(Args...)>& func);
-		Return exec(Args... args);
-		Return operator()(Args... args);
-		String getClass() const;
-		String toString() const;
-		SObject* clone() const;
+		SFunction() : SObject() {}
+		SFunction(const std::function<Ret(Args...)>& func) : _func(func) {}
+		SFunction(const SFunction<Ret, Args...>& func) { _func = func._func; }
+		~SFunction() {}
+		SFunction<Ret, Args...>& operator=(const std::function<Ret(Args...)>& func) {
+			_func = func; return *this;
+		}
+		SFunction<Ret, Args...>& operator=(const SFunction<Ret, Args...>& func) {
+			_func = func._func; return *this;
+		}
+		Ret exec(Args... args) { return _func(args...); }
+		Ret operator()(Args... args) { return _func(args...); }
+		String getClass() const { return "function"; }
+		String toString(const char *format = nullptr) const {
+			String args;
+			arg_name<sizeof...(Args), Args...> names;
+			names.addName(args);
+			return String(typeid(Ret).name()) << "(" << args << ")";
+		}
+		SObject* clone() const { return new SFunction<Ret, Args...>(*this); }
     };
-
-	template<class Return, class... Args>
-	SFunction<Return(Args...)>::SFunction() : SObject() {}
-	template<class Return, class... Args>
-	SFunction<Return(Args...)>::SFunction(const std::function<Return(Args...)>& func) : _func(func) {}
-	template<class Return, class... Args>
-	SFunction<Return(Args...)>::SFunction(const SFunction<Return(Args...)>& func) { _func = func._func; }
-	template<class Return, class... Args>
-	SFunction<Return(Args...)>::~SFunction() {}
-	template<class Return, class... Args>
-	SFunction<Return(Args...)>& SFunction<Return(Args...)>::operator=(const SFunction<Return(Args...)>& func) {
-		_func = func._func;
-		return *this;
-	}
-	template<class Return, class... Args>
-	Return SFunction<Return(Args...)>::exec(Args... args) {
-		return _func(args...);
-	}
-	template<class Return, class... Args>
-	Return SFunction<Return(Args...)>::operator()(Args... args) {
-		return _func(args...);
-	}
-	template<class Return, class... Args>
-	String SFunction<Return(Args...)>::getClass() const { return "function"; }
-	template<class Return, class... Args>
-	String SFunction<Return(Args...)>::toString() const {
-		String args;
-		arg_name<sizeof...(Args), Args...> names;
-		names.addName(args);
-		return String(typeid(Return).name()) << "(" << args << ")";
-	}
-	template<class Return, class... Args>
-	SObject* SFunction<Return(Args...)>::clone() const { return new SFunction<Return(Args...)>(*this); }
 }
 #endif

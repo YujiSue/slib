@@ -1,3 +1,5 @@
+#ifndef SLIB_SVOID_H
+#define SLIB_SVOID_H
 #include "sobj/sobject.h"
 
 namespace slib {
@@ -20,11 +22,13 @@ namespace slib {
 		Cls& ref() { return *static_cast<Cls*>(_ptr); }
 		template<class Cls>
 		const Cls& ref() const { return *static_cast<const Cls*>(_ptr); }
-		String getClass() const;
-		String toString() const;
-		SObject* clone() const;
-
+		
 		bool operator < (const SVoid& ptr) const;
 		bool operator == (const SVoid& ptr) const;
+
+		String getClass() const;
+		String toString(const char* format = nullptr) const;
+		SObject* clone() const;
 	};
 }
+#endif

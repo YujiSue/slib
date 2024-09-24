@@ -1,50 +1,127 @@
 #ifndef SLIB_STEXT_H
 #define SLIB_STEXT_H
-
-#include "sbasic/range.h"
+#include "sbasic/parray.h"
 #include "sobj/sstring.h"
+#include "sobj/sdict.h"
 #include "smedia/sgraphic.h"
 
 namespace slib {
-	const String PLAIN_TXT_TAG = ESC + "[0m";
-	const String BOLD_TXT_TAG = ESC + "[1m";
-	const String ITALIC_TXT_TAG = ESC + "[3m";
-	const String UNDERLINE_TXT_TAG = ESC + "[4m";
-	const String BLACK_TXT_TAG = ESC + "[30m";
-	const String RED_TXT_TAG = ESC + "[31m";
-	const String GREEN_TXT_TAG = ESC + "[32m";
-	const String YELLOW_TXT_TAG = ESC + "[33m";
-	const String BLUE_TXT_TAG = ESC + "[34m";
-	const String MAGENTA_TXT_TAG = ESC + "[35m";
-	const String CYAN_TXT_TAG = ESC + "[36m";	
-	const String WHITE_TXT_TAG = ESC + "[37m";
-	const String DEFAULT_COLOR_TXT_TAG = ESC + "[39m";
-	const String BLACK_TXTBG_TAG = ESC + "[40m";
-	const String RED_TXTBG_TAG = ESC + "[41m";
-	const String GREEN_TXTBG_TAG = ESC + "[42m";
-	const String YELLOW_TXTBG_TAG = ESC + "[43m";
-	const String BLUE_TXTBG_TAG = ESC + "[44m";
-	const String MAGENTA_TXTBG_TAG = ESC + "[45m";
-	const String CYAN_TXTBG_TAG = ESC + "[46m";
-	const String WHITE_TXTBG_TAG = ESC + "[47m";
-	const String DEFAULT_COLOR_TXTBG_TAG = ESC + "[47m";
-	const String DEFAULT_TXT_TAG = ESC + "[0m" + ESC + "[39m" + ESC + "[49m";
-
-    class SLIB_DLL SText;
-	/*
-	class SLIB_DLL STextAttribute : public Range<size_t>, public SObject {
+	namespace stxt {
+		extern SLIB_DLL String wrap(const String& str, const size_t row, const size_t offset, const char* breaker = nullptr, bool forced = false);
+	}
+	class SLIB_DLL SDictionary;
+	class SLIB_DLL SText;
+	class SLIB_DLL TextAttribute : public Range<int> {
 	public:
-		suint type;
 		String font;
 		float size;
-		smedia::SColor color, background;
+		suint style;
+		Color color, background;
 
-		STextAttribute();
-		STextAttribute(const STextAttribute &attr);
-		~STextAttribute();
-		STextAttribute& operator=(const STextAttribute& attr);
+	public:
+		TextAttribute();
+		TextAttribute(const SDictionary &dict);
+		TextAttribute(const TextAttribute &attr);
+		~TextAttribute();
+		TextAttribute& operator=(const TextAttribute& attr);
 	};
-	
+
+	class SLIB_DLL TextAnnotation {
+		friend SText;
+		
+	private:
+		PArray<TextAttribute> _attributes;
+
+	public:
+		TextAnnotation();
+		virtual ~TextAnnotation();
+
+		size_t count() const;
+		bool annotated(const int pos) const;
+		bool annotated(const srange& rng) const;
+
+		PArray<TextAttribute> attributes(const srange& rng) const;
+		TextAttribute& operator[](const int i);
+		const TextAttribute& operator[](const int i) const;
+		PArrayIterator<TextAttribute> begin();
+		PArrayCIterator<TextAttribute> begin() const;
+		PArrayIterator<TextAttribute> end();
+		PArrayCIterator<TextAttribute> end() const;
+		
+		void merge(const srange& rng, const TextAttribute&c);		
+		void erase(const srange& rng);
+
+		void insert(const int pos, const size_t sz);
+		void remove(const int pos, const size_t sz);
+		void shift(const int sz);
+
+		void clear();
+
+	};
+	class SLIB_DLL SText : public SObject {
+	private:
+		String _string;
+		PArray<Pair<Range<int>, TextAttribute>> _attributes;
+
+	public:
+		SText();
+		SText(const char *str, const SDictionary& a = {});
+		SText(const String& str, const SDictionary& a = {});
+		SText(const SString& str, const SDictionary& a = {});
+		SText(const SText& text);
+		~SText();
+
+		SText& operator = (const char* s);
+		SText& operator = (String&& s);
+		SText& operator = (const String& s);
+		SText& operator = (const SString& s);
+		SText& operator = (const SText& txt);
+		SText& operator += (const SText& txt);
+		SText operator + (const SText& txt);
+
+		SText& append(const SText& txt);
+
+		void insert(size_t idx, const char* s);
+		void insert(size_t idx, SText& txt);
+
+		void removeAt(size_t idx);
+		void remove(size_t off, size_t len);
+		void remove(srange range);
+
+		SText subtext(size_t off, size_t len);
+		SText subtext(srange range);
+
+		void clip(size_t off, size_t len = -1);
+		void clip(srange range);
+
+		void resize(const size_t sz);
+		
+		bool annotated(const int pos) const;
+		bool annotated(const srange& rng) const;
+
+		PArrayCIterator<Pair<Range<int>, TextAttribute>> attribute(const int pos) const;
+		Range<PArrayCIterator<Pair<Range<int>, TextAttribute>>> attribute(const srange& rng) const;
+
+		void setStyle(const srange& rng, const suint st);
+		void setFont(const srange& rng, const char* f);
+		void setSize(const srange& rng, const size_t sz);
+		void setColor(const srange& rng, const Color &col);
+		void setBackground(const srange& rng, const Color& col);
+		void setAttribute(const srange& rng, const TextAttribute& attr);
+		void removeAttribute(const srange& rng);
+		void clearAttribute();
+
+		const char* cstr() const;
+		String& string();
+		const String& string() const;
+
+		operator const char* () const;
+
+		String getClass() const;
+		String toString(const char* format) const;
+		SObject* clone() const;
+	};
+	/*
 	class SLIB_DLL SText : public SObject {
 	private:
 		String _string;
@@ -180,14 +257,14 @@ namespace slib {
 		SObject* clone() const;
 	};
 	*/
-
+/*
 	struct SLIB_DLL text_style {
 		suint type;
         String font, ruby;
         float size, weight;
-        smedia::SColor color, background;
+        Color color, background;
         
-		text_style(suint t = sstyle::PLAIN, const char *f = "Arial", float s = 10.0, smedia::SColor c = "black", smedia::SColor b = "clear");
+		text_style(suint t = sstyle::PLAIN, const char *f = "Arial", float s = 10.0, Color c = "black", Color b = "clear");
 		text_style(SDictionary &dict);
 		text_style(const text_style&style);
         ~text_style();
@@ -195,78 +272,16 @@ namespace slib {
 
 		sobj toObj() const;
     };
-	using text_attribute = std::pair<srange, text_style>;
+	#define text_attribute std::pair<srange, text_style>
+	*/
 
-    class SLIB_DLL SText : public SObject {
-        
-    private:
-        String _string;
-        Array<text_attribute> _attribute;
-        
-    public:
-        SText();
-		SText(const char* s);
-		SText(const char* s, SDictionary &&a);
-		SText(sobj obj);
-        SText(const SText &text);
-        ~SText();
-        
-        SText &operator = (const char *s);
-        SText &operator = (String &&s);
-        SText &operator = (const String &s);
-        SText &operator = (const SString &s);
-        SText &operator = (const SText &txt);
-        SText &operator += (const SText &txt);
-        SText operator + (const SText &txt);
-        
-        //srange aindexAt(size_t idx) const;
-        
-        SText &append(const SText &txt);
-        
-        void insert(size_t idx, const char *s);
-        void insert(size_t idx, SText &txt);
-        
-        void removeAt(size_t idx);
-        void remove(size_t off, size_t len);
-        void remove(srange range);
-        
-        SText subtext(size_t off, size_t len);
-        SText subtext(srange range);
-        
-        void clip(size_t off, size_t len = -1);
-        void clip(srange range);
-        
-        
-        void resize(size_t size);
-        
-        void load(const char *path);
-        void save(const char *path);
-        
-        const Array<text_attribute> &attributes() const;
-		Array<text_attribute>& attributes();
-        Array<text_attribute> attribute(srange range) const;
-        bool isAttributed(srange range) const;
-        
-        void setStyle(srange range, const text_style &style);
-        void setType(srange range, uint16_t type);
-        void setFont(srange range, const char *font);
-        void setSize(srange range, const float &size);
-        void setColor(srange range, const smedia::SColor &col);
-        void setBGColor(srange range, const smedia::SColor &col);
-        void setAttribute(srange range, sobj attr);
-        
-        const char *cstr() const;
-		String& string();
-        const String &string() const;
-        
-        String getClass() const;
-        String toString() const;
-        SObject *clone() const;
-    };
+
+
+
     
-#define SBoldText(X) SText((X), { kv("type", slib::sstyle::BOLD) })
-#define SItalicText(X) SText((X), { kv("type", slib::sstyle::ITALIC) })
-#define SColorText(C, X) SText((X), { kv("color", (C)) })
+#define SBoldText(X) SText((X), { D_("type", slib::sstyle::BOLD) })
+#define SItalicText(X) SText((X), { D_("type", slib::sstyle::ITALIC) })
+#define SColorText(C, X) SText((X), { D_("color", Color(C).rgba()) })
     
 }
 #endif

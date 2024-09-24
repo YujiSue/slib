@@ -1,71 +1,594 @@
+#include "sobj/snumber.h"
+#include "sobj/sstring.h"
+#include "sobj/sdate.h"
+#include "sobj/sdata.h"
+#include "sobj/sarray.h"
+#include "sobj/sdict.h"
 #include "sutil/sdb.h"
+#include "sutil/sjson.h"
 
-using namespace slib;
+slib::SDBException::SDBException() : Exception() { prefix = "DB"; }
+slib::SDBException::SDBException(int i, const char* msg, const char* desc) : Exception(i, msg, desc) { prefix = "DB"; }
+slib::SDBException::~SDBException() {}
 
-SDBException::SDBException(const char* f, sint l, const char* func, sint e, const char* target, const char* note) 
-	: SException(f, l, func, e, target, note) { 
-	prefix = "sdb";
-	if (err == SQL_ERROR) {
-		message = "SQLite3 error.";
-		description = TARGET_TEXT(target) + u8" process error. [" + std::string(note ? note : "") + "]";
+void slib::joinSchema(slib::SDataBase& db, const stringarray& names, slib::SDictionary& schema) {
+	sfor(names) {
+		auto dic = db.schema($_);
+		sforeach(elem, dic) schema.set($_ + "." + elem.key(), elem.value());
 	}
 }
-SDBException::~SDBException() {}
+slib::SDBTable::SDBTable() : STable() {
+	_db = nullptr;
+	_prepare = false;
+}
+slib::SDBTable::SDBTable(const char* s, SDataBase *db) : SDBTable() {
+	SArray rules;
+	stringarray types;
+	name = s;
+	_db = db;
+	_schema = _db->schema(name);
+}
+slib::SDBTable::~SDBTable() { name.clear(); _db = nullptr; }
 
-search_query::search_query() : operation(0) {}
-search_query::search_query(const char* k, suint op, const sobj& v) : key(k), operation(op), value(v) {}
-search_query::search_query(const search_query& que) : key(que.key), operation(que.operation), value(que.value) {}
-search_query::~search_query() {}
-search_query& search_query::operator=(const search_query& que) {
-	key = que.key; operation = que.operation; value = que.value; return *this;
+slib::SDBTable& slib::SDBTable::prepare() { _prepare = true; return *this; }
+void slib::SDBTable::complete() { 
+	_db->commit(); 
+	reset();
+	_prepare = false;
 }
-search_sorter::search_sorter() : order(DESC) {}
-search_sorter::search_sorter(const char* k, slib::ORDER o) : key(k), order(o) {}
-search_sorter::search_sorter(const search_sorter& sorter) : key(sorter.key), order(sorter.order) {}
-search_sorter::~search_sorter() {}
-search_sorter& search_sorter::operator=(const search_sorter& sorter) {
-	key = sorter.key; order = sorter.order; return *this;
+
+slib::SDBTable& slib::SDBTable::rename(const char* s) {
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	if (!s) throw NullException("Targe name");
+	_db->exec(sdb::renameTableQuery(name, s));
+	name = s;
+	return *this;
 }
-SSearchQuery::SSearchQuery() : _andor(false) {}
-SSearchQuery::~SSearchQuery() {}
-void SSearchQuery::addQuery(const search_query& que) {
-	if (_andor) _queries.add({ que });
+void slib::SDBTable::drop() {
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	_db->exec(sdb::dropTableQuery(name));
+	reset(); name.clear(); _db = nullptr;
+}
+
+slib::SDBTable& slib::SDBTable::insert(const SObjPtr& obj, bool returning, const char* retkeys) {
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	if (obj.isNull() || obj.empty()) {
+		_db->begin();
+		_db->prepare(sdb::insertPrepareQuery(name, _schema.size(), returning, retkeys));
+		if (_prepare) return *this;
+		sfori(_schema) { _db->bindNull(i + 1); }
+		_db->step(this, &_schema);
+		_db->reset();
+	}
+	else if (obj.isArray()) {
+		_db->begin();
+		_db->prepare(sdb::insertPrepareQuery(name, obj.size(), returning, retkeys));
+		if (_prepare) return *this;
+		_db->bindValues(obj.array());
+		_db->step(this, &_schema);
+		_db->reset();
+	}
+	else if (obj.isDict()) {
+		auto keys = obj.keyset();
+		_db->begin();
+		_db->prepare(sdb::insertPrepareQuery(name, keys, returning, retkeys));
+		if (_prepare) return *this;
+		_db->bindValues(obj.dict(), keys);
+		_db->step(this, &_schema);
+		_db->reset();
+	}
+	else throw Exception();
+	if (_db->_trans) _db->commit();
+	reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::insertAll(const SArray& array, bool returning, const char* retkeys) {
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	if (array.empty()) throw Exception();
+	if (array[0].isNull() || array[0].empty()) {
+		_db->begin();
+		_db->prepare(sdb::insertPrepareQuery(name, _schema.size(), returning, retkeys));
+		sfori(array) {
+			sforin(j, 0_u, _schema.size()) { _db->bindNull(j + 1); }
+			_db->step(this, &_schema);
+			_db->reset();
+		}
+	}
+	else if (array[0].isArray()) {
+		_db->begin();
+		_db->prepare(sdb::insertPrepareQuery(name, array[0].size(), returning, retkeys));
+		sfor(array) {
+			_db->bindValues($_.array());
+			_db->step(this, &_schema);
+			_db->reset();
+		}
+	}
+	else if (array[0].isDict()) {
+		auto keys = array[0].keyset();
+		_db->begin();
+		_db->prepare(sdb::insertPrepareQuery(name, keys, returning, retkeys));
+		sfor(array) {
+			_db->bindValues($_.dict(), keys);
+			_db->step(this, &_schema);
+			_db->reset();
+		}
+	}
+	else throw Exception();
+	if (_db->_trans) _db->commit();
+	reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::addRecord() {
+	_db->bindNull(1);
+	_db->step(this, &_schema);
+	_db->reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::addRecord(const SObjPtr& obj) {
+	if (obj) {
+		if (obj.isArray()) _db->bindValues(obj.array());
+		else if (obj.isDict()) {
+			auto keys = obj.keyset();
+			_db->bindValues(obj.dict(), keys);
+		}
+	}
+	else _db->bindNull(1);
+	_db->step(this, &_schema);
+	_db->reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::addRecords(const SArray& array) {
+	sfor(array) { addRecord($_); }
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::update(const stringarray &keys) {
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database object is null.");
+	if (keys.empty()) {
+		_db->begin();
+		_db->prepare(sdb::updatePrepareQuery(name, _schema.keyset(), _condition));
+		if (_prepare) return *this;
+		sfori(_schema) { _db->bindNull(i + 1); }
+		_db->step(this, &_schema);
+		_db->reset();
+	}
 	else {
-		if (_queries.empty())  _queries.add({ que });
-		else _queries.last().add(que);
+		_db->begin();
+		_db->prepare(sdb::updatePrepareQuery(name, keys, _condition));
+		if (_prepare) return *this;
+		sfori(keys) { _db->bindNull(i + 1); }
+		_db->step(this, &_schema);
+		_db->reset();
+	}
+	if (_db->_trans) _db->commit();
+	reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::update(const SDictionary& dict) {
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database object is null.");
+	if (dict.empty()) {
+		auto keys = _schema.keyset();
+		_db->begin();
+		_db->prepare(sdb::updatePrepareQuery(name, keys, _condition));
+		if (_prepare) return *this;
+		sfori(keys) _db->bindNull(i + 1);
+		_db->step(this, &_schema);
+		_db->reset();
+	}
+	else {
+		auto keys = dict.keyset();
+		_db->begin();
+		_db->prepare(sdb::updatePrepareQuery(name, keys, _condition));
+		if (_prepare) return *this;
+		_db->bindValues(dict, keys);
+		_db->step(this, &_schema);
+		_db->reset();
+	}
+	if (_db->_trans) _db->commit();
+	reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::setRecord(const SObjPtr& obj) {
+	if (obj) {
+		if (obj.isArray()) _db->bindValues(obj.array());
+		else if (obj.isDict()) {
+			auto keys = obj.keyset();
+			_db->bindValues(obj.dict(), keys);
+		}
+	}
+	else _db->bindNull(1);
+	_db->step(this, &_schema);
+	_db->reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::setRecords(const SArray& array) {
+	sfor(array) { setRecord($_); }
+	return *this;
+}
+
+slib::SDBTable& slib::SDBTable::upsert(const char *uniq_key, const SDictionary& dict) {
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	if (dict.empty()) throw Exception();
+	if (!dict.hasKey(uniq_key)) throw Exception();
+	_db->exec(sdb::upsertQuery(name, uniq_key, dict, _condition));
+	reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::grouping(const stringarray& keys) {
+	_group = slib::sdb::groupQuery(keys);
+	return *this;
+}
+size_t slib::SDBTable::count(bool reset_condition) {
+	clearAll();
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	_db->prepare(sdb::countQuery(name, _condition));
+	_db->fetch();
+	if (reset_condition) reset();
+	return _db->_result[0][0].intValue();
+}
+slib::SDBTable& slib::SDBTable::countBy(const stringarray& keys) {
+	clearAll();
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	_db->prepare(sdb::groupCountQuery(name, keys, _condition));
+	reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::select(const stringarray& keys) {
+	clearAll();
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	_db->prepare(sdb::selectQuery(name, keys, _join, _order, _condition, _group, _range));
+	_db->fetch(this, &_schema);
+	reset();
+	return *this;
+}
+slib::SDBTable& slib::SDBTable::deleteRecord() {
+	clearAll();
+	if (name.empty()) throw Exception();
+	if (!_db) throw NullException("Database");
+	_db->exec(sdb::deleteQuery(name, _condition));
+	reset();
+	return *this;
+}
+void slib::SDBTable::reset() { 
+	_condition.clear();
+	_order.clear();
+	if (!_joined.empty()) {
+		_joined.clear();
+		_join.clear();
+		_schema = _db->schema(name);
+	}
+	_group.clear();
+	_range.clear();
+}
+slib::SDBTable& slib::SDBTable::limit(const size_t lim, const size_t off) {
+	if (off == 0 && lim == (size_t)-1) _range.clear();
+	else _range = sdb::limitQuery(lim, off);
+	return *this;
+}
+
+slib::SDataBase::SDataBase() {
+	_db = nullptr;
+	_stmt = nullptr;
+	_connect = false;
+	_trans = false;
+	res = 0;
+	err = nullptr;
+}
+slib::SDataBase::SDataBase(const char* s) : SDataBase() { open(s); }
+slib::SDataBase::~SDataBase() { close(); }
+void slib::SDataBase::open(const char* s) { 
+	if (_connect) close();
+	res = sqlite3_open_v2(sfs::absolutePath(s), &_db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, 0);
+	if (res == SQLITE_OK) _connect = true;
+}
+void slib::SDataBase::close() {
+	if (!_connect) return;
+	if (_trans) commit();
+	if (_stmt) sqlite3_finalize(_stmt);
+	if (_db) sqlite3_close(_db);
+	_connect = false;
+}
+bool slib::SDataBase::exist(const char* name) {
+	prepare(sdb::searchTableQuery(name));
+	fetch();
+	auto count = _result[0][0].intValue();
+	clear();
+	return 0 < count;
+}
+slib::SArray slib::SDataBase::tables() { 
+	SArray array;
+	prepare("PRAGMA table_list");
+	fetch();
+	sfor(_result) array.add($_[0]);
+	return array;
+}
+slib::SDBTable slib::SDataBase::table(const char* name) { return SDBTable(name, this); }
+slib::SDBTable slib::SDataBase::operator[](const char* name) { return SDBTable(name, this); }
+slib::SDictionary slib::SDataBase::schema(const char* name) {
+	SArray rules;
+	stringarray types;
+	slib::SDictionary dict;
+	prepare(sdb::tableSchemaQuery(name));
+	fetch();
+	sfor(_result) {
+		rules.clear();
+		if ($_["pk"]) rules.add("key");
+		if ($_["notnull"]) rules.add("!null");
+		if ($_["type"]) types = sstr::toLower($_["type"]).split(SP);
+		dict[$_["name"]] = {
+			D_("type", types[0])
+		};
+		if (rules.size()) dict[$_["name"]]["rule"] = rules;
+		if ($_["default"]) dict[$_["name"]]["default"] = $_["default"];
+		if (1 < types.size()) dict[$_["name"]]["format"] = types[1];
+	}
+	return dict;
+}
+slib::STable& slib::SDataBase::result() { return _result; }
+void slib::SDataBase::create(const char* name, const Array<SColumn>& columns, const SArray& rows) {
+	exec(sdb::createTableQuery(name, columns));
+	if (!rows.empty()) {
+		begin();
+		prepare(sdb::insertPrepareQuery(name, columns.size()));
+		sfor(rows) {
+			bindValues($_);
+			step();
+			reset();
+		}
+		commit();
 	}
 }
-void SSearchQuery::andQuery() { _andor = false; }
-void SSearchQuery::orQuery() { _andor = true; }
-void SSearchQuery::setQueries(SDictionary& que) {
-
+void slib::SDataBase::exec(const char* sql) {
+	_sql = sql;
+	res = sqlite3_exec(_db, sql, NULL, NULL, &err);
+	if (res) throw SDBException(res, "sqlite3 exec error.", _sql + NL + sqlite3_errmsg(_db));
 }
-void SSearchQuery::addSorter(const search_sorter& sorter) { _sorters.add(sorter); }
-void SSearchQuery::addKey(const char* key) { _keys.add(key); }
-void SSearchQuery::addKeys(const stringarray& keys) { _keys.append(keys); }
-void SSearchQuery::setKeys(SArray& keys) { sforeach(keys) _keys.add(E_); }
-void SSearchQuery::setOffset(suinteger i) { _range.begin = i; }
-void SSearchQuery::setLimit(suinteger i) { _range.end = _range.begin + i; }
-void SSearchQuery::setRange(Range<suinteger> r) { _range = r; }
-void SSearchQuery::setConditions(SDictionary& cond) {
-	/*
-	*/
+void slib::SDataBase::prepare(const char* sql) {
+	_sql = sql;
+	res = sqlite3_prepare_v2(_db, sql, -1, &_stmt, NULL);
+	if(res == SQLITE_OK) return;
+	throw SDBException(res, "sqlite3 prepare error.", _sql + NL + sqlite3_errmsg(_db));
 }
-String SSearchQuery::toString(DB_MODE m) const {
-	String str;
-	switch (m)
-	{
-	case SQLITE_DB:
-	{
+void slib::SDataBase::begin() {
+	if (!_trans) exec("BEGIN");
+	_trans = true;
+}
+void slib::SDataBase::commit() {
+	if (_trans) exec("COMMIT");
+	_trans = false;
+}
+void slib::SDataBase::vacuum() {
+	exec("VACUUM");
+}
+void slib::SDataBase::bindi(const int val, const int i) {
+	res = sqlite3_bind_int(_stmt, i, val);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : " + S(val) + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindl(const sinteger val, const int i) {
+	res = sqlite3_bind_int64(_stmt, i, val);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : " + S(val) + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindd(const double val, const int i) {
+	res = sqlite3_bind_double(_stmt, i, val);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : " + S(val) + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindt(const char* val, const int i) {
+	res = sqlite3_bind_text(_stmt, i, val, -1, SQLITE_STATIC);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : " + S(val) + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindtt(const char* val, const int i) {
+	res = sqlite3_bind_text(_stmt, i, val, -1, SQLITE_TRANSIENT);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : " + S(val) + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindb(void* val, int size, int i) {
+	res = sqlite3_bind_blob(_stmt, i, val, size, SQLITE_STATIC);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : void*" + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindbt(void* val, int size, int i) {
+	res = sqlite3_bind_blob(_stmt, i, val, size, SQLITE_TRANSIENT);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : void*" + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindNull(int i) {
+	res = sqlite3_bind_null(_stmt, i);
+	if (res != SQLITE_OK) throw SDBException(res, "sqlite3 bind error.", "Value : null" + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::bindObj(const SObjPtr& obj, int i) {
+	if (obj.isNull()) bindNull(i);
+	else if (obj.isNum()) {
+		auto& num = obj.number();
+		auto type = num.type();
+		switch (type) {
+		case stype::INTEGER:
+			bindl(num.integer(), i);
+			break;
+		case stype::UINTEGER:
+			bindl(num.uinteger(), i);
+			break;
+		case stype::DOUBLE:
+			bindd(num.doubleValue(), i);
+			break;
+		case stype::BOOL:
+			bindi(num.boolean(), i);
+			break;
 
+		default:
+			break;
+		}
+	}
+	else if (obj.isStr()) bindt(obj.string().cstr(), i);
+	else if (obj.isDate()) bindl(obj.date().integer(), i);
+	else if (obj.isData()) bindb((void*)obj.data().data(), (int)obj.size(), i);
+	else bindtt(obj.toString().cstr(), i);
+}
+void slib::SDataBase::bindValues(const SArray& values) {
+	auto count = 1;
+	sfor(values) { bindObj($_, count); ++count; }
+}
+void slib::SDataBase::bindValues(const SDictionary& values, const stringarray& keys) {
+	auto count = 1; 
+	sfor(keys) { bindObj(values[$_], count); ++count; }
+}
+void setRecordValue(int i, int type, sqlite3_stmt* stmt, slib::SColumn& col, slib::SRow& row) {
+	switch (type) {
+	case SQLITE_INTEGER:
+	{
+		auto val = sqlite3_column_int64(stmt, i);
+		if (col.attribute.hasKey("type")) {
+			if (col.attribute["type"] == "integer") row[i] = val;
+			else if (col.attribute["type"] == "real") row[i] = (double)val;
+			else if (col.attribute["type"] == "bool") row[i] = (val == 1);
+			else if (col.attribute["type"] == "date") row[i] = slib::SDate(val);
+			else if (col.attribute["type"] == "time") row[i] = slib::SDate(val);
+			else row[i] = slib::String((int64_t)val);
+		}
+		else {
+			col.attribute["type"] = "integer";
+			row[i] = val;
+		}
 		break;
 	}
+	case SQLITE_FLOAT:
+	{
+		auto val = sqlite3_column_double(stmt, i);
+		if (col.attribute.hasKey("type")) {
+			if (col.attribute["type"] == "integer") row[i] = (int)val;
+			else if (col.attribute["type"] == "real") row[i] = val;
+			
+		}
+		else {
+			col.attribute["type"] = "real";
+			row[i] = val;
+		}
+		break;
+	}
+	case SQLITE_TEXT:
+	{
+		slib::String val = (const char*)sqlite3_column_text(stmt, i);
+		if (col.attribute.hasKey("type")) {
+			if (col.attribute["type"] == "integer") row[i] = val.intValue();
+			else if (col.attribute["type"] == "real") row[i] = val.doubleValue();
+			else if (col.attribute["type"] == "date") {
+				row[i] = val;
+			}
+			else if (col.attribute["type"] == "array") {
+				if (val.empty()) row[i] = slib::SArray();
+				else {
+					if (col.attribute["format"]) {
+						auto& f = col.attribute["format"].string();
+						if (f == "csv") row[i] = val.split(",");
+						else if (f == "tsv") row[i] = val.split(slib::TAB);
+						else if (f == "json") row[i] = slib::sjson::parse(val);
+					}
+					else row[i] = val.split(",");
+				}
+			}
+			else if (col.attribute["type"] == "dict") {
+				if (val.empty()) row[i] = slib::SDictionary();
+				else {
+					if (col.attribute["format"]) {
+						auto& f = col.attribute["format"].string();
+						if (f == "url") row[i] = val.parse("&", "=");
+						else if (f == "py") row[i] = val.parse(",", ":");
+						else if (f == "json") row[i] = slib::sjson::parse(val);
+					}
+					else row[i] = val.parse("&", "=");
+				}
+			}
+			else row[i] = val;
+		}
+		else {
+			col.attribute["type"] = "string";
+			row[i] = val;
+		}
+		break;
+	}
+	case SQLITE_BLOB:
+	{
+		row[i] = slib::SData();
+		auto& dat = row[i].data();
+		dat.resize(sqlite3_column_bytes(stmt, i));
+		memcpy(dat.data(), sqlite3_column_blob(stmt, i), dat.size());
+		if (col.attribute.hasKey("type")) {
+			if (col.attribute["type"] == "data") row[i] = dat;
+			//else if (col.attribute["type"] == "image") {}
+		}
+		else {
+			col.attribute["type"] = "data";
+
+		}
+		break;
+	}
+	case SQLITE_NULL:
+		break;
 	default:
 		break;
 	}
-	return str;
 }
-
+void slib::SDataBase::step(STable* result, SDictionary *schema) {
+	if (!result) result = &_result;
+	res = sqlite3_step(_stmt);
+	if (res == SQLITE_ROW) {
+		auto size = sqlite3_column_count(_stmt);
+		if (result->columns().empty()) {
+			sforin(i, 0, size) {
+				String colname = sqlite3_column_name(_stmt, i),
+					fullname(sqlite3_column_table_name(_stmt, i));
+				fullname << "." << colname;
+				if (schema && schema->hasKey(colname)) {
+					result->addColumn(SColumn(colname, schema->at(colname).dict()));
+				}
+				else if (schema && schema->hasKey(fullname)) {
+					result->addColumn(SColumn(fullname, schema->at(fullname).dict()));
+				}
+				else {
+					auto type = sqlite3_column_type(_stmt, i);
+					result->addColumn(SColumn(colname, 
+						{ D_("type", (type == SQLITE_INTEGER?"integer":
+							(type == SQLITE_FLOAT? "real":"string")))}
+					));
+				}	
+			}
+		}
+		result->addRow();
+		auto row = result->row(-1);
+		sforin(i, 0, size) {
+			auto type = sqlite3_column_type(_stmt, i);
+			setRecordValue(i, type, _stmt, result->column(i), row);
+		}
+	}
+	else if (res == SQLITE_OK || res == SQLITE_DONE) return;
+	else throw SDBException(res, "sqlite3 step error.", _sql + NL + sqlite3_errmsg(_db));
+}
+void slib::SDataBase::fetch(STable* result, SDictionary* schema) {
+	if (!result) result = &_result;
+	result->clearAll();
+	do { step(result, schema); } while (res == SQLITE_ROW);
+	reset();
+}
+void slib::SDataBase::reset() {
+	if (_stmt) res = sqlite3_reset(_stmt);
+	if (res == SQLITE_OK) return;
+	throw SDBException(res, "sqlite3 reset error.", sqlite3_errmsg(_db));
+}
+void slib::SDataBase::finalize() {
+	if (_stmt) res = sqlite3_finalize(_stmt);
+	if (res == SQLITE_OK) return;
+	throw SDBException(res, "sqlite3 statement finalize error.", sqlite3_errmsg(_db));
+}
+void slib::SDataBase::clear() { 
+	_buffer.clear();
+	_result.clearAll();
+}
+/*
 String sql::colTypeName(int type) {
     String name = String::upper(SColumn::colTypeStr(type&0x0FFF));
     if(type & KEY_COLUMN) name += " PRIMARY KEY";
@@ -183,38 +706,6 @@ String sql::caseQue(const sobj& obj) {
 	if (cases.hasKey("as")) que << " AS " << cases["as"];
 	return que;
 }
-String sql::order(const Array<std::pair<String, ORDER>>& orders) {
-	if (orders.empty()) return "";
-	String oque;
-	sforeach(orders) oque << E_.first << " " << (E_.second == ASC ? "ASC" : "DESC") << ",";
-	oque.resize(oque.length() - 1);
-	return String(" ORDER BY ") << oque;
-}
-String sql::orderQue(const sobj& obj) {
-	auto& orders = obj.dict();
-	if (orders.empty()) return "";
-	String que;
-	sforeach(orders) que << E_.key << " " << (E_.value.isNum()?String(E_.value == (int)ASC?"ASC":"DESC"):E_.value.toString()) << ",";
-	que.resize(que.length() - 1);
-	return String(" ORDER BY ") << que;
-}
-String sql::limit(int l, int o) {
-	if (0 < l) {
-		if (o < 0) return String(" LIMIT ") << l;
-		else return String(" LIMIT ") << o << "," << l;
-	}
-	else if (-1 < o) return String(" OFFSET ") << o;
-	else return "";
-}
-String sql::limitQue(const sobj& obj) {
-	auto& lim = obj.dict();
-	if (lim.hasKey("lim")) {
-		if (lim.hasKey("off")) return String(" LIMIT ") << lim["off"] << "," << lim["lim"];
-		else return String(" LIMIT ") << lim["lim"];
-	}
-	else if (lim.hasKey("off")) return String(" OFFSET ") << lim["off"];
-	else return "";
-}
 String sql::strListQue(const stringarray& list) {
 	String str;
 	sforeach(list) str += String::squot(sql::escaped(E_)) + ",";
@@ -241,24 +732,7 @@ String sql::selectQue(const char *tbl, const SDictionary& sel) {
 	if (sel.hasKey("limit")) que << sql::limitQue(sel["limit"]);
 	return que;
 }
-String sql::joinQue(const char* tbl, const sobj& obj) {
-	String que = tbl;
-	switch (obj["type"].ubyteValue()) {
-	case INNER_JOIN:
-		que << " INNER JOIN ";
-		break;
-	case OUTER_JOIN:
-		que << " LEFT OUTER JOIN ";
-		break;
-	case CROSS_JOIN:
-		que << " CROSS JOIN ";
-		break;
-	default:
-		break;
-	}
-	que << obj["tbl2"] << " ON " << sql::condQue(obj["condition"]);
-	return que;
-}
+
 String sql::selectQuery(const char* name, const stringarray& cols, const char* condition,
 	const char* order, const char* limit, bool distinct) {
 	return String(distinct ? "SELECT DISTINCT " : "SELECT ") << toString(cols, ",") << " FROM " << name <<
@@ -288,11 +762,6 @@ String sql::joinedSelectQuery(subyte type,
 		joinque << (condition ? condition : "") << (order ? order : "") << (limit ? limit : "");
 }
 
-SDBTable::SDBTable(const char* t, SDataBase* d) {
-	if (t) _table = t;
-	if (d) _db = d;
-}
-SDBTable::~SDBTable() {}
 bool SDBTable::exist() {
 	if (_table.empty()) return false;
 	_db->begin();
@@ -399,10 +868,6 @@ void SDBTable::addRecordDict(const SDictionary& row) {
 	_db->sqlexec(String("INSERT INTO ") << _table << colque << valque);
 	_db->commit();
 }
-void SDBTable::addRecord(const sobj& row) {
-	if (row.isArray()) addRecordArray(row.array());
-	else if (row.isDict()) addRecordDict(row.dict());
-}
 void SDBTable::addRecordPrepare(size_t num) {
 	String valque = "(";
 	sforin(i, 0, num) valque << "?,";
@@ -455,21 +920,7 @@ void SDBTable::setRecordPrepare(const SArray& cols, const char* key) {
 	_db->begin();
 	_db->sqlprepare(que << " WHERE " << key << "=?");
 }
-int SDBTable::count(const char* condition) {
-	_db->begin();
-	_db->sqlprepare(String("SELECT COUNT(*) FROM ") << _table << (condition ? condition : ""));
-	auto& row = _db->getRow();
-	_db->commit();
-	return row.begin()->value;
-}
-SArray& SDBTable::countGroup(const SArray& cols) {
-	auto cname = sql::colNames(cols);
-	_db->begin();
-	_db->sqlprepare(String("SELECT ") << cname << ",COUNT(*) FROM " << _table << " GROUP BY " << cname);
-	auto& rows = _db->getRows();
-	_db->commit();
-	return rows;
-}
+
 SDictionary& SDBTable::getRecord(const stringarray& cols,
 	const char* condition,
 	const char* order,
@@ -587,27 +1038,8 @@ SDataBase::SDataBase() {
 	_transaction = false;
 	_res = 0;
 }
-SDataBase::SDataBase(const char* path) : SDataBase() { open(path); }
-SDataBase::~SDataBase() {
-	if (isTransacting()) commit();
-	if (isOpened()) close();
-}
-void SDataBase::open(const char* path) {
-	if (_open) close();
-	_res = sqlite3_open_v2(path, &_db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, 0);
-	if (_res != SQLITE_OK) throw SDBException(ERR_INFO, sio::FILE_OPEN_ERROR, path);
-	_path = path;
-	_open = true;
-}
-void SDataBase::close() {
-	if (_stmt) sqlite3_finalize(_stmt);
-	if (_db) sqlite3_close(_db);
-	_open = false;
-}
-bool SDataBase::isOpened() const { return _open; }
-bool SDataBase::isTransacting() const { return _transaction; }
-const char* SDataBase::path() const { return _path; }
-int SDataBase::tableCount() {
+
+\ SDataBase::tableCount() {
 	sqlprepare("SELECT COUNT(*) FROM sqlite_master WHERE type=\'table\'");
 	auto& row = getRow();
 	return row.begin()->value;
@@ -684,60 +1116,9 @@ void SDataBase::createTable(const char* name, const STable& tbl) {
 		sqlexec(que);
 	}
 }
-void SDataBase::removeTable(const char* name) { table(name).remove(); }
-void SDataBase::clearTables() {
-	if (tableCount()) {
-		auto list = tables();
-		sforeach(list) table(E_).remove();
-		release();
-	}
-}
-SDBTable SDataBase::table(const char* name) {
-	return SDBTable(name, this);
-}
-SDBTable SDataBase::operator[](const char* name) {
-	return SDBTable(name, this);
-}
-void SDataBase::bindi(sint val, int i) {
-	_res = sqlite3_bind_int(_stmt, i, val);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_int", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::bindl(sinteger val, int i) {
-	_res = sqlite3_bind_int64(_stmt, i, val);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_int64", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::bindd(double val, int i) {
-	_res = sqlite3_bind_double(_stmt, i, val);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_double", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::bindt(const char* val, int i) {
-	_res = sqlite3_bind_text(_stmt, i, val, -1, SQLITE_STATIC);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_text", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::bindtt(const char* val, int i) {
-	_res = sqlite3_bind_text(_stmt, i, val, -1, SQLITE_TRANSIENT);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_text", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::bindb(void* val, int size, int i) {
-	_res = sqlite3_bind_blob(_stmt, i, val, size, SQLITE_STATIC);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_blob", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::bindbt(void* val, int size, int i) {
-	_res = sqlite3_bind_blob(_stmt, i, val, size, SQLITE_TRANSIENT);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_blob", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::bindNull(int i) {
-	_res = sqlite3_bind_null(_stmt, i);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_bind_null", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
+
+
+
 void SDataBase::bind(const sobj& obj, int i) {
 	if (obj.isNull()) bindNull(i);
 	else if (obj.isNum()) {
@@ -755,42 +1136,7 @@ void SDataBase::bindRow(const sobj& obj) {
 	auto& array = obj.array();
 	sforeach(array) { bind(E_, i); ++i; }
 }
-void SDataBase::sqlexec(const char* sql) {
-	_res = sqlite3_exec(_db, sql, NULL, NULL, &_err);
-	if (_res != SQLITE_OK) {
-		auto count = 0;
-		while (count < 1000) {
-			_res = sqlite3_exec(_db, sql, NULL, NULL, &_err);
-			if (_res == SQLITE_OK) break;
-			++count;
-		}
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_exec", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-	}
-}
-void SDataBase::sqlprepare(const char* sql) {
-	reset();
-	_res = sqlite3_prepare_v2(_db, sql, -1, &_stmt, NULL);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_prepare_v2", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::reset() {
-	if (_stmt) _res = sqlite3_reset(_stmt);
-	if (_res != SQLITE_OK)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_reset", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
-void SDataBase::begin() {
-	if (!_transaction) sqlexec("BEGIN");
-	_transaction = true;
-}
-void SDataBase::commit() {
-	if (_transaction) sqlexec("COMMIT");
-	_transaction = false;
-}
-void SDataBase::release() { sqlexec("VACUUM"); }
-void SDataBase::step() {
-	if ((_res = sqlite3_step(_stmt)) != SQLITE_DONE)
-		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_step", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
-}
+
 STable& SDataBase::getResult(STable* table) {
 	if (!table) table = &_result;
 	table->clearRows();
@@ -888,10 +1234,4 @@ SArray& SDataBase::getRows(SArray* array) {
 		throw SDBException(ERR_INFO, SQL_ERROR, "sqlite3_step", SQL_ERR_TEXT(_res, sqlite3_errmsg(_db)));
 	return *array;
 }
-String SDataBase::getClass() const { return "database"; }
-String SDataBase::toString() const { return String("db://") + path(); }
-SObject* SDataBase::clone() const { 
-	SDataBase* db = new SDataBase();
-	if (isOpened()) db->open(path());
-	return db;
-}
+*/

@@ -1,256 +1,331 @@
 #ifndef SLIB_SGRAPHIC_H
 #define SLIB_SGRAPHIC_H
-
-#include "sbasic.h"
-#include "sobj/snumber.h"
+#include "sbasic/ptr.h"
+#include "sbasic/string.h"
+#include "sbasic/map.h"
+#include "smath/vector.h"
 #include "smath/geom.h"
-#include "smedia/smedia.h"
 
 namespace slib {
-    using namespace smath;
+    class SLIB_DLL SObjPtr;
+    class SLIB_DLL SElement;
+    class SLIB_DLL Color;
+    class SLIB_DLL SColor;
 
+    enum class COLOR_SPACE : subyte {
+        GRAY = 1,
+        RGB = 2,
+        CMYK = 3,
+    };
+    namespace scolor {
+        extern SLIB_DLL COLOR_SPACE space(subyte type);
+        extern SLIB_DLL bool isFloat(subyte type);
+        extern SLIB_DLL bool hasAlpha(subyte type);
+        extern SLIB_DLL subyte channel(subyte type);
+        extern SLIB_DLL subyte depth(subyte type);
+        extern SLIB_DLL subyte size(subyte type);
+
+        //ALPHA | FLOAT | COLOR | DEPTH
+        //  1   |   1   |   2   |   4
+        constexpr subyte GRAY8 = 0x11; // 0x10 | 0x01;
+        constexpr subyte GRAY16 = 0x12; // 0x10 | 0x02;
+        constexpr subyte GRAY32 = 0x14; // 0x10 | 0x04;
+        constexpr subyte RGB = 0x21; // 0x20 | 0x01;
+        constexpr subyte RGBA = 0xA1; // 0x80 | 0x20 | 0x01;
+        constexpr subyte CMYK = 0x31; //0x30 | 0x01;
+        constexpr subyte GRAYF = 0x54;// 0x40 | 0x10 | 0x04;
+        constexpr subyte RGBF = 0x64; // 0x40 | 0x20 | 0x04;
+        constexpr subyte RGBAF = 0xE4; // 0x80 | 0x40 | 0x20 | 0x04;
+
+        // Gradient Color
+        constexpr subyte LINEAR_GRAD = 0x10;
+        constexpr subyte RADIAL_GRAD = 0x20;
+
+        // Color code
+        constexpr int BLACK = 0x000000FF;
+        constexpr int WHITE = 0xFFFFFFFF;
+        constexpr int GRAY = 0x808080FF;
+        constexpr int LIGHTGRAY = 0xD3D3D3FF;
+        constexpr int DIMGRAY = 0x696969FF;
+        constexpr int RED = 0xFF0000FF;
+        constexpr int MAGENTA = 0xFF00FFFF;
+        constexpr int PINK = 0xFFC0CBFF;
+        constexpr int CRIMSON = 0xDC3C14FF;
+        constexpr int DARKRED = 0x8B0000FF;
+        constexpr int ORANGE = 0xFFA500FF;
+        constexpr int YELLOW = 0xFFFF00FF;
+        constexpr int BROWN = 0xA52A2AFF;
+        constexpr int LIME = 0x00FF00FF;
+        constexpr int GREEN = 0x008000FF;
+        constexpr int DARKGREEN = 0x006400FF;
+        constexpr int SPRING = 0x00FF7FFF;
+        constexpr int BLUE = 0x0000FFFF;
+        constexpr int TURQUOISE = 0x40E0D0FF;
+        constexpr int CYAN = 0x00FFFFFF;
+        constexpr int DEEPSKY = 0x00BFFFFF;
+        constexpr int INDIGO = 0x4B0082FF;
+        constexpr int NAVY = 0x000080FF;
+        constexpr int VIOLET = 0xEE82EEFF;
+        constexpr int PURPLE = 0x800080FF;
+        constexpr int CLEAR = 0x00000000;
+        extern SLIB_DLL Color convertTo(const Color& c, const subyte t);
+        extern SLIB_DLL Color mix(const Color& c1, const Color& c2, const smath::Vector2D<float>& ratio = smath::Vector2D<float>(0.5f, 0.5f));
+        extern SLIB_DLL Color mix(const Array<Color>& cols, const smath::Vector<float>& ratio = smath::Vector<float>());
+    }
+    class SLIB_DLL Color {
+        friend SColor;
+    private:
+        subyte _type;
+        subyte _bytes[4];
+
+    public:
+        Color();
+        Color(const int col);
+        Color(std::initializer_list<int> col);
+        Color(const subyte type, const subyte *bytes);
+        Color(const svec3b& col);
+        Color(const svec4b& col);
+        Color(const svec3f& col);
+        Color(const svec4f& col);
+        Color(const char* s);
+        Color(const String& str);
+        Color(const SObjPtr& obj);
+        Color(const SElement& elem);
+        Color(const Color& col);
+        ~Color();
+        Color& operator=(const Color& col);
+
+        bool isMono() const;
+        bool isRGB() const;
+        //bool isFloat() const;
+        bool isClear() const;
+        bool hasAlpha() const;
+        subyte type() const;
+        int channel() const;
+        int size() const;
+        int depth() const;
+        subyte* data();
+        const subyte* data() const;
+        void setType(const subyte t);
+        int gray8() const;
+        int gray16() const;
+        int intValue() const;
+        suint integer() const;
+        svec3b toVec3i() const;
+        svec4b toVec4i() const;
+        svec3f toVec3f() const;
+        svec4f toVec4f() const;
+        int operator[](const int ch) const;
+        void set(const int ch, const int val);
+        String toString(const char* format = nullptr) const;
+    };
+#define GC_(X,Y) slib::Pair<float, Color>(X,Color(Y))
+    class SLIB_DLL GradientColor {
+        friend SColor;
+    private:
+        subyte _type;
+        Array<Pair<float, Color>> _colors;
+    public:
+        GradientColor();
+        GradientColor(const Color &c1, const Color &c2);
+        GradientColor(const GradientColor& col);
+        ~GradientColor();
+        GradientColor& operator=(const GradientColor& col);
+
+        size_t count() const;
+        subyte type() const;
+        bool hasAlpha() const;
+        Array<Pair<float, Color>>& colors();
+        const Array<Pair<float, Color>>& colors() const;
+        String toString(const char* format = nullptr) const;
+    };
+
+
+    class SLIB_DLL SColor {
+    protected:
+        //subyte _mode;
+        union color {
+            Color uni;
+            GradientColor grad;
+            color();
+            ~color();
+        };
+        void _copyColor(color& src, color& dest);
+        color _color;
+
+    public:
+        SColor();
+        SColor(const int col);
+        SColor(const char* s);
+        SColor(const Color& col);
+        SColor(const GradientColor& gcol);
+        SColor(const SColor& col);
+        ~SColor();
+        SColor& operator=(const SColor& col);
+
+        subyte type() const;
+        bool isGradient() const;
+        bool hasAlpha() const;
+        Color& color();
+        const Color& color() const;
+        GradientColor& grad();
+        const GradientColor& grad() const;
+
+
+
+        int operator[](const int ch) const;
+        void set(const int ch, const int val);
+
+        operator Color& ();
+        operator const Color& () const;
+        operator GradientColor& ();
+        operator const GradientColor& () const;
+
+        String toString(const char* format = nullptr) const;
+
+    };
+
+    extern SLIB_DLL const Map<String, sint> COLOR_MAP;
     
+    class SLIB_DLL Stroke {
+    public:
+        sushort type;
+        float width;
+        SColor color;
+        int interval[2];
 
-        namespace smedia {
+    public:
+        Stroke(const sushort t = sstyle::SOLID_LINE, float w = 1.0, const SColor& col = scolor::BLACK);
+        Stroke(const Stroke& stroke);
+        ~Stroke();
+        Stroke& operator=(const Stroke& stroke);
+    };
 
-                class SLIB_DLL SFigure;
 
-                extern inline v2f oriPos(sareaf& area, sgeom::ORIGIN ori) {
-                        switch (ori) {
-                        case sgeom::UPPER_LEFT:
-                                return v2f(area.ori_x, area.ori_y);
-                                break;
-                        case sgeom::LOWER_LEFT:
-                                return v2f(area.ori_x, area.ori_y + area.height);
-                                break;
-                        case sgeom::UPPER_RIGHT:
-                                return v2f(area.ori_x + area.width, area.ori_y);
-                                break;
-                        case sgeom::LOWER_RIGHT:
-                                return v2f(area.ori_x + area.width, area.ori_y + area.height);
-                                break;
-                        case sgeom::MASS_CENTER:
-                                return v2f(area.ori_x + area.width / 2.0f, area.ori_y + area.height / 2.0f);
-                                break;
-                        default:
-                                return v2f(0.f, 0.f);
-                                break;
-                        }
-                }
+    /*
+    class SLIB_DLL SColor {
+    protected:
+        subyte _type;
+        ubytearray _data;
 
-                class SLIB_DLL STransform2D {
+    public:
+        SColor();
+        SColor(const sint col);
+        SColor(const subyte t, const sint c);
+        SColor(const svec3b& col);
+        SColor(const svec4b& col);
+        SColor(const svec3f& col);
+        SColor(const svec4f& col);
+        SColor(int r, int g, int b, int a = 0xFF);
+        SColor(const char* s);
+        SColor(const SColor& col);
+        virtual ~SColor();
+        SColor& operator=(SColor&& col) noexcept;
+        SColor& operator=(const SColor& col);
 
-                public:
-                        v2f scale, translate, skew;
-                        float rotation;
-                        subyte reflection;
 
-                public:
-                        STransform2D();
-                        STransform2D(const STransform2D& trans);
-                        ~STransform2D();
+        subyte& byteAt(const int i);
+        const subyte& byteAt(const int i) const;
+        float& floatAt(const int i);
+        const float& floatAt(const int i) const;
+        subyte& operator[](const int i);
+        const subyte& operator[](const int i) const;
 
-                        static void expand(v2f& s, v2fvec& vertex, v2f ori);
-                        static void shift(v2f& t, v2fvec& vertex);
-                        static void shear(v2f& s, v2fvec& vertex, v2f ori);
-                        static void rotate(float rot, v2fvec& vertex, v2f ori);
-                        static void reflect(subyte ref, v2fvec& vertex, v2f ori);
-                        void clear();
-                };
 
-#define col3i v3ub
-#define col3f v3f
-#define col4i v4ub
-#define col4f v4f
+        //sushort type() const;
 
-#define kui kvpair<String, suint>
-                extern Map<String, suint> ColorMap;
+        
+        subyte channel() const;
+        subyte size() const;
+        
+        sbyte bpp() const;
+        const subyte* bytes() const;
+        const float* floats() const;
 
-                constexpr subyte RGB_SPACE = 0x10;
-                constexpr subyte CMYK_SPACE = 0x20;
-                //constexpr subyte HSV_SPACE = 0x40;
+        subyte gray8() const;
+        sushort gray16() const;
+        //sushort gray32() const;
+        sint rgb() const;
+        suint rgba() const;
+        svec3b toVec3i() const;
+        svec4b toVec4i() const;
+        svec3f toVec3f() const;
+        svec4f toVec4f() const;
+        //subyte red() const;
+        //subyte green() const;
+        //subyte blue() const;
+        subyte alpha() const;
+        //subyte cyan() const;
+        //subyte magenta() const;
+        //subyte yellow() const;
+        //subyte keyplate() const;
+        bool isFloat() const;
+        bool isClear() const;
+        bool isMono() const;
+        bool hasAlpha() const;
+        bool isRGB() const;
+        bool isCMYK() const;
+        virtual bool isGradient() const;
+        void convert(subyte t);
 
-                constexpr sushort GRAY8 = 0x1101;
-                constexpr sushort GRAY16 = 0x1102;
-                constexpr sushort GRAYF = 0x1104;
-                //constexpr sushort RGB8 = 0x1301;
-                //constexpr sushort RGB16 = 0x1302;
-                constexpr sushort RGB24 = 0x1303;
-                constexpr sushort RGB32 = 0x1304;
-                constexpr sushort RGBF = 0x130C;
-                constexpr sushort RGBA = 0x1404;
-                constexpr sushort RGBAF = 0x1410;
-                constexpr sushort CMYK = 0x2404;
-                constexpr sushort CMYKF = 0x2410;
+        String toString(const char* format = "name") const;
 
-                extern inline subyte colorSpace(sushort type) { return ((type & 0xF000) >> 8); }
-                extern inline subyte colorChannel(sushort type) { return ((type & 0x0F00) >> 8); }
-                extern inline subyte bytePerPixel(sushort type) { return (type & 0x00FF); }
-                extern inline subyte colorDepth(sushort type) { return bytePerPixel(type) / colorChannel(type); }
-                extern inline sushort colorType(subyte depth, subyte channel, subyte space) {
-                        return (depth * channel) | ((channel | space) << 8);
-                }
-                extern inline sushort b2scolor(subyte i) { return (sushort)(((float)i / smath::MAX_UBYTE) * smath::MAX_USHORT); }
-                extern inline subyte s2bcolor(sushort i) { return (subyte)(((float)i / smath::MAX_USHORT) * smath::MAX_UBYTE); }
-                extern inline float b2fcolor(subyte i) { return (float)i / smath::MAX_UBYTE; }
-                extern inline float s2fcolor(sushort i) { return (float)i / smath::MAX_USHORT; }
-                extern inline subyte f2bcolor(float f) { return (subyte)(f * smath::MAX_UBYTE); }
-                extern inline sushort f2scolor(float f) { return (sushort)(f * smath::MAX_USHORT); }
-                extern inline suint f2icolor(float f) { return (suint)(f * smath::MAX_UBYTE); }
-                extern inline suint f2icolor(float* f) {
-                        return f2icolor(f[3]) | (f2icolor(f[2]) << 8) | (f2icolor(f[1]) << 16) | (f2icolor(f[0]) << 24);
-                }
+        bool operator<(const SColor& col) const;
+        bool operator==(const SColor& col) const;
+    };
+    class SLIB_DLL SGradient : public SColor {
+    protected:
+        smath::AXIS _axis;
+        float _angle;
+        floatarray _points;
 
-                class SLIB_DLL SColor : public SObject {
-                public:
-                        typedef enum {
-                                DEFAULT_NUMERIC = 1,
-                                DEFAULT_HEX = 2,
-                                HTML_CODE = 3,
-                                HTML_HEX = 4,
-                                CSS_NUMERIC = 5,
+    public:
+        SGradient();
+        SGradient(const SGradient& grad);
+        ~SGradient();
 
-                        } COLOR_TEXT_MODE;
+        //sgeom::COORDINATE coordinate() const;
+        size_t count() const;
+        float angle() const;
+        SColor operator[](const size_t idx) const;
+        SColor colorAt(const size_t idx) const;
+        floatarray& points();
+        const floatarray& points() const;
 
-                protected:
-                        sushort _type;
-                        ubytearray _data;
+        //void setCoordinate(sgeom::COORDINATE coord);
+        void setAngle(float f);
+        void setPosition(size_t idx, float f);
 
-                public:
-                        SColor(sushort t = GRAY8);
-                        SColor(sushort t, void* bytes);
-                        SColor(subyte col);
-                        SColor(suint col);
-                        SColor(const col3i& col);
-                        SColor(const col4i& col);
-                        SColor(const col3f& col);
-                        SColor(const col4f& col);
-                        SColor(int r, int g, int b, int a = 255);
-                        SColor(const char* s);
-                        SColor(const SColor& col);
-                        SColor(const sobj& obj);
-                        virtual ~SColor();
+        void addSColor(float f, const SColor& col);
+        void setSColor(int idx, const SColor& col);
+        void removeSColor(size_t idx);
+        void clear();
 
-                        SColor& operator=(SColor&& col);
-                        SColor& operator=(const SColor& col);
+        String toString() const;
+    };
+    */
 
-                        sushort type() const;
-                        sbyte channel() const;
-                        sbyte bpp() const;
-                        const subyte* bytes() const;
-                        const float* floats() const;
+    enum class ORIGIN_TYPE : subyte {
+        ZERO = 0x00,
+        TOP_LEFT = 0x11,
+        BOTTOM_LEFT = 0x21,
+        TOP_RIGHT = 0x12,
+        BOTTOM_RIGHT = 0x22,
+        CENTER = 0x33,
+    };
+    class Transform2D {
+    public:
+        smath::Vector2D<float> origin, scale, shift, shear;
+        float rotation;
+        bool reflect[2];
 
-                        subyte gray8() const;
-                        sushort gray16() const;
-                        float grayf() const;
-                        suint rgb() const;
-                        suint rgba() const;
-                        col3i toVec3i() const;
-                        col4i toVec4i() const;
-                        col3f toVec3f() const;
-                        col4f toVec4f() const;
-                        subyte red() const;
-                        subyte green() const;
-                        subyte blue() const;
-                        subyte alpha() const;
-                        float redf() const;
-                        float greenf() const;
-                        float bluef() const;
-                        float alphaf() const;
-                        /*
-                        subyte cyan() const;
-                        subyte magenta() const;
-                        subyte yellow() const;
-                        subyte keyplate() const;
-                        float cyanf() const;
-                        float magentaf() const;
-                        float yellowf() const;
-                        float keyplatef() const;
-                        subyte hue() const;
-                        subyte saturation() const;
-                        subyte value() const;
-                        */
-                        bool isInt() const;
-                        bool isFloat() const;
-                        bool isClear() const;
-                        bool isMono() const;
-                        bool hasAlpha() const;
-                        bool isRGB() const;
-                        bool isCMYK() const;
-                        bool isGradient() const;
-                        void convert(sushort t);
-
-                        virtual String getClass() const;
-                        virtual String toString() const;
-                        String toString(COLOR_TEXT_MODE mode) const;
-                        virtual SObject* clone() const;
-
-                        bool operator<(const SColor& col) const;
-                        bool operator==(const SColor& col) const;
-                };
-
-                class SLIB_DLL SGradient : public SColor {
-                protected:
-                        sgeom::COORDINATE _coord;
-                        float _angle;
-                        floatarray _points;
-
-                public:
-                        SGradient();
-                        SGradient(const SGradient& grad);
-                        ~SGradient();
-
-                        sgeom::COORDINATE coordinate() const;
-                        size_t count() const;
-                        float angle() const;
-                        SColor operator[](size_t idx) const;
-                        SColor colorAt(size_t idx) const;
-                        floatarray& points();
-                        const floatarray& points() const;
-
-                        void setCoordinate(sgeom::COORDINATE coord);
-                        void setAngle(float f);
-                        void setPosition(size_t idx, float f);
-
-                        void addColor(float f, const SColor& col);
-                        void setColor(int idx, const SColor& col);
-                        void removeColor(size_t idx);
-                        void clear();
-
-                        String getClass() const;
-                        String toString() const;
-                        SObject* clone() const;
-                };
-
-                namespace color {
-                        const SColor CLEAR = (suint)0x00000000;
-                        const SColor BLACK = (suint)0xFF000000;
-                        const SColor WHITE = (suint)0xFFFFFFFF;
-                        const SColor GRAY = (suint)0xFF808080;
-                        const SColor LIGHTGRAY = (suint)0xFFD3D3D3;
-                        const SColor DIMGRAY = (suint)0xFF696969;
-                        const SColor RED = (suint)0xFF0000FF;
-                        const SColor MAGENTA = (suint)0xFFFF00FF;
-                        const SColor PINK = (suint)0xFFCBC0FF;
-                        const SColor CRIMSON = (suint)0xFF143CDC;
-                        const SColor DARKRED = (suint)0xFF00008B;
-                        const SColor ORANGE = (suint)0xFF00A5FF;
-                        const SColor YELLOW = (suint)0xFF00FFFF;
-                        const SColor BROWN = (suint)0xFF2A2AA5;
-                        const SColor LIME = (suint)0xFF00FF00;
-                        const SColor GREEN = (suint)0xFF008000;
-                        const SColor DARKGREEN = (suint)0xFF006400;
-                        const SColor SPRING = (suint)0xFF7FFF00;
-                        const SColor BLUE = (suint)0xFFFF0000;
-                        const SColor TURQUOISE = (suint)0xFFD0E040;
-                        const SColor CYAN = (suint)0xFFFFFF00;
-                        const SColor DEEPSKY = (suint)0xFFFFBF00;
-                        const SColor INDIGO = (suint)0xFF82004B;
-                        const SColor NAVY = (suint)0xFF800000;
-                        const SColor VIOLET = (suint)0xFFEE82EE;
-                        const SColor PURPLE = (suint)0xFF800080;
-                };
-        }
+    public:
+        Transform2D();
+        ~Transform2D();
+        void setOrigin(const Area<float>& area, ORIGIN_TYPE type);
+        void transform(smath::Vector<smath::Vector2D<float>>& vertex);
+        void reset();
+    };
 
 }
 #endif

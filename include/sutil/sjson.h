@@ -1,34 +1,20 @@
 #ifndef SLIB_SJSON_H
 #define SLIB_SJSON_H
-
-#include "sobj/sobject.h"
+#include "sobj/sobjptr.h"
 #include "sio/sfile.h"
-#include "sutil/sutil.h"
-
 namespace slib {
-    namespace sio {
-        class SLIB_DLL SJson : public sobj {
-            
-        public:
-            SJson();
-			SJson(sio::SFile &file);
-            SJson(const sobj &obj);
-            SJson(const SJson &js);
-            ~SJson();
-            
-            static String jsString(const sobj &obj);
-            static sobj jsObj(const char *s);
-            
-            SJson &operator=(const sobj &obj);
-            SJson &operator=(const SJson &js);
-            
-            void load(const char *path);
-            void save(const char *path);
-            
-            void parse(const char *s);
-            String toString();
-        };
+    /**
+    * @namespace sjson
+    * \~english @brief Namescpace fro functions to handle JSON data and file
+    * \~japanese @brief JSONデータとファイルを扱うための関数をまとめた名前空間
+    */
+    namespace sjson {
+       extern SLIB_DLL String jsString(const SObjPtr& obj, bool form = false, int layer = 0);
+       extern SLIB_DLL SObjPtr jsObj(const char* s);
+       extern SLIB_DLL SObjPtr load(const char* path);
+       extern SLIB_DLL void save(const SObjPtr& obj, const char* path, bool form = false);
+       extern SLIB_DLL SObjPtr parse(const char* s);
+       extern SLIB_DLL String toString(const SObjPtr& obj, bool form = false);
     }
 }
-
 #endif

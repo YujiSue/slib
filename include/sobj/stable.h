@@ -1,124 +1,158 @@
 #ifndef SLIB_STABLE_H
 #define SLIB_STABLE_H
-
-#include "sobj/sobject.h"
-#include "sobj/sstring.h"
+#include "smath/numeric.h"
+#include "sobj/sobjptr.h"
+#include "sobj/sdate.h"
+#include "sobj/sdata.h"
 #include "sobj/sarray.h"
-#include "smath.h"
-
+#include "sobj/sdict.h"
 namespace slib {
-	using namespace smath;
-
-	constexpr sushort OBJECT_COLUMN = 0x0000;
-	constexpr sushort NUMBER_COLUMN = 0x0010;
-	constexpr sushort INTEGER_COLUMN = 0x0011;
-	constexpr sushort REAL_COLUMN = 0x0012;
-	constexpr sushort BOOL_COLUMN = 0x0014;
-	constexpr sushort STRING_COLUMN = 0x0020;
-	constexpr sushort TEXT_COLUMN = 0x0021;
-	constexpr sushort DATE_COLUMN = 0x0040;
-	constexpr sushort DATA_COLUMN = 0x0080;
-	constexpr sushort ARRAY_COLUMN = 0x0100;
-	constexpr sushort DICT_COLUMN = 0x0200;
-	constexpr sushort FUNC_COLUMN = 0x0400;
-	constexpr sushort IMG_COLUMN = 0x0800;
-
 	class SLIB_DLL STable;
-	class SLIB_DLL SColumn : public SObject {
+	class SLIB_DLL SColumn {
 		friend STable;
-	private:
-		sushort _type;
-		String _name;
+	protected:
 		STable* _table;
-
-	private:
-		void setTable(STable* tbl);
-
 	public:
-		SColumn(int type = 0, const char* name = nullptr);
-		SColumn(const char* name);
-		SColumn(const SDictionary &dict);
+		String name;
+		SDictionary attribute;
+	protected:
+		void setTable(STable* tbl);
+	public:
+		SColumn(const char* name = nullptr, const SDictionary& attr = {});
 		SColumn(const SColumn& column);
 		~SColumn();
 		SColumn& operator=(const SColumn& col);
 		
-		static sushort colType(const sobj& obj);
-		static String colTypeStr(int t);
-		static sushort colTypeIndex(const char* t);
-
-		sushort type() const;
-		const String& name() const;
 		size_t size() const;
 		bool empty() const;
-		sobj& at(sinteger i);
-		const sobj& at(sinteger i) const;
-		sobj& operator[](sinteger i);
-		const sobj& operator[](sinteger i) const;
-		sobj get(sinteger i) const;
-		SArray get(sinteger r, sinteger h) const;
-		void convert(sushort t);
-		void setName(const char* n);
-		void set(sinteger i, sobj v) const;
-		void set(sinteger r, sinteger h, sobj v) const;
-		void clear(sinteger i) const;
-		void clear(sinteger r, sinteger h) const;
-		
-		String getClass() const;
-		String toString() const;
-		SObject* clone() const;
+		SObjPtr& at(const int i);
+		const SObjPtr& at(const int i) const;
+		SObjPtr& operator[](const int i);
+		const SObjPtr& operator[](const int i) const;
+		void clear(const size_t off = 0, const size_t sz = -1);
+		SObjPtr toObj() const;
+		//String toString(const char *f = nullptr) const;
 	};
-	class SLIB_DLL SRow : public SObject, public Array<SObjPtr> {
+	class SLIB_DLL RowIterator;
+	class SLIB_DLL RowCIterator;
+	class SLIB_DLL SRow {
+		friend RowIterator;
+		friend RowCIterator;
 		friend STable;
-	private:
+	protected:
 		STable* _table;
-
-	private:
+		SObjPtr* _values;
+	protected:
 		void setTable(STable* tbl);
 	public:
 		SRow();
-		SRow(size_t size);
-		SRow(std::initializer_list<SObjPtr> li);
-		SRow(const stringarray& strarray);
-		SRow(const sobj& obj);
-		SRow(SRow&& row) noexcept;
+		SRow(SObjPtr *r, STable *t);
 		SRow(const SRow& row);
 		~SRow();
-
-		SObjPtr& operator[](const char* s);
-		const SObjPtr& operator[](const char* s) const;
-		sobj get(sinteger i) const;
-		SArray get(sinteger c, sinteger w) const;
-		void set(sinteger i, sobj v);
-		void set(sinteger c, sinteger w, sobj v);
-		void clear(sinteger i);
-		void clear(sinteger c, sinteger w);
-
-		String getClass() const;
-		String toString() const;
-		SObject* clone() const;
+		SRow& operator=(const SRow& col);
+		const SArray& values() const;
+		size_t size() const;
+		bool empty() const;
+		SObjPtr& at(const int i);
+		const SObjPtr& at(const int i) const;
+		SObjPtr& operator[](const int i);
+		const SObjPtr& operator[](const int i) const;
+		SObjPtr& operator[](const String& s);
+		const SObjPtr& operator[](const String& s) const;
+		bool hasColumn(const String& s) const;
+		SIterator begin();
+		SCIterator begin() const;
+		SIterator end();
+		SCIterator end() const;
+		SObjPtr toObj() const;
 	};
-	class SLIB_DLL STable : public SObject {
-		friend SColumn;
-		friend SRow;
+	class SLIB_DLL RowIterator {
+		typedef std::random_access_iterator_tag iterator_category;
+		typedef SRow value_type;
+		typedef std::ptrdiff_t difference_type;
+		typedef SRow* pointer;
+		typedef SRow& reference;
 	private:
-		sint _lastcol;
+		SRow _row;
+	public:
+		RowIterator();
+		RowIterator(ArrayIterator<SObjPtr> it, STable *tbl);
+		RowIterator(const RowIterator& it);
+		~RowIterator();
+		RowIterator& operator=(const RowIterator& it);
+		reference operator*();
+		pointer operator->();
+		reference operator[](std::ptrdiff_t diff);
+		RowIterator& operator++();
+		RowIterator operator++(int);
+		RowIterator& operator--();
+		RowIterator operator--(int);
+		RowIterator& operator+=(std::ptrdiff_t diff);
+		RowIterator& operator-=(std::ptrdiff_t diff);
+		RowIterator operator+(std::ptrdiff_t diff);
+		RowIterator operator-(std::ptrdiff_t diff);
+		difference_type operator-(const RowIterator it) const;
+		void swap(RowIterator it1, RowIterator it2);
+		bool operator<(const RowIterator& it) const;
+		bool operator<=(const RowIterator& it) const;
+		bool operator>(const RowIterator& it) const;
+		bool operator>=(const RowIterator& it) const;
+		bool operator==(const RowIterator& it) const;
+		bool operator!=(const RowIterator& it) const;
+	};
+	class SLIB_DLL RowCIterator {
+		typedef std::random_access_iterator_tag iterator_category;
+		typedef const SRow value_type;
+		typedef std::ptrdiff_t difference_type;
+		typedef const SRow* pointer;
+		typedef const SRow& reference;
+	private:
+		const SRow _row;
+	public:
+		RowCIterator();
+		RowCIterator(const SObjPtr* obj, const STable* tbl);
+		RowCIterator(const RowCIterator& it);
+		~RowCIterator() {}
+		RowCIterator& operator=(const RowCIterator& it);
+		reference operator*();
+		pointer operator->();
+		reference operator[](std::ptrdiff_t diff);
+		RowCIterator& operator++();
+		RowCIterator operator++(int);
+		RowCIterator& operator--();
+		RowCIterator operator--(int);
+		RowCIterator& operator+=(std::ptrdiff_t diff);
+		RowCIterator& operator-=(std::ptrdiff_t diff);
+		RowCIterator operator+(std::ptrdiff_t diff);
+		RowCIterator operator-(std::ptrdiff_t diff);
+		difference_type operator-(const RowCIterator it) const;
+		void swap(RowCIterator it1, RowCIterator it2);
+		bool operator<(const RowCIterator& it) const;
+		bool operator<=(const RowCIterator& it) const;
+		bool operator>(const RowCIterator& it) const;
+		bool operator>=(const RowCIterator& it) const;
+		bool operator==(const RowCIterator& it) const;
+		bool operator!=(const RowCIterator& it) const;
+	};
+
+	class SLIB_DLL STable : public SObject {
+		friend SRow;
+		friend SColumn;
 
 	protected:
-		SArray _columns, _rows;
-
+		Array<SColumn> _columns;
+		SArray _rows;
 	public:
 		STable();
-		STable(int row, int col);
-		STable(const Array<SColumn>& cols, const SArray& rows);
+		STable(const size_t row, const size_t col);
+		STable(const Array<SColumn>& cols, const SArray& rows = {});
 		STable(const sobj& obj);
 		STable(const STable& table);
 		~STable();
 
 		STable& operator=(const STable& table);
-		void initWithArray(SArray& array, bool header = false);
-		void initWithDict(SDictionary& dict);
-
 		//IO
+		/*
 		void load(sobj obj);
 		void load(const char* path);
 		void loadTxt(const char* path, const char* sep, bool header);
@@ -128,6 +162,48 @@ namespace slib {
 		void save(const char* path);
 		void saveTxt(const char* path, const char* sep);
 		void saveJson(const char* path);
+		*/
+
+		size_t ncol() const;
+		size_t nrow() const;
+		const Array<SColumn>& columns() const;
+		const SArray& rows() const;
+
+		void resize(const size_t rn, const size_t cn);
+		size_t colIndex(const char* name) const;
+		SRow operator[](const int idx);
+		SColumn& operator[](const char* name);
+		SColumn& operator[](const String &name);
+		SRow row(const int idx);
+		const SRow row(const int idx) const;
+		SColumn& column(const int idx);
+		const SColumn& column(const int idx) const;
+
+		RowIterator begin();
+		RowCIterator begin() const;
+		RowIterator end(); 
+		RowCIterator end() const;
+
+		void resizeColumn(const size_t sz);
+		STable& addColumn(const SColumn& col);
+		STable& appendColumn(const Array<SColumn>& cols);
+		void insertColumn(const sinteger i, const SColumn& col);
+		void removeColumn(const sinteger i);
+		void resizeRow(const size_t sz);
+		STable &addRow(SObjPtr obj = snull);
+		//STable& addRow(const SArray& row);
+		//STable& addRow(const SDictionary& row);
+		void insertRow(const sinteger i, const SArray& row);
+		void removeRow(const sinteger i);
+		void append(const Array<SColumn>& cols);
+		void append(const SArray& rows);
+		STable& set(const sinteger row, const sinteger col, const SObjPtr& val);
+
+		SObjPtr toObj() const;
+
+		void clear();
+
+		/*
 
 
 		size_t columnCount() const;
@@ -182,16 +258,19 @@ namespace slib {
 		void setValue(sint r, sint c, sobj val);
 		void updateValues(sint r, const SDictionary &values);
 		void setValues(sint r, sint c, const SArray &values);
-		void resize(size_t r, size_t c);
+		//void resize(size_t r, size_t c);
 		Range<size_t> find(const sobj& obj, smath::DIRECTION dir = HORIZONTAL, srange offset = srange(0, 0));
 		void sortBy(const char *name, slib::ORDER order = ASC);
+		*/
 		void clearAll();
-		
+
 		String getClass() const;
-		String toString() const;
-		String toString(const char *f) const;
+		String toString(const char *format = nullptr) const;
 		SObject* clone() const;
 	};
+	extern SLIB_DLL String toString(const SRow& row, const char *format = nullptr);
+	extern SLIB_DLL std::ostream& operator<<(std::ostream& os, const SRow& row);
+	extern SLIB_DLL std::ostream& operator<<(std::ostream& os, const STable& tbl);
 }
 
 #endif

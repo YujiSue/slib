@@ -1,9 +1,8 @@
 #ifndef SLIB_SOBJ_H
 #define SLIB_SOBJ_H
 
-#define SOBJ_VERSION 1.0.0
-
-#include "sbasic.h"
+#include "smath/random.h"
+#include "sobj/sobjptr.h"
 #include "sobj/snumber.h"
 #include "sobj/sstring.h"
 #include "sobj/sdate.h"
@@ -13,17 +12,21 @@
 #include "sobj/stext.h"
 #include "sobj/stable.h"
 #include "sobj/sfunc.h"
-#include "sobj/snode.h"
+//#include "sobj/snode.h"
 #include "sobj/svoid.h"
+#include "sio/stream.h"
+#include "sio/sio.h"
+#include "sio/sfile.h"
 #include "sutil/scode.h"
-#include "sutil/sdocument.h"
+//#include "sutil/sdocument.h"
 #include "sutil/sdb.h"
 #include "sutil/sjson.h"
 #include "sutil/sxml.h"
 #include "sutil/ssys.h"
-#include "sio/sfile.h"
-#include "snet/snet.h"
-#include "smedia/simage.h"
+#include "sutil/schrono.h"
+#include "sutil/snet.h"
+#include "sutil/smail.h"
+//#include "smedia/simage.h"
 #include "smedia/sfigure.h"
 
 #endif

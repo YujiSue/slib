@@ -1,28 +1,68 @@
 #ifndef SMATH_CALC_H
 #define SMATH_CALC_H
-
 #include "sbasic/range.h"
-#include "smath/mathbasic.h"
-
+#include "smath/mexception.h"
 namespace slib {
 	namespace smath {
-		extern SLIB_DLL bool isInteger(const float& f);
-		extern SLIB_DLL bool isInteger(const double& d);
-		extern SLIB_DLL double rootN(double val, size_t n);
-		extern SLIB_DLL size_t digit(int i);
-		extern SLIB_DLL size_t decim(double d);
-		extern SLIB_DLL sinteger gcd(sinteger n1, sinteger n2);
-		extern SLIB_DLL sinteger lcm(sinteger n1, sinteger n2);
 		template<typename T>
-		extern SLIB_DLL void reduction(T& n1, T& n2) { sinteger g = gcd(n1, n2); n1 /= g; n2 /= g; }
-		extern SLIB_DLL sinteger factorial(sinteger n, sinteger k);
-		extern SLIB_DLL sinteger factorial(sinteger n);
-		extern SLIB_DLL sinteger combination(sinteger n, sinteger k);
-		extern SLIB_DLL double deg2rad(double deg);
-		extern SLIB_DLL double rad2deg(double rad);
+		extern bool isInteger(const T v) { return v == (T)floor((double)v) || v == (T)ceil((double)v); }
+		template<typename T>
+		extern double rootN(const T v, const size_t n) {
+			if (n == 0) return 1.0;
+			else if (n == 1) return v;
+			double r = pow(v, 1.0 / n);
+			return (r * (n - 1) + v / (pow(r, n - 1))) / n;
+		}
+		template<typename T>
+		extern size_t digit(const T v) {
+			std::string str = std::to_string(v);
+			return str.length() - (v < 0 ? 1 : 0);
+		}
+		template<typename T>
+		extern size_t decim(const T v) {
+			std::string str = std::to_string(v);
+			size_t pos = str.find(".");
+			return pos == std::string::npos ? str.length() : pos;
+		}
+		template<typename T>
+		extern T gcd(T n1, T n2) {
+			auto surp = n1 % n2;
+			while (surp) { n1 = n2; n2 = surp; surp = n1 % n2; }
+			return n2;
+		}
+		template<typename T>
+		extern T lcm(T n1, T n2) { return n1 * n2 / gcd(n1, n2); }
+		template<typename T>
+		extern void reduction(T& n1, T& n2) { auto g = gcd<T>(n1, n2); n1 /= g; n2 /= g; }
+		template<typename T>
+		extern T factorial(T n, T k) {
+			T f = (T)1;
+			sforin(i, 0, k) { f *= n; n--; }
+			return f;
+		}
+		template<typename T>
+		extern T factorial(T n) { return factorial(n, n); }
+		template<typename T>
+		extern T combination(T n, T k) {
+			if (k <= n - k) {
+				Pair<T, T> frac(1, 1);
+				while (1 <= k) {
+					frac.first *= n;
+					frac.second *= k;
+					reduction(frac.first, frac.second);
+					--n; --k;
+				}
+				return frac.first;
+			}
+			else return combination(n, n - k);
+		}
+		template<typename T>
+		extern T deg2rad(T deg) { return (T)(deg * snum::PI / 180.0); }
+		template<typename T>
+		extern T rad2deg(T rad) { return (T)(rad * 180.0 / snum::PI); }
 		template<typename T1, typename T2>
 		extern inline sint quot(T1 t1, T2 t2) {
-			if (t2 == 0) throw SMathException(ERR_INFO, DIV_ZERO_ERR, "Second argment of quot function");
+			if (t2 == 0) throw DivZeroException(divZeroErrorText("divider"));
 			if (t1 < 0) {
 				if (t2 < 0) return (-t1) / (-t2);
 				else return -((-t1) / t2);
@@ -33,9 +73,9 @@ namespace slib {
 			}
 		}
 		template<typename T>
-		extern inline T power(const T &val, sinteger n) {
+		extern T power(const T val, int n) {
 			if (!val) return val;
-			if (!n) return unitVal<T>();
+			if (!n) return 1;
 			T pow = val;
 			if (n < 0) {
 				sforin(i, 1, -n) pow *= val;
@@ -45,31 +85,7 @@ namespace slib {
 			return pow;
 		}
 		template<typename T>
-		extern inline int kdelta(const T& v1, const T& v2) { return v1 == v2 ? 1 : 0; }
-		class SLIB_DLL SRandom {
-			std::random_device _seed;
-			std::mt19937 _engine;
-
-		public:
-			SRandom();
-			~SRandom();
-
-			sint iruni(int beg, int end);
-			double runi(double beg = 0.0, double end = 1.0);
-			double rnorm(double m = 0.0, double s = 1.0);
-			double rlognorm(double m = 0.0, double s = 1.0);
-			double rchisq(double n);
-			int rpois(double m);
-			double rexp(double l);
-			double rgamma(double a, double b);
-			double rweib(double a, double b);
-			double rbern(double p);
-			double rbinom(int n, double p);
-			double rgeom(double p);
-			double rnbinom(int n, double p);
-			double rrayleigh(double s);
-			double rvonmises(double m, double k);
-		};
+		extern int kdelta(const T& v1, const T& v2) { return v1 == v2 ? 1 : 0; }
 	}
 }
 #endif

@@ -1,114 +1,361 @@
+#include "smath/numeric.h"
 #include "sutil/scode.h"
 #include "sio/sfile.h"
+slib::String slib::sutil::decodeURL(const char* s) {
+	slib::String decoded, code(3, '\0'), str(s);
+	sfor(str) {
+		if ($_ == '%' && it < str.end() - 2) {
+			memcpy(&code[0], it.ptr(), 3);
+			if (code == "%20") decoded << " ";
+			else if (code == "%21") decoded << "!";
+			else if (code == "%22") decoded << "\"";
+			else if (code == "%23") decoded << "#";
+			else if (code == "%24") decoded << "$";
+			else if (code == "%25") decoded << "%";
+			else if (code == "%26") decoded << "&";
+			else if (code == "%27") decoded << "'";
+			else if (code == "%28") decoded << "(";
+			else if (code == "%29") decoded << ")";
+			else if (code == "%2A") decoded << "*";
+			else if (code == "%2B") decoded << "+";
+			else if (code == "%2C") decoded << ",";
+			else if (code == "%2F") decoded << "/";
+			else if (code == "%3A") decoded << ":";
+			else if (code == "%3B") decoded << ";";
+			else if (code == "%3C") decoded << "<";
+			else if (code == "%3D") decoded << "=";
+			else if (code == "%3E") decoded << ">";
+			else if (code == "%3F") decoded << "?";
+			else if (code == "%40") decoded << "@";
+			else if (code == "%5B") decoded << "[";
+			else if (code == "%5D") decoded << "]";
+			else if (code == "%5E") decoded << "^";
+			else if (code == "%60") decoded << "`";
+			else if (code == "%7B") decoded << "{";
+			else if (code == "%7C") decoded << "|";
+			else if (code == "%7D") decoded << "}";
+			else if (code == "%7E") decoded << "~";
+			else { decoded << code; it += 2; }
+		}
+		else decoded << $_;
+	}
+	return decoded;
+}
+slib::String slib::sutil::encodeURL(const char* s) {
+	slib::String encoded, str(s);
+	sfor(str) {
+		switch ($_) {
+		case '%':
+			encoded << "%25"; break;
+		case ' ':
+			encoded << "%20"; break;
+		case '!':
+			encoded << "%21"; break;
+		case '\"':
+			encoded << "%22"; break;
+		case '#':
+			encoded << "%23"; break;
+		case '$':
+			encoded << "%24"; break;
+		case '&':
+			encoded << "%26"; break;
+		case '\'':
+			encoded << "%27"; break;
+		case '(':
+			encoded << "%28"; break;
+		case ')':
+			encoded << "%29"; break;
+		case '*':
+			encoded << "%2A"; break;
+		case '+':
+			encoded << "%2B"; break;
+		case ',':
+			encoded << "%2C"; break;
+		case '/':
+			encoded << "%2F"; break;
+		case ':':
+			encoded << "%3A"; break;
+		case ';':
+			encoded << "%3B"; break;
+		case '<':
+			encoded << "%3C"; break;
+		case '=':
+			encoded << "%3D"; break;
+		case '>':
+			encoded << "%3E"; break;
+		case '?':
+			encoded << "%3F"; break;
+		case '@':
+			encoded << "%40"; break;
+		case '[':
+			encoded << "%5B"; break;
+		case ']':
+			encoded << "%5D"; break;
+		case '^':
+			encoded << "%5E"; break;
+		case '`':
+			encoded << "%60"; break;
+		case '{':
+			encoded << "%7B"; break;
+		case '|':
+			encoded << "%7C"; break;
+		case '}':
+			encoded << "%7D"; break;
+		case '~':
+			encoded << "%7E"; break;
+		default:
+			encoded << $_;
+			break;
+		}
+	}
+	return encoded;
+}
 
-using namespace slib;
-using namespace slib::sio;
 
-suint SHash::crc32(ubytearray& data) {
-	suint val = 0;
-	val = crc32_z(val, static_cast<const Bytef*>(data.ptr()), data.size());
-	return val;
+slib::String slib::SCode::urlEncode(const slib::String& str) {
+	slib::String encoded;
+	encoded.reserve(str.size() * 3);
+	sfor(str) {
+		switch ($_) {
+		case '%':
+			encoded << "%25"; break;
+		case ' ':
+			encoded << "%20"; break;
+		case '!':
+			encoded << "%21"; break;
+		case '\"':
+			encoded << "%22"; break;
+		case '#':
+			encoded << "%23"; break;
+		case '$':
+			encoded << "%24"; break;
+		case '&':
+			encoded << "%26"; break;
+		case '\'':
+			encoded << "%27"; break;
+		case '(':
+			encoded << "%28"; break;
+		case ')':
+			encoded << "%29"; break;
+		case '*':
+			encoded << "%2A"; break;
+		case '+':
+			encoded << "%2B"; break;
+		case ',':
+			encoded << "%2C"; break;
+		case '/':
+			encoded << "%2F"; break;
+		case ':':
+			encoded << "%3A"; break;
+		case ';':
+			encoded << "%3B"; break;
+		case '<':
+			encoded << "%3C"; break;
+		case '=':
+			encoded << "%3D"; break;
+		case '>':
+			encoded << "%3E"; break;
+		case '?':
+			encoded << "%3F"; break;
+		case '@':
+			encoded << "%40"; break;
+		case '[':
+			encoded << "%5B"; break;
+		case ']':
+			encoded << "%5D"; break;
+		case '^':
+			encoded << "%5E"; break;
+		case '`':
+			encoded << "%60"; break;
+		case '{':
+			encoded << "%7B"; break;
+		case '|':
+			encoded << "%7C"; break;
+		case '}':
+			encoded << "%7D"; break;
+		case '~':
+			encoded << "%7E"; break;
+		default:
+			encoded << $_;
+			break;
+		}
+	}
+	return encoded;
 }
-bool SHash::crc32check(ubytearray& data, suint &ref) {
-	return SHash::crc32(data) == ref;
+slib::String slib::SCode::urlDecode(const slib::String& str) {
+	slib::String decoded, code(3, '\0');
+	decoded.reserve(str.size());
+	sfor(str) {
+		if ($_ == '%' && it < str.end() - 2) {
+			memcpy(&code[0], it.ptr(), 3);
+			if (code == "%20") decoded << " ";
+			else if (code == "%21") decoded << "!";
+			else if (code == "%22") decoded << "\"";
+			else if (code == "%23") decoded << "#";
+			else if (code == "%24") decoded << "$";
+			else if (code == "%25") decoded << "%";
+			else if (code == "%26") decoded << "&";
+			else if (code == "%27") decoded << "'";
+			else if (code == "%28") decoded << "(";
+			else if (code == "%29") decoded << ")";
+			else if (code == "%2A") decoded << "*";
+			else if (code == "%2B") decoded << "+";
+			else if (code == "%2C") decoded << ",";
+			else if (code == "%2F") decoded << "/";
+			else if (code == "%3A") decoded << ":";
+			else if (code == "%3B") decoded << ";";
+			else if (code == "%3C") decoded << "<";
+			else if (code == "%3D") decoded << "=";
+			else if (code == "%3E") decoded << ">";
+			else if (code == "%3F") decoded << "?";
+			else if (code == "%40") decoded << "@";
+			else if (code == "%5B") decoded << "[";
+			else if (code == "%5D") decoded << "]";
+			else if (code == "%5E") decoded << "^";
+			else if (code == "%60") decoded << "`";
+			else if (code == "%7B") decoded << "{";
+			else if (code == "%7C") decoded << "|";
+			else if (code == "%7D") decoded << "}";
+			else if (code == "%7E") decoded << "~";
+			else { decoded << code; it += 2; }
+		}
+		else decoded << $_;
+	}
+	return decoded;
 }
-void SHash::md5(String& data, ubytearray& digest) {
-	digest.resize(16);
-	MD5_CTX context;
-	MD5Init(&context);
-	MD5Update(&context, (unsigned char *)data.cstr(), (unsigned int)data.size());
-	MD5Final(&digest[0], &context);
+
+void slib::sutil::inflate(ubytearray& dest, const ubytearray& ori, size_t cap, int bits) {
+	dest.clear();
+	if (ori.empty()) return;
+	cap = (cap == (size_t)-1 ? (uInt)(ori.size() * 3 / 2) : cap);
+	dest.resize(cap);
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.next_in = (Bytef*)ori.data();
+	strm.avail_in = (unsigned int)ori.size();
+	strm.next_out = (Bytef*)dest.data();
+	strm.avail_out = (unsigned)cap;
+	auto res = inflateInit2(&strm, bits);
+	//if (res) throw Exception();
+	res = inflate(&strm, Z_NO_FLUSH);
+	if (res != Z_STREAM_END || strm.total_in < ori.size()) {
+		if (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
+			while (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
+				auto cap_ = cap * 3 / 2;
+				dest.resize(cap_);
+				strm.next_out = (Bytef*)dest.data(strm.total_out);
+				strm.avail_out = (uInt)(cap_ - cap);
+				res = inflate(&strm, Z_NO_FLUSH);
+				cap = cap_;
+			}
+		}
+		if (res == Z_STREAM_ERROR || res == Z_DATA_ERROR || res == Z_MEM_ERROR)
+			throw Exception();
+	}
+	res = inflateEnd(&strm);
+	if (res == Z_DATA_ERROR)
+		throw Exception();
+	dest.resize(strm.total_out);
 }
-void SHash::md5(ubytearray& data, ubytearray& digest) {
-	digest.resize(16);
-	MD5_CTX context;
-	MD5Init(&context);
-	MD5Update(&context, data.ptr(), (unsigned int)data.size());
-	MD5Final(&digest[0], &context);
+void slib::sutil::deflate(ubytearray& dest, const ubytearray& ori, size_t cap, int bits) {
+	dest.clear();
+	if (ori.empty()) return;
+	cap = (cap == (size_t)-1 ? ori.size() * 3/ 2 : cap);
+	dest.resize(cap);
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.next_in = (Bytef*)ori.data();
+	strm.avail_in = (unsigned)ori.size();
+	strm.next_out = (Bytef*)dest.data();
+	strm.avail_out = (uInt)cap;
+	int res = deflateInit2(&strm, Z_DEFAULT_COMPRESSION,
+		Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY);
+	if (res) throw Exception();
+	res = Z_OK;
+	res = deflate(&strm, Z_FINISH);
+	if (res != Z_STREAM_END || strm.total_in < ori.size()) {
+		if (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
+			while (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
+				auto cap_ = cap * 3 / 2;
+				dest.resize(cap_);
+				strm.next_out = (Bytef*)dest.data(strm.total_out);
+				strm.avail_out = (uInt)(cap_ - cap);
+				res = deflate(&strm, Z_FINISH);
+				cap = cap_;
+			}
+		}
+		if (res == Z_STREAM_ERROR)
+			throw Exception();
+	}
+	res = deflateEnd(&strm);
+	if (res == Z_DATA_ERROR)
+		throw Exception();
+	dest.resize(strm.total_out);
 }
-void SHash::md5Str(String& data, String& str) {
-	MD5_CTX context;
-	unsigned char digest[16];
-	MD5Init(&context);
-	MD5Update(&context, (unsigned char*)data.cstr(), (unsigned int)data.size());
-	MD5Final(&digest[0], &context);
-	sforin(i, 0, 16) { str += SNumber::toHex(digest[i]); }
+
+inline slib::subyte b64(const char& c) {
+	auto b = (slib::subyte)c;
+	if (b == 0x2f || b == 0x5f) return 63;
+	else if (b == 0x2b || b == 0x2d) return 62;
+	else if (0x60 < b) return 26 + b - 0x61;
+	else if (0x40 < b) return b - 0x41;
+	else if (0x2f < b) return 52 + b - 0x30;
+	return 0;
 }
-void SHash::md5Str(ubytearray& data, String& str) {
-	MD5_CTX context;
-	unsigned char digest[16];
-	MD5Init(&context);
-	MD5Update(&context, data.ptr(), (unsigned int)data.size());
-	MD5Final(&digest[0], &context);
-	sforin(i, 0, 16) { str += SNumber::toHex(digest[i]); }
+void slib::sutil::decodeBase64Char(const char* src, subyte* dest) {
+	subyte dec[4];
+	sforin(i, 0, 4) dec[i] = (src[i] == '=' ? 0 : b64(src[i]));
+	dest[0] = (dec[0] << 2) | ((dec[1] >> 4) & 0x03);
+	dest[1] = ((dec[1] & 0x0F) << 4) | ((dec[2] >> 2) & 0x0F);
+	dest[2] = ((dec[2] & 0x03) << 6) | (dec[3] & 0x3F);
 }
-bool SHash::md5check(ubytearray& data, const char* str) {
-	String s;
-	SHash::md5Str(data, s);
-	return !strcmp(s.cstr(), str);
+void slib::sutil::decodeBase64(const char* s, String& dest) {
+	auto length = strlen(s) / 4;
+	dest.resize(length * 3);
+	auto it = &dest[0];
+	sforin(i, 0_u, length) {
+		decodeBase64Char(s, (subyte *)$); s += 4; $ += 3;
+	}
+	dest.resize(strlen(dest.cstr()));
 }
-void SHash::sha256(String& data, ubytearray& digest) {
-	digest.resize(256);
-	SHA256_CTX ctx;
-	SHA256_Init(&ctx);
-	SHA256_Update(&ctx, data.cstr(), data.size());
-	SHA256_Final(digest.ptr(), &ctx);
+void slib::sutil::decodeBase64(const char* s, ubytearray& dest) {
+	auto length = strlen(s) / 4;
+	dest.resize(length * 3);
+	auto it = dest.data();
+	sforin(i, 0_u, length) {
+		decodeBase64Char(s, $); s += 4; $ += 3;
+	}
 }
-void SHash::sha256(ubytearray& data, ubytearray& digest) {
-	digest.resize(256);
-	SHA256_CTX ctx;
-	SHA256_Init(&ctx);
-	SHA256_Update(&ctx, data.ptr(), data.size());
-	SHA256_Final(digest.ptr(), &ctx);
+void slib::sutil::decodeBase64(const SObjPtr& src, SObjPtr& dest) {
+	if (dest.isData()) decodeBase64(src.string().cstr(), dest.data());
+	else {
+		dest = SString();
+		decodeBase64(src.string().cstr(), dest.string());
+	}
 }
-void SHash::sha256Str(String& data, String& str) {
-	ubytearray digest;
-	SHash::sha256(data, digest);
-	str.clear();
-	sforin(i, 0, 32) { str += SNumber::toHex(digest[i]); }
+/*
+void slib::sutil::encodeBase64Char(const subyte* src, char* dest, const size_t sz) {
+	char dat[3];
+	memset(dat, 0, 3);
+	memcpy(dat, ori, size);
+	encoded[0] = BASE64_CHAR[(dat[0] >> 2) & 0x3F];
+	encoded[1] = BASE64_CHAR[((dat[0] & 0x03) << 4) + ((dat[1] >> 4) & 0x0F)];
+	encoded[2] = size < 2 ? '=' : SCode::B64_STR[((dat[1] & 0x0F) << 2) + ((dat[2] >> 6) & 0x03)];
+	encoded[3] = size < 3 ? '=' : SCode::B64_STR[dat[2] & 0x3F];
 }
-void SHash::sha256Str(ubytearray& data, String& str) {
-	ubytearray digest;
-	SHash::sha256(data, digest);
-	str.clear();
-	sforin(i, 0, 32) { str += SNumber::toHex(digest[i]); }
+*/
+void slib::sutil::encodeBase64(const char* src, String& dest) {
+
 }
-bool SHash::sha256check(ubytearray& data, const char* str) {
-	String s;
-	SHash::sha256Str(data, s);
-	return !strcmp(s.cstr(), str);
-}
-void SHash::sha512(String& data, ubytearray& digest) {
-	digest.resize(512);
-	SHA512_CTX ctx;
-	SHA512_Init(&ctx);
-	SHA512_Update(&ctx, data.cstr(), data.size());
-	SHA512_Final(digest.ptr(), &ctx);
-}
-void SHash::sha512(ubytearray& data, ubytearray& digest) {
-	digest.resize(512);
-	SHA512_CTX ctx;
-	SHA512_Init(&ctx);
-	SHA512_Update(&ctx, data.ptr(), data.size());
-	SHA512_Final(digest.ptr(), &ctx);
-}
-void SHash::sha512Str(String& data, String& str) {
-	ubytearray digest;
-	SHash::sha512(data, digest);
-	str.clear();
-	sforin(i, 0, 64) { str += SNumber::toHex(digest[i]); }
-}
-void SHash::sha512Str(ubytearray& data, String& str) {
-	ubytearray digest;
-	SHash::sha512(data, digest);
-	str.clear();
-	sforin(i, 0, 64) { str += SNumber::toHex(digest[i]); }
-}
-bool SHash::sha512check(ubytearray& data, const char* str) {
-	String s;
-	SHash::sha512Str(data, s);
-	return !strcmp(s.cstr(), str);
-}
+void slib::sutil::encodeBase64(const ubytearray& src, String& dest) {}
+void slib::sutil::encodeBase64(const SObjPtr& src, SObjPtr& dest) {}
+
+/*
+
 const suint SZip::LOCAL_FILE_HEADER_SIG = 0x04034B50;
 const suint SZip::DATA_DESCRIPTOR_SIG = 0x08074B50;
 const suint SZip::CENTRAL_DIR_SIG = 0x02014B50;
@@ -135,7 +382,7 @@ SZip::centralDirEnd::centralDirEnd() {
 }
 SZip::centralDirEnd::~centralDirEnd() {}
 
-inline void readZippCentEnd(sio::SFile &ori, SZip::centralDirEnd &cde) {
+void readZippCentEnd(sio::SFile &ori, SZip::centralDirEnd &cde) {
 	ori.readBytes(&cde.sig, 4);
 	if (cde.sig != SZip::CENTRAL_DIR_END_SIG) throw SException(ERR_INFO);
 	ori.readBytes(&cde.num, 2);
@@ -149,7 +396,7 @@ inline void readZippCentEnd(sio::SFile &ori, SZip::centralDirEnd &cde) {
 	ori.clear();
 	ori.setOffset(cde.offset);
 }
-inline void readZippCent(sio::SFile &ori, SZip::centralDir &cd) {
+void readZippCent(sio::SFile &ori, SZip::centralDir &cd) {
 	ori.readBytes(&cd.sig, 4);
 	if (cd.sig != SZip::CENTRAL_DIR_SIG) throw SException(ERR_INFO);
 	ori.readBytes(&cd.ver, 2);
@@ -172,7 +419,7 @@ inline void readZippCent(sio::SFile &ori, SZip::centralDir &cd) {
 	if (cd.elen) { cd.ext.resize(cd.elen); ori.readBytes(cd.ext.ptr(), cd.elen); }
 	if (cd.clen) ori.readString(cd.comment, cd.clen);
 }
-inline void readLocalHeader(sio::SFile &ori, SZip::centralDir &cd, SZip::localFileHeader &lfh, SData &dat) {
+void readLocalHeader(sio::SFile &ori, SZip::centralDir &cd, SZip::localFileHeader &lfh, SData &dat) {
 	ori.setOffset(cd.offset);
 	ori.readBytes(&lfh.sig, 4);
 	if (lfh.sig != SZip::LOCAL_FILE_HEADER_SIG) throw SException(ERR_INFO);
@@ -197,7 +444,7 @@ inline void readLocalHeader(sio::SFile &ori, SZip::centralDir &cd, SZip::localFi
 	}
 	else dat.clear();
 }
-inline void writeLocalHeader(sio::SFile &file, SZip::localFileHeader &lfh, SData &dat) {
+void writeLocalHeader(sio::SFile &file, SZip::localFileHeader &lfh, SData &dat) {
     file.writeUInt(lfh.sig);
     file.writeUShort(lfh.ver);
     file.writeUShort(lfh.flag);
@@ -226,9 +473,7 @@ void SZip::load(const char* path) {
 		_file.open(path, sio::READ);
 		centralDirEnd cde;
 		_file.seek(-22, sio::SFile::END);
-		/*
-		 *
-		 */
+		
 		readZippCentEnd(_file, cde);
 		_contents.resize(cde.sum);
 		sforeach(_contents) readZippCent(_file, E_);
@@ -306,10 +551,8 @@ void SZip::expand(SFile &ori, const char *dest, const char *decrypt) {
         localFileHeader lfh;
         sforeach(cds) {
             if (E_.name.beginWith("__MACOSX")) {
-                /*
-                 *
-                 */
-                continue;
+                
+				continue;
             }
 			if (!E_.rsize || E_.name.contain("/")) {
 				auto layers = E_.name.split("/");
@@ -341,127 +584,9 @@ void SZip::expand(SFile &ori, const char *dest, const char *decrypt) {
         ex.print();
     }
 }
-String SCode::urlEncode(const String& str) {
-	String encoded;
-	encoded.reserve(str.size() * 3);
-	sforeach(str) {
-		switch (E_) {
-		case '%':
-			encoded << "%25"; break;
-		case ' ':
-			encoded << "%20"; break;
-		case '!':
-			encoded << "%21"; break;
-		case '\"':
-			encoded << "%22"; break;
-		case '#':
-			encoded << "%23"; break;
-		case '$':
-			encoded << "%24"; break;
-		case '&':
-			encoded << "%26"; break;
-		case '\'':
-			encoded << "%27"; break;
-		case '(':
-			encoded << "%28"; break;
-		case ')':
-			encoded << "%29"; break;
-		case '*':
-			encoded << "%2A"; break;
-		case '+':
-			encoded << "%2B"; break;
-		case ',':
-			encoded << "%2C"; break;
-		case '/':
-			encoded << "%2F"; break;
-		case ':':
-			encoded << "%3A"; break;
-		case ';':
-			encoded << "%3B"; break;
-		case '<':
-			encoded << "%3C"; break;
-		case '=':
-			encoded << "%3D"; break;
-		case '>':
-			encoded << "%3E"; break;
-		case '?':
-			encoded << "%3F"; break;
-		case '@':
-			encoded << "%40"; break;
-		case '[':
-			encoded << "%5B"; break;
-		case ']':
-			encoded << "%5D"; break;
-		case '^':
-			encoded << "%5E"; break;
-		case '`':
-			encoded << "%60"; break;
-		case '{':
-			encoded << "%7B"; break;
-		case '|':
-			encoded << "%7C"; break;
-		case '}':
-			encoded << "%7D"; break;
-		case '~':
-			encoded << "%7E"; break;
-		default:
-			encoded << E_;
-			break;
-		}
-	}
-	return encoded;
-}
-String SCode::urlDecode(const String& str) {
-	String decoded, code(3, '\0');
-	decoded.reserve(str.size());
-	sforeach(str) {
-		if (E_ == '%' && it < str.end() - 2) {
-			memcpy(code.ptr(), it.ptr(), 3);
-			if (code == "%20") decoded << " ";
-			else if (code == "%21") decoded << "!";
-			else if (code == "%22") decoded << "\"";
-			else if (code == "%23") decoded << "#";
-			else if (code == "%24") decoded << "$";
-			else if (code == "%25") decoded << "%";
-			else if (code == "%26") decoded << "&";
-			else if (code == "%27") decoded << "'";
-			else if (code == "%28") decoded << "(";
-			else if (code == "%29") decoded << ")";
-			else if (code == "%2A") decoded << "*";
-			else if (code == "%2B") decoded << "+";
-			else if (code == "%2C") decoded << ",";
-			else if (code == "%2F") decoded << "/";
-			else if (code == "%3A") decoded << ":";
-			else if (code == "%3B") decoded << ";";
-			else if (code == "%3C") decoded << "<";
-			else if (code == "%3D") decoded << "=";
-			else if (code == "%3E") decoded << ">";
-			else if (code == "%3F") decoded << "?";
-			else if (code == "%40") decoded << "@";
-			else if (code == "%5B") decoded << "[";
-			else if (code == "%5D") decoded << "]";
-			else if (code == "%5E") decoded << "^";
-			else if (code == "%60") decoded << "`";
-			else if (code == "%7B") decoded << "{";
-			else if (code == "%7C") decoded << "|";
-			else if (code == "%7D") decoded << "}";
-			else if (code == "%7E") decoded << "~";
-			else { decoded << code; it += 2; }
-		}
-		else decoded << E_;
-	}
-	return decoded;
-}
-const char *SCode::B64_STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-subyte SCode::b64i(const char &c) {
-    subyte b = *((subyte *)&c);
-    if (0x60 < b) return 26+b-0x61;
-    else if (0x40 < b) return b-0x41;
-    else if (0x2f < b) return 52+b-0x30;
-    else if (b == 0x2b) return 62;
-    else if (b == 0x2f) return 63;
-    return 0;
-}
+
+
+
 void SCode::encodeB64Char(const char* ori, char *encoded, size_t size) {
     char dat[3];
     memset(dat, 0, 3);
@@ -536,38 +661,7 @@ void SCode::decodeBASE64(const String& base, ubytearray& ori, size_t s) {
 	ori.resize(s);
 }
 void SCode::expandTo(ubytearray& ori, ubytearray& dest, size_t cap, sint bits, sint flush) {
-	if (ori.empty()) return;
-	sint capacity = (cap == -1 ? (sint)((double)ori.size() * 1.5) : cap);
-	dest.resize(capacity);
-	z_stream strm;
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
-	strm.next_in = (Bytef*)ori.ptr();
-	strm.avail_in = (unsigned int)ori.size();
-	strm.next_out = (Bytef*)dest.ptr();
-	strm.avail_out = (suint)capacity;
-	int res = inflateInit2(&strm, bits);
-	if (res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflateInit2", EXEC_TEXT(std::to_string(res)));
-	res = inflate(&strm, flush);
-	if (res != Z_STREAM_END || strm.total_in < ori.size()) {
-		if (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
-			while (res == Z_BUF_ERROR || strm.total_in < ori.size()) {
-				int capacity_ = (int)((double)capacity * 1.5);
-				dest.resize(capacity_);
-				strm.next_out = dest.ptr(strm.total_out);
-				strm.avail_out = capacity_ - capacity;
-				res = inflate(&strm, flush);
-				capacity = capacity_;
-			}
-		}
-		if (res == Z_STREAM_ERROR || res == Z_DATA_ERROR || res == Z_MEM_ERROR)
-			throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflate", EXEC_TEXT(std::to_string(res)));
-	}
-	res = inflateEnd(&strm);
-	if (res == Z_DATA_ERROR)
-		throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflateEnd", EXEC_TEXT(std::to_string(res)));
-	dest.resize(strm.total_out);
+	
 }
 void SCode::expand(ubytearray &bytes, size_t cap, sint bits, sint flush) {
     if (bytes.empty()) return;
@@ -604,42 +698,5 @@ void SCode::expand(ubytearray &bytes, size_t cap, sint bits, sint flush) {
         throw SException(ERR_INFO, SLIB_EXEC_ERROR, "inflateEnd", EXEC_TEXT(std::to_string(res)));
     bytes.swap(tmp); bytes.resize(strm.total_out);
 }
-void SCode::compress(ubytearray &bytes) {
-    if (bytes.empty()) return;
-    ubytearray tmp;
-	auto capacity = (suint)((double)bytes.size() * 1.5);
-    tmp.resize(capacity);
-    z_stream strm;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.next_in = (Bytef *)bytes.ptr();
-    strm.avail_in = (unsigned int)bytes.size();
-    strm.next_out = (Bytef *)tmp.ptr();
-    strm.avail_out = capacity;
-    int res = deflateInit2(&strm, Z_DEFAULT_COMPRESSION,
-                           Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY);
-    if (res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "deflateInit2", EXEC_TEXT(std::to_string(res)));
-    int flush = Z_FINISH;
-    res = Z_OK;
-    res = deflate(&strm, flush);
-    if (res != Z_STREAM_END || strm.total_in < bytes.size()) {
-        if (res == Z_BUF_ERROR || strm.total_in < bytes.size()) {
-            while (res == Z_BUF_ERROR || strm.total_in < bytes.size()) {
-				auto capacity_ = (suint)((double)capacity * 1.5);
-                tmp.resize(capacity_);
-                strm.next_out = &((Bytef *)tmp.ptr())[strm.total_out];
-                strm.avail_out = capacity_-capacity;
-                res = deflate(&strm, flush);
-                capacity = capacity_;
-            }
-        }
-        if (res == Z_STREAM_ERROR)
-            throw SException(ERR_INFO, SLIB_EXEC_ERROR, "deflate", EXEC_TEXT(std::to_string(res)));
-    }
-    res = deflateEnd(&strm);
-    if (res == Z_DATA_ERROR)
-        throw SException(ERR_INFO, SLIB_EXEC_ERROR, "deflateEnd", EXEC_TEXT(std::to_string(res)));
-    bytes.swap(tmp);
-    bytes.resize(strm.total_out);
-}
+
+*/

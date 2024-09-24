@@ -10,27 +10,23 @@
 namespace slib {
     namespace smedia {
 		extern inline int toCVType(sushort type) {
-			if (type == GRAY8) return CV_8UC1;
-			else if (type == GRAY16) return CV_16U;
-			else if (type == RGB24) return CV_8UC3;
-			else if (type == RGB32 || type == RGBA) return CV_8UC4;
+			if (type == scolor::GRAY8) return CV_8UC1;
+			else if (type == scolor::GRAY16) return CV_16U;
+			else if (type == scolor::RGB) return CV_8UC3;
+			else if (type == scolor::RGBA) return CV_8UC4;
 			return CV_8UC1;
 		}
 		extern inline sushort toSType(int type) {
-			if (type == CV_8UC1) return GRAY8;
-			else if (type == CV_16U) return GRAY16;
-			else if (type == CV_8UC3) return RGB24;
-			else if (type == CV_8UC4) return RGBA;
-			return GRAY8;
+			if (type == CV_8UC1) return scolor::GRAY8;
+			else if (type == CV_16U) return scolor::GRAY16;
+			else if (type == CV_8UC3) return scolor::RGB;
+			else if (type == CV_8UC4) return scolor::RGBA;
+			return scolor::GRAY8;
 		}
-		extern inline v2i toSVeci(cv::Point& p) { return v2i(p.x, p.y); }
-		extern inline v2i toSVeci(cv::Point2f& p) { return v2i(p.x, p.y); }
-		extern inline v2f toSVecf(cv::Point& p) { return v2f(p.x, p.y); }
-		extern inline v2f toSVecf(cv::Point2f& p) { return v2f(p.x, p.y); }
 		template<typename T>
-		extern inline cv::Point toCVPoint(const svec2d<T>& v) { return cv::Point(v.x, v.y); }
+		extern inline smath::Vector2D<T> toSVec(const cv::Point_<T>& p) { return smath::Vector2D<T>(p.x, p.y); }
 		template<typename T>
-		extern inline cv::Point2f toCVPointf(const svec2d<T>& v) { return cv::Point2f(v.x, v.y); }
+		extern inline cv::Point_<T> toCVPoint(const smath::Vector2D<T>& v) { return cv::Point_<T>(v.x, v.y); }
 		template<typename T>
 		extern inline cv::Point toCVSize(const Area<T>& a) { return cv::Size(a.width, a.height); }
 		template<typename T>
@@ -38,14 +34,17 @@ namespace slib {
 			return cv::Rect(a.ori_x, a.ori_y, a.width, a.height);
 		}
 		extern inline cv::Scalar toCVColor(const SColor& col) {
-			return cv::Scalar(col.blue(), col.green(), col.red(), col.alpha());
+			return cv::Scalar(col[0], col[1], col[2], col[3]);
 		}
-		extern inline cv::InputArrayOfArrays toCVArray(v2fvec& vertex) {
-			std::vector<cv::Point2f> vec(vertex.size());
-			sforeach2(vec, vertex) E1_ = toCVPointf(E2_);
+		template<typename T>
+		extern inline cv::InputArrayOfArrays toCVArray(smath::Vector<smath::Vector2D<T>>& vertex) {
+			std::vector<cv::Point_<T>> vec(vertex.size());
+			sfor2(vec, vertex) $_1 = toCVPoint<T>($_2);
 			return cv::InputArrayOfArrays(vec);
 		}
 		extern inline void toSImg(cv::Mat& mat, SImage& img) {
+			
+
 			img.clear();
 			img.setType(toSType(mat.type()));
 			img.resize(mat.cols, mat.rows);

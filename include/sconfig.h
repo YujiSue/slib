@@ -1,7 +1,8 @@
 #ifndef SLIB_CONFIG_H
 #define SLIB_CONFIG_H
-
-#define SLIB_VERSION 1.0.7
+#define SLIB_VERSION_MAJOR 1
+#define SLIB_VERSION_SUB 2
+#define SLIB_VERSION_MINOR 1
 
 extern "C" {
 #include <float.h>
@@ -42,6 +43,7 @@ extern "C" {
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #if TARGET_OS_MAC
+#define MAC_OS
 #include <dirent.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -53,6 +55,8 @@ extern "C" {
 #include <cmath>
 #endif
 #elif _WIN64
+#pragma warning(disable: 4251)
+#define WIN_OS
 #define _USE_MATH_DEFINES
 #define _CRT_SECURE_NO_WARNINGS 1
 #include <direct.h>
@@ -72,6 +76,8 @@ extern "C" {
 #define S_IRWXO 0x0007
 #pragma warning(disable:4996)
 #elif _WIN32
+#pragma warning(disable: 4251)
+#define WIN_OS
 #define _USE_MATH_DEFINES
 #define _CRT_SECURE_NO_WARNINGS 1
 #include <direct.h>
@@ -91,8 +97,9 @@ extern "C" {
 #define S_IRWXO 0x0007
 #pragma warning(disable:4996)
 #elif __linux__
-#define OS_TYPE LINUX_OS
+#define LINUX_OS
 #include <dirent.h>
+#include <dlfcn.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
@@ -102,7 +109,9 @@ extern "C" {
 #include <unistd.h>
 #include <cmath>
 #elif __unix__
+#define UNIX_OS
 #include <dirent.h>
+#include <dlfcn.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
@@ -113,159 +122,142 @@ extern "C" {
 #include <cmath>
 #endif
 
-namespace slib {
 #ifndef SLIB_DLL
-#if defined(_WINDLL)
-#define SLIB_DLL _declspec(dllexport)
+#ifdef WIN_OS
+#ifdef _WINDLL
+#define SLIB_DLL __declspec(dllexport)
+#elif _USE_DLL
+#define SLIB_DLL __declspec(dllimport)
+#else
+#define SLIB_DLL
+#endif
 #else
 #define SLIB_DLL  
 #endif
 #endif
 
-#ifdef __APPLE__
-#if TARGET_OS_MAC
-#define MAC_OS
-#define LOCALIZE 
-#endif
-#elif _WIN64
-#define WIN_OS
-#define WIN64_OS
-#elif _WIN32
-#define WIN_OS
-#define WIN32_OS
-#elif __linux__
-#define LINUX_OS
-#define LOCALIZE 
-#elif __unix__
-#define UNIX_OS
-#define LOCALIZE 
-#else
-#define UNKNOWN_OS
-#endif
-#define sbyte int8_t
-#define subyte uint8_t
-#define sshort int16_t
-#define sushort uint16_t
-#define sint int32_t
-#define suint uint32_t
-#define sinteger int64_t
-#define suinteger uint64_t
-#define sreal double
-#define sdecimal long double
+#define sfor(V) for(auto it=(V).begin();it<(V).end();++it)
+#define srfor(V) for(auto it=(V).end()-1;((V).begin()-1)<it;--it)
+#define sforeach(I,V) for(auto & I : V)
+#define sfor2(X,Y) for(auto it=std::make_pair((X).begin(),(Y).begin());it.first<(X).end();++it.first,++it.second)
+#define srfor2(X,Y) for(auto it=std::make_pair((X).end()-1,(Y).end()-1);((X).begin()-1)<it.first;--it.first,--it.second)
+#define sforc(V) for(auto it=(V).u8begin();it<(V).u8end();++it)
+#define sfori(V) for(int i=0;i<(int)(V).size();++i)
+#define sforin(I,B,E) for(auto I=B;(I)<(E);++(I))
+#define srforin(I,B,E) for(auto I=(E)-1;((B)-1)<(I);--(I))
+#define sfortill(V) for(auto it=(V).begin();it!=(V).end();++it)
 
-#ifdef LANG_JA
-#define DEFAULT_LANG "ja"
-#else 
-#define	DEFAULT_LANG "en"
-#endif
-#define V(...) __VA_ARGS__
-#define $(X) X
-#define P(X,Y) std::make_pair((X), (Y))
-#define R(X) #X
-#define S(X) String(R(X))
-#define REG(X) Regex(R(X))
-#define ANY slib::Range<size_t>(0, -1)
-#define L(X) slib::Locale::localize(X)
-#define E_ (*it)
-#define E__ (*it_)
-#define E1_ (*it2.first)
-#define E2_ (*it2.second)
-#define E_NEXT (*(it+1))
-#define AT_(X) slib::Range<size_t>((X),(X))
-#define IN_(X,Y) slib::Range<size_t>((X),(Y))
-#define E_PREV (*(it-1))
-#define NEXT_ ++it
-#define PREV_ --it
-#define INDEX_(X) (it-(X).begin())
-#define MAX_(X, Y) (X)<(Y)?(Y):(X)
-#define MIN_(X, Y) (X)<(Y)?(X):(Y)
+#define $ it
+#define $_ (*it)
+#define $_1 (*it.first)
+#define $_2 (*it.second)
+#define $_K (*it).key()
+#define $_V (*it).value()
+#define $_NEXT (*(it+1))
+#define $_PREV (*(it-1))
+#define $NEXT ++it
+#define NEXT_(X) ++(X)
+#define $PREV --it;
+#define PREV_(X) --(X);
+#define $INDEX(V) (it-(V).begin())
+#define INDEX_(X,V) (&(X)-(V).begin().ptr())
 
+/**
+* @namespace slib
+* ~english @brief Basic namespace for my library
+*/
+namespace slib {
+    using sbyte = int8_t;
+    using subyte = uint8_t;
+    using sshort = int16_t;
+    using sushort = uint16_t;
+    using sint = int32_t;
+    using suint = uint32_t;
+    using sinteger = int64_t;
+    using suinteger = uint64_t;
+    using sreal = long double;
+    constexpr size_t NOT_FOUND = -1;
 
-
-#define sforeach(V) for(auto it=(V).begin();it<(V).end();++it)
-#define srforeach(V) for(auto it=(V).end()-1;(V).begin()<=it;--it)
-#define sforeach_(I,V) for(auto (I)=(V).begin();(I)<(V).end();++(I))
-#define srforeach_(I,V) for(auto (I)=(V).end()-1;(V).begin()<=(I);--(I))
-#define sforeach2(X,Y) for(auto it2=std::make_pair((X).begin(), (Y).begin());it2.first<(X).end();++it2.first,++it2.second)
-
-#define sforeachc(V) for(auto it=(V).ubegin();it<(V).uend();++it)
-#define srforeachc(V) for(auto it=(V).uend()-1;(V).ubegin()<=it;--it)
-#define sforeachc_(I,V) for(auto (I)=(V).ubegin();(I)<(V).uend();++(I))
-#define srforeachc_(I,V) for(auto (I)=(V).uend()-1;(V).ubegin()<=(I);--(I))
-
-#define sforeachk(V) for(auto it=(V).begin();it!=(V).end();++it)
-#define sforeachk_(I,V) for(auto (I)=(V).begin();(I)!=(V).end();++(I))
-
-#define sforeachi(V) for(sint i=0;i<(sint)((V).size());++i)
-#define srforeachi(V) for(sint i=(sint)((V).size()-1);-1<i;--i)
-
-#define sforeachi_(I,V) for(sint (I)=0;(I)<(V).size();++(I))
-#define srforeachi_(I,V) for(sint (I)=(sint)((V).size()-1);-1<(I);--(I))
-
-#define sforin(I,B,E) for(auto (I)=(B);(I)<(E);++(I))
-#define srforin(I,B,E) for(auto (I)=(E)-1;(B)<=(I);--(I))
-#define sfortill(I,B,E) for(auto (I)=(B);(I)!=(E);++(I))
-
-	typedef enum {
-		BIG = 0,
-		LITTLE = 1,
-	} ENDIAN;
-    typedef enum {
+    enum class ENDIAN : bool {
+        BIG = 0,
+        LITTLE = 1,
+    };
+    enum class ORDER {
         ASC = 0,
         DESC = 1,
-    } ORDER;
-	typedef enum {
-		EXACT_MATCH = 0,
-		BAGIN_WITH = 1,
-		END_WITH = 2,
-		PARTIAL_MATCH = 3,
-	} QUERY_MATCH;
+    };
+    enum class DIRECTION : subyte {
+        HEAD = 0x01,
+        TAIL = 0x02,
+        BI = 0x03,
 
-    constexpr size_t NOT_FOUND = -1;
-    constexpr size_t SHORT_STRING_CAPACITY = 23;
-	constexpr char alphabet_str[32] = "abcdefghijklmnopqrstuvwxyz";
-	constexpr char ALPHABET_STR[32] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	constexpr char hex_str[24] = "0123456789abcdef";
-	constexpr char HEX_STR[24] = "0123456789ABCDEF";
+        LEFT = 0x01,
+        RIGHT = 0x02,
+        CENTER = 0x04,
 
-#ifdef WIN_OS
-#define NEW_LINE slib::String("\r\n")
-#else    
-#define NEW_LINE slib::String("\n") 
-#endif
-#define SPACE slib::String(" ")
-#define TAB slib::String("\t")
-#define LF slib::String("\n")
-#define CR slib::String("\r")
-#define CRLF slib::String("\r\n")
-#define DEL slib::String("\b")
-#define BS slib::String("\\")
-#define SQUOT slib::String("\'")
-#define DQUOT slib::String("\"")
-#define ESC slib::String(1, (char)27)
+        HORIZONTAL = 0x10,
+        ROW = 0x10,
 
-    template<typename T>
-    extern inline T initVal() { return T(); }
-    template<typename T>
-    extern inline T unitVal() { return T(1); }
-    
+        VERTICAL = 0x20,
+        COLUMN = 0x20,
+
+        DEPTH = 0x30,
+        FRONT = 0x31,
+        BACK = 0x32,
+
+        TIME = 0x40,
+        NEXT = 0x41,
+        PRV = 0x42,
+
+        RADIAL = 0x50,
+        SOURCE = 0x51,
+        SINK = 0x52,
+
+        ROTATION = 0x60,
+        CW = 0x61,
+        CCW = 0x62,
+    };
+    /**
+    * @cond
+    */
     template <size_t S>
-    extern inline void invertEndian(void *buf) {
-        size_t n = S/2;
-        subyte *p = (subyte *)buf, *p_ = &p[S-1], tmp;
+    extern inline void invertEndian(void* buf) {
+        size_t n = S / 2;
+        subyte* start = (subyte*)buf, * end = &start[S - 1], tmp;
         sforin(i, 0, n) {
-            tmp = *p; *p = *p_; *p_ = tmp; ++p; --p_;
+            tmp = *start; *start = *end; *end = tmp; ++start; --end;
         }
     }
     template<class C1, class C2>
-    extern inline bool instanceOf(const C2 *instance) {
-        if(!instance) return false;
-        return dynamic_cast<const C1 *>(instance) != 0;
+    extern inline bool instanceOf(const C2* instance) {
+        if (!instance) return false;
+        return dynamic_cast<const C1*>(instance) != 0;
     };
     template<typename T>
-    extern inline bool sortAsc(const T &t1, const T &t2) { return t1 < t2; }
+    extern inline bool sortAsc(const T& t1, const T& t2) { return t1 < t2; }
     template<typename T>
-    extern inline bool sortDesc(const T &t1, const T &t2) { return t2 < t1; }
-	
+    extern inline bool sortDesc(const T& t1, const T& t2) { return t2 < t1; }
+    /**
+    * @endcond
+    */
+    /**
+    * @class Pair
+    * ~english @brief Pair class 
+    */
+    template <class C1, class C2>
+    class Pair {
+    public:
+        C1 first;
+        C2 second;
+    public:
+        Pair() {}
+        Pair(const C1& v1, const C2 &v2) : first(v1), second(v2) {}
+        Pair(const Pair& p) : first(p.first), second(p.second) {}
+        ~Pair() {}
+        Pair& operator=(const Pair& p) { first = p.first; second = p.second; return *this; }
+        bool operator==(const Pair<C1, C2>& p) const { return first == p.first && second == p.second; }
+    };
 }
+template <class C1, class C2>
+extern std::ostream& operator<<(std::ostream& os, const slib::Pair<C1, C2>& pair) { return os << pair.first << ":" << pair.second; }
 #endif

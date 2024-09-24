@@ -1,78 +1,69 @@
-#include "sapp/sappbasic.h"
+#include "sbasic/style.h"
+#include "sutil/sjson.h"
+#include "sapp/sapp.h"
+slib::SAppException::SAppException() : slib::Exception() { prefix = "App"; }
+slib::SAppException::SAppException(int i, const char* msg, const char* desc) : slib::Exception(i, msg, desc) { prefix = "App"; }
+slib::SAppException::SAppException(slib::Exception& ex) : slib::Exception(ex) { prefix = "App"; }
+slib::SAppException::SAppException(slib::Response& res) : slib::Exception(res.code, "Exec error.", res.error) { prefix = "App"; }
+slib::SAppException::~SAppException() {}
 
-using namespace slib;
-using namespace slib::sapp;
+#ifdef _WINDLL
+slib::String slib::SP = { ' ' };
+slib::String slib::CR = { '\r' };
+slib::String slib::LF = { '\n' };
+slib::String slib::CRLF = { '\r', '\n' };
+slib::String slib::TAB = { '\t' };
+slib::String slib::DEL = { '\b' };
+slib::String slib::NL = slib::CRLF;
+slib::IOStream slib::DEFAULT_ISTREAM = slib::IOStream(std::cin);
+slib::IOStream slib::DEFAULT_OSTREAM = slib::IOStream(std::cout);
+#endif
 
-SAppException::SAppException(const char* f, sint l, const char* func, sint e, const char* target, const char* note)
-	: SException(f, l, func, e, target, note) {
-	prefix = "sapp";
-	switch (e) {
-	case INSUFFICIENT_ARGS_ERROR:
-	{
-		message = "Insufficient argment error.";
-		description = TARGET_TEXT(target) + u8" requires " + String(note);
-		break;
-	}
-	case INSUFFICIENT_OPT_ERROR:
-	{
-		message = "Insufficient option error.";
-		description = TARGET_TEXT(target) + u8" requires " + String(note);
-		break;
-	}
-	case COMMAND_NOT_EXIST_ERROR:
-	{
-		message = "Command error.";
-		description = TARGET_TEXT(target) + u8" is not defined. ";
-		break;
-	}
-	case OPTION_NOT_EXIST_ERROR:
-	{
-		message = "Option error.";
-		description = TARGET_TEXT(target) + u8" is not defined. ";
-		break;
-	}
-	default:
-		break;
-	}
-
+/*
+ * SApp class definition
+ */
+slib::sapp::SApp::SApp() {}
+slib::sapp::SApp::SApp(const char* prof, const char* format) : slib::sapp::SApp() {
+	auto f = String(format);
+	if (f == "json") profile = sjson::parse(prof);
 }
-SAppException::~SAppException() {}
-
-log_data::log_data(sint c, const char* s) {
-	date = SDate(slib::sstyle::YMDHMS);
-	code = c;
-	msg = s;
-}
-log_data::~log_data() {}
-SLogger::SLogger(const char* path) {
-	if (path) open(path);
-}
-SLogger::~SLogger() { if (_file.isOpened()) _file.close(); }
-void SLogger::open(const char* path) {
-	if (!fileExist(path)) sio::SFile::createFile(path);
-	_file.open(path, sio::APPEND);
-}
-void SLogger::close() {
-	_file.close();
-}
-void SLogger::log(sint code, const char* msg) {
-	_lock.lock();
-	SDate date;
-	if (_file.isOpened() && code & FILE_LOG) {
-		_file << date.toString(sstyle::ISO8601) << TAB << msg << NEW_LINE;
-		_file.flush();
-	}
-	if (code & STDOUT_LOG) std::cout << msg << std::endl;
-	if (code & OS_LOG) _data.add(log_data(code, msg));
-	_lock.unlock();
-}
-
-SApp::SApp() {}
-SApp::SApp(const char* path) : SApp() {
-	try { profile.load(path); }
-	catch (sio::SIOException ie) { ie.print(); }
-}
-SApp::SApp(SDictionary&& prof) : SApp() {
+slib::sapp::SApp::SApp(SDictionary&& prof) : slib::sapp::SApp() {
 	profile.swap(prof);
 }
-SApp::~SApp() {}
+slib::sapp::SApp::~SApp() {}
+
+slib::sapp::SLogger::SLogger(subyte m, const char* path) {
+	_mode = m;
+	open(path);
+}
+slib::sapp::SLogger::~SLogger() { if (_file.isOpened()) _file.close(); }
+void slib::sapp::SLogger::open(const char* path) {
+	if (!path) return;
+	_mode |= slib::sio::FILEIO;
+	_file.open(path, sio::APPEND);
+}
+void slib::sapp::SLogger::close() { _file.close(); }
+void slib::sapp::SLogger::log(const String& msg) {
+	SAutoLock al(_lock);
+	SDate date;
+	if (_mode & slib::sio::STDIO) SPrint("[", date.toString(sstyle::ISO8601), "]", SP, msg);
+	if (_mode & slib::sio::FILEIO) {
+		if (_file.isOpened()) {
+			_file << "[" << date.toString(sstyle::ISO8601) << "]" << SP << msg << NL;
+			_file.flush();
+		}
+	}
+}
+void slib::sapp::SLogger::log(const Exception& ex) {
+	SAutoLock al(_lock);
+	SDate date;
+	if (_mode & slib::sio::STDIO) {
+		SPrint("[", date.toString(sstyle::ISO8601), "]", SP, stext::RED_TAG, ex.prefix, " error. #", ex.code, stext::DEFAULT_COLOR, SP, ex.message, NL, ex.description);
+	}
+	if (_mode & slib::sio::FILEIO) {
+		if (_file.isOpened()) {
+			_file << "[" << date.toString(sstyle::ISO8601) << "]" << SP << ex.prefix << " error. #" << ex.code << SP << ex.message << NL << ex.description << NL;
+			_file.flush();
+		}
+	}
+}

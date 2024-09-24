@@ -1,72 +1,57 @@
 #ifndef SLIB_SSTRING_H
 #define SLIB_SSTRING_H
-
 #include "sobj/sobject.h"
-
 namespace slib {
-   
-	class SLIB_DLL SChar : public SObject, public Char {
-    public:
-        SChar();
-        SChar(String *s, const char *c);
-        SChar(const Char &c);
-        SChar(const SChar &c);
-        ~SChar();
-        
-		SChar &operator=(const char* s);
-        SChar &operator=(const String &s);
-        SChar &operator=(const SString &s);
-        SChar &operator=(const Char &c);
-        SChar &operator=(const SChar &c);
-        
-        String getClass() const;
-        String toString() const;
-        SObject *clone() const;
-    };
-
+    /**
+    * @class SString
+    * 
+    */
 	class SLIB_DLL SString : public SObject, public String {
-        friend SChar;
-    protected:
-		sobj _char;
-        
     public:
         SString();
-        SString(bool b);
-        SString(int i);
-        SString(unsigned int ui);
-        SString(size_t ui);
-#ifdef WIN64_OS
-        SString(long i);
-#ifndef MAC_OS
-        SString(unsigned long ui);
-#endif
-#endif
-        SString(long long i);
-#ifdef MAC_OS
-        SString(unsigned long long ui);
-#endif
-#ifdef LINUX_OS
-        SString(sinteger i);
-#endif
-        SString(float f);
-        SString(double d);
-        SString(sbyte i);
-        SString(subyte i);
-        SString(sshort i);
-        SString(sushort i);
-        SString(const size_t &s, char c);
-        SString(char c);
-        SString(const SChar &c);
+        SString(size_t sz, const char c);
+        SString(std::initializer_list<char> li);
         SString(const char *s);
-        SString(const std::string &s);
-		SString(std::initializer_list<char> li);
+        SString(String&& s) noexcept;
         SString(const String &s);
-        SString(const sobj &obj);
-        SString(const SNumber &sn);
-        SString(SString &&s);
-        SString(const SString &s);
+        SString(SString&& s) noexcept;
+        SString(const SString& s);
         ~SString();
+        SString& operator=(SString&& s) noexcept;
+        SString& operator=(const SString& s);
         
+        SString operator+(const char* s) const;
+        SString operator+(const String& s) const;
+        SString operator+(const SString& s) const;
+
+        SString& operator+=(const char* s);
+        SString& operator+=(const String& s);
+        SString& operator+=(const SString& s);
+        SString& operator<<(const char* s);
+        SString& operator<<(const String& s);
+        SString& operator<<(const SString& s);
+        
+        SString& trim();
+        SString& clip(const size_t off, const size_t len = -1);
+        SString& clip(const srange& range);
+        SString& replace(const char* ori, const char* wrd);
+        SString& replace(const Regex& reg, const char* wrd);
+        SString& replace(const size_t off, const size_t len, const char* wrd);
+
+        void swap(SString& str);
+
+        operator const char* () const;
+        //operator String& ();
+        //operator const String& () const;
+
+        bool operator==(const char* s) const;
+        bool operator==(const std::string& s) const;
+        bool operator==(const slib::SObjPtr& s) const;
+        bool operator==(const String& s) const;
+        bool operator==(const SString& s) const;
+
+
+/*
         SString &operator=(bool b);
         SString &operator=(int i);
         SString &operator=(unsigned int ui);
@@ -94,7 +79,7 @@ namespace slib {
         SString &operator=(const char *s);
         SString &operator=(const std::string &s);
         SString &operator=(const String &s);
-        SString &operator=(const SString &s);
+        
         SString &operator=(const SNumber &n);
         SString &operator=(const sobj &obj);
         
@@ -127,7 +112,6 @@ namespace slib {
         SString &operator+=(const char *s);
         SString &operator+=(const std::string &s);
         SString &operator+=(const String &s);
-        SString &operator+=(const SString &s);
         SString &operator+=(const SNumber &n);
 		SString& operator+=(const sio::SFile& n);
         SString &operator+=(const sobj &obj);
@@ -205,12 +189,14 @@ namespace slib {
         SString operator*(const size_t & num) const;
         void load(const char *path);
         void save(const char *path);
-		sobj& charAt(int idx = 0);
-		const sobj& charAt(int idx = 0) const;
-		String getClass() const;
-        String toString() const;
+        */
+		//sobj& charAt(int idx = 0);
+		//const sobj& charAt(int idx = 0) const;
+
+        String getClass() const;
+        String toString(const char *format = nullptr) const;
         SObject *clone() const;
-        
+        /*
         bool operator<(const char *s) const;
         bool operator<(const std::string &s) const;
         bool operator<(const sobj &s) const;
@@ -226,9 +212,10 @@ namespace slib {
         bool operator!=(const String &s) const;
         bool operator!=(const sobj &s) const;
         bool operator!=(const SString &s) const;
+        */
     };
+    /*
     extern SLIB_DLL SString operator+(const char &c, const SString &s);
-    extern SLIB_DLL SString operator+(const SChar &c, const SString &s);
     extern SLIB_DLL SString operator+(const char *s1, const SString &s2);
     extern SLIB_DLL SString operator+(const std::string &s1, const SString &s2);
     extern SLIB_DLL SString operator+(const int &i, const SString &s);
@@ -237,8 +224,11 @@ namespace slib {
     extern SLIB_DLL SString operator+(const float &f, const SString &s);
     extern SLIB_DLL SString operator+(const sreal &r, const SString &s);
     extern SLIB_DLL SString operator+(const bool &b, const SString &s);
+    */
 }
-
+/**
+* @cond
+*/
 namespace std {
     template<>
     struct hash<slib::SString> {
@@ -247,5 +237,7 @@ namespace std {
         }
     };
 }
-
+/**
+* @endcond
+*/
 #endif

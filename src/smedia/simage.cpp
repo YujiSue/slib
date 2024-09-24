@@ -1,10 +1,248 @@
 #include "smedia/simage.h"
 #include "sio/sio.h"
+#include "sutil/scode.h"
+#include "sutil/snet.h"
+slib::SImage::SImage() : SObject() { _type = scolor::GRAY8; _load = false; }
 
-using namespace slib;
-using namespace slib::smath;
-using namespace slib::smedia;
+slib::SImage::SImage(const subyte type, const size_t w, const size_t h) : SImage() {
+    _type = type;
+    _bytes.resize(h, w * scolor::size(type));
+}
+slib::SImage::SImage(const char* url, bool l) : SImage() { if (l) load(url); else link(url); }
+slib::SImage::SImage(SImage&& img) noexcept { swap(img); }
+slib::SImage::SImage(const SImage& img) : SImage() {
+    _type = img._type;
+    _bytes = img._bytes;
+    _attribute = img._attribute;
+    _url = img._url;
+    _load = img._load;
+}
+slib::SImage::~SImage() {}
+slib::SImage& slib::SImage::operator=(const SImage& img) {
+    _type = img._type;
+    _bytes = img._bytes;
+    _attribute = img._attribute;
+    _url = img._url;
+    _load = img._load;
+    return *this;
+}
+slib::subyte slib::SImage::type() const { return _type; }
+bool slib::SImage::loaded() const { return _load; }
+const slib::String& slib::SImage::url() const { return _url; }
+bool slib::SImage::empty() const { return _bytes.empty(); }
+size_t slib::SImage::count() const { return _bytes.size() / scolor::size(_type); }
+size_t slib::SImage::size() const { return _bytes.size(); }
+size_t slib::SImage::linesize() const { return _bytes.col; }
+size_t slib::SImage::width() const { return _bytes.col / scolor::size(_type); }
+size_t slib::SImage::height() const { return _bytes.row; }
+int slib::SImage::channel() const { return scolor::channel(_type); }
+int slib::SImage::depth() const { return scolor::depth(_type); }
+int slib::SImage::bpp() const { return scolor::size(_type); }
+slib::Tuple<int, int, int> slib::SImage::dimension() const {
+    return slib::Tuple<int, int, int>(_bytes.col, _bytes.row, scolor::size(_type));
+}
+slib::ImageRow slib::SImage::operator[](const int idx) { return ImageRow(this, idx); }
+const slib::ImageRow slib::SImage::operator[](const int idx) const { return ImageRow(this, idx); }
 
+slib::PixelIterator slib::SImage::begin() { return PixelIterator(this, _bytes.begin()); }
+slib::PixelCIterator slib::SImage::begin() const { return PixelCIterator(this, _bytes.begin()); }
+slib::PixelIterator slib::SImage::end() { return PixelIterator(this, _bytes.end()); }
+slib::PixelCIterator slib::SImage::end() const { return PixelCIterator(this, _bytes.end()); }
+
+slib::subyte* slib::SImage::data() { return _bytes.data(); }
+const slib::subyte* slib::SImage::data() const { return _bytes.data(); }
+slib::smath::Matrix<slib::subyte>& slib::SImage::mat() { return _bytes; }
+const slib::smath::Matrix<slib::subyte>& slib::SImage::mat() const { return _bytes; }
+
+void slib::SImage::fill(const Color col) { sfor(*this) $_ = col; }
+void slib::SImage::convert(const subyte t) {
+    if (t == _type) return;
+    if (empty()) _type = t;
+    else {
+        SImage tmp(t, width(), height());
+        sfor2(*this, tmp) $_2 = scolor::convertTo($_1.color(), t);
+    }
+}
+inline void nn_interpolator(slib::PixelIterator it, float x, float y, const slib::SImage& src) {
+    int x_ = (int)x, y_ = (int)y;
+    $_ = src[(y - y_ < 0.5f ? y_ : y_ + 1)][(x - x_ < 0.5f ? x_ : x_ + 1)];
+}
+inline void bl_interpolator(slib::PixelIterator it, float x, float y, const slib::SImage& src) {
+    int x_ = (int)x, y_ = (int)y;
+    slib::smath::Vector2D<float> r1(x - x_, 1.f + x_ - x), r2(y - y_, 1.f + y_ - y);
+    slib::Pixel px[4] = { src[y_][x_], src[y_ + 1][x_], src[y_][x_ + 1], src[y_ + 1][x_ + 1] };
+    auto col1 = slib::scolor::mix(px[0].color(), px[2].color(), r1), col2 = slib::scolor::mix(px[1].color(), px[3].color(), r1);
+    $_ = slib::scolor::mix(col1, col2, r2);
+}
+inline float bc_weight(float f) {
+    if (f <= 1.f) return 1.f - 2.f * f * f + f * f * f;
+    else if (f <= 2.f) return 4.f - 8.f * f + 5.f * f * f - f * f * f;
+    return 0.f;
+}
+inline void bc_interpolator(slib::PixelIterator it, float x, float y, const slib::SImage& src) {
+    int x_ = (int)x, y_ = (int)y;
+
+    slib::smath::Vector<float> weight;
+    slib::Array<slib::Color> neighbors;
+
+    sforin(h, 0, 4) {
+        sforin(w, 0, 4) {
+            if (h < 0 || w < 0 || (int)src.height() <= h || (int)src.width() <= w) {
+                neighbors.add(slib::Color(src.type(), nullptr));
+                weight.add(0.f);
+            }
+            else {
+
+
+
+            }
+
+        }
+    }
+
+
+
+    $_ = slib::scolor::mix(neighbors, weight);
+
+
+
+    /*
+    float wx[4], wy[4];
+    sforin(i, 0, 4) {
+        if (x_ == 0 && i == 0) wx[i] = 0.0;
+        else if (src.width() <= x_ + 1 && i == 2) wx[i] = 0.0;
+        else if (src.width() <= x_ + 2 && i == 3) wx[i] = 0.0;
+        else wx[i] = bc_weight(abs(x - (x_ - 1 + i)));
+        if (y_ == 0 && i == 0) wy[i] = 0.0;
+        else if (src.height() <= y_ + 1 && i == 2) wy[i] = 0.0;
+        else if (src.height() <= y_ + 2 && i == 3) wy[i] = 0.0;
+        else wy[i] = bc_weight(abs(y - (y_ - 1 + i)));
+    }
+    float total = 0.0;
+    sforin(j, 0, 4) {
+        sforin(k, 0, 4) total += wx[j] * wy[k];
+    }
+
+
+
+
+    sforin(b, 0, increment) {
+        float val = 0.0;
+        sforin(h, y_ - 1, y_ + 3) {
+            sforin(w, x_ - 1, x_ + 3) {
+                if (h < 0 || w < 0 || src.height() <= h || src.width() <= w) continue;
+                val += src->at(w, h, b) * wx[w + 1 - x_] * wy[h + 1 - y_];
+            }
+        }
+        dest[b] = (slib::subyte)(val / total);
+    }
+    */
+}
+void slib::SImage::_resampling(const size_t w, const size_t h, RESAMPLING m) {
+    if (_bytes.col == w && _bytes.row == h) return;
+    slib::SImage buffer(_type, w, h);
+    smath::Vector2D<float> scale((float)_bytes.col / w, (float)_bytes.row / h);
+    auto it = buffer.begin();
+    sforin(r, 0_u, h) {
+        sforin(c, 0_u, w) {
+            switch (m) {
+            case RESAMPLING::NN_PX:
+                nn_interpolator($, scale[0] * c, scale[1] * r, *this);
+                break;
+            case RESAMPLING::BI_LINEAR:
+                bl_interpolator($, scale[0] * c, scale[1] * r, *this);
+                break;
+            case RESAMPLING::BI_CUBIC:
+                bc_interpolator($, scale[0] * c, scale[1] * r, *this);
+                break;
+            default:
+                break;
+            }
+            $NEXT;
+        }
+    }
+    swap(buffer);
+}
+void slib::SImage::resize(const size_t w, const size_t h, RESAMPLING m) {
+    if (empty()) _bytes.resize(h, w * scolor::size(_type));
+    else _resampling(w, h, m);
+}
+void slib::SImage::swap(SImage& img) {
+    Memory<subyte>::swap(&_type, &img._type);
+    Memory<bool>::swap(&_load, &img._load);
+    _bytes.swap(img._bytes);
+    _attribute.swap(img._attribute);
+    _url.swap(img._url);
+}
+void slib::SImage::load(const char* path) {
+    auto ext = sfs::extension(path);
+    _url = path;
+    if (ext.match(REG("/jp[e]*g/i"))) {
+        sio::importJPG(path, *this);
+        _load = true;
+    }
+    else if (ext.match(REG("/png/i"))) {
+        sio::importPNG(path, *this);
+        _load = true;
+    }
+    else if (ext.match(REG("/tif+/i"))) {
+        sio::importTIFF(path, *this);
+        _load = true;
+    }
+    else {
+        _load = false;
+        throw FormatException(formatErrorText("Image format", ext, "JPEG/PNG/TIFF"));
+    }
+}
+void slib::SImage::link(const char* path) {
+    _url = path;
+    _load = false;
+}
+void slib::SImage::save(const char* path, sobj attribute) const {
+    auto ext = sfs::extension(path);
+    if (ext.match(REG("/jp[e]*g/i"))) {
+        sio::exportJPG(path, *this, (attribute.hasKey("qual") ? attribute["qual"].intValue() : 7));
+    }
+    else if (ext.match(REG("/png/i"))) {
+        sio::exportPNG(path, *this, (attribute.hasKey("level") ? attribute["level"].intValue() : 9));
+    }
+    else if (ext.match(REG("/tif+/i"))) {
+        sio::exportTIFF(path, *this, (attribute.hasKey("compression") ? attribute["compression"].intValue() : 0));
+    }
+    else {
+        throw FormatException(formatErrorText("Image format", ext, "JPEG/PNG/TIFF"));
+    }
+}
+
+slib::String slib::SImage::getClass() const { return "image"; }
+slib::String slib::SImage::toString(const char* format) const {
+    String f(format ? format : "base64");
+    if (_load) {
+        if (f == "base64") {
+            String str;
+            sutil::encodeBase64(_bytes.array(), str);
+            return str;
+        }
+        else throw FormatException(formatErrorText("Image to text format", f, "base64"));
+    }
+    else  return _url;
+}
+slib::SObject* slib::SImage::clone() const { return new SImage(*this); }
+
+
+
+
+/*
+slib::subyte& slib::SImage::at(int x, int y, int c) { return *data(x, y, c); }
+
+slib::SImage slib::SImage::subimage(int x, int y, int w, int h) { return SImage(); }
+slib::SImage slib::SImage::subimage(const sarea& area) { return SImage(); }
+
+void slib::SImage::set(int x, int y, int c, subyte val) { at(x, y, c) = val; }
+void slib::SImage::set(int x, int y, subyte* vals) {}
+void slib::SImage::set(int x, int y, suint val) {}
+*/
+/*
 inline void gray8_16(const subyte *src, subyte *to) {
     sushort val = (int)(*src)*MAX_USHORT/MAX_UBYTE;
     memcpy(to, &val, 2);
@@ -50,82 +288,7 @@ void SImage::_changeType(sushort t) {
 	}
 }
 
-inline void nn_interpolator(subyte* dest, float x, float y, const SImage* src, subyte bpp) {
-	int x_ = (int)x, y_ = (int)y;
-	memcpy(dest, src->ptr((x - x_ < 0.5f ? x_ : x_ + 1), (y - y_ < 0.5f ? y_ : y_ + 1)), bpp);
-}
-inline void bl_interpolator(subyte *dest, float x, float y, const SImage *src, subyte bpp) {
-    int x_ = (int)x, y_ = (int)y;
-    float t = x-x_, s = y-y_;
-    for (int b = 0; b < bpp; ++b) {
-        float px1 = t*src->at(x_, y_, b)+(1-t)*src->at(x_+1, y_, b),
-        px2 = t*src->at(x_, y_+1, b)+(1-t)*src->at(x_+1, y_+1, b);
-        dest[b] = (subyte)(s*px1+(1-s)*px2);
-    }
-}
-inline float bc_weight(float f) {
-	if (f <= 1.f) return 1.f - 2.f * f * f + f * f * f;
-	else if (f <= 2.f) return 4.f - 8.f * f + 5.f * f * f - f * f * f;
-	return 0.f;
-}
-inline void bc_interpolator(subyte *dest, float x, float y, const SImage *src, subyte bpp) {
-    int x_ = (int)x, y_ = (int) y;
-    float wx[4], wy[4];
-    sforin(i, 0, 4) {
-        if (x_ == 0 && i == 0) wx[i] = 0.0;
-        else if (src->width() <= x_+1 && i == 2) wx[i] = 0.0;
-        else if (src->width() <= x_+2 && i == 3) wx[i] = 0.0;
-        else wx[i] = bc_weight(abs(x-(x_-1+i)));
-        if (y_ == 0 && i == 0) wy[i] = 0.0;
-        else if (src->height() <= y_+1 && i == 2) wy[i] = 0.0;
-        else if (src->height() <= y_+2 && i == 3) wy[i] = 0.0;
-        else wy[i] = bc_weight(abs(y-(y_-1+i)));
-    }
-    float total = 0.0;
-    sforin(j, 0, 4) {
-        sforin(k, 0, 4) total += wx[j]*wy[k];
-    }
-    sforin(b, 0, bpp) {
-        float val = 0.0;
-        sforin(h, y_-1, y_+3) {
-            sforin(w, x_-1, x_+3) {
-                if (h < 0 || w < 0 || src->height() <= h || src->width() <= w) continue;
-                val += src->at(w, h, b)*wx[w+1-x_]*wy[h+1-y_];
-            }
-        }
-        dest[b] = (subyte)(val/total);
-    }
-}
 
-void SImage::_resampling(size_t w, size_t h, RESAMPLING m) {
-    if (_width == w && _height == h) return;
-	auto bpp = bytePerPixel(_type);
-	ubytearray tmp(w * h * bpp);
-    float x_ratio = (float)_width/w, y_ratio = (float)_height/h;
-    for (int row = 0; row < h; ++row) {
-        for (int col = 0; col < w; ++col) {
-            switch (m) {
-                case NN_PX:
-                    nn_interpolator(tmp.ptr((row*w+col)* bpp),
-                                    x_ratio*col, y_ratio*row, this, bpp);
-                    break;
-                case BI_LINEAR:
-                    bl_interpolator(tmp.ptr((row*w+col)* bpp),
-                                    x_ratio*col, y_ratio*row, this, bpp);
-                    break;
-                case BI_CUBIC:
-                    bc_interpolator(tmp.ptr((row*w+col)* bpp),
-                                    x_ratio*col, y_ratio*row, this, bpp);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-    _width = w;
-    _height = h;
-    _data.swap(tmp);
-}
 
 SImage::SImage() : SObject() {
 	_width = 0; _height = 0; _type = smedia::RGBA;
@@ -246,3 +409,4 @@ String SImage::toString() const {
     else return "";
 }
 SObject *SImage::clone() const { return new SImage(*this); }
+*/

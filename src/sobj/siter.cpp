@@ -1,617 +1,377 @@
-#include "sobj/sobject.h"
-#include "sobj/sstring.h"
-#include "sobj/sdict.h"
-
-using namespace slib;
-
-slib::SIterator::SIterator(slib::SArrayIterator<slib::SObjPtr> ait) {
-	_type = ARRAY_OBJ;
-    new(&_it._ait) SArrayIterator<sobj>(ait);
+#include "sobj/sobjptr.h"
+slib::SIterator::SIterator(slib::ArrayIterator<slib::SObjPtr> ait) {
+    itype = ITER_TYPE::ARRAY; iter.arrit = ait;
 }
-slib::SIterator::SIterator(slib::SUtf8Iterator uit) {
-	_type = STRING_OBJ;
-    new(&_it._uit) SUtf8Iterator(uit);
-    _obj = SChar(*uit);
+slib::SIterator::SIterator(slib::Utf8Iterator uit) {
+    itype = ITER_TYPE::UTF8; iter.u8it = uit;
 }
-slib::SIterator::SIterator(slib::SMapIterator<String, slib::SObjPtr> mit) {
-	_type = DICT_OBJ;
-    new(&_it._mit) SMapIterator<String, slib::SObjPtr>(mit);
-    _obj = SPair(*mit);
-}
-slib::SIterator::SIterator(const slib::SIterator &it) : _type(it._type), _obj(it._obj) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit = it._it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait = it._it._ait;
-            break;
-		case ROW_OBJ:
-			_it._ait = it._it._ait;
-			break;
-        case DICT_OBJ:
-            _it._mit = it._it._mit;
-            break;
-        default:
-            break;
-    }
-}
-slib::SIterator::~SIterator() {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit.~SUtf8Iterator();
-            break;
-        case ARRAY_OBJ:
-            _it._ait.~SArrayIterator<sobj>();
-            break;
-		case ROW_OBJ:
-			_it._ait.~SArrayIterator<sobj>();
-			break;
-        case DICT_OBJ:
-            _it._mit.~SMapIterator<String, sobj>();
-            break;
-        default:
-            break;
-    }
+slib::SIterator::SIterator(slib::MapIterator<slib::String, slib::SObjPtr> mit) {
+    itype = ITER_TYPE::MAP; iter.mapit = mit;
 }
 
-slib::SIterator& slib::SIterator::operator=(const slib::SIterator &it) {
-    _type = it._type; _obj = it._obj;
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit = it._it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait = it._it._ait;
-            break;
-		case ROW_OBJ:
-			_it._ait = it._it._ait;
-			break;
-		case DICT_OBJ:
-            _it._mit = it._it._mit;
-            break;
-        default:
-            break;
-    }
+slib::SIterator::SIterator(const slib::SIterator &it) {
+    itype = it.itype;
+    SIterator::copyIter(iter, it.iter, itype);
+    //memcpy(&iter, &it.iter, sizeof(Iter));
+}
+slib::SIterator::~SIterator() {}
+slib::SIterator& slib::SIterator::operator=(const slib::SIterator &it) { 
+    itype = it.itype; 
+    SIterator::copyIter(iter, it.iter, itype);
+    //memcpy(&iter, &it.iter, sizeof(Iter)); 
     return *this;
 }
-slib::SObjPtr &slib::SIterator::operator *() {
-    switch (_type) {
-        case STRING_OBJ:
-            _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            return *_it._ait;
-            break;
-		case ROW_OBJ:
-			return *_it._ait;
-			break;
-		case DICT_OBJ:
-            _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+slib::SElement& slib::SIterator::operator *() { 
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        elem.eclass = SElement::E_CLASS::OBJECT;
+        elem.element.obj = iter.arrit.ptr();
+        break;
+    case ITER_TYPE::UTF8:
+        elem.eclass = SElement::E_CLASS::CHAR;
+        elem.element.ch = *iter.u8it;
+        break;
+    case ITER_TYPE::MAP:
+        elem.eclass = SElement::E_CLASS::PAIR;
+        elem.element.pair = iter.mapit.ptr();
+        break;
+    default:
+        break;
     }
-    return _obj;
+    return elem;
 }
-slib::SObjPtr *slib::SIterator::operator ->() {
-    switch (_type) {
-        case STRING_OBJ:
-            _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            return &(*_it._ait);
-            break;
-        case DICT_OBJ:
-            _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+slib::SIterator::Iter* slib::SIterator::operator ->() { return &iter; }
+slib::SElement& slib::SIterator::operator [](std::ptrdiff_t diff) {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+    {
+        iter.arrit += diff;
+        elem.eclass = SElement::E_CLASS::OBJECT;
+        elem.element.obj = iter.arrit.ptr();
+        break;
     }
-    return &_obj;
-}
-slib::SObjPtr &slib::SIterator::operator [](std::ptrdiff_t diff) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit += diff; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait += diff; return *_it._ait;
-            break;
-        case DICT_OBJ:
-            _it._mit += diff; _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+    case ITER_TYPE::UTF8:
+    {
+        iter.u8it += diff;
+        elem.eclass = SElement::E_CLASS::CHAR;
+        elem.element.ch = *iter.u8it;
+        break;
     }
-    return _obj;
+    case ITER_TYPE::MAP:
+    {
+        iter.mapit += diff;
+        elem.eclass = SElement::E_CLASS::PAIR;
+        elem.element.pair = iter.mapit.ptr();
+        break;
+    }
+    default:
+        break;
+    }
+    return elem;
 }
-slib::SIterator &slib::SIterator::operator ++() {
-    switch (_type) {
-        case STRING_OBJ:
-            ++_it._uit; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            ++_it._ait;
-            break;
-        case DICT_OBJ:
-            ++_it._mit;
-			_obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+slib::SIterator& slib::SIterator::operator ++() {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        ++iter.arrit;
+        break;
+    case ITER_TYPE::UTF8:
+        ++iter.u8it;
+        break;
+    case ITER_TYPE::MAP:
+        ++iter.mapit;
+    default:
+        break;
     }
     return *this;
 }
 slib::SIterator slib::SIterator::operator ++(int) { auto sit = *this; ++sit; return sit; }
-slib::SIterator &slib::SIterator::operator --() {
-    switch (_type) {
-        case STRING_OBJ:
-            --_it._uit; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            --_it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator--");
-            break;
-        default:
-            break;
+slib::SIterator& slib::SIterator::operator --() {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        --iter.arrit;
+        break;
+    case ITER_TYPE::UTF8:
+        --iter.u8it;
+        break;
+    default:
+        break;
     }
     return *this;
 }
 slib::SIterator slib::SIterator::operator --(int) { auto sit = *this; --sit; return sit; }
 slib::SIterator &slib::SIterator::operator+=(std::ptrdiff_t diff) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit+=diff; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait+=diff;
-            break;
-        case DICT_OBJ:
-            _it._mit+=diff; _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        iter.arrit += diff;
+        break;
+    case ITER_TYPE::UTF8:
+        iter.u8it += diff;
+        break;
+    case ITER_TYPE::MAP:
+        iter.mapit += diff;
+    default:
+        break;
     }
     return *this;
 }
 slib::SIterator &slib::SIterator::operator-=(std::ptrdiff_t diff) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit-=diff; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait-=diff;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-=");
-            break;
-        default:
-            break;
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        iter.arrit -= diff;
+        break;
+    case ITER_TYPE::UTF8:
+        iter.u8it -= diff;
+        break;
+    default:
+        break;
     }
     return *this;
 }
 slib::SIterator slib::SIterator::operator +(std::ptrdiff_t diff) { auto sit = *this; sit+=diff; return sit; }
 slib::SIterator slib::SIterator::operator -(std::ptrdiff_t diff) { auto sit = *this; sit-=diff; return sit; }
-sinteger slib::SIterator::operator-(SIterator it) {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit-it._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait-it._it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-");
-            break;
-        default:
-            break;
-    }
-    return 0;
-}
-void slib::SIterator::swap(SIterator sit1, SIterator sit2) {
-    switch (sit1._type) {
-        case STRING_OBJ:
-        {
-            auto utmp = sit1._it._uit; sit1._it._uit = sit2._it._uit; sit2._it._uit = utmp;
-            break;
-        }
-        case ARRAY_OBJ:
-        {
-            auto atmp = sit1._it._ait; sit1._it._ait = sit2._it._ait; sit2._it._ait = atmp;
-            break;
-        }
-        case DICT_OBJ:
-        {
-            auto mtmp = sit1._it._mit; sit1._it._mit = sit2._it._mit; sit2._it._mit = mtmp;
-            break;
-        }
-        default:
-            break;
+std::ptrdiff_t slib::SIterator::operator-(SIterator it) {
+    if (itype != it.itype) throw Exception();
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        return iter.arrit - it.iter.arrit;
+    case ITER_TYPE::UTF8:
+        return iter.u8it - it.iter.u8it;
+    default:
+        return 0;
     }
 }
-bool slib::SIterator::operator ==(const slib::SIterator &sit) const {
-    if (_type == sit._type) {
-        switch (_type) {
-            case STRING_OBJ:
-                return _it._uit==sit._it._uit;
-                break;
-            case ARRAY_OBJ:
-                return _it._ait==sit._it._ait;
-                break;
-            case DICT_OBJ:
-                return _it._mit==sit._it._mit;
-                break;
-            default:
-                break;
-        }
+void slib::SIterator::swap(SIterator it1, SIterator it2) {
+    if (it1.itype != it2.itype) throw Exception();
+    switch (it1.itype) {
+    case ITER_TYPE::ARRAY:
+        it1.iter.arrit.swap(it1.iter.arrit, it2.iter.arrit);
+        break;
+    case ITER_TYPE::UTF8:
+        it1.iter.u8it.swap(it1.iter.u8it, it2.iter.u8it);
+        break;
+    case ITER_TYPE::MAP:
+        it1.iter.mapit.swap(it1.iter.mapit, it2.iter.mapit);
+        break;
+    default:
+        break;
     }
-    return false;
 }
-bool slib::SIterator::operator !=(const slib::SIterator &sit) const { return !(*this==sit); }
-bool slib::SIterator::operator <(const slib::SIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit < sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait < sit._it._ait;
-            break;
-        case DICT_OBJ:
-            return _it._mit < sit._it._mit;
-            break;
-        default:
-            break;
+bool slib::SIterator::operator ==(const slib::SIterator &it) const {
+    if (itype != it.itype) return false;
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        return iter.arrit == it.iter.arrit;
+    case ITER_TYPE::UTF8:
+        return iter.u8it == it.iter.u8it;
+    case ITER_TYPE::MAP:
+        return iter.mapit == it.iter.mapit;
+    default:
+        return false;
     }
-    return false;
 }
-bool slib::SIterator::operator <=(const slib::SIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit <= sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait <= sit._it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator<=");
-            break;
-        default:
-            break;
+bool slib::SIterator::operator !=(const slib::SIterator &it) const { return !(*this==it); }
+bool slib::SIterator::operator <(const slib::SIterator &it) const {
+    if (itype != it.itype) return false;
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        return iter.arrit < it.iter.arrit;
+    case ITER_TYPE::UTF8:
+        return iter.u8it < it.iter.u8it;
+    case ITER_TYPE::MAP:
+        return iter.mapit < it.iter.mapit;
+    default:
+        return false;
     }
-    return false;
 }
-bool slib::SIterator::operator >(const slib::SIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit > sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait > sit._it._ait;
-            break;
-        case DICT_OBJ:
-            throw sit._it._mit < _it._mit;
-            break;
-        default:
-            break;
-    }
-    return false;
+bool slib::SIterator::operator <=(const slib::SIterator& it) const { return (*this) < it || (*this) == it; }
+bool slib::SIterator::operator >(const slib::SIterator& it) const { return it < (*this); }
+bool slib::SIterator::operator >=(const slib::SIterator& it) const { return it < (*this) || (*this) == it; }
+
+
+slib::SCIterator::SCIterator(slib::ArrayCIterator<slib::SObjPtr> ait) {
+    itype = ITER_TYPE::ARRAY; iter.arrit = ait;
 }
-bool slib::SIterator::operator >=(const slib::SIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit >= sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait >= sit._it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator>=");
-            break;
-        default:
-            break;
-    }
-    return false;
+slib::SCIterator::SCIterator(slib::Utf8CIterator uit) {
+    itype = ITER_TYPE::UTF8; iter.u8it = uit;
+}
+slib::SCIterator::SCIterator(slib::MapCIterator<slib::String, slib::SObjPtr> mit) {
+    itype = ITER_TYPE::MAP; iter.mapit = mit;
 }
 
-slib::SCIterator::SCIterator(SArrayCIterator<SObjPtr> ait) {
-    _type =ARRAY_OBJ;
-    new(&_it._ait) SArrayCIterator<slib::SObjPtr>(ait);
+slib::SCIterator::SCIterator(const slib::SCIterator& it) {
+    itype = it.itype; 
+    SCIterator::copyIter(iter, it.iter, itype);
+    //memcpy(&iter, &it.iter, sizeof(CIter));
 }
-slib::SCIterator::SCIterator(SUtf8CIterator uit) {
-    _type =STRING_OBJ;
-    new(&_it._uit) SUtf8CIterator(uit);
-    _obj = SChar(*_it._uit);
-}
-slib::SCIterator::SCIterator(SMapCIterator<String, SObjPtr> mit) {
-    _type =DICT_OBJ;
-    new(&_it._mit) SMapCIterator<String, slib::SObjPtr>(mit);
-    _obj = SPair(*_it._mit);
-}
-slib::SCIterator::SCIterator(const slib::SCIterator &it) : _type(it._type), _obj(it._obj) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit = it._it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait = it._it._ait;
-            break;
-        case DICT_OBJ:
-            _it._mit = it._it._mit;
-            break;
-        default:
-            break;
-    }
-}
-slib::SCIterator::~SCIterator() {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit.~SUtf8CIterator();
-            break;
-        case ARRAY_OBJ:
-            _it._ait.~SArrayCIterator<slib::SObjPtr>();
-            break;
-        case DICT_OBJ:
-            _it._mit.~SMapCIterator<String, slib::SObjPtr>();
-            break;
-        default:
-            break;
-    }
-}
-
-slib::SCIterator& slib::SCIterator::operator=(const SCIterator &it) {
-    _type = it._type; _obj = it._obj;
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit = it._it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait = it._it._ait;
-            break;
-        case DICT_OBJ:
-            _it._mit = it._it._mit;
-            break;
-        default:
-            break;
-    }
+slib::SCIterator::~SCIterator() {}
+slib::SCIterator& slib::SCIterator::operator=(const slib::SCIterator& it) {
+    itype = it.itype;
+    SCIterator::copyIter(iter, it.iter, itype);
+    //memcpy(&iter, &it.iter, sizeof(CIter)); return *this;
     return *this;
 }
-const slib::SObjPtr &slib::SCIterator::operator *() {
-    switch (_type) {
-        case STRING_OBJ:
-            _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            return *_it._ait;
-            break;
-        case DICT_OBJ:
-            _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+slib::SElement &slib::SCIterator::operator *() {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        elem.eclass = SElement::E_CLASS::OBJECT;
+        elem.element.obj = const_cast<SObjPtr *>(iter.arrit.ptr());
+        break;
+    case ITER_TYPE::UTF8:
+        elem.eclass = SElement::E_CLASS::CHAR;
+        elem.element.ch = iter.u8it.ptr();
+        break;
+    case ITER_TYPE::MAP:
+        elem.eclass = SElement::E_CLASS::PAIR;
+        elem.element.pair = const_cast<MapData<String, SObjPtr> *>(iter.mapit.ptr());
+        break;
+    default:
+        break;
     }
-    return _obj;
+    return elem;
 }
-const slib::SObjPtr *slib::SCIterator::operator ->() {
-    switch (_type) {
-        case STRING_OBJ:
-            _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            return &(*_it._ait);
-            break;
-        case DICT_OBJ:
-            _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+slib::SCIterator::CIter* slib::SCIterator::operator ->() { return &iter; }
+slib::SElement &slib::SCIterator::operator [](std::ptrdiff_t diff) {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+    {
+        iter.arrit += diff;
+        elem.eclass = SElement::E_CLASS::OBJECT;
+        elem.element.obj = const_cast<SObjPtr*>(iter.arrit.ptr());
+        break;
     }
-    return &_obj;
-}
-const slib::SObjPtr &slib::SCIterator::operator [](std::ptrdiff_t diff) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit += diff; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait += diff; return *_it._ait;
-            break;
-        case DICT_OBJ:
-            _it._mit += diff; _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+    case ITER_TYPE::UTF8:
+    {
+        iter.u8it += diff;
+        elem.eclass = SElement::E_CLASS::CHAR;
+        elem.element.ch = iter.u8it.ptr();
+        break;
     }
-    return _obj;
+    case ITER_TYPE::MAP:
+    {
+        iter.mapit += diff;
+        elem.eclass = SElement::E_CLASS::PAIR;
+        elem.element.pair = const_cast<MapData<String, SObjPtr> *>(iter.mapit.ptr());
+        break;
+    }
+    default:
+        break;
+    }
+    return elem;
 }
-slib::SCIterator &slib::SCIterator::operator ++() {
-    switch (_type) {
-        case STRING_OBJ:
-            ++_it._uit; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            ++_it._ait;
-            break;
-        case DICT_OBJ:
-            ++_it._mit; _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+slib::SCIterator& slib::SCIterator::operator ++() {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        ++iter.arrit;
+        break;
+    case ITER_TYPE::UTF8:
+        ++iter.u8it;
+        break;
+    case ITER_TYPE::MAP:
+        ++iter.mapit;
+    default:
+        break;
     }
     return *this;
 }
 slib::SCIterator slib::SCIterator::operator ++(int) { auto sit = *this; ++sit; return sit; }
-slib::SCIterator &slib::SCIterator::operator --() {
-    switch (_type) {
-        case STRING_OBJ:
-            --_it._uit; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            --_it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator--");
-            break;
-        default:
-            break;
+slib::SCIterator& slib::SCIterator::operator --() {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        --iter.arrit;
+        break;
+    case ITER_TYPE::UTF8:
+        --iter.u8it;
+        break;
+    default:
+        break;
     }
     return *this;
 }
 slib::SCIterator slib::SCIterator::operator --(int) { auto sit = *this; --sit; return sit; }
-slib::SCIterator &slib::SCIterator::operator+=(std::ptrdiff_t diff) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit+=diff; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait+=diff;
-            break;
-        case DICT_OBJ:
-            _it._mit+=diff; _obj.pair() = *_it._mit;
-            break;
-        default:
-            break;
+slib::SCIterator& slib::SCIterator::operator+=(std::ptrdiff_t diff) {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        iter.arrit += diff;
+        break;
+    case ITER_TYPE::UTF8:
+        iter.u8it += diff;
+        break;
+    case ITER_TYPE::MAP:
+        iter.mapit += diff;
+    default:
+        break;
     }
     return *this;
 }
-slib::SCIterator &slib::SCIterator::operator-=(std::ptrdiff_t diff) {
-    switch (_type) {
-        case STRING_OBJ:
-            _it._uit-=diff; _obj.character() = *_it._uit;
-            break;
-        case ARRAY_OBJ:
-            _it._ait-=diff;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-=");
-            break;
-        default:
-            break;
+slib::SCIterator& slib::SCIterator::operator-=(std::ptrdiff_t diff) {
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        iter.arrit -= diff;
+        break;
+    case ITER_TYPE::UTF8:
+        iter.u8it -= diff;
+        break;
+    default:
+        break;
     }
     return *this;
 }
-slib::SCIterator slib::SCIterator::operator +(std::ptrdiff_t diff) { auto sit = *this; sit+=diff; return sit; }
-slib::SCIterator slib::SCIterator::operator -(std::ptrdiff_t diff) { auto sit = *this; sit-=diff; return sit; }
-sinteger slib::SCIterator::operator-(SCIterator it) {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit-it._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait-it._it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator-");
-            break;
-        default:
-            break;
-    }
-    return 0;
-}
-void slib::SCIterator::swap(slib::SCIterator sit1, slib::SCIterator sit2) {
-    switch (sit1._type) {
-        case STRING_OBJ:
-        {
-            auto utmp = sit1._it._uit; sit1._it._uit = sit2._it._uit; sit2._it._uit = utmp;
-            break;
-        }
-        case ARRAY_OBJ:
-        {
-            auto atmp = sit1._it._ait; sit1._it._ait = sit2._it._ait; sit2._it._ait = atmp;
-            break;
-        }
-        case DICT_OBJ:
-        {
-            auto mtmp = sit1._it._mit; sit1._it._mit = sit2._it._mit; sit2._it._mit = mtmp;
-            break;
-        }
-        default:
-            break;
+slib::SCIterator slib::SCIterator::operator +(std::ptrdiff_t diff) { auto sit = *this; sit += diff; return sit; }
+slib::SCIterator slib::SCIterator::operator -(std::ptrdiff_t diff) { auto sit = *this; sit -= diff; return sit; }
+std::ptrdiff_t slib::SCIterator::operator-(SCIterator it) {
+    if (itype != it.itype) throw Exception();
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        return iter.arrit - it.iter.arrit;
+    case ITER_TYPE::UTF8:
+        return iter.u8it - it.iter.u8it;
+    default:
+        return 0;
     }
 }
-bool slib::SCIterator::operator ==(const slib::SCIterator &sit) const {
-    if (_type == sit._type) {
-        switch (_type) {
-            case STRING_OBJ:
-                return _it._uit==sit._it._uit;
-                break;
-            case ARRAY_OBJ:
-                return _it._ait==sit._it._ait;
-                break;
-            case DICT_OBJ:
-                return _it._mit==sit._it._mit;
-                break;
-            default:
-                break;
-        }
+void slib::SCIterator::swap(SCIterator it1, SCIterator it2) {
+    if (it1.itype != it2.itype) throw Exception();
+    switch (it1.itype) {
+    case ITER_TYPE::ARRAY:
+        it1.iter.arrit.swap(it1.iter.arrit, it2.iter.arrit);
+        break;
+    case ITER_TYPE::UTF8:
+        it1.iter.u8it.swap(it1.iter.u8it, it2.iter.u8it);
+        break;
+    case ITER_TYPE::MAP:
+        it1.iter.mapit.swap(it1.iter.mapit, it2.iter.mapit);
+        break;
+    default:
+        break;
     }
-    return false;
 }
-bool slib::SCIterator::operator !=(const slib::SCIterator &sit) const { return !(*this==sit); }
-bool slib::SCIterator::operator <(const slib::SCIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit < sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait < sit._it._ait;
-            break;
-        case DICT_OBJ:
-			return _it._mit < sit._it._mit;
-            break;
-        default:
-            break;
+bool slib::SCIterator::operator ==(const slib::SCIterator& it) const {
+    if (itype != it.itype) return false;
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        return iter.arrit == it.iter.arrit;
+    case ITER_TYPE::UTF8:
+        return iter.u8it == it.iter.u8it;
+    case ITER_TYPE::MAP:
+        return iter.mapit == it.iter.mapit;
+    default:
+        return false;
     }
-    return false;
 }
-bool slib::SCIterator::operator <=(const slib::SCIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit <= sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait <= sit._it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator<=");
-            break;
-        default:
-            break;
+bool slib::SCIterator::operator !=(const slib::SCIterator& it) const { return !(*this == it); }
+bool slib::SCIterator::operator <(const slib::SCIterator& it) const {
+    if (itype != it.itype) return false;
+    switch (itype) {
+    case ITER_TYPE::ARRAY:
+        return iter.arrit < it.iter.arrit;
+    case ITER_TYPE::UTF8:
+        return iter.u8it < it.iter.u8it;
+    case ITER_TYPE::MAP:
+        return iter.mapit < it.iter.mapit;
+    default:
+        return false;
     }
-    return false;
 }
-bool slib::SCIterator::operator >(const slib::SCIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit > sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait > sit._it._ait;
-            break;
-        case DICT_OBJ:
-			return sit._it._mit < _it._mit;
-            break;
-        default:
-            break;
-    }
-    return false;
-}
-bool slib::SCIterator::operator >=(const slib::SCIterator &sit) const {
-    switch (_type) {
-        case STRING_OBJ:
-            return _it._uit >= sit._it._uit;
-            break;
-        case ARRAY_OBJ:
-            return _it._ait >= sit._it._ait;
-            break;
-        case DICT_OBJ:
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "Map iterator", "operator>=");
-            break;
-        default:
-            break;
-    }
-    return false;
-}
-
+bool slib::SCIterator::operator <=(const slib::SCIterator& it) const { return (*this) < it || (*this) == it; }
+bool slib::SCIterator::operator >(const slib::SCIterator& it) const { return it < (*this); }
+bool slib::SCIterator::operator >=(const slib::SCIterator& it) const { return it < (*this) || (*this) == it; }

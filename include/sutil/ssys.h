@@ -1,36 +1,98 @@
 #ifndef SLIB_SSYS_H
 #define SLIB_SSYS_H
-
-#include "sbasic/exception.h"
-#include "sbasic/array.h"
-#include "sbasic/string.h"
-
+#include "sbasic/node.h"
+#include "sobj/sarray.h"
+#include "sobj/sdict.h"
 namespace slib {
+	class SLIB_DLL SImage;
+	/**
+	* @class Response
+	* \~english @brief Response class with return/error code, standard output, and error message.
+	*/
+	class SLIB_DLL Response {
+	public:
+		int code;
+		String output, error;
+		SObjPtr attribute;
+	public:
+		Response(int c = 0, const char *o = nullptr, const char *e = nullptr);
+		Response(const Exception& ex);
+		Response(const Response& res);
+		virtual ~Response();
+		Response& operator=(const Response& res);
+		SObjPtr toObj() const;
+		SObjPtr json() const;
+		void clear();
+		operator bool() const;
+	};
+	/// @cond
+	extern inline String& _expandCmd(String& cmd) { return cmd; }
+	template<typename Arg, typename... Args>
+	extern inline String& _expandCmd(String& cmd, const Arg& arg, const Args&... args) {
+		cmd << " " << arg;
+		return _expandCmd(cmd, args...);
+	}
+	/// @endcond
+	namespace ssys {
+		/**
+		* \~english @brief Exec. system command
+		* 
+		*/
+		template<typename... Args>
+		extern Response exec(const Args&... args) {
+			Response res;
+			String cmd;
+			_expandCmd(cmd, args...);
+			FILE* fp;
+			fp = popen(cmd, "r");
+			const int BUFFER_SIZE = 1024;
+			char buf[BUFFER_SIZE];
+			if (fp) {
+				while (!feof(fp)) {
+					buf[BUFFER_SIZE - 1] = '\0';
+					auto ret = fgets(buf, BUFFER_SIZE, fp);
+					if (ret) res.output += const_cast<const char*>(buf);
+					else if (feof(fp)) break;
+					else {
+						res.code = ferror(fp);
 
-    namespace smedia {
-        class SLIB_DLL SImage;
-    }
-    
-    class SLIB_DLL SSystem {
-    protected:
-        
-    public:
-        SSystem();
-        SSystem(const char *cd);
-        ~SSystem();
+					}
+				}
+				res.code = pclose(fp);
 
-		static String charCode();
-		static String userName();
-        
-        static void setCurrent(const char *path);
-        static void exec(const char *cmd);
-        static int exec(const char *cmd, String &result);
-        static size_t getPID(const char *name);
-        static void kill(size_t pid);
-        //void screenShot(smedia::SImage *img);
-        //void copyToBoard(const sobj &obj);
-        //sobj pasteFromBoard();
-    };
+			}
+			else {
+				res.code = 1;
+				res.error = "Failed to \"popen\".";
+			}
+			return res;
+		}
+		/**
+		* \~english @brief Find ID of a running process
+		*
+		*/
+		extern SLIB_DLL size_t getPID(const char* name);
+		/**
+		* \~english @brief Find IDs of a running process
+		*
+		*/
+		extern SLIB_DLL inline Array<size_t> getPIDs(const char* name);
+		/**
+		* \~english @brief Kill process
+		*
+		*/
+		extern SLIB_DLL void kill(size_t pid);
+		/**
+		* \~english @brief Return user name
+		*
+		*/
+		extern SLIB_DLL String userName();
+		/**
+		* \~english @brief Make sure that the application can be launched (installed and path set).
+		* 
+		*/
+		extern SLIB_DLL bool isInstalled(const char *prog);
+	}
 
 	class SLIB_DLL SProcess {
 	private:

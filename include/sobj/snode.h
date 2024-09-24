@@ -1,24 +1,24 @@
 #ifndef SLIB_SNODE_H
 #define SLIB_SNODE_H
 
-#include "sobj/sobject.h"
+#include "sobj/sobjptr.h"
 
 namespace slib {
-	template<class Cls, OBJ_TYPE T = NODE_OBJ>
+	template<class Cls>
 	class SNode : public SObject {
 	protected:
 		Cls* _parent;
-		List<SClsPtr<Cls, T>> _children;
+		SArray _children;
 
 	public:
 		SNode() : SObject(), _parent(nullptr) {}
-		SNode(const SNode<Cls, T>& node) : SObject() {
+		SNode(const SNode<Cls>& node) : SObject() {
 			_parent = node._parent;
 			_children = node._children;
 		}
 		virtual ~SNode() {}
-
-		SNode<Cls, T>& operator=(const SNode<Cls, T>& node) {
+		/*
+		SNode<Cls>& operator=(const SNode<Cls>& node) {
 			_parent = node._parent;
 			_children = node._children;
 			return *this;
@@ -34,7 +34,7 @@ namespace slib {
 			while (ptr->_parent != nullptr);
 			return ptr;
 		}
-		List<SClsPtr<Cls, T>>& children() { return _children; }
+		List<Cls>& children() { return _children; }
 		const List<SClsPtr<Cls, T>>& children() const { return _children; }
 		SClsPtr<Cls, T>& child(int idx) { return _children[idx]; }
 		const SClsPtr<Cls, T>& child(int idx) const { return _children[idx]; }
@@ -111,11 +111,12 @@ namespace slib {
 			(*iter)->parent()->insertChild(iter, *node);
 			_parent->removeChild(node);
 		}
+		*/
 		void clearChildren() { _children.clear(); }
 		String getClass() const { return "node"; }
-		String toString() const { return ""; }
+		String toString(const char *format) const { return ""; }
 		SObject* clone() const { return new Cls(*dynamic_cast<const Cls*>(this)); }
-
+		
 	};
 
 	/*
@@ -142,9 +143,8 @@ namespace slib {
 		String toString() const;
 		SObject* clone() const;
 	};
-    */
-    /*============================================================*/
-	/*
+    
+
     template<class Cls, OBJ_TYPE T, class Container>
     SNode<Cls, T, Container>::SNode() : SObject(), Node<Cls, scobj<Cls, T>>() {}
     template<class Cls, OBJ_TYPE T, class Container>

@@ -1,126 +1,52 @@
 #ifndef SMATH_LA_H
 #define SMATH_LA_H
-
-#include "sconfig.h"
-#include "smath/calc.h"
-#include "smath/frac.h"
-#include "smath/comp.h"
-#include "sbasic/array.h"
-#include "sbasic/cyciter.h"
-#include "sbasic/string.h"
-
-#define v2b slib::sla::SVectorND<2, sbyte>
-#define v2ub slib::sla::SVectorND<2, subyte>
-#define v2i slib::sla::SVectorND<2, sint>
-#define v2l slib::sla::SVectorND<2, sinteger>
-#define v2f slib::sla::SVectorND<2, float>
-#define v2d slib::sla::SVectorND<2, double>
-#define v2n slib::sla::SVectorND<2, sfrac>
-#define v2x slib::sla::SVectorND<2, scomp>
-#define v3b slib::sla::SVectorND<3, sbyte>
-#define v3ub slib::sla::SVectorND<3, subyte>
-#define v3i slib::sla::SVectorND<3, sint>
-#define v3l slib::sla::SVectorND<3, sinteger>
-#define v3f slib::sla::SVectorND<3, float>
-#define v3d slib::sla::SVectorND<3, double>
-#define v3n slib::sla::SVectorND<3, sfrac>
-#define v3x slib::sla::SVectorND<3, scomp>
-#define v4b slib::sla::SVectorND<4, sbyte>
-#define v4ub slib::sla::SVectorND<4, subyte>
-#define v4i slib::sla::SVectorND<4, sint>
-#define v4l slib::sla::SVectorND<4, sinteger>
-#define v4f slib::sla::SVectorND<4, float>
-#define v4d slib::sla::SVectorND<4, double>
-#define v4n slib::sla::SVectorND<4, sfrac>
-#define v4x slib::sla::SVectorND<4, scomp>
-#define mat2i slib::sla::SMatrixND<2, sint>
-#define mat2l slib::sla::SMatrixND<2, sinteger>
-#define mat2f slib::sla::SMatrixND<2, float>
-#define mat2d slib::sla::SMatrixND<2, double>
-#define mat2n slib::sla::SMatrixND<2, sfrac>
-#define mat2x slib::sla::SMatrixND<2, scomp>
-#define mat3i slib::sla::SMatrixND<3, sint>
-#define mat3l slib::sla::SMatrixND<3, sinteger>
-#define mat3f slib::sla::SMatrixND<3, float>
-#define mat3d slib::sla::SMatrixND<3, double>
-#define mat3n slib::sla::SMatrixND<3, sfrac>
-#define mat3x slib::sla::SMatrixND<3, scomp>
-#define mat4i slib::sla::SMatrixND<4, sint>
-#define mat4l slib::sla::SMatrixND<4, sinteger>
-#define mat4f slib::sla::SMatrixND<4, float>
-#define mat4d slib::sla::SMatrixND<4, double>
-#define mat4n slib::sla::SMatrixND<4, sfrac>
-#define mat4x slib::sla::SMatrixND<4, scomp>
-
-#define svec slib::sla::SVector
-#define smat slib::sla::SMatrix
-
-#define svecb slib::sla::SVector<sbyte, CMemory<sbyte>>
-#define svecub slib::sla::SVector<subyte, CMemory<subyte>>
-#define sveci slib::sla::SVector<sint, CMemory<sint>>
-#define svecu slib::sla::SVector<suint, CMemory<suint>>
-#define svecl slib::sla::SVector<sinteger, CMemory<sinteger>>
-#define svecs slib::sla::SVector<suinteger, CMemory<suinteger>>
-#define svecf slib::sla::SVector<float, CMemory<float>>
-#define svecd slib::sla::SVector<double, CMemory<double>>
-#define svecc slib::sla::SVector<scomp, RMemory<scomp>>
-
-#define v2ivec slib::sla::SVector<v2i, RMemory<v2i>>
-#define v2fvec slib::sla::SVector<v2f, RMemory<v2f>>
-#define v2dvec slib::sla::SVector<v2d, RMemory<v2d>>
-#define v2cvec slib::sla::SVector<v2x, RMemory<v2x>>
-#define v3ivec slib::sla::SVector<v3i, RMemory<v3i>>
-#define v3fvec slib::sla::SVector<v3f, RMemory<v3f>>
-#define v3dvec slib::sla::SVector<v3d, RMemory<v3d>>
-#define v3cvec slib::sla::SVector<v3x, RMemory<v3x>>
-#define v4ivec slib::sla::SVector<v4i, RMemory<v4i>>
-#define v4fvec slib::sla::SVector<v4f, RMemory<v4f>>
-#define v4dvec slib::sla::SVector<v4d, RMemory<v4d>>
-#define v4cvec slib::sla::SVector<v4x, RMemory<v4x>>
-
-#define svivec slib::sla::SVector<sveci, SMemory<sveci>>
-#define svfvec slib::sla::SVector<svecf, SMemory<svecf>>
-#define svdvec slib::sla::SVector<svecd, SMemory<svecd>>
-#define svcvec slib::sla::SVector<svecc, SMemory<svecc>>
-
-#define smatb slib::sla::SMatrix<sbyte, slib::CMemory<sbyte>>
-#define smatub slib::sla::SMatrix<subyte, slib::CMemory<subyte>>
-#define smati slib::sla::SMatrix<int, slib::CMemory<int>>
-#define smatl slib::sla::SMatrix<sinteger, slib::CMemory<sinteger>>
-#define smatf slib::sla::SMatrix<float, slib::CMemory<float>>
-#define smatd slib::sla::SMatrix<double, slib::CMemory<double>>
-#define smatn slib::sla::SMatrix<sfrac, slib::RMemory<sfrac>>
-#define smatx slib::sla::SMatrix<scomp, slib::RMemory<scomp>>
-
-#define v2imat slib::sla::SMatrix<v2i, slib::RMemory<v2i>>
-#define v2fmat slib::sla::SMatrix<v2f, slib::RMemory<v2f>>
-#define v2dmat slib::sla::SMatrix<v2d, slib::RMemory<v2d>>
-#define v3imat slib::sla::SMatrix<v3i, slib::RMemory<v3i>>
-#define v3fmat slib::sla::SMatrix<v3f, slib::RMemory<v3f>>
-#define v3dmat slib::sla::SMatrix<v3d, slib::RMemory<v3d>>
-#define v4imat slib::sla::SMatrix<v4i, slib::RMemory<v4i>>
-#define v4fmat slib::sla::SMatrix<v4f, slib::RMemory<v4f>>
-#define v4dmat slib::sla::SMatrix<v4d, slib::RMemory<v4d>>
-#define svimat slib::sla::SMatrix<sveci>
-#define svfmat slib::sla::SMatrix<svecf>
-#define svdmat slib::sla::SMatrix<svecd>
-#define svcmat slib::sla::SMatrix<svecc>
-
-#define m2ivec slib::sla::SVector<mat2i, slib::RMemory<mat2i>>
-#define m2fvec slib::sla::SVector<mat2f, slib::RMemory<mat2f>>
-#define m2dvec slib::sla::SVector<mat2d, slib::RMemory<mat2d>>
-#define m3ivec slib::sla::SVector<mat3i, slib::RMemory<mat3i>>
-#define m3fvec slib::sla::SVector<mat3f, slib::RMemory<mat3f>>
-#define m3dvec slib::sla::SVector<mat3d, slib::RMemory<mat3d>>
-#define m4ivec slib::sla::SVector<mat4i, slib::RMemory<mat4i>>
-#define m4fvec slib::sla::SVector<mat4f, slib::RMemory<mat4f>>
-#define m4dvec slib::sla::SVector<mat4d, slib::RMemory<mat4d>>
-#define smivec slib::sla::SVector<smati>
-#define smfvec slib::sla::SVector<smatf>
-#define smdvec slib::sla::SVector<smatd>
-
+#include "smath/vector.h"
+#include "smath/matrix.h"
 namespace slib {
-	namespace sla {
+	namespace smath {
+		template<typename T>
+		Vector<T> arrange(const T init, const T end, const T step) {
+			slib::smath::Vector<T> vec((end - init) / step);
+			vec[0] = init;
+			auto it = vec.begin() + 1;
+			while (it < vec.end()) { $_ = *(it - 1) + step; NEXT_($); }
+			return vec;
+		}
+		template<typename T>
+		Vector<T> arithmetric(const T init, const T step, const size_t num) {
+			slib::smath::Vector<T> vec(num);
+			sfor(vec) { $_ = init; init += step; }
+			return vec;
+		}
+		template<typename T>
+		Vector<T> geometric(const T init, const T ratio, const size_t num) {
+			slib::smath::Vector<T> vec(num);
+			sfor(vec) { $_ = init; init *= ratio; }
+			return vec;
+		}
+		template <typename T>
+		Vector<T> repeat(const Vector<T>& vec, const Vector<int>& count) {
+			Vector<T> rep;
+			auto cit = count.cycle();
+			sfor(vec) {
+				sforin(i, 0, *cit) rep << $_;
+				++cit;
+			}
+			return rep;
+		}
+		template <typename T>
+		Vector<T> repeat(const Vector<T>& vec, const size_t num) {
+			Vector<T> rep;
+			sforin(i, 0, num) rep << vec;
+			return rep;
+		}
+	}
+}
+
+/**
+* 
+namespace slib {
+	namespace smath {
 		//Initialization of VectorND
 		template<size_t D, typename T, class... Args>
 		void _initVecND(T* e, Args... args);
@@ -922,8 +848,6 @@ namespace slib {
 			return vec;
 		}
 		
-		/*============================================================*/
-		
 		template<typename T>
 		extern inline double solveEq1(const SVectorND<2, T> &coef) {
 			if (coef.x() == 0) throw slib::smath::SMathException(ERR_INFO, slib::smath::DIV_ZERO_ERR);
@@ -943,7 +867,7 @@ namespace slib {
 		}
 		template<typename T>
 		extern inline SVectorND<2, smath::Complex<double>> solveEq2c(const SVectorND<3, T> &coef) {
-			if (coef.x() == 0) throw SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
+			if (coef.x() == 0) throw smath::SMathException(ERR_INFO, smath::DIV_ZERO_ERR);
 			auto d = discriminant(coef), re = 0.0, im = 0.0;
 			if (d < 0) {
 				re = -coef.y() / (2.0 * coef.x()); im = sqrt(-d) / (2.0 * coef.x());
@@ -1131,6 +1055,6 @@ namespace slib {
 	template<size_t D, typename T>
 	extern inline std::ostream& operator<<(std::ostream& os, const sla::SMatrixND<D, T>& m) { return os << slib::toString(m); }
 }
-
+*/
 
 #endif

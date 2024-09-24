@@ -1,10 +1,8 @@
 #include "sutil/schrono.h"
 
-using namespace slib;
-
-SClock::SClock() : _total(0) {}
-SClock::~SClock() {}
-void SClock::start() { _start = clock(); }
-void SClock::stop() { _end = clock(); _total += _end-_start; }
-void SClock::reset() { _total = 0; }
-double SClock::time() { return (double)_total/CLOCKS_PER_SEC; }
+slib::SClock::SClock() : _start(0), _end(0), _total(0) {}
+slib::SClock::~SClock() {}
+void slib::SClock::start() { _start = clock(); }
+void slib::SClock::stop() { _end = clock(); _total += _end - _start; _start = _end; }
+void slib::SClock::reset() { _start = 0; _end = 0; _total = 0; }
+double slib::SClock::time() { return (double)_total/CLOCKS_PER_SEC; }

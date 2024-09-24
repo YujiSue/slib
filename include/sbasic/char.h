@@ -1,59 +1,79 @@
 #ifndef SLIB_CHAR_H
 #define SLIB_CHAR_H
-
 #include "sconfig.h"
-
 namespace slib {
-	class SLIB_DLL String;
-    class SLIB_DLL SChar;
-    class SLIB_DLL SString;
-    class SLIB_DLL SObjPtr;
-	class SLIB_DLL Char {
-        friend class String;
-    public:
-        const char *_ptr;
-		String *_str;
-    public:
-        static sbyte u8size(const char *c);
-        static bool isNarrow(const char *s);
-        static bool isWide(const char *s);
-        static bool isNumeric(const char *s);
-        static bool isNumChar(char c);
-        static bool isWideNum(const char *s);
-        static bool isWSChar(char c);
-        static sbyte toNum(char c);
-        static sbyte toNum(const char *s);
-        static String wideChar(char c);
-        static char narrowChar(const char *s);
+    class SLIB_DLL Utf8Iterator;
+    class SLIB_DLL Utf8CIterator;
+    class SLIB_DLL String;
+    namespace sutf8 {
+        extern bool SLIB_DLL check(const char* c);
+        extern sbyte SLIB_DLL size(const char* c);
+        extern bool SLIB_DLL isNarrow(const char* s);
+        extern bool SLIB_DLL isWide(const char* s);
+        extern bool SLIB_DLL isWS(char c);
+        extern bool SLIB_DLL isNumChar(const char c);
+        extern bool SLIB_DLL isWideNum(const char* s);
+        extern bool SLIB_DLL isNumeric(const char* s);
+        extern char SLIB_DLL toChar(const sbyte n);
+        extern sbyte SLIB_DLL toNum(const char c);
+        extern sbyte SLIB_DLL toNum(const char* s);
+        extern bool SLIB_DLL isUpper(const char c);
+        extern bool SLIB_DLL isLower(const char c);
+        extern char SLIB_DLL toUpper(const char c);
+        extern char SLIB_DLL toLower(const char c);
+        extern String SLIB_DLL toWide(char c);
+        extern char SLIB_DLL toNarrow(const char* s);
+    }
+    /**
+    * @class Char
+    * \~english @brief UTF-8 character class
+    * \~japanese @brief UTF-8 文字クラス
+    */
+    class SLIB_DLL Char {
+        friend Utf8Iterator;
+        friend Utf8CIterator;
+    private:
+        char* _ptr;
+        String* _base;
     public:
         Char();
-        Char(String *s, const char *c);
-        Char(const Char &c);
+        Char(const char* c, const String* s);
+        Char(const Char& c);
         ~Char();
-        Char &operator=(const char *s);
-        Char &operator=(const std::string &s);
-        Char &operator=(const String &s);
-        Char &operator=(const SString &s);
-        Char &operator=(const Char &c);
-        Char &operator=(const SChar &c);
-        Char &operator=(const SObjPtr &obj);
-        Char &operator+=(sinteger p);
-        Char &operator-=(sinteger p);
-		Char operator+(sinteger p);
-		Char operator-(sinteger p);
-        Char &operator ++();
-        Char &operator --();
+        Char& operator=(const char* s);
+        Char& operator=(const Char& c);
+        Char& operator++();
+        Char& operator--();
+        /**
+        *\~english @brief Get byte size of the character
+        *\~japanese @brief 現在の文字のバイト数
+        * @return byte size
+        */
+        size_t size() const;
         size_t index() const;
-        size_t length() const;
-        void setIndex(size_t s);
-        void setOffset(size_t s);
-        const char *cstr() const;
-        std::string toStr() const;
+        /**
+        *\~english @brief Check whether the byte(s) of the character is UTF-8
+        */
+        bool isUTF8() const;
+        /**
+        *\~english @brief Return the const pointer of the character
+        */
+        const char* cstr() const;
+        /**
+        *\~english @brief Return the character as String
+        */
         String toString() const;
-        bool operator<(const Char &c) const;
-        bool operator==(const char &c) const;
-        bool operator==(const char *s) const;
-        bool operator==(const Char &c) const;
+        bool operator<(const char* s) const;
+        bool operator<(const Char& c) const;
+        bool operator==(const char* s) const;
+        bool operator==(const Char& c) const;
     };
+    /*
+    * @cond
+    */
+    extern SLIB_DLL String toString(const Char& ch, const char* format = nullptr);
+    /*
+    * @endcond
+    */
 }
 #endif

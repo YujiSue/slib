@@ -1,0 +1,42 @@
+{
+  "info": {
+    "name": "APP_NAME",
+    "type": "cui1",
+    "author": [ "John Smith", ... ],
+    "copyright": "COPYRIGHT",
+    "version": "1.0.0",
+    "develop": "YYYY/MM/DD",
+    "license": "ANY_LICENSE"
+  },
+  "command": {
+    "_": {
+      "require": [
+        "required_argment",
+        ...
+      ],
+      "option": [
+        "optional_argment",
+        ...
+      ],
+      "description": "FUNCTIONAL DESCRIPTION"
+    }
+  },
+  "option": {
+    "_args_": {
+      "brief": "args...",
+      "description": "Arguments for each command."
+    },
+    "OPT1": { // Set any value by the command "... --OPT1 VALUE ... "
+      "brief": "NOTE",
+      "default": "DEFAULT_VALUE",
+      "description": "DESCRIPTION"
+    },
+    "OPT2": { // Set as true by the command "... -o/--OPT2 ..."
+      "short": "o",
+      "brief": "NOTE",
+      "type": "bool",
+      "description": "DESCRIPTION"
+    },
+    ...
+  }
+}

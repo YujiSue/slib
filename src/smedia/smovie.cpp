@@ -1,13 +1,11 @@
-#include "smedia/smovie.h"
+//#include "smedia/smovie.h"
 /*
 #include "libtiff/tiff.h"
 #include "libtiff/tiffio.h"
 */
-using namespace slib;
-using namespace slib::smedia;
 
 //TIFF *tiff;
-
+/*
 SMovie::SMovie() {
     mov_width = 0;
     mov_height = 0;
@@ -31,7 +29,6 @@ void SMovie::load(const char *path, bool l) {
     auto ext = mov_file.extension();
     if (ext.beginWith("tif")) {
         //mov_type = MULTI_TIFF;
-        /*
         tiff = TIFFOpen(path, "r");
         frame_count = 0;
         current_frame = 0;
@@ -56,7 +53,6 @@ void SMovie::load(const char *path, bool l) {
                 TIFFReadScanline(tiff, frames[f]->ptr(r*size), r);
             TIFFReadDirectory(tiff);
         }
-        */
     }
 }
 
@@ -64,22 +60,19 @@ void SMovie::save(const char *path, SDictionary &config) {
     
     
 }
-
 sframe SMovie::operator[](size_t idx) {
-    if(frame_count <= idx)
-        throw SException(ERR_INFO, SLIB_RANGE_ERROR);
+    if (frame_count <= idx)
+        throw Exception();// (ERR_INFO, SLIB_RANGE_ERROR);
     if (load_frames) return frames[idx];
     else {
         //if (threads.isWorking()) threads.complete();
         if(current_frame+1 == idx) frames[0].swap(frames[1]);
-        /*
         else if(mov_type == MULTI_TIFF) {
             TIFFSetDirectory(tiff, (uint16)idx);
             tmsize_t size = TIFFScanlineSize(tiff);
             for (int r = 0; r < mov_height; ++r)
                 TIFFReadScanline(tiff, frames[0]->ptr(r*size), r);
         }
-         */
         //threads.addTask(loader, idx+1, frames[1]);
         current_frame = idx;
         return frames[0];
@@ -92,14 +85,12 @@ sframe SMovie::frameAt(size_t idx) {
     else {
         //if (threads.isWorking()) threads.complete();
         if(current_frame+1 == idx) frames[0].swap(frames[1]);
-        /*
         else if(mov_type == MULTI_TIFF) {
             TIFFSetDirectory(tiff, (uint16)idx);
             tmsize_t size = TIFFScanlineSize(tiff);
             for (int r = 0; r < mov_height; ++r)
                 TIFFReadScanline(tiff, frames[0]->ptr(r*size), r);
         }
-         */
         //threads.addTask(loader, idx+1, frames[1]);
         current_frame = idx;
         return frames[0];
@@ -115,3 +106,4 @@ size_t SMovie::frameNum() { return frame_count; }
 SObject *SMovie::clone() const { return new SMovie(*this); }
 String SMovie::getClass() const { return "movie"; }
 String SMovie::toString() const { return ""; }
+*/

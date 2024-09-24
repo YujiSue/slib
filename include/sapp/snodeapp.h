@@ -2,64 +2,58 @@
 #define SLIB_SNODE_APP
 
 #include "sobj.h"
+#include "sapp/appexception.h"
 #include "node/node_api.h"
 
 namespace slib {
+	enum class JS_OBJ_TYPE : subyte {
+		JS_NULL = 0,
+		JS_NUMBER = 1,
+		JS_BOOL = 2,
+		JS_STRING = 3,
+		JS_ARRAY = 4,
+		JS_DICT = 5,
+	};
+#define DECLARE_NAPI_METHOD(name, func) { name, 0, func, 0, 0, 0, napi_default, 0 }
+	namespace snapi {
+		extern SLIB_DLL JS_OBJ_TYPE jsType(napi_env env, napi_value val);
+		extern SLIB_DLL size_t jsStrlen(napi_env env, napi_value val);
+		extern SLIB_DLL napi_value jsnull(napi_env env);
+		extern SLIB_DLL napi_value jsbool(napi_env env, bool b);
+		extern SLIB_DLL napi_value jsint(napi_env env, int i);
+		extern SLIB_DLL napi_value jsuint(napi_env env, unsigned int ui);
+		extern SLIB_DLL napi_value jslong(napi_env env, sint i);
+		extern SLIB_DLL napi_value jsreal(napi_env env, double d);
+		extern SLIB_DLL napi_value jsnum(napi_env env, const SNumber& n);
+		extern SLIB_DLL napi_value jsstr(napi_env env, const char* s);
+		extern SLIB_DLL napi_value jsarray(napi_env env, const SArray& array);
+		extern SLIB_DLL napi_value jsdict(napi_env env, const SDictionary& dict);
+		extern SLIB_DLL napi_value jsobj(napi_env env, sobj obj);
+		extern SLIB_DLL bool toBool(napi_env env, napi_value val);
+		extern SLIB_DLL int toInt(napi_env env, napi_value val);
+		extern SLIB_DLL unsigned int toUint(napi_env env, napi_value val);
+		extern SLIB_DLL sinteger toLong(napi_env env, napi_value val);
+		extern SLIB_DLL double toReal(napi_env env, napi_value val);
+		extern SLIB_DLL SNumber toNum(napi_env env, napi_value val);
+		extern SLIB_DLL String toStr(napi_env env, napi_value val);
+		extern SLIB_DLL SArray toArray(napi_env env, napi_value val);
+		extern SLIB_DLL intarray toIArray(napi_env env, napi_value val);
+		extern SLIB_DLL stringarray toStrArray(napi_env env, napi_value val);
+		extern SLIB_DLL SDictionary toDict(napi_env env, napi_value val);
+		extern SLIB_DLL sobj toObj(napi_env env, napi_value val);
+		template<class Cls>
+		extern Cls* toClass(napi_env env, napi_callback_info info, size_t* argc, napi_value* args) {
+			napi_status st;
+			napi_value instance;
+			Cls* c;
+			st = napi_get_cb_info(env, info, argc, args, &instance, nullptr);
+			if (st != napi_ok) napi_throw_error(env, NULL, "");
+			st = napi_unwrap(env, instance, reinterpret_cast<void**>(&c));
+			if (st != napi_ok) napi_throw_error(env, NULL, "");
+			return c;
+		}
+	}
 	namespace sapp {
-		#define DECLARE_NAPI_METHOD(name, func) { name, 0, func, 0, 0, 0, napi_default, 0 }
-		class SNodeUtil {
-		public:
-			typedef enum {
-				JS_NULL = 0,
-				JS_NUMBER = 1,
-				JS_BOOL = 2,
-				JS_STRING = 3,
-				JS_ARRAY = 4,
-				JS_DICT = 5,
-			} JS_OBJ_TYPE;
-
-			static bool nodeInstalled();
-			static bool ngypInstalled();
-			//static void installNode();
-			static void installNGyp();
-			
-			static JS_OBJ_TYPE jsType(napi_env env, napi_value val);
-			static size_t jsStrlen(napi_env env, napi_value val);
-			static napi_value jsnull(napi_env env);
-			static napi_value jsbool(napi_env env, bool b);
-			static napi_value jsint(napi_env env, int i);
-			static napi_value jsuint(napi_env env, unsigned int ui);
-			static napi_value jslong(napi_env env, sint i);
-			static napi_value jsreal(napi_env env, double d);
-			static napi_value jsnum(napi_env env, const SNumber& n);
-			static napi_value jsstr(napi_env env, const char* s);
-			static napi_value jsarray(napi_env env, const SArray& array);
-			static napi_value jsdict(napi_env env, const SDictionary& dict);
-			static napi_value jsobj(napi_env env, sobj obj);
-			static bool toBool(napi_env env, napi_value val);
-			static int toInt(napi_env env, napi_value val);
-			static unsigned int toUint(napi_env env, napi_value val);
-			static sinteger toLong(napi_env env, napi_value val);
-			static sreal toReal(napi_env env, napi_value val);
-			static SNumber toNum(napi_env env, napi_value val);
-			static String toStr(napi_env env, napi_value val);
-			static SArray toArray(napi_env env, napi_value val);
-			static intarray toIArray(napi_env env, napi_value val);
-			static stringarray toStrArray(napi_env env, napi_value val);
-			static SDictionary toDict(napi_env env, napi_value val);
-			static sobj toObj(napi_env env, napi_value val);
-			template<class Cls>
-			static Cls* toClass(napi_env env, napi_callback_info info, size_t* argc, napi_value* args) {
-				napi_status st;
-				napi_value instance;
-				Cls* c;
-				st = napi_get_cb_info(env, info, argc, args, &instance, nullptr);
-				if (st != napi_ok) napi_throw_error(env, NULL, "");
-				st = napi_unwrap(env, instance, reinterpret_cast<void**>(&c));
-				if (st != napi_ok) napi_throw_error(env, NULL, "");
-				return c;
-			}
-		};
 		template<class Wrapper>
 		class SNodeApp {
 		private:
@@ -90,7 +84,7 @@ namespace slib {
 			napi_status status;
 			napi_value result;
 			Array<napi_property_descriptor> desc = Wrapper::descriptor();
-			status = napi_define_class(env, Wrapper::className(), NAPI_AUTO_LENGTH, New, nullptr, desc.size(), desc.ptr(), &result);
+			status = napi_define_class(env, Wrapper::className(), NAPI_AUTO_LENGTH, New, nullptr, desc.size(), desc.data(), &result);
 			if (status != napi_ok) napi_throw_error(env, NULL, "");
 			status = napi_create_reference(env, result, 1, &_constructor);
 			if (status != napi_ok) napi_throw_error(env, NULL, "");

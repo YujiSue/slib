@@ -1,27 +1,18 @@
 #ifndef SLIB_SNUMBER_H
 #define SLIB_SNUMBER_H
-
-#include "smath/frac.h"
-#include "smath/comp.h"
-#include "smath/geom.h"
 #include "sobj/sobject.h"
-
+#include "smath/fraction.h"
+#include "smath/complex.h"
+#define N(X) slib::SNumber(X)
 namespace slib {
-    class SLIB_DLL SString;
-    using namespace smath;
-    
+    /**
+    * @class SNumber
+    * \~english Numeric value class
+    */
     class SLIB_DLL SNumber : public SObject {
-    public:
-        static const subyte INTEGER = 1;
-        static const subyte UINTEGER = 2;
-        static const subyte REAL = 3;
-        static const subyte BOOL = 4;
-        static const subyte FRAC = 5;
-        static const subyte COMPLEX = 6;
-        
     private:
-		subyte _type;
-        union _num {
+        subyte _type;
+        union numvalue {
             sinteger _i;
             suinteger _ui;
             double _r;
@@ -29,13 +20,13 @@ namespace slib {
             sint _f[2];
             float _c[2];
         };
-        _num _value;
+        numvalue _value;
 
     public:
 		static String toBinary(subyte b, bool le = true);
 		static String toOct(subyte b);
 		static String toHex(subyte b);
-        static SNumber toNumber(const char *s);
+        //static SNumber toNumber(const char *s);
         
     public:
         SNumber();
@@ -48,7 +39,7 @@ namespace slib {
         SNumber(int i);
         SNumber(unsigned int ui);
         SNumber(size_t ui);
-#ifdef WIN64_OS
+#ifdef WIN_OS
         SNumber(long i);
 #ifndef MAC_OS
         SNumber(unsigned long ui);
@@ -66,163 +57,54 @@ namespace slib {
         SNumber(sint n, sint d);
         SNumber(const sfrac &frac);
         SNumber(float r, float i);
-        SNumber(const scomp &comp);
-        SNumber(const sobj &obj);
+        SNumber(const Complex<float> &comp);
+        SNumber(const char *s);
         SNumber(const SNumber &num);
         ~SNumber();
 
-		SNumber& operator=(const SNumber& num);
+        SNumber& operator=(const SNumber& num);
 		SNumber& operator+=(const SNumber& num);
-		SNumber& operator-=(const SNumber& num);
-		SNumber& operator*=(const SNumber& num);
-		SNumber& operator/=(const SNumber& num);
-		SNumber& operator%=(const SNumber& num);
-        
-        SNumber &operator++();
+        SNumber& operator-=(const SNumber& num);
+
+        SNumber& operator++();
         SNumber operator++(int) const;
-        SNumber &operator--();
+        SNumber& operator--();
         SNumber operator--(int) const;
         SNumber operator-() const;
         SNumber absolute() const;
-		SNumber operator+(const sbyte& num) const;
-		SNumber operator+(const subyte& num) const;
-		SNumber operator+(const sshort& num) const;
-		SNumber operator+(const sushort& num) const;
-		SNumber operator+(const int& num) const;
-		SNumber operator+(const unsigned int& num) const;
-		SNumber operator+(const size_t& num) const;
-#ifdef WIN64_OS
-		SNumber operator+(const long& num) const;
-#ifndef MAC_OS
-		SNumber operator+(const unsigned long& num) const;
-#endif
-#endif
-		SNumber operator+(const long long& num) const;
-#ifdef MAC_OS
-		SNumber operator+(const unsigned long long& num) const;
-#endif
-#ifdef LINUX_OS
-		SNumber operator+(const sinteger& num) const;
-#endif
-		SNumber operator+(const float& num) const;
-		SNumber operator+(const double& num) const;
-		SNumber operator+(const sfrac& num) const;
-		SNumber operator+(const scomp& num) const;
-        SNumber operator+(const SNumber &num) const;
-        String operator+(const char *s);
-		SNumber operator-(const sbyte& num) const;
-		SNumber operator-(const subyte& num) const;
-		SNumber operator-(const sshort& num) const;
-		SNumber operator-(const sushort& num) const;
-		SNumber operator-(const int& num) const;
-		SNumber operator-(const unsigned int& num) const;
-		SNumber operator-(const size_t& num) const;
-#ifdef WIN64_OS
-		SNumber operator-(const long& num) const;
-#ifndef MAC_OS
-		SNumber operator-(const unsigned long& num) const;
-#endif
-#endif
-		SNumber operator-(const long long& num) const;
-#ifdef MAC_OS
-		SNumber operator-(const unsigned long long& num) const;
-#endif
-#ifdef LINUX_OS
-		SNumber operator-(const sinteger& num) const;
-#endif
-		SNumber operator-(const float& num) const;
-		SNumber operator-(const double& num) const;
-		SNumber operator-(const sfrac& num) const;
-		SNumber operator-(const scomp& num) const;
+
+        SNumber operator+(const SNumber& num) const;
 		SNumber operator-(const SNumber& num) const;
-		SNumber operator*(const sbyte& num) const;
-		SNumber operator*(const subyte& num) const;
-		SNumber operator*(const sshort& num) const;
-		SNumber operator*(const sushort& num) const;
-		SNumber operator*(const int& num) const;
-		SNumber operator*(const unsigned int& num) const;
-		SNumber operator*(const size_t& num) const;
-#ifdef WIN64_OS
-		SNumber operator*(const long& num) const;
-#ifndef MAC_OS
-		SNumber operator*(const unsigned long& num) const;
-#endif
-#endif
-		SNumber operator*(const long long& num) const;
-#ifdef MAC_OS
-		SNumber operator*(const unsigned long long& num) const;
-#endif
-#ifdef LINUX_OS
-		SNumber operator*(const sinteger& num) const;
-#endif
-		SNumber operator*(const float& num) const;
-		SNumber operator*(const double& num) const;
-		SNumber operator*(const sfrac& num) const;
-		SNumber operator*(const scomp& num) const;
-		SNumber operator*(const SNumber& num) const;
-		SNumber operator/(const sbyte& num) const;
-		SNumber operator/(const subyte& num) const;
-		SNumber operator/(const sshort& num) const;
-		SNumber operator/(const sushort& num) const;
-		SNumber operator/(const int& num) const;
-		SNumber operator/(const unsigned int& num) const;
-		SNumber operator/(const size_t& num) const;
-#ifdef WIN64_OS
-		SNumber operator/(const long& num) const;
-#ifndef MAC_OS
-        SNumber operator/(const unsigned long& num) const;
-#endif
-#endif
-		SNumber operator/(const long long& num) const;
-#ifdef MAC_OS
-		SNumber operator/(const unsigned long long& num) const;
-#endif
-#ifdef LINUX_OS
-		SNumber operator/(const sinteger& num) const;
-#endif
-		SNumber operator/(const float& num) const;
-		SNumber operator/(const double& num) const;
-		SNumber operator/(const sfrac& num) const;
-		SNumber operator/(const scomp& num) const;
-		SNumber operator/(const SNumber& num) const;
-		SNumber reciprocal() const;
-		sinteger quot(const SNumber& num) const;
-		SNumber operator%(const sbyte& num) const;
-		SNumber operator%(const subyte& num) const;
-		SNumber operator%(const sshort& num) const;
-		SNumber operator%(const sushort& num) const;
-		SNumber operator%(const int& num) const;
-		SNumber operator%(const unsigned int& num) const;
-		SNumber operator%(const size_t& num) const;
-#ifdef WIN64_OS
-		SNumber operator%(const long& num) const;
-#ifndef MAC_OS
-		SNumber operator%(const unsigned long& num) const;
-#endif
-#endif
-		SNumber operator%(const long long& num) const;
-#ifdef MAC_OS
-		SNumber operator%(const unsigned long long& num) const;
-#endif
-#ifdef LINUX_OS
-		SNumber operator%(const sinteger& num) const;
-#endif
-		SNumber operator%(const float& num) const;
-		SNumber operator%(const double& num) const;
-		SNumber operator%(const sfrac& num) const;
-		SNumber operator%(const scomp& num) const;
-		SNumber operator%(const SNumber& num) const;
-        subyte type() const;
+		SNumber& operator*=(const SNumber& num);
+        SNumber operator*(const SNumber& num) const;
+        SNumber& operator/=(const SNumber& num);
+        SNumber operator/(const SNumber& num) const;
+        SNumber reciprocal() const;
+        SNumber& operator%=(const SNumber& num);
+        SNumber operator%(const SNumber& num) const;
+        sinteger quot(const SNumber& num) const;
+
+		subyte type() const;
         void *ptr() const;
         void setType(subyte type);
-		bool isNaN() const;
+
+        bool isNaN() const;
 		bool isInf() const;
 		bool isNInf() const;
-        String precised(size_t s, smath::ROUND round = DEFAULT) const;
-        String getClass() const;
-        String toString() const;
+        
+        
+        //String precised(size_t s, smath::ROUND round = DEFAULT) const;
+
+
+
+		
+		String getClass() const;
+		String toString(const char* format = nullptr) const;
         SObject *clone() const;
-        bool boolean() const;
+        
+		
+		
+		bool boolean() const;
         sbyte byteValue() const;
         subyte ubyteValue() const;
         sshort shortValue() const;
@@ -240,7 +122,7 @@ namespace slib {
         suinteger uinteger() const;
         sreal real() const;
         sfrac fraction() const;
-        scomp complex() const;
+        Complex<float> complex() const;
         operator bool() const;
         operator sbyte() const;
         operator subyte() const;
@@ -265,76 +147,80 @@ namespace slib {
         operator float() const;
         operator double() const;
         operator sfrac() const;
-        operator scomp() const;
-        bool operator<(const sobj &obj) const;
+        operator Complex<float>() const;
+        operator const char* () const;
+        //bool operator<(const sobj &obj) const;
         bool operator<(const SNumber &sn) const;
         template<typename T>
         bool operator<(const T &val) const { return *this < SNumber(val); }
-        bool operator>(const sobj &obj) const;
-        bool operator>(const SNumber &sn) const;
+        //bool operator>(const sobj &obj) const;
+        bool operator>(const SNumber& sn) const;
         template<typename T>
         bool operator>(const T &val) const { return *this > SNumber(val); }
-        bool operator<=(const sobj &obj) const;
+        //bool operator<=(const sobj &obj) const;
         bool operator<=(const SNumber &sn) const;
         template<typename T>
         bool operator<=(const T &val) const { return *this <= SNumber(val); }
-        bool operator>=(const sobj &obj) const;
+        //bool operator>=(const sobj &obj) const;
         bool operator>=(const SNumber &sn) const;
         template<typename T>
         bool operator>=(const T &val) const { return *this >= SNumber(val); }
-        bool operator==(const sobj &obj) const;
+        //bool operator==(const sobj &obj) const;
         bool operator==(const SNumber &sn) const;
         template<typename T>
         bool operator==(const T &val) const { return *this == SNumber(val); }
-        bool operator!=(const sobj &obj) const;
+        //bool operator!=(const sobj &obj) const;
         bool operator!=(const SNumber &sn) const;
         template<typename T>
         bool operator!=(const T &val) const { return *this != SNumber(val); }
     };
-	extern inline SNumber operator+(sbyte& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(subyte& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(sshort& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(sushort& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(int& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(unsigned int& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(size_t& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+    /**
+    * @cond
+    */
+	extern inline SNumber operator+(sbyte num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(subyte num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(sshort num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(sushort num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(int num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(unsigned int num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(size_t num1, const SNumber& num2) { return SNumber(num1) += num2; };
 #ifdef WIN64_OS
-	extern inline SNumber operator+(long& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(long num1, const SNumber& num2) { return SNumber(num1) += num2; };
 #ifndef MAC_OS
-	extern inline SNumber operator+(unsigned long& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(unsigned long num1, const SNumber& num2) { return SNumber(num1) += num2; };
 #endif
 #endif
-	extern inline SNumber operator+(long long& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(long long num1, const SNumber& num2) { return SNumber(num1) += num2; };
 #ifdef MAC_OS
-	extern inline SNumber operator+(unsigned long long& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(unsigned long long num1, const SNumber& num2) { return SNumber(num1) += num2; };
 #endif
 #ifdef LINUX_OS
-	extern inline SNumber operator+(sinteger& num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(sinteger num1, const SNumber& num2) { return SNumber(num1) += num2; };
 #endif
-	extern inline SNumber operator+(float& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator+(double& num1, const SNumber& num2) { return SNumber(num1) += num2; };
-	extern inline SNumber operator-(sbyte& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(subyte& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(sshort& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(sushort& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(int& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(unsigned int& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(size_t& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator+(float num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator+(double num1, const SNumber& num2) { return SNumber(num1) += num2; };
+	extern inline SNumber operator-(sbyte num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(subyte num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(sshort num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(sushort num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(int num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(unsigned int num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(size_t num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #ifdef WIN64_OS
-	extern inline SNumber operator-(long& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(long num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #ifndef MAC_OS
-	extern inline SNumber operator-(unsigned long& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(unsigned long num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #endif
 #endif
-	extern inline SNumber operator-(long long& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(long long num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #ifdef MAC_OS
-	extern inline SNumber operator-(unsigned long long& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(unsigned long long num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #endif
 #ifdef LINUX_OS
-	extern inline SNumber operator-(sinteger& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(sinteger num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 #endif
-	extern inline SNumber operator-(float& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
-	extern inline SNumber operator-(double& num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(float num1, const SNumber& num2) { return SNumber(num1) -= num2; };
+	extern inline SNumber operator-(double num1, const SNumber& num2) { return SNumber(num1) -= num2; };
 	extern inline SNumber operator*(sbyte& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(subyte& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
 	extern inline SNumber operator*(sshort& num1, const SNumber& num2) { return SNumber(num1) *= num2; };
@@ -401,7 +287,6 @@ namespace slib {
 #endif
 	extern inline SNumber operator%(float& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
 	extern inline SNumber operator%(double& num1, const SNumber& num2) { return SNumber(num1) %= num2; };
-	extern SLIB_DLL String operator+(const char *s, const SNumber &num);
     template<typename T>
     extern bool operator<(const T &val, const SNumber &num) { return SNumber(val) < num; }
     template<typename T>
@@ -414,5 +299,16 @@ namespace slib {
     extern bool operator==(const T &val, const SNumber &num) { return SNumber(val) == num; }
     template<typename T>
     extern bool operator!=(const T &val, const SNumber &num) { return SNumber(val) != num; }
+
+    /**
+    * @endcond
+    */
 }
+/**
+* @cond
+*/
+extern SLIB_DLL std::ostream& operator<<(std::ostream& os, const slib::SNumber& num);
+/**
+* @endcond
+*/
 #endif

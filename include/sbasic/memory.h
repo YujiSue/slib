@@ -1,104 +1,45 @@
 #ifndef SLIB_MEMORY_H
 #define SLIB_MEMORY_H
-
 #include "sconfig.h"
-
 namespace slib {
-    template<typename T>
-    struct Memory {
-        static T *alloc(size_t size);
-        static void dealloc(T *data);
-        static void init(T * data, size_t size);
-        static void release(T *data, size_t size);
-		static void assign(T* data, const T &val);
-        static void copy(T *dest, const T *src, size_t size);
-        static void shift(T *dest, T *src, size_t size);
-    };
-    //Classic
-    template<typename T>
-    struct CMemory : public Memory<T> {
-        static void init(T *data, size_t size);
-    };
-    //Releaseless
-    template<typename T>
-    struct RMemory : public Memory<T> {
-        static void init(T *data, size_t size);
-        static void copy(T *dest, const T *src, size_t size);
-        static void shift(T *dest, T *src, size_t size);
-    };
-    //Uncopyable
+	/**
+	* @class Memory
+	*\~english @brief Set of static functions for memory handling.
+	*\~japanese @brief  メモリ操作に関わる静的関数群をまとめたクラス
+	*/
 	template<typename T>
-	struct UMemory : public Memory<T> {
-		static void init(T* data, size_t size);
-		static void release(T* data, size_t size);
-		static void assign(T* data, const T& val);
-		static void copy(T* dest, const T* src, size_t size);
-		static void shift(T* dest, T* src, size_t size);
+	class Memory {
+	public:
+		static inline T* alloc(const size_t sz) { return (T*)malloc(sz * sizeof(T)); }
+		static inline T* reallocate(T *ptr, const size_t sz) { return (T*)realloc((void*)ptr, sz * sizeof(T)); }
+		static inline void dealloc(T* ptr) { free(ptr); }
+		static inline void init(T* ptr) { new(ptr) T(); }
+		static inline void init(T* ptr, const T& val) { new(ptr) T(val); }
+		static inline void init(T* ptr, T&& val) noexcept { new(ptr) T(std::forward<T&&>(val)); }
+		template<class... Args>
+		static inline void init(T* ptr, Args... args) { new(ptr) T(args...); }
+		static inline void assign(T* ptr, const T& val) { *ptr = val; }
+		static inline void assign(T* ptr, T&& val) noexcept { *ptr = std::forward<T&&>(val); }
+		static inline void destroy(T* ptr) { ptr->~T(); }
+		static inline void clear(T* ptr) { memset(ptr, 0, sizeof(T)); }
+		static inline void copy(T* dest, const T* src, const size_t sz) {
+			for(size_t i = 0; i < sz; ++i) { *dest = *src; ++dest; ++src; }
+		}
+		static inline void move(T** dest, T** src) { *dest = *src; *src = nullptr; }
+		static inline void shift(T* from, T* to, const size_t sz) {
+			if (from < to) {
+				auto src = from + sz - 1, dest = to + sz - 1;
+				for(size_t i = 0; i < sz; ++i) { *dest = *src; --dest; --src; }
+			}
+			else if (to < from) {
+				for(size_t i = 0; i < sz; ++i) { *to = *from; ++to; ++from; }
+			}
+		}
+		static inline void swap(T* from, T* to) {
+			auto tmp = *from;
+			*from = *to;
+			*to = tmp;
+		}
 	};
-	//General
-    template<typename T>
-    struct SMemory : public Memory<T> {
-        static void init(T *data, size_t size);
-        static void release(T *data, size_t size);
-        static void copy(T *dest, const T *src, size_t size);
-        static void shift(T *dest, T *src, size_t size);
-    };
-
-    /*============================================================*/
-    template<typename T>
-	T* Memory<T>::alloc(size_t size) { return (T *)malloc(size*sizeof(T)); }
-    template<typename T>
-    void Memory<T>::dealloc(T *data) { if (data) free(data); }
-    template<typename T>
-    void Memory<T>::init(T * data, size_t size) { memset(data, 0, size * sizeof(T)); }
-    template<typename T>
-    void Memory<T>::release(T *data, size_t size) {}
-	template<typename T>
-	void Memory<T>::assign(T* data, const T& val) { *data = val; }
-    template<typename T>
-    void Memory<T>::copy(T *dest, const T *src, size_t size) { memcpy(dest, src, size*sizeof(T)); }
-    template<typename T>
-    void Memory<T>::shift(T *dest, T *src, size_t size) { memmove(dest, src, size*sizeof(T)); }
-    template<typename T>
-    void CMemory<T>::init(T *data, size_t size) { memset(data, 0, size * sizeof(T)); }
-    template<typename T>
-    void RMemory<T>::init(T *data, size_t size) { sforin(i, 0, size) { new(data) T(); ++data; } }
-    template<typename T>
-    void RMemory<T>::copy(T *dest, const T *src, size_t size) {
-        sforin(i, 0, size) { *dest = *src; ++dest; ++src; }
-    }
-    template<typename T>
-    void RMemory<T>::shift(T *dest, T *src, size_t size) {
-		if (dest < src) sforin(i, 0, size) { *dest = *src; ++dest; ++src; }
-		else { dest += size - 1; src += size - 1; sforin(i, 0, size) { *dest = *src; --dest; --src; } }
-    }
-	template<typename T>
-	void UMemory<T>::init(T* data, size_t size) { sforin(i, 0, size) { new(data) T(); ++data; } }
-	template<typename T>
-	void UMemory<T>::release(T* data, size_t size) { sforin(i, 0, size) { data->~T(); ++data; } }
-	template<typename T>
-	void UMemory<T>::assign(T* data, const T& val) {}
-	template<typename T>
-	void UMemory<T>::copy(T* dest, const T* src, size_t size) {}
-	template<typename T>
-	void UMemory<T>::shift(T* dest, T* src, size_t size) {}
-    template<typename T>
-    void SMemory<T>::init(T *data, size_t size) { sforin(i, 0, size) { new(data) T(); ++data; } }
-    template<typename T>
-    void SMemory<T>::release(T *data, size_t size) { sforin(i, 0, size) { data->~T(); ++data; } }
-    template<typename T>
-    void SMemory<T>::copy(T *dest, const T *src, size_t size) {
-        sforin(i, 0, size) { new(dest) T(*src); ++dest; ++src; }
-    }
-    template<typename T>
-    void SMemory<T>::shift(T *dest, T *src, size_t size) {
-		if (dest < src) {
-			sforin(i, 0, size) { new(dest) T(*src); src->~T(); new(src) T(); ++dest; ++src; }
-		}
-		else {
-			dest += size - 1; src += size - 1; 
-			sforin(i, 0, size) { new(dest) T(*src); src->~T(); new(src) T(); --dest; --src; }
-		}
-    }
 }
 #endif

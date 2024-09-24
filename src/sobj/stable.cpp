@@ -2,33 +2,35 @@
 #include "sio/sfile.h"
 #include "sutil/sjson.h"
 
-using namespace slib;
-using namespace slib::sio;
-
-STable::STable() : SObject() { _lastcol = 0; }
-STable::STable(int row, int col) : STable(){ resize(row, col); }
-STable::STable(const Array<SColumn> &cols, const SArray &rows) : STable() {
-	addColumns(cols); addRows(rows);
+slib::STable::STable() : slib::SObject() {}// { / _lastcol = 0; }
+slib::STable::STable(const size_t row, const size_t col) : slib::STable(){ resize(row, col); }
+slib::STable::STable(const Array<SColumn> &cols, const SArray &rows) : STable() {
+	resize(rows.size(), cols.size());
+	sfor2(_columns, cols) $_1 = $_2;
+	sfor2(_rows, rows) $_1 = $_2;
 }
-STable::STable(const sobj &obj) : STable() {
+/*
+slib::STable::STable(const sobj &obj) : STable() {
     if (obj.isTable()) *this = obj.table();
     if (obj.isDict()) {
         if (obj.hasKey("columns")) { sforeach(obj["columns"]) addColumn(SColumn(E_["type"], E_["name"])); }
         if (obj.hasKey("rows")) _rows = obj["rows"];
     }
 }
-STable::STable(const STable &table) : STable() {
-	_columns = table.columns();	
-	_rows = table.rows();
+*/
+slib::STable::STable(const STable &table) : STable() {
+	_columns = table._columns;
+	_rows = table._rows;
 }
-STable::~STable() {}
-STable &STable::operator=(const STable &table) {
+slib::STable::~STable() {}
+slib::STable & slib::STable::operator=(const slib::STable &table) {
     clearAll();
     _columns = table._columns;
 	_rows = table._rows;
     return *this;
 }
-void STable::initWithArray(SArray& array, bool header) {
+/*
+void slib::STable::initWithArray(SArray& array, bool header) {
 	if (array.empty()) return;
 	auto it = array.begin();
 	if (header) {
@@ -123,28 +125,41 @@ void STable::saveTxt(const char *path, const char *sep) {
 	if (_rows.empty()) return;
     sforeach(_rows) {
 
-		/*
-        for (int c = 0; c < columnCount(); ++c) {
+	
+    for (int c = 0; c < columnCount(); ++c) {
             if(!c) file<<SString::dquot(value(r, c));
             else file<<sep<<SString::dquot(value(r, c));
         }
         if(r < rowCount()-1) file<<NEW_LINE;
-		*/
-    }
+
+		}
     file.flush();
 }
+*/
+size_t slib::STable::ncol() const { return _columns.size(); }
+size_t slib::STable::nrow() const { return _rows.size(); }
 
-size_t STable::columnCount() const { return _columns.size(); }
+/*
 bool STable::hasColumn(const char* name) const { return columnIndex(name) != NOT_FOUND; }
-size_t STable::columnIndex(const char *name) const {
-    sforeach(_columns) { if(E_.name() == name) return INDEX_(_columns); }
+
+*/
+size_t slib::STable::colIndex(const char *s) const {
+    sfor(_columns) { if($_.name == s) return $INDEX(_columns); }
     return NOT_FOUND;
 }
-SColumn& STable::operator[](const char* name) { return column(name); }
-const SColumn& STable::operator[](const char* name) const { return column(name); }
-SColumn& STable::columnAt(sinteger idx) { return _columns[idx].column(); }
-const SColumn &STable::columnAt(sinteger idx) const { return _columns[idx].column(); }
-SColumn &STable::column(const char* name) {
+slib::SRow slib::STable::operator[](const int idx) { return SRow(_rows.data(idx), this); }
+slib::SColumn& slib::STable::operator[](const char* name) { return _columns[(int)colIndex(name)]; }
+slib::SRow slib::STable::row(const int idx) { return SRow(_rows.data(idx), this); }
+const slib::SRow slib::STable::row(const int idx) const { return SRow(const_cast<SObjPtr*>(_rows.data(idx)), const_cast<STable *>(this)); }
+slib::SColumn& slib::STable::column(const int idx) { return _columns[idx]; }
+const slib::SColumn& slib::STable::column(const int idx) const { return _columns[idx]; }
+
+
+/*
+const slib::SColumn& slib::STable::operator[](const char* name) const { return _columns[colIndex(name)]; }
+slib::SColumn& slib::STable::columnAt(sinteger idx) { return _columns[idx].column(); }
+const slib::SColumn & slib::STable::columnAt(sinteger idx) const { return _columns[idx].column(); }
+slib::SColumn & slib::STable::column(const char* name) {
 	sforeach(_columns) { if (E_.name() == name) return E_.column(); }
 	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR, name, "columns");
 }
@@ -153,24 +168,73 @@ const SColumn &STable::column(const char *name) const {
 	throw SException(ERR_INFO, SLIB_NOT_FOUND_ERROR, name, "columns");
 }
 SArray& STable::columns() { return _columns; }
-const SArray& STable::columns() const { return _columns; }
-void STable::addColumn(const char* s) {
-	if (s) _columns.add(SColumn(OBJECT_COLUMN, s));
-	else { _columns.add(SColumn(OBJECT_COLUMN, String("column") + (_lastcol + 1))); ++_lastcol; }
+*/
+const slib::Array<slib::SColumn>& slib::STable::columns() const { return _columns; }
+const slib::SArray& slib::STable::rows() const { return _rows; }
+
+slib::RowIterator slib::STable::begin() { return slib::RowIterator(_rows.begin(), this); }
+//slib::RowCIterator slib::STable::begin() const;
+slib::RowIterator slib::STable::end() { return slib::RowIterator(_rows.end(), this); }
+//slib::RowCIterator slib::STable::end() const;
+
+void slib::STable::resizeColumn(const size_t sz) {
+	auto cn = ncol();
+	if (cn < sz) {
+		sforin(i, cn, sz) addColumn(SColumn());
+	}
+	else if (sz < cn) {
+		_columns.resize(sz);
+		sfor(_rows) { $_.resize(sz); }
+	}
 }
-void STable::addColumn(const SColumn& col) {
+slib::STable& slib::STable::addColumn(const SColumn& col) {
 	_columns.add(col);
-	_columns.last().column().setTable(this);
+	_columns[-1].setTable(this);
 	auto size = _columns.size();
-	sforeach(_rows) E_.resize(size);
+	sfor(_rows) $_.resize(size);
+	return *this;
 }
-void STable::addColumns(const Array<SColumn>& cols) {
+slib::STable& slib::STable::appendColumn(const Array<SColumn>& cols) {
+	auto cs = (int)_columns.size();
+	_columns.append(cols);
+	sforin(i, 0, (int)cols.size()) _columns[cs + i].setTable(this);
+	auto size = _columns.size();
+	sfor(_rows) $_.resize(size);
+	return *this;
+}
+
+void slib::STable::resizeRow(const size_t sz) {
+	auto rn = nrow();
+	if (rn < sz) {
+		sforin(i, rn, sz) addRow();
+	}
+	else if (sz < rn) { _rows.resize(sz); }
+}
+slib::STable& slib::STable::addRow(SObjPtr obj) {
+	_rows.add(SArray(ncol()));
+	if (obj) {
+		auto& row = _rows[-1].array();
+		if (obj.isArray()) {
+			sfor2(row, obj.array()) { $_1 = $_2; }
+		}
+		else if (obj.isDict()) {
+			size_t idx;
+			sfor(obj.dict()) {
+				if ((idx = colIndex($_.key())) != NOT_FOUND) row[(int)idx] = $_.value();
+			}
+		}
+	}
+	return *this;
+}
+
+/*
+void slib::STable::addColumns(const Array<SColumn>& cols) {
 	if (cols.empty()) return;
 	sforeach(cols) { _columns.add(E_); _columns.last().column().setTable(this); }
 	auto size = _columns.size();
 	sforeach(_rows) E_.resize(size);
 }
-void STable::insertColumn(sinteger idx, const SColumn& col) {
+void slib::STable::insertColumn(sinteger idx, const SColumn& col) {
 	_columns.insert(idx, col);
 	_columns[idx].column().setTable(this);
 	sforeach(_rows) E_.insert(idx, snull);
@@ -202,13 +266,11 @@ void STable::resizeColumn(size_t s) {
 		}
 	}
 	sforeach(_rows) E_.resize(s, snull);
-}
-size_t STable::rowCount() const { return _rows.size(); }
-SArray& STable::operator[](int idx) { return _rows[idx].array(); }
-const SArray& STable::operator[](int idx) const { return _rows[idx].array(); }
+}*/
+//const slib::SRow& slib::STable::operator[](const int idx) const { return SRow(_rows.ptr(idx), this); }
+/*
 SArray& STable::rowAt(int idx) { return _rows[idx].array(); }
 const SArray& STable::rowAt(int idx) const { return _rows[idx].array(); }
-SArray& STable::rows() { return _rows; }
 const SArray& STable::rows() const { return _rows; }
 void STable::addRow() { _rows.add(SArray(columnCount())); }
 void STable::addRow(const SArray& array) { 
@@ -296,7 +358,23 @@ void STable::setValues(sint r, sint c, const SArray& values) {
 		++rit;
 	}
 }
-void STable::resize(size_t r, size_t c) { resizeColumn(c); resizeRow(r); }
+*/
+void slib::STable::resize(const size_t r, const size_t c) { 
+	_columns.resize(c);
+	_rows.resize(r);
+	sfor(_rows) { $_ = SArray(c); }
+}
+slib::SObjPtr slib::STable::toObj() const {
+	slib::SObjPtr obj = SDictionary();
+	sfor(_columns) { obj["cols"].add($_.toObj()); }
+	obj["rows"] = _rows;
+	return obj;
+}
+
+void slib::STable::clear() {
+	_rows.clear();
+}
+/*
 Range<size_t> STable::find(const sobj& obj, smath::DIRECTION dir, srange offset) {
 	if (dir == smath::HORIZONTAL) {
 		auto rbeg = _rows.begin() + offset.begin, rit = rbeg;
@@ -354,21 +432,35 @@ void STable::sortBy(const char* name, ORDER order) {
 		else return so2[idx] < so1[idx];
 	});
 }
-void STable::clearAll() {
+*/
+void slib::STable::clearAll() {
     _columns.clear();
 	_rows.clear();
-	_lastcol = 0;
 }
-String STable::getClass() const { return "table"; }
-String STable::toString() const {
-	String str;
-	if (columnCount()) {
-		sforeach(_columns) str << E_.name() << TAB;
-		str << NEW_LINE;
-    }
-    if (rowCount()) {
-		sforeach(_rows) str << slib::toString(E_.array(), TAB) << NEW_LINE;
-    }
-    return str;
+slib::String slib::STable::getClass() const { return "table"; }
+slib::String slib::STable::toString(const char *format) const {
+	String f(format);
+	if (f == "json") return sjson::toString(toObj());
+	else {
+		String str, sep;
+		if (f == "csv") sep = ",";
+		else sep = TAB;
+		if (ncol()) {
+			sforeach(col, _columns) { str << sstr::dquote(col.name) << sep; }
+			str.resize(str.size() - 1);
+			str << NL;
+		}
+		if (nrow()) {
+			sfor(_rows) {
+				sforeach(cell, $_) { str << sstr::dquote(cell.toString()) << sep; }
+				str.resize(str.size() - 1);
+				str << NL;
+			}
+		}
+		return str;
+	}
 }
-SObject * STable::clone() const { return new STable(*this); }
+slib::SObject * slib::STable::clone() const { return new STable(*this); }
+std::ostream& slib::operator<<(std::ostream& os, const STable& tbl) {
+	return os << tbl.toString("csv");
+}

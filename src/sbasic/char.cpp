@@ -1,160 +1,207 @@
 #include "sbasic/char.h"
-#include "sbasic/string.h"
-#include "sobj/sstring.h"
-
-using namespace slib;
-
-sbyte Char::u8size(const char *c) {
-    const subyte i = *reinterpret_cast<const subyte *>(c);
-    if (i == 0) return 0;
-    else if (i < 0x80) return 1;
-    else if (i < 0xC0) return -1;
-    else if (i < 0xE0) return 2;
-    else if (i < 0xF0) return 3;
-    return -1;
+#include "sbasic/memory.h"
+#include "sbasic/exception.h"
+bool slib::sutf8::check(const char* c) { 
+    auto c1 = *reinterpret_cast<const subyte*>(c);
+    // 1st byte check
+    if (c1 < 0x80) return true;
+    else if ((0x7F < c1 && c1 < 0xC2) || 0xF4 < c1) return false;
+    // 2 bytes char check
+    auto c2 = *reinterpret_cast<const subyte*>(++c);
+    if (0xC1 < c1 && c1 < 0xE0) return 0x7F < c2 && c2 < 0xC0;
+    // 3 bytes char check
+    auto c3 = *reinterpret_cast<const subyte*>(++c);
+    if (0xDF < c1 && c1 < 0xF0) {
+        if (c1 == 0xE0) {
+            if (c2 < 0xA0 || 0xBF < c2) return false;
+        }
+        else if (c1 == 0xED) {
+            if (c2 < 0x80 || 0x9F < c2) return false;
+        }
+        else if (c2 < 0x80 || 0xBF < c2) return false;
+        return (0x7F < c3 && c3 < 0xC0);
+    }
+    // 4 bytes char check
+    auto c4 = *reinterpret_cast<const subyte*>(++c);
+    if (c1 == 0xF0) {
+        if (c2 < 0x90 || 0xBF < c2) return false;
+    }
+    else if (c1 == 0xF4) {
+        if (c2 < 0x80 || 0x8F < c2) return false;
+    }
+    else if (c2 < 0x80 || 0xBF < c2) return false;
+    return (0x7F < c3 && c3 < 0xC0) && (0x7F < c4 && c4 < 0xC0);
 }
-bool Char::isNarrow(const char* s) { return u8size(s) == 1; }
-bool Char::isWide(const char* s) { return 1 < u8size(s); }
-bool Char::isNumeric(const char* s) { return u8size(s) == 1 ? isNumChar(s[0]) : isWideNum(s); }
-bool Char::isNumChar(char c) { return 0x2F < c && c < 0x3A; }
-bool Char::isWideNum(const char *s) {
-    return u8size(s) == 3 && s[0] == (char)0xEF &&
-    ((s[1] == (char)0xBC &&
-      (((char)0x8F < s[2] && s[2] < (char)0x9A) ||
-       ((char)0xA0 < s[2] && s[2] < (char)0xA7))) ||
-     (s[1] == (char)0xBD && ((char)0x80 < s[2] && s[2] < (char)0x87)));
+slib::sbyte slib::sutf8::size(const char* c) {
+    auto c1 = *reinterpret_cast<const subyte*>(c);
+    if (c1 == 0x00) return 0;
+    else if (c1 < 0x80) return 1;
+    else if ((0x7F < c1 && c1 < 0xC2) || 0xF4 < c1) return -1;
+    auto c2 = *reinterpret_cast<const subyte*>(++c);
+    if (0xC1 < c1 && c1 < 0xE0) return (0x7F < c2 && c2 < 0xC0) ? 2 : -1;
+    auto c3 = *reinterpret_cast<const subyte*>(++c);
+    if (0xDF < c1 && c1 < 0xF0) {
+        if (c1 == 0xE0) {
+            if (c2 < 0xA0 || 0xBF < c2) return -1;
+        }
+        else if (c1 == 0xED) {
+            if (c2 < 0x80 || 0x9F < c2) return -1;
+        }
+        else if (c2 < 0x80 || 0xBF < c2) return -1;
+        return (0x7F < c3 && c3 < 0xC0) ? 3 : -1;
+    }
+    auto c4 = *reinterpret_cast<const subyte*>(++c);
+    if (c1 == 0xF0) {
+        if (c2 < 0x90 || 0xBF < c2) return -1;
+    }
+    else if (c1 == 0xF4) {
+        if (c2 < 0x80 || 0x8F < c2) return -1;
+    }
+    else if (c2 < 0x80 || 0xBF < c2) return -1;
+    return (0x7F < c3 && c3 < 0xC0) && (0x7F < c4 && c4 < 0xC0) ? 4 : -1;
 }
-bool Char::isWSChar(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; }
-sbyte Char::toNum(char c) {
-	if (0x2F < c && c < 0x3A) return (subyte)c - 0x30;
-	else if (0x40 < c && c < 0x47) return (subyte)c - 0x37;
-	else if (0x60 < c && c < 0x67) return (subyte)c - 0x57;
+bool slib::sutf8::isNarrow(const char* s) { return size(s) == 1; }
+bool slib::sutf8::isWide(const char* s) { return 1 < size(s); }
+bool slib::sutf8::isWS(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; }
+bool slib::sutf8::isNumChar(const char c) { return 0x2F < (subyte)c && (subyte)c < 0x3A; }
+bool slib::sutf8::isWideNum(const char* s) { 
+    return size(s) == 3 && s[0] == (char)0xEF &&
+        ((s[1] == (char)0xBC &&
+            ((0x8F < (subyte)s[2] && (subyte)s[2] < 0x9A) ||
+                (0xA0 < (subyte)s[2] && (subyte)s[2] < 0xA7))) ||
+            (s[1] == (char)0xBD && (0x80 < (subyte)s[2] && (subyte)s[2] < 0x87)));
+}
+bool slib::sutf8::isNumeric(const char* s) { return sutf8::size(s) == 1 ? isNumChar(s[0]) : isWideNum(s); }
+char slib::sutf8::toChar(const slib::sbyte n) { return (char)(0x30 + n); }
+slib::sbyte slib::sutf8::toNum(const char c) {
+    if (0x2F < (subyte)c && (subyte)c < 0x3A) return (subyte)c - 0x30;
+    else if (0x40 < (subyte)c && (subyte)c < 0x47) return (subyte)c - 0x37;
+    else if (0x60 < (subyte)c && (subyte)c < 0x67) return (subyte)c - 0x57;
     return 0;
 }
-sbyte Char::toNum(const char *s) {
-    if (s[1] == (char)0xBC) {
-        if ((char)0x8F < s[2] && s[2] < (char)0x9A) return s[2]-(char)0x90;
-        else if ((char)0xA0 < s[2] && s[2] < (char)0xA7) return s[2]-(char)0x97;
+slib::sbyte slib::sutf8::toNum(const char* s) {
+    if (!s) return 0;
+    if (slib::sutf8::isWideNum(s)) {
+        if (s[1] == (char)0xBC) {
+            if (0x8F < (subyte)s[2] && (subyte)s[2] < 0x9A) return (subyte)s[2] - 0x90;
+            else if (0xA0 < (subyte)s[2] && (subyte)s[2] < 0xA7) return (subyte)s[2] - 0x97;
+            else throw RangeException(String("2nd and 3rd bytes of UTF-8 wide number character should be 0xBD81-0xBD86 or 0xBC90-0xBC99 or 0xBCA1-0xBCA6. But ") << (((int)s[1] << 8) | s[2]) << " was found.");
+        }
+        else if (s[1] == (char)0xBD) {
+            if (0x80 < (subyte)s[2] && (subyte)s[2] < 0x87) return (subyte)s[2] - 0x77;
+            else throw RangeException(String("2nd and 3rd bytes of UTF-8 wide number character should be 0xBD81-0xBD86 or 0xBC90-0xBC99 or 0xBCA1-0xBCA6. But ") << (((int)s[1] << 8) | s[2]) << " was found.");
+        }
     }
-    else if (s[1] == (char)0xBD) {
-        if((char)0x80 < s[2] && s[2] < (char)0x87) return s[2]-(char)0x77;
-    }
-    return s[0];
+    return slib::sutf8::toNum(s[0]);
 }
-String Char::wideChar(char c) {
-	String str(3, '\0');
+char slib::sutf8::toUpper(const char c) {
+    if (0x60 < (subyte)c && (subyte)c < 0x7B) return (char)((subyte)c - 0x20);
+    return c;
+}
+char slib::sutf8::toLower(const char c) {
+    if (0x40 < (subyte)c && (subyte)c < 0x5B) return (char)((subyte)c + 0x20);
+    return c;
+}
+slib::String slib::sutf8::toWide(char c) {
+    slib::String ws;
     if (0x20 < (int)c && (int)c < 0x60) {
-        str[0] = (char)0xEF; str[1] = (char)0xBC; str[2] = (char)((int)c + 0x60);
+        ws.resize(3);
+        ws[0] = (char)0xEF; ws[1] = (char)0xBC; ws[2] = (char)((int)c + 0x60);
+    }
+    else if (0x5F < (int)c && (int)c < 0x7F) {
+        ws.resize(3);
+        ws[0] = (char)0xEF; ws[1] = (char)0xBD; ws[2] = (char)((int)c + 0x20);
+    }
+    else {
+        ws.resize(1); ws[0] = c;
+    }
+    return ws;
+}
+char slib::sutf8::toNarrow(const char* s) {
+    auto len = sutf8::size(s);
+    if (len == 1) return s[0];
+    else if (len == 3 && s[0] == (char)0xEF) {
+        if (s[1] == (char)0xBC && 0x80 < (subyte)s[2] && (subyte)s[2] < 0xC0) return (char)((subyte)s[2] - 0x60);
+        if (s[1] == (char)0xBD && 0x7F < (subyte)s[2] && (subyte)s[2] < 0x9F) return (char)((subyte)s[2] - 0x20);
+        else throw RangeException(String("2nd and 3rd bytes of UTF-8 wide number character should be 0xBC81-0xBC8F or 0xBD80-0xBD9E. But ") << (((int)s[1] << 8) | s[2]) << " was found.");
+    }
+    else throw RangeException(String("1st byte of UTF-8 wide character should be 0xEF. But ") << (int)s[0] << " was found.");
+}
+
+inline size_t charIndex(char* c, slib::String* s) { return const_cast<const char*>(c) - s->cstr(); }
+slib::Char::Char() : _ptr(nullptr), _base(nullptr) {}
+slib::Char::Char(const char* c, const String* s) : _ptr(const_cast<char *>(c)), _base(const_cast<slib::String *>(s)) {}
+slib::Char::Char(const Char& c) { _ptr = c._ptr; _base = c._base; }
+slib::Char::~Char() {}
+slib::Char& slib::Char::operator=(const char* s) {
+    if (_ptr && _base) _base->replace(charIndex(_ptr, _base), size(), s);
+    else throw NullException(slib::nullErrorText("char pointer"));
+    return *this;
+}
+slib::Char& slib::Char::operator=(const Char& c) {
+    if (_ptr && _base) _base->replace(charIndex(_ptr, _base), size(), c.toString());
+    else { _ptr = c._ptr; _base = c._base; }
+    return *this;
+}
+slib::Char& slib::Char::operator++() {
+    if (!_ptr) throw NullException(nullErrorText("char pointer"));
+    else if (!_base) throw NullException(nullErrorText("string object"));
+    else { 
+        _ptr += sutf8::size(_ptr); 
+    }
+    return *this;
+}
+slib::Char& slib::Char::operator--() {
+    if (!_ptr) throw NullException(nullErrorText("char pointer"));
+    else if (!_base) throw NullException(nullErrorText("string object"));
+    --_ptr;
+    while (_base->cstr() <= _ptr && !sutf8::check(_ptr)) { --_ptr; }
+    return *this;
+}
+size_t slib::Char::size() const { return _ptr ? sutf8::size(_ptr) : 0; }
+size_t slib::Char::index() const {
+    if (!_ptr) throw NullException(nullErrorText("char pointer"));
+    else if (!_base) throw NullException(nullErrorText("string object"));
+    if (_ptr < _base->cstr() || (_base->cstr() + _base->size()) <= _ptr)
+        throw RangeException(outRangeErrorText("char index", _ptr - _base->cstr(), 0, _base->size() - 1));
+    size_t count = 0, len = _base->length();
+    const char* p = _base->cstr();
+    while (count < len && p != _ptr) {
+        p += sutf8::size(p); ++count;
+    }
+    return count;
+}
+bool slib::Char::isUTF8() const { return _ptr ? sutf8::check(_ptr) : false; }
+const char* slib::Char::cstr() const { return _ptr; }
+slib::String slib::Char::toString() const { 
+    String str(size(), '\0');
+    Memory<char>::copy(&str[0], cstr(), size());
+    return str;
+}
+bool slib::Char::operator<(const char* s) const {
+    if (_ptr) {
+        if (s) return !memcmp(cstr(), s, (size() < strlen(s) ? size() : strlen(s)));
+        else return false;
+    }
+    else return true;
+}
+bool slib::Char::operator<(const slib::Char& c) const {
+    if (_base != c._base) return _base < c._base;
+    return _ptr < c._ptr;
+}
+bool slib::Char::operator==(const char* s) const {
+    if (_ptr && s && size() == strlen(s)) return  !memcmp(cstr(), s, size());
+    else return false;
+}
+bool slib::Char::operator==(const slib::Char& c) const { return _ptr == c._ptr && _base == c._base; }
+slib::String slib::toString(const Char& ch, const char* format) {
+    if (!format) {
+        slib::String str(ch.size(), '\0');
+        Memory<char>::copy(&str[0], ch.cstr(), ch.size());
         return str;
     }
-	else if (0x5F < (int)c && (int)c < 0x7F) {
-		str[0] = (char)0xEF; str[1] = (char)0xBD; str[2] = (char)((int)c + 0x20);
-		return str;
-	}
-    else return String(1, c);
-}
-char Char::narrowChar(const char *s) {
-    size_t len = Char::u8size(s);
-    if (len == 1) return s[0];
-    const subyte *p = reinterpret_cast<const subyte *>(s);
-	if (len == 3) {
-		if (p[1] == 0xBC && 0x80 < p[2] && p[2] < 0xC0) return (char)(p[2] - 0x60);
-		if (p[1] == 0xBD && 0x7F < p[2] && p[2] < 0x9F) return (char)(p[2] - 0x20);
-	}
-	throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "s");
-}
-
-Char::Char() : _ptr(nullptr), _str(nullptr) {}
-Char::Char(String *s, const char *c) : _ptr(c), _str(s) {}
-Char::Char(const Char &c) : _ptr(c._ptr), _str(c._str) {}
-Char::~Char() {}
-Char &Char::operator=(const char *s) {
-    if (_str) {
-        if (s && s[0] != '\0') _str->replace(index(), u8size(_ptr), s);
-        else _str->remove(index(), u8size(_ptr));
+    else {
+        // Transformation of char code (not available now)
+        throw FormatException(formatErrorText("char code", format, "utf-8"));
     }
-    return *this;
-}
-Char &Char::operator=(const std::string &s) {
-    if (_str) {
-        if (s.length()) _str->replace(index(), u8size(_ptr), s.c_str());
-        else _str->remove(index(), u8size(_ptr));
-    }
-    return *this;
-}
-Char &Char::operator=(const String &s) {
-    if (_str) {
-        if (s.length()) _str->replace(index(), u8size(_ptr), s.cstr());
-        else _str->remove(index(), u8size(_ptr));
-    }
-    return *this;
-}
-Char &Char::operator=(const SString &s) {
-    if (_str) {
-        if (s.length()) _str->replace(index(), u8size(_ptr), s.cstr());
-        else _str->remove(index(), u8size(_ptr));
-    }
-    return *this;
-}
-Char &Char::operator=(const Char &c) {
-    _ptr = c._ptr; _str = c._str; return *this;
-}
-Char &Char::operator=(const SChar &c) {
-    _ptr = c._ptr; _str = c._str; return *this;
-}
-
-Char &Char::operator=(const SObjPtr &obj) {
-    if (_str) {
-        if (obj.isNull())  _str->remove(index(), u8size(_ptr));
-        else if (obj.isChar()) *this = obj.character();
-        else if (obj.isStr()) {
-            if (obj.length()) _str->replace(index(), u8size(_ptr), obj.string().cstr());
-            else _str->remove(index(), u8size(_ptr));
-        }
-        else {
-            auto s = obj.toString();
-            if (s.length()) _str->replace(index(), u8size(_ptr), s.cstr());
-            else _str->remove(index(), u8size(_ptr));
-        }
-    }
-    return *this;
-}
-Char& Char::operator+=(sinteger p) { sforin(i, 0, p) ++(*this); return *this; }
-Char& Char::operator-=(sinteger p) { sforin(i, 0, p) --(*this); return *this; }
-Char Char::operator+(sinteger p) { Char ch(*this); sforin(i, 0, p) ++ch; return ch; }
-Char Char::operator-(sinteger p) { Char ch(*this); sforin(i, 0, p) --ch; return ch; }
-Char& Char::operator ++() { if (_str) { _ptr += u8size(_ptr); } return *this; }
-Char &Char::operator --() {
-	if (_str) { do { --_ptr; } while (u8size(_ptr) < 0); }
-	return *this;
-}
-size_t Char::index() const { return _str ? _ptr - _str->cstr() : 0; }
-size_t Char::length() const { return _str ? u8size(_ptr) : 0; }
-void Char::setIndex(size_t s) { _ptr = _str->cstr() + s; }
-void Char::setOffset(size_t s) { _ptr = _str->cstr(); sforin(i, 0, s) _ptr += u8size(_ptr); }
-const char *Char::cstr() const { return _str?_ptr:nullptr; }
-std::string Char::toStr() const {
-    std::string str(length(), 0);
-    if (_str) CMemory<char>::copy(&str[0], _ptr, length());
-    return str;
-}
-String Char::toString() const {
-    String str(length(), 0);
-    if (_str) CMemory<char>::copy(str.ptr(), _ptr, length());
-    return str;
-}
-bool Char::operator<(const Char &c) const {
-    if (!_str) return false;
-    if (!c._str) return false;
-    if (_str == c._str) return _ptr < c._ptr;
-    return _str < c._str;
-}
-bool Char::operator==(const char &c) const {
-    return Char::isNarrow(_ptr) && _ptr[0] == c;
-}
-bool Char::operator==(const char *s) const {
-    return Char::u8size(_ptr) == u8size(s) && !(memcmp(_ptr, s, u8size(s)));
-}
-bool Char::operator==(const Char &c) const {
-    return _str == c._str && _ptr == c._ptr;
 }

@@ -1,193 +1,177 @@
 #include "sapp/scuiapp.h"
-
-using namespace slib;
-using namespace slib::sapp;
-
 inline void outputOp(sobj& option, sobj& list, bool op) {
-	String sop, lop;
-	sforeach(list) {
-		if (E_.string().beginWith("_") || !option.hasKey(E_)) continue;
-		if (option[E_]["type"] == "exec") continue;
-		else if (option[E_]["type"] == "bool") {
-			if (option[E_].hasKey("short")) sop += option[E_]["short"];
-			else lop << (op ? " { --" : " --") << E_ << (op ? " }" : "");
+	slib::String sop, lop;
+	sfor(list) {
+		if ($_.beginWith("_") || !option.hasKey($_)) continue;
+		if (option[$_]["type"] == "exec") {
+			continue;
+		}
+		else if (option[$_]["type"] == "bool") {
+			if (option[$_].hasKey("short")) sop += option[$_]["short"];
+			else lop << (op ? " { --" : " --") << $_ << (op ? " }" : "");
 		}
 		else {
-			if (option[E_].hasKey("short")) lop << (op ? " { -" : " -") << option[E_]["short"] << " ";
-			else lop << (op ? " { --" : " --") << E_ << " ";
-			lop << SItalicText((option[E_].hasKey("caption") ? option[E_]["caption"] : "arg")) << (op ? " }" : "");
+			if (option[$_].hasKey("short")) lop << (op ? " { -" : " -") << option[$_]["short"] << " ";
+			else lop << (op ? " { --" : " --") << $_ << " ";
+			lop << slib::stext::ITALIC_TAG << ((option[$_].hasKey("brief") ? option[$_]["brief"] : "arg")) << slib::stext::PLAIN_TAG << (op ? " }" : "");
 		}
 	}
 	if (!sop.empty()) {
-		std::cout << (op ? " { " : " ") << "-" << sop << (op ? " }" : "");
-		if (!lop.empty()) std::cout << lop;
+		SWrite((op ? " { " : " "), "-", sop, (op ? " }" : ""));
+		if (!lop.empty()) SWrite(lop);
 	}
-	else if (!lop.empty()) std::cout << lop;
+	else if (!lop.empty())  SWrite(lop);
 }
 inline void outputSelectOp(sobj& option, sobj& list) {
-	std::cout << " 《 ";
-	sforeach(list) {
-		if (E_.string().beginWith("_") || !option.hasKey(E_)) continue;
-		if (option[E_]["type"] == "exec") continue;
-		if (option[E_].hasKey("short")) std::cout << "[ -" << option[E_]["short"];
-		else std::cout << "[ --" << E_;
-		if (option[E_]["type"] == "bool") std::cout << " ]";
-		else std::cout << SItalicText((option[E_].hasKey("caption") ? option[E_]["caption"] : "arg")) << " ]";
-		if (it < list.end() - 1) std::cout << " or ";
+	SWrite(" << ");
+	sfor(list) {
+		if ($_.beginWith("_") || !option.hasKey($_)) continue;
+		if (option[$_]["type"] == "exec") continue;
+		if (option[$_].hasKey("short")) SWrite("[ -", option[$_]["short"]);
+		else SWrite("[ --", $_);
+		if (option[$_]["type"] == "bool") SWrite(" ]");
+		else SWrite(slib::stext::ITALIC_TAG, (option[$_].hasKey("brief") ? option[$_]["brief"] : "arg"), slib::stext::PLAIN_TAG, " ]");
+		if (it < list.end() - 1) SWrite(" or ");
 	}
-	std::cout << " 》";
+	SWrite(" >> ");
 }
-inline int showUsage(SDictionary& profile, const sobj& cmd) {
-	std::cout << "Usage:" << std::endl;
-	std::cout << "  " << profile["app"]["name"];
+inline void showUsage(const slib::SDictionary& profile, sobj cmd) {
+	SPrint("Usage:");
+	SWrite(slib::SP * 2, profile["info"]["name"]);
 	sobj app_command;
-	if (profile["app"]["type"].intValue() & SINGLE_COMMAND) app_command = profile["command"]["_exec"];
+	if (profile["info"]["type"] == "cui1") app_command = profile["command"]["_exec_"];
 	else {
-		if (!cmd) { std::cout << " <command> { options }" << std::endl; return 0; }
+		if (!cmd) { SPrint(" <command> { options }"); return; }
 		else {
-			std::cout << " " << cmd << std::flush;
+			SWrite(slib::SP, cmd);
 			app_command = profile["command"][cmd];
 		}
 	}
 	auto app_option = profile["option"];
-	auto required = app_command["require"];
-	if (!required.empty()) outputOp(app_option, required, false);
-	if (required.contain("_args"))
-		std::cout << " " << SItalicText(app_option["_args"].hasKey("caption") ? app_option["_args"]["caption"] : "argments...");
-	if (required.contain("_out"))
-		std::cout << " > " << SItalicText(app_option["_out"].hasKey("caption") ? app_option["_out"]["caption"] : "output");
-	if (required.contain("_pipe"))
-		std::cout << " | " << SItalicText(app_option["_pipe"].hasKey("caption") ? app_option["_pipe"]["caption"] : "commands...");
-	auto select = app_command["select"];
-	if (!select.empty()) outputSelectOp(app_option, select);
-	auto opt = app_command["option"];
-	if (!opt.empty()) outputOp(app_option, opt, true);
-	if (opt.contain("_args"))
-		std::cout << " { " << SItalicText(app_option["_args"].hasKey("caption") ? app_option["_args"]["caption"] : "argments...") << " }";
-	if (opt.contain("_out"))
-		std::cout << " { > " << SItalicText(app_option["_out"].hasKey("caption") ? app_option["_out"]["caption"] : "output") << " }";
-	if (opt.contain("_pipe"))
-		std::cout << " { | " << SItalicText(app_option["_pipe"].hasKey("caption") ? app_option["_pipe"]["caption"] : "commands...") << " }";
-	std::cout << std::endl;
-	return SAPP_EXECTED;
+	if (app_command["require"]) outputOp(app_option, app_command["require"], false);
+	if (app_command["select"]) outputSelectOp(app_option, app_command["select"]);
+	if (app_command["option"]) outputOp(app_option, app_command["option"], true);
+	if (app_command["require"].include("_args_"))
+		SWrite(slib::SP, slib::stext::ITALIC_TAG, (app_option["_args_"].hasKey("brief") ? app_option["_args_"]["brief"] : "argments..."), slib::stext::PLAIN_TAG);
+	if (app_command["require"].include("_out_"))
+		SWrite(" > ", slib::stext::ITALIC_TAG, (app_option["_out_"].hasKey("brief") ? app_option["_out_"]["brief"] : "output"), slib::stext::PLAIN_TAG);
+	if (app_command["require"].include("_pipe_"))
+		SWrite(" | ", slib::stext::ITALIC_TAG, (app_option["_pipe_"].hasKey("brief") ? app_option["_pipe_"]["brief"] : "commands..."), slib::stext::PLAIN_TAG);
+	if (app_command["option"].include("_args_"))
+		SWrite(" { ", slib::stext::ITALIC_TAG, (app_option["_args_"].hasKey("brief") ? app_option["_args"]["brief"] : "argments..."), slib::stext::PLAIN_TAG, " }");
+	if (app_command["option"].include("_out_"))
+		SWrite(" { > ", slib::stext::ITALIC_TAG, (app_option["_out_"].hasKey("brief") ? app_option["_out"]["brief"] : "output"), slib::stext::PLAIN_TAG, " }");
+	if (app_command["option"].include("_pipe_"))
+		SWrite(" { | ", slib::stext::ITALIC_TAG, (app_option["_pipe_"].hasKey("brief") ? app_option["_pipe"]["brief"] : "commands..."), slib::stext::PLAIN_TAG, " }");
+	SPrint("");
 }
-inline String opHead(const char* key, const sobj& option) {
-	return String("--") << key << (option[key].hasKey("short") ? "/-" + option[key]["short"] : "");
+inline slib::String opHead(const sobj &key, const sobj& option) {
+	return S_(--) << key << (option[key].hasKey("short") ? S_(/-) + option[key]["short"] : "");
 }
-inline int showHelp(SDictionary& profile, const sobj& cmd) {
-	std::cout << String(60, '=') << std::endl;
-
-	std::cout << profile["app"]["name"] << " v" << profile["app"]["version"] << std::endl;
-	std::cout << "Copyright (c) " << SDate(profile["app"]["develop"]).year << " " <<
-		profile["app"]["creator"] << ". All rights reserved. " << NEW_LINE <<
-		profile["app"]["license"] << std::endl;
-
-	std::cout << String(". ") * 30 << std::endl;
-	std::cout << std::endl;
+inline void showHelp(const slib::SDictionary& profile, sobj cmd) {
+	SPrint(slib::String(60, '='));
+	SPrint(profile["info"]["name"], " v", profile["info"]["version"]);
+	SPrint("Copyright (c) ", slib::SDate(profile["info"]["develop"]).year, slib::SP,
+		profile["info"]["copyright"], ". All rights reserved. ", slib::NL,
+		profile["info"]["license"]);
+	SPrint(S_(. ) * 30, slib::NL);
 	showUsage(profile, cmd);
-
-	std::cout << String(". ") * 30 << std::endl;
-	std::cout << std::endl;
-
+	SPrint(S_(.) * 30, slib::NL * 2);
 	auto app_command = profile["command"];
 	auto app_option = profile["option"];
-	stringarray opt_;
-	sforeach(app_option) {
-		if (E_.value()["type"] == "exec") opt_.add(E_.key());
+	stringarray options;
+	sfor(app_option) {
+		if ($_.value()["type"] == "exec") options.add($_.key());
 	}
-	if (profile["app"]["type"].intValue() & MULTI_COMMAND) {
+	if (profile["info"]["type"] == "cui2") {
 		if (!cmd) {
-			std::cout << "[Command]" << std::endl;
+			SPrint("[Command]");
 			auto cmds = app_command.keyset();
 			cmds.sort();
-			sforeach(cmds) {
-				std::cout << "  " << E_.filled(16, ' ') << ": " << app_command[E_]["description"] << std::endl;
-				auto prof_ = profile["command"][E_];
+			sfor(cmds) {
+				SPrint(slib::SP * 2, slib::sstr::fill($_, ' ', 16, slib::DIRECTION::TAIL), ": ", app_command[$_]["description"]);
+				auto prof_ = profile["command"][$_];
 			}
 		}
 		else {
-			std::cout << "[Option]" << std::endl;
-			auto command = profile["command"][cmd];
-			auto required = command["require"];
-			auto select = command["select"];
-			auto ops = command["option"];
-			if (required && !required.empty()) {
-				sforeach(required) {
-					if (E_.string().beginWith("_") || app_option[E_]["type"] == "exec") continue;
-					String op_ = opHead(E_, app_option);
-					std::cout << "  " << op_.filled(20) << ": " << SColorText("red", "*") << app_option[E_]["description"] << std::endl;
+			SPrint("[Option]");
+			auto command = app_command[cmd];
+			auto requires = command["require"];
+			auto selects = command["select"];
+			auto opts = command["option"];
+			if (requires && !requires.empty()) {
+				sfor(requires) {
+					if ($_.beginWith("_") || app_option[$_]["type"] == "exec") continue;
+					slib::String opt = opHead($_, app_option);
+					SPrint(slib::SP * 2, slib::sstr::fill(opt, ' ', 20, slib::DIRECTION::TAIL), ": ",
+						slib::stext::RED_TAG, "*", slib::stext::DEFAULT_COLOR,
+						app_option[$_]["description"]);
 				}
 			}
-
-			if (ops && !ops.empty()) {
-				sforeach(ops) {
-					if (E_.string().beginWith("_") || app_option[E_]["type"] == "exec") continue;
-					String op_ = opHead(E_, app_option);
-					std::cout << "  " << op_.filled(20) << ":  " << app_option[E_]["description"] << std::endl;
-					if (app_option[E_].hasKey("default")) std::cout << SPACE * 25 << "Default: " << app_option[E_]["default"] << std::endl;
+			if (opts && !opts.empty()) {
+				sfor(opts) {
+					if ($_.beginWith("_") || app_option[$_]["type"] == "exec") continue;
+					slib::String opt = opHead($_, app_option);
+					SPrint(slib::SP * 2, slib::sstr::fill(opt, ' ', 20, slib::DIRECTION::TAIL), ":", slib::SP * 2, app_option[$_]["description"]);
+					if (app_option[$_].hasKey("default")) SPrint(slib::SP * 25, "default=", slib::SP, app_option[$_]["default"]);
 				}
 			}
-
-			if (select) {
-				sforeach(select) {
-					if (E_.string().beginWith("_") || app_option[E_]["type"] == "exec") continue;
-					String op_ = opHead(E_, app_option);
-					std::cout << "  " << op_.filled(20) << ": " << SColorText("blue", "#") << app_option[E_]["description"] << std::endl;
-					if (app_option[E_].hasKey("default")) std::cout << SPACE * 25 << "Default: " << app_option[E_]["default"] << std::endl;
+			if (selects && !selects.empty()) {
+				sfor(selects) {
+					if ($_.beginWith("_") || app_option[$_]["type"] == "exec") continue;
+					slib::String op_ = opHead($_, app_option);
+					SPrint(slib::SP * 2, slib::sstr::fill(op_, ' ', 20, slib::DIRECTION::TAIL), ": ", slib::stext::BLUE_TAG, "#", app_option[$_]["description"], slib::stext::DEFAULT_COLOR);
+					if (app_option[$_].hasKey("default")) SPrint(slib::SP * 25, "default= ", app_option[$_]["default"]);
 				}
 			}
 		}
 	}
 	else {
 		if (!app_option.empty()) {
-			std::cout << "[Option]" << std::endl;
+			SPrint("[Option]");
 			auto command = profile["command"]["_exec"];
 			auto required = command["require"];
 			auto select = command["select"];
-
-			auto ops = app_option.keyset();
-			ops.sort();
-			sforeach(ops) {
-				if (E_.beginWith("_") || app_option[E_]["type"] == "exec") continue;
-				String op_ = opHead(E_, app_option);
-				if (required.contain(E_)) std::cout << "  " << op_.filled(20) << ": " << SColorText("red", "*") << app_option[E_]["description"] << std::endl;
-				else if (select.contain(E_)) std::cout << "  " << op_.filled(20) << ": " << SColorText("blue", "#") << app_option[E_]["description"] << std::endl;
-				else std::cout << "  " << op_.filled(20) << ":  " << app_option[E_]["description"] << std::endl;
-				if (app_option[E_].hasKey("default")) std::cout << SPACE * 25 << "Default: " << app_option[E_]["default"] << std::endl;
+			auto opts = app_option.keyset();
+			opts.sort();
+			sfor(opts) {
+				if ($_.beginWith("_") || app_option[$_]["type"] == "exec") continue;
+				slib::String op_ = opHead($_, app_option);
+				if (required.include($_)) SPrint(slib::SP * 2, slib::sstr::fill(op_, ' ', 20, slib::DIRECTION::TAIL), ": ", slib::stext::RED_TAG, "*", slib::stext::DEFAULT_COLOR, app_option[$_]["description"]);
+				else if (select.include($_)) SPrint(slib::SP * 2, slib::sstr::fill(op_, ' ', 20, slib::DIRECTION::TAIL), ": ", slib::stext::BLUE_TAG, "#", slib::stext::DEFAULT_COLOR, app_option[$_]["description"]);
+				else SPrint(slib::SP * 2, slib::sstr::fill(op_, ' ', 20, slib::DIRECTION::TAIL), ":  ", app_option[$_]["description"]);
+				if (app_option[$_].hasKey("default")) SPrint(slib::SP * 25, "default= ", app_option[$_]["default"]);
 			}
 		}
 	}
-	if (!opt_.empty()) {
-		std::cout << std::endl;
-		sforeach(opt_) {
-			String op_ = opHead(E_, app_option);
-			std::cout << "  " << op_.filled(20) << ": " << app_option[E_]["description"] << std::endl;
+	if (!options.empty()) {
+		SWrite(slib::NL);
+		sfor(options) {
+			slib::String op_ = opHead($_, app_option);
+			SPrint(slib::SP * 2, slib::sstr::fill(op_, ' ', 20, slib::DIRECTION::TAIL), ": ", app_option[$_]["description"]);
 		}
 	}
-	std::cout << std::endl;
-	std::cout << SColorText("red", "  * Required option.") << std::endl;
-	std::cout << SColorText("blue", "  # Choose one of the options.") << std::endl;
-	std::cout << String(60, '=') << std::endl;
-	return SAPP_EXECTED;
+	SWrite(slib::NL);
+	SPrint(slib::SP * 2, slib::stext::RED_TAG, "* Required option.", slib::stext::DEFAULT_COLOR);
+	SPrint(slib::SP * 2, slib::stext::BLUE_TAG, "# Choose one of the options.", slib::stext::DEFAULT_COLOR);
+	SPrint(slib::String(60, '='));
 }
-inline int showInfo(SDictionary& profile, const sobj& cmd) {
-	std::cout << String("App Name:").filled(12) << profile["app"]["name"] << std::endl;
-	std::cout << String("App Path:").filled(12) << sio::currentPath() << std::endl;
-	std::cout << String("Creator:").filled(12) << profile["app"]["creator"] << std::endl;
-	std::cout << String("Develop:").filled(12) << profile["app"]["develop"] << std::endl;
-	std::cout << String("Version:").filled(12) << profile["app"]["version"] << std::endl;
-	std::cout << String("License:").filled(12) << profile["app"]["license"] << std::endl;
-	return SAPP_EXECTED;
+inline void showInfo(const slib::SDictionary& profile, sobj cmd) {
+	SPrint(slib::sstr::fill("App Name:", ' ', 12, slib::DIRECTION::TAIL), profile["info"]["name"]);
+	SPrint(slib::sstr::fill("App Path:", ' ', 12, slib::DIRECTION::TAIL), slib::ssys::current());
+	SPrint(slib::sstr::fill("Creator:", ' ', 12, slib::DIRECTION::TAIL), profile["info"]["creator"]);
+	SPrint(slib::sstr::fill("Develop:", ' ', 12, slib::DIRECTION::TAIL), profile["info"]["develop"]);
+	SPrint(slib::sstr::fill("Version:", ' ', 12, slib::DIRECTION::TAIL), profile["info"]["version"]);
+	SPrint(slib::sstr::fill("License:", ' ', 12, slib::DIRECTION::TAIL), profile["info"]["license"]);
 }
-inline int showVer(SDictionary& profile, const sobj& cmd) {
-	std::cout << profile["app"]["name"] << " " << profile["app"]["version"] << std::endl;
-	return SAPP_EXECTED;
+inline void showVer(const slib::SDictionary& profile, sobj cmd) {
+	SPrint(profile["info"]["name"], slib::SP, profile["info"]["version"]);
 }
-SCuiApp::SCuiApp() : SApp() {}
-SCuiApp::SCuiApp(const char* path) : SApp(path) {}
-SCuiApp::SCuiApp(SDictionary&& prof) : SApp(std::forward<SDictionary&&>(prof)) {}
-SCuiApp::~SCuiApp() {}
-inline int getOption(String& op, const char* args) {
+slib::sapp::SCuiApp::SCuiApp() : SApp() {}
+slib::sapp::SCuiApp::SCuiApp(const char* prof, const char* pform) : SApp(prof, pform) {}
+slib::sapp::SCuiApp::SCuiApp(slib::SDictionary&& prof) : SApp(std::forward<SDictionary&&>(prof)) {}
+slib::sapp::SCuiApp::~SCuiApp() {}
+int getOption(slib::String& op, const char* args) {
 	if (args[0] == '-') {
 		if (args[1] == '-') { op = &args[2]; return 2; }
 		else { op = &args[1]; return 1; }
@@ -196,174 +180,207 @@ inline int getOption(String& op, const char* args) {
 	else if (args[0] == '|') return -2;
 	else { op = args; return 0; }
 }
-int SCuiApp::init(int argc, const char** argv) {
-	try {
-		int res;
-		String op;
-		const char** arg = &argv[1], ** argend = argv + argc;
+int slib::sapp::SCuiApp::init(int argc, const char** argv) {
+	int res;
+	const char** arg = &argv[1], ** argend = argv + argc;
+	String op;
+	SDictionary app_option = profile["option"];
+	// Set default options
+	app_option["help"] = {
+			D_("short", "H"),
+			D_("description","Show help."),
+			D_("type", "exec"),
+			D_("func", sobj(SFunction<void, const SDictionary&, const SObjPtr&>(showHelp)))
+	};
+	app_option["info"] = {
+			D_("short", "I"),
+			D_("description","Show app information."),
+			D_("type", "exec"),
+			D_("func", sobj(SFunction<void, const SDictionary&, const SObjPtr&>(showInfo)))
+	};
+	app_option["version"] = {
+			D_("short", "V"),
+			D_("description","Show version."),
+			D_("type", "exec"),
+			D_("func", sobj(SFunction<void, const SDictionary&, const SObjPtr&>(showVer)))
+	};
+	app_option["silent"] = {
+			D_("short", "S"),
+			D_("description","Silent mode (No output to stdout)"),
+			D_("default", false),
+			D_("type", "bool")
+	};
+	app_option["verbose"] = {
+			D_("short", "v"),
+			D_("description","Show log text."),
+			D_("default", false),
+			D_("type", "bool")
+	};
+	// 
+	auto opts = app_option.keyset();
+	sfor(opts) {
+		// Map short options
+		if (app_option[$_].hasKey("short")) app_option["_abbr_"][app_option[$_]["short"]] = $_;
+		// Set default value to preference
+		if (app_option[$_].hasKey("default")) preference[$_] = app_option[$_]["default"];
+	}
+	// For single command CUI app
+	if (profile["info"]["type"] == "cui1") {
+		auto cmd_info = profile["command"]["_"];
+		auto require = cmd_info["require"];
+		sfor(opts) {
+			if (require && !require.empty()) {
+				if (!require.include($_) && !cmd_info["option"].include($_)) cmd_info["option"].add($_);
+			}
+			else if (!cmd_info["option"].include($_)) cmd_info["option"].add($_);
 
-		auto app_option = profile["option"];
-		app_option["help"] = {
-				kv("short", "H"),
-				kv("description","Show help."),
-				kv("type", "exec"),
-				kv("func", SFunction<int(SDictionary&, const sobj&)>(showHelp))
-		};
-		app_option["info"] = {
-				kv("short", "I"),
-				kv("description","Show app information."),
-				kv("type", "exec"),
-				kv("func", SFunction<int(SDictionary&, const sobj&)>(showInfo))
-		};
-		app_option["version"] = {
-				kv("short", "V"),
-				kv("description","Show version."),
-				kv("type", "exec"),
-				kv("func", SFunction<int(SDictionary&, const sobj&)>(showVer))
-		};
-		auto opts = app_option.keyset();
-		sforeach(opts) {
-			if (app_option[E_].hasKey("short")) app_option["_abbr"].set(app_option[E_]["short"], E_);
-			if (app_option[E_].hasKey("default")) preference[E_] = app_option[E_]["default"];
 		}
-		if (profile["app"]["type"].intValue() & SINGLE_COMMAND) {
-			auto command = profile["command"]["_exec"];
-			auto require = command["require"];
-			sforeach(opts) {
-				if (require && !require.empty()) {
-					if (!require.contain(E_) && !command["option"].contain(E_)) command["option"].add(E_);
-				}
-				else if (!command["option"].contain(E_)) command["option"].add(E_);
-
-			}
-			preference["_cmd"] = "_exec";
+		preference["_cmd_"] = "_";
+	}
+	// For multiple commands CUI app
+	else {
+		if (argc < 2) throw InsufficientArgsException("<command>");
+		res = getOption(op, arg[0]);
+		switch (res) {
+		case 0:
+		{
+			if (profile["command"].hasKey(op)) preference["_cmd_"] = op;
+			else throw slib::AppCommandException(op);
+			break;
 		}
-		else {
-			if (argc < 2) throw SAppException(ERR_INFO, INSUFFICIENT_ARGS_ERROR, "application init", "<command>");
-			res = getOption(op, arg[0]);
-			switch (res) {
-			case 0:
-			{
-				if (profile["command"].hasKey(op)) preference["_cmd"] = op;
-				else throw SAppException(ERR_INFO, COMMAND_NOT_EXIST_ERROR, op);
-				break;
-			}
-			case 1: {
-				if (op.empty()) throw SAppException(ERR_INFO, OPTION_NOT_EXIST_ERROR, "option ''");
-				if (app_option["_abbr"].hasKey(op)) {
-					op = app_option["_abbr"][op];
-					if (app_option[op]["type"] == "exec")
-						return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, snull);
+		case 1: {
+			if (op.empty()) throw UndefinedOptException("(empty)");
+			if (app_option["_abbr_"].hasKey(op)) {
+				op = app_option["_abbr_"][op];
+				if (app_option[op]["type"] == "exec") {
+					auto& fnc = app_option[op]["func"].function<void, const SDictionary&, const SObjPtr&>();
+					fnc(profile, snull);
+					return 1;
 				}
-				throw SAppException(ERR_INFO, INSUFFICIENT_ARGS_ERROR, "application init", "<command>");
 			}
-			case 2: {
-				if (app_option.hasKey(op) && app_option[op]["type"] == "exec")
-					return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, snull);
-				throw SAppException(ERR_INFO, INSUFFICIENT_ARGS_ERROR, "application init", "<command>");
-			}
-			}
-			++arg;
+			else throw slib::AppCommandException(op);
 		}
-		if (preference["_cmd"].isNull()) throw SAppException(ERR_INFO, INSUFFICIENT_ARGS_ERROR, "application init", "<command>");
-		auto required = profile["command"][preference["_cmd"]]["require"];
-
-		while (arg < argend) {
-			res = getOption(op, arg[0]);
-			switch (res) {
-			case 0:
-			{
-				if (app_option.hasKey("_args")) {
-					preference["_args"].add(op);
-					if (required.contain("_args")) app_option["_args"]["_set"] = true;
-				}
-				break;
+		case 2: {
+			if (app_option.hasKey(op) && app_option[op]["type"] == "exec") {
+				auto& fnc = app_option[op]["func"].function<void, const SDictionary&, const SObjPtr&>();
+				fnc(profile, snull);
+				return 1;
+			}	
+			else throw slib::AppCommandException(op);
+		}
+		}
+		++arg;
+	}
+	if (!preference["_cmd_"]) throw InsufficientArgsException("<command>");
+	auto required = profile["command"][preference["_cmd_"]]["require"];
+	while (arg < argend) {
+		res = getOption(op, arg[0]);
+		switch (res) {
+		case 0:
+		{
+			if (app_option.hasKey("_args_")) {
+#ifdef WIN_OS
+				preference["_args_"].add(slib::String::toUTF8(op));
+#else
+				preference["_args_"].add(op);
+#endif
+				if (required.include("_args_")) app_option["_args_"]["_set_"] = true;
 			}
-			case 1: {
-				if (op.empty()) throw SAppException(ERR_INFO, OPTION_NOT_EXIST_ERROR, "option ''");
-				else if (1 < op.length()) {
-					sforeach(op) {
-						String op_(1, E_);
-						if (app_option["_abbr"].hasKey(op_)) {
-							String op__ = app_option["_abbr"][op_];
-							if (required.contain(op__)) app_option[op__]["_set"] = true;
-							if (app_option[op__]["type"] == "bool") preference[op__] = true;
-							else throw SAppException(ERR_INFO, INSUFFICIENT_OPT_ERROR, op__, "arg");
+			break;
+		}
+		case 1: 
+		{
+			if (op.empty()) throw UndefinedOptException("(empty)");
+			else {
+				sforc(op) {
+					auto sop = $_.toString();
+					if (app_option["_abbr_"].hasKey(sop)) {
+						sop = app_option["_abbr_"][sop];
+						if (required.include(sop)) app_option[sop]["_set_"] = true;
+						if (app_option[sop]["type"] == "exec") {
+							auto& fnc = app_option[sop]["func"].function<void, const SDictionary&, const SObjPtr&>();
+							fnc(profile, preference["_cmd_"]);
+							return 1;
 						}
-						else throw SAppException(ERR_INFO, OPTION_NOT_EXIST_ERROR, "option '" + op_ + "'");
+						else if (app_option[sop]["type"] == "bool") preference[sop] = true;
+						else if (app_option[sop]["type"] == "num") { arg++; preference[sop] = N(arg[0]); }
+						else { 
+							arg++; 
+#ifdef WIN_OS
+							preference[sop] = slib::String::toUTF8(arg[0]);
+#else
+							preference[sop] = arg[0];
+#endif
+						}
 					}
+					else throw UndefinedOptException(sop);
+				}
+			}
+			break;
+		}
+		case 2: 
+		{
+			if (app_option.hasKey(op)) {
+				if (required.include(op)) app_option[op]["_set_"] = true;
+				if (app_option[op].hasKey("defualt")) preference[op] = app_option[op]["default"];
+				if (app_option[op]["type"] == "bool") preference[op] = true;
+				else if (app_option[op]["type"] == "num") { arg++; preference[op] = N(arg[0]); }
+				else if (app_option[op]["type"] == "exec") {
+					auto& fnc = app_option[op]["func"].function<void, const SDictionary&, const SObjPtr&>();
+					fnc(profile, preference["_cmd_"]);
+					return 1;
 				}
 				else {
-					if (app_option["_abbr"].hasKey(op)) {
-						op = app_option["_abbr"][op];
-						if (required.contain(op)) app_option[op]["_set"] = true;
-						if (app_option[op]["type"] == "exec")
-							return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, preference["_cmd"]);
-						else if (app_option[op]["type"] == "bool") preference[op] = true;
-						else if (app_option[op]["type"] == "num") { arg++; preference[op] = SNumber::toNumber(arg[0]); }
-						else { arg++; preference[op] = arg[0]; }
-					}
-					else throw SAppException(ERR_INFO, OPTION_NOT_EXIST_ERROR, "option '" + op + "'");
+					arg++; 
+#ifdef WIN_OS
+					preference[op] = slib::String::toUTF8(arg[0]);
+#else
+					preference[op] = arg[0];
+#endif
 				}
-				break;
 			}
-			case 2: {
-				if (app_option.hasKey(op)) {
-					if (required.contain(op)) app_option[op]["_set"] = true;
-					if (app_option[op].hasKey("defualt")) preference[op] = app_option[op]["default"];
-					if (app_option[op]["type"] == "bool") preference[op] = true;
-					else if (app_option[op]["type"] == "num") { arg++; preference[op] = SNumber::toNumber(arg[0]); }
-					else if (app_option[op]["type"] == "exec")
-						return app_option[op]["func"].funci<SDictionary&, const sobj&>()(profile, preference["_cmd"]);
-					else {
-						arg++; preference[op] = arg[0];
-					}
-				}
-				else throw SAppException(ERR_INFO, OPTION_NOT_EXIST_ERROR, "option '" + op + "'");
-				break;
-			}
-			case -1: {
-				arg++;
-				if (app_option.hasKey("_out")) {
-					preference["_out"] = arg[0];
-					if (required.contain("_out")) app_option["_out"]["_set"] = true;
-				}
-				else throw SAppException(ERR_INFO, OPTION_NOT_EXIST_ERROR, "export option '>'");
-				break;
-			}
-			case -2: {
-				arg++;
-				if (app_option.hasKey("_pipe")) {
-					while (arg < argend) { preference["_pipe"].add(arg[0]); ++arg; }
-					if (required.contain("_pipe")) app_option["_pipe"]["_set"] = true;
-				}
-				else throw SAppException(ERR_INFO, OPTION_NOT_EXIST_ERROR, "pipe option '|'");
-				break;
-			}
-			default:
-				break;
-			}
-			++arg;
+			else throw UndefinedOptException(op);
+			break;
 		}
-		if (required && required.size()) {
-			sforeach(required) {
-				if (!app_option[E_]["_set"]) throw SAppException(ERR_INFO, INSUFFICIENT_OPT_ERROR, "application init", E_);
+		case -1: {
+			arg++;
+			if (app_option.hasKey("_out_")) {
+#ifdef WIN_OS
+				preference["_out_"] = slib::String::toUTF8(arg[0]);
+#else
+				preference["_out_"] = arg[0];
+#endif
+				if (required.include("_out_")) app_option["_out_"]["_set_"] = true;
 			}
+			else throw UndefinedOptException(">");
+			break;
 		}
+		case -2: {
+			arg++;
+			if (app_option.hasKey("_pipe_")) {
+				while (arg < argend) { preference["_pipe_"].add(arg[0]); ++arg; }
+				if (required.include("_pipe_")) app_option["_pipe_"]["_set_"] = true;
+			}
+			else throw UndefinedOptException("|");
+			break;
+		}
+		default:
+			break;
+		}
+		++arg;
 	}
-	catch (SAppException ae) {
-		ae.print();
-		std::cout << std::endl;
-		if (ae.err == COMMAND_NOT_EXIST_ERROR ||
-			ae.err == OPTION_NOT_EXIST_ERROR) showHelp(profile, preference["_cmd"]);
-		else if (ae.err == INSUFFICIENT_ARGS_ERROR ||
-			ae.err == INSUFFICIENT_OPT_ERROR) showUsage(profile, preference["_cmd"]);
-		return ae.err;
+	if (required && required.size()) {
+		sfor(required) {
+			if (!app_option[$_]["_set_"]) throw InsufficientArgsException($_.toString());
+		}
 	}
 	return 0;
 }
-int SCuiApp::run(int argc, const char** argv) {
-	auto res = init(argc, argv);
-	if (res) return res == SAPP_EXECTED ? 0 : res;
-	else return exec();
+int slib::sapp::SCuiApp::run(int argc, const char** argv) {
+	try {
+		auto res = init(argc, argv);
+		if (res) return res == sapp::COMPLETE ? 0 : res;
+		else return exec();
+	}
+	catch (SAppException ae) { ae.print(); return ae.code; }
 }

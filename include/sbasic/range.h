@@ -1,155 +1,93 @@
 #ifndef SLIB_RANGE_H
 #define SLIB_RANGE_H
-
 #include "sconfig.h"
-
 namespace slib {
+	/**
+	* @class Range
+	* \~english @brief Range class.
+	* \~japanese @brief 範囲クラス
+	*/
 	template<typename T>
-	struct Range {
+	class Range {
+	public:
 		T begin, end;
 
-		Range();
-		Range(const T& b, const T& e);
-		Range(const Range& rng);
-		~Range();
-		Range& operator = (const Range& rng);
-		Range& operator >>= (const T& t);
-		Range& operator <<= (const T& t);
-		Range& operator += (const T& t);
-		Range& operator -= (const T& t);
-		Range& operator |= (const Range& rng);
-		Range& operator &= (const Range& rng);
-		Range& operator ^= (const Range& rng);
-		Range operator >> (const T& t) const;
-		Range operator << (const T& t) const;
-		Range operator + (const T& t) const;
-		Range operator - (const T& t) const;
-		Range operator | (const Range& rng) const;
-		Range operator & (const Range& rng) const;
-		Range operator ^ (const Range& rng) const;
-		T length(bool closed = false) const;
-		bool include(const T& val) const;
-		bool include(const Range& rng) const;
-		bool overlap(const Range& rng) const;
-		void shift(const T& s);
-		void expand(const T& e);
-		void merge(const Range& rng);
-		void exclude(const Range& rng);
-		void mask(const Range& rng);
-
-		bool operator < (const T& pos) const;
-		bool operator < (const Range& rng) const;
-		bool operator == (const Range& rng) const;
-		bool operator != (const Range& rng) const;
+	public:
+		Range() : begin(T()), end(T()) {}
+		Range(const T b, const T e) : begin(b), end(e) {}
+		Range(const Range<T>& range) : begin(range.begin), end(range.end) {}
+		~Range() {}
+		Range& operator = (const Range<T>& range) { begin = range.begin; end = range.end; return *this; }
+		Range<T>& operator|=(const Range<T>& range) { merge(range); return *this; }
+		Range<T>& operator&=(const Range<T>& range) { mask(range); return *this; }
+		Range<T>& operator^=(const Range<T>& range) { exclude(range); return *this; }
+		Range<T> operator|(const Range<T>& rng) const { Range<T> range(*this); range.merge(rng); return range; }
+		Range<T> operator&(const Range<T>& rng) const { Range<T> range(*this); range.mask(rng); return range; }
+		Range<T> operator^(const Range<T>& rng) const { Range<T> range(*this); range.exclude(rng); return range; }
+		T length(bool closed = false) const { return end - begin + (closed ? 1 : 0); }
+		bool include(const T val) const { return (begin <= val && val <= end) ? true : false; }
+		bool include(const Range<T>& range) const { return begin <= range.begin && range.end <= end; }
+		bool overlap(const Range<T>& range) const { return begin <= range.end && range.begin <= end; }
+		void shift(const T val) { begin += val; end += val; }
+		void expand(const T val) { end += val; }
+		void merge(const Range<T>& range) {
+			begin = range.begin < begin ? range.begin : begin;
+			end = end < range.end ? range.end : end;
+		}
+		void exclude(const Range<T>& range) {
+			if (overlap(range)) *this = Range<T>((include(range.end) ? range.end + 1 : begin), (include(range.begin) ? range.begin - 1 : end));
+		}
+		void mask(const Range<T>& range) {
+			if (include(range)) *this = range;
+			else if (overlap(range))
+				*this = Range<T>((begin < range.begin ? range.begin : begin), (range.end < end ? range.end : end));
+			else *this = Range<T>();
+		}
+		bool operator < (const T val) const { return begin < val; }
+		bool operator < (const Range& range) const {
+			return begin != range.begin ? begin < range.begin : end < range.end;
+		}
+		bool operator == (const Range& range) const {
+			return begin == range.begin && end == range.end;
+		}
+		bool operator != (const Range& range) const {
+			return begin != range.begin || end != range.end;
+		}
 	};
 	template<typename T>
-	extern bool operator<(const T& n, const Range<T>& range) { return n < range.begin; }
+	Range<T> shift(const Range<T>& rng, const T val) { Range<T> r(rng); r.shift(val); return r; }
 	template<typename T>
-	extern std::ostream& operator<<(std::ostream& os, const Range<T>& range) { return os << "(" << range.begin << ".." << range.end << ")"; }
+	Range<T> expand(const Range<T>& rng, const T val) { Range<T> r(rng); r.expand(val); return r; }
+	template<typename T>
+	Range<T> merge(const Range<T>& rng1, const Range<T>& rng2) { Range<T> r(rng1); r.merge(rng2); return r; }
+	template<typename T>
+	Range<T> exclude(const Range<T>& rng1, const Range<T>& rng2) { Range<T> r(rng1); r.exclude(rng2); return r; }
+	template<typename T>
+	Range<T> mask(const Range<T>& rng1, const Range<T>& rng2) { Range<T> r(rng1); r.mask(rng2); return r; }
 
-	using srange = Range<sint>;
-	using srangeb = Range<sbyte>;
-	using srangef = Range<float>;
-	using sranged = Range<double>;
-	using sranges = Range<size_t>;
-
-	/*============================================================*/
-
+	/**
+	* @cond
+	*/
 	template<typename T>
-	Range<T>::Range() : begin(T()), end(T()) {}
-	template<typename T>
-	Range<T>::Range(const T& b, const T& e) : begin(b), end(e) {}
-	template<typename T>
-	Range<T>::Range(const Range& rng) : begin(rng.begin), end(rng.end) {}
-	template<typename T>
-	Range<T>::~Range() {}
-	template<typename T>
-	Range<T>& Range<T>::operator = (const Range<T>& rng) { begin = rng.begin; end = rng.end; return *this; }
-	template<typename T>
-	Range<T>& Range<T>::operator >>=  (const T& t) { begin += t; end += t; return *this; }
-	template<typename T>
-	Range<T>& Range<T>::operator <<=  (const T& t) { begin -= t; end -= t; return *this; }
-	template<typename T>
-	Range<T>& Range<T>::operator += (const T& t) { end += t;  return *this; }
-	template<typename T>
-	Range<T>& Range<T>::operator -= (const T& t) { end -= t;  return *this; }
-	template<typename T>
-	Range<T>& Range<T>::operator |= (const Range<T>& rng) { 
-		if (rng.begin < begin) begin = rng.begin;
-		if (end < rng.end) end = rng.end; 
-		return *this; 
-	}
-	template<typename T>
-	Range<T>& Range<T>::operator &= (const Range<T>& rng) { 
-		if (include(rng)) *this = rng;
-		else if (overlap(rng)) {
-			if (begin < rng.begin) begin = rng.begin;
-			if (rng.end < end) end = rng.end;
-		}
-		else *this = Range<T>();
-		return *this;
-	}
-	template<typename T>
-	Range<T>& Range<T>::operator ^= (const Range<T>& rng) { 
-		if (!overlap(rng)) return *this;
-		if (include(rng.begin)) end = rng.begin - 1;
-		else if (include(rng.end)) begin = rng.end + 1;
-		return *this;
-	}
-	template<typename T>
-	Range<T> Range<T>::operator >> (const T& t) const { return Range<T>(begin + t, end + t); }
-	template<typename T>
-	Range<T> Range<T>::operator << (const T& t) const { return Range<T>(begin - t, end - t); }
-	template<typename T>
-	Range<T> Range<T>::operator + (const T& t) const { return Range<T>(begin, end + t); }
-	template<typename T>
-	Range<T> Range<T>::operator - (const T& t) const { return Range<T>(begin, end - t); }
-	template<typename T>
-	Range<T> Range<T>::operator | (const Range& rng) const { return this->merge(rng); }
-	template<typename T>
-	Range<T> Range<T>::operator & (const Range& rng) const { return this->mask(rng); }
-	template<typename T>
-	Range<T> Range<T>::operator ^ (const Range& rng) const { return this->exclude(rng); }
-	template<typename T>
-	T Range<T>::length(bool closed) const { return end - begin + (closed ? 1 : 0); }
-	template<typename T>
-	bool Range<T>::include(const T& val) const { return (begin <= val && val <= end) ? true : false; }
-	template<typename T>
-	bool Range<T>::include(const Range<T>& rng) const { return begin <= rng.begin && rng.end <= end; }
-	template<typename T>
-	bool Range<T>::overlap(const Range<T>& rng) const { return begin <= rng.end && rng.begin <= end; }
-	template<typename T>
-	void Range<T>::shift(const T& t) { begin += t; end += t; }
-	template<typename T>
-	void Range<T>::expand(const T& t) { end += t; }
-	template<typename T>
-	void Range<T>::merge(const Range& rng) {
-		*this = Range<T>((rng.begin < begin ? rng.begin : begin), (end < rng.end ? rng.end : end));
-	}
-	template<typename T>
-	void Range<T>::exclude(const Range& rng) {
-		if (overlap(rng)) *this = Range<T>((include(rng.end) ? rng.end + 1 : begin), (include(rng.begin) ? rng.begin - 1 : end));
-	}
-	template<typename T>
-	void Range<T>::mask(const Range<T>& rng) {
-		if (include(rng)) *this = rng;
-		else if (overlap(rng))
-			*this = Range<T>((begin < rng.begin ? begin : rng.begin), (rng.end < end ? rng.end : end));
-		else *this = Range<T>();
-	}
-	template<typename T>
-	bool Range<T>::operator < (const T& pos) const { return end < pos; }
-	template<typename T>
-	bool Range<T>::operator < (const Range<T>& rng) const {
-		return begin != rng.begin ? begin < rng.begin : end < rng.end;
-	}
-	template<typename T>
-	bool Range<T>::operator == (const Range<T>& rng) const {
-		return begin == rng.begin && end == rng.end;
-	}
-	template<typename T>
-	bool Range<T>::operator != (const Range<T>& rng) const {
-		return begin != rng.begin || end != rng.end;
-	}
+	extern bool operator<(const T n, const Range<T>& range) { return n < range.begin; }	
+	/**
+	* @endcond
+	*/
 }
+/**
+* @cond
+*/
+using srange = slib::Range<slib::sint>;
+using srangel = slib::Range<slib::sinteger>;
+using srangeb = slib::Range<slib::sbyte>;
+using srangef = slib::Range<float>;
+using sranged = slib::Range<double>;
+using srangeu = slib::Range<size_t>;
+
+template<typename T>
+extern inline std::ostream& operator<<(std::ostream& os, const slib::Range<T>& range) { return os << "(" << range.begin << "," << range.end << ")"; }
+/**
+* @endcond
+*/
+
 #endif

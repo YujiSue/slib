@@ -1,151 +1,153 @@
-#include "smedia/spixel.h"
-#include "smedia/sgraphic.h"
-
-using namespace slib;
-using namespace slib::smedia;
-
-SImageRow::SImageRow() : _bpp(1), _type(0x11), _width(0), _data(nullptr) {}
-SImageRow::SImageRow(sushort t, size_t w, subyte *p) : _bpp(bytePerPixel(t)), _type(t), _width(w), _data(p) {}
-SImageRow::SImageRow(const SImageRow &row) : _bpp(row._bpp), _type(row._type), _width(row._width), _data(row._data) {}
-SImageRow::~SImageRow() {}
-SImageRow &SImageRow::operator=(const SImageRow &row) {
-    _bpp = row._bpp; _type = row._type; _width = row._width; _data = row._data; return *this;
+#include "smedia/simage.h"
+slib::Pixel::Pixel() : _color(scolor::GRAY8), _data(nullptr) {}
+slib::Pixel::Pixel(subyte t, subyte* p) : _color(t), _data(p) {}
+slib::Pixel::Pixel(const Pixel& px) : _color(px._color), _data(px._data) {}
+slib::Pixel::~Pixel() {}
+slib::Pixel& slib::Pixel::operator=(const Pixel& px) {
+	_color = px._color; _data = px._data; return *this;
 }
-SImageRow &SImageRow::operator++() { _data += _bpp*_width; return *this; }
-SImageRow &SImageRow::operator--() { _data -= _bpp*_width; return *this; }
-SPixel SImageRow::operator[](size_t idx) const { return SPixel(_type, &_data[idx*_bpp]); }
-subyte *SImageRow::ptr() const { return _data; }
-bool SImageRow::operator<(const SImageRow &row) const { return _data < row._data; }
-bool SImageRow::operator==(const SImageRow &row) const { return _bpp == row._bpp && _data == row._data; }
-
-SPixel::SPixel() : _type(RGBA), _bpp(4), _data(nullptr) {}
-SPixel::SPixel(sushort t, subyte *p) : _type(t), _bpp(bytePerPixel(t)), _data(p) {}
-SPixel::SPixel(const SPixel &px) : _type(px._type), _bpp(px._bpp), _data(px._data) {}
-SPixel::~SPixel() {}
-
-SPixel &SPixel::operator=(const SPixel &px) {
-	_bpp = px._bpp; _type = px._type; _data = px._data; return *this;
+slib::Pixel& slib::Pixel::operator=(const subyte i) {
+	_data[0] = i; 
+	return *this; 
 }
-SPixel &SPixel::operator=(subyte i) { _data[0] = i; return *this; }
-SPixel &SPixel::operator=(sushort i) {
-    CMemory<subyte>::copy(_data, (subyte *)&i, 2); return *this;
+slib::Pixel& slib::Pixel::operator=(const sushort i) {
+	memcpy(_data, reinterpret_cast<const subyte*>(&i), 2); 
+	return *this;
 }
-SPixel &SPixel::operator=(suint i) {
-    CMemory<subyte>::copy(_data, (subyte *)&i, 4); return *this;
+slib::Pixel& slib::Pixel::operator=(const int i) {
+	Memory<subyte>::copy(_data, reinterpret_cast<const subyte*>(&i), 4);
+	return *this;
 }
-SPixel& SPixel::operator=(const SColor& col) {
-	switch (_type)
-	{
-	case GRAY8:
-		*_data = col.gray8();
-		break;
-	case GRAY16:
-	{
-		auto c = col.gray16();
-		memcpy(_data, &c, 2);
-		break;
+slib::Pixel& slib::Pixel::operator=(const Color& col) {
+	if (_color == col.type()) memcpy(_data, col.data(), scolor::size(_color));
+	else {
+		Color c_ = scolor::convertTo(col, _color);
+		memcpy(_data, c_.data(), scolor::size(_color));
 	}
-	case RGB24:
-	{
-		auto rgb = col.toVec3i();
-		_data[0] = rgb[0];
-		_data[1] = rgb[1];
-		_data[2] = rgb[2];
-		_data[3] = 255;
-		break;
-	}
-	case RGBA:
-	{
-		auto rgba = col.toVec4i();
-		_data[0] = rgba[0];
-		_data[1] = rgba[1];
-		_data[2] = rgba[2];
-		_data[3] = rgba[3];
-		break;
-	}
-	default:
-		*_data = col.gray8();
-		break;
-	}
-    return *this;
+	return *this;
 }
-SPixel &SPixel::operator++() { _data += _bpp; return *this; }
-SPixel &SPixel::operator--() { _data -= _bpp; return *this; }
-subyte& SPixel::operator[](size_t idx) { return _data[idx * colorDepth(_type)]; }
-const subyte& SPixel::operator[](size_t idx) const { return _data[idx * colorDepth(_type)]; }
-subyte *SPixel::ptr() const { return _data; }
-subyte SPixel::channel() const { return colorChannel(_type); }
-subyte SPixel::depth() const { return colorDepth(_type); }
-subyte SPixel::bpp() const { return _bpp; }
-
-SColor SPixel::color() const {
-	switch (_type)
-	{
-	case GRAY8:
-		return SColor(*_data);
-	case GRAY16:
-		return SColor(GRAY16, _data);
-	case RGB24:
-		return SColor(RGB24, _data);
-	case RGBA:
-		return SColor(RGBA, _data);
-	default:
-		return SColor(*_data);
-	}
+slib::Pixel& slib::Pixel::operator=(const SColor& col) {
+	if (col.isGradient()) *this = ((const GradientColor&)col).colors()[0].second;
+	else *this = (const Color&)col;
+	return *this;
 }
-void SPixel::swap(SPixel px) {
-    auto p = ptr(); _data = px.ptr(); px._data = p;
+slib::Pixel& slib::Pixel::operator++() { _data += (int)scolor::size(_color); return *this; }
+slib::Pixel& slib::Pixel::operator--() { _data -= (int)scolor::size(_color); return *this; }
+int slib::Pixel::operator[](const int idx) const {
+	auto channel = scolor::channel(_color);
+	if (idx < 0 || channel <= idx) throw RangeException(outRangeErrorText("Channel index", idx, 0, channel - 1));
+	auto depth = scolor::depth(_color);
+	if (depth == 1) return (int)_data[idx];
+	else if (depth == 2) return (int)*reinterpret_cast<const sushort*>(&_data[depth * idx]);
+	else return *reinterpret_cast<const sint*>(&_data[depth * idx]);
 }
-String SPixel::getClass() const { return "pixel"; }
-String SPixel::toString() const { return color().toString(); }
-SObject *SPixel::clone() const { return new SPixel(*this); }
-bool SPixel::operator<(const SPixel &px) const { return _data < px._data; }
-bool SPixel::operator==(const SPixel &px) const { return _data == px._data; }
+void slib::Pixel::set(const int idx, const int val) {
+	auto channel = scolor::channel(_color);
+	if (idx < 0 || channel <= idx) throw RangeException(outRangeErrorText("Channel index", idx, 0, channel - 1));
+	auto depth = scolor::depth(_color);
+	memcpy(&_data[depth * idx], reinterpret_cast<const subyte*>(&val), channel);
+}
+slib::subyte slib::Pixel::type() const { return _color; }
+slib::subyte* slib::Pixel::data() const { return _data; }
+slib::Color slib::Pixel::color() const { return Color(_color, _data); }
+bool slib::Pixel::operator<(const slib::Pixel& px) const { return _data < px._data; }
+bool slib::Pixel::operator==(const slib::Pixel& px) const { return _data == px._data; }
 
-SPixelIterator::SPixelIterator(subyte t, subyte *p) : px(t, p) {}
-SPixelIterator::SPixelIterator(const SPixelIterator &it) : px(it.px) {}
-SPixelIterator::~SPixelIterator() {}
-SPixelIterator& SPixelIterator::operator=(const SPixelIterator &it) { px = it.px; return *this; }
-SPixel &SPixelIterator::operator *() { return px; }
-SPixel *SPixelIterator::operator ->() { return &px; }
-SPixel &SPixelIterator::operator [](std::ptrdiff_t diff) { sforin(i, 0, diff) ++px; return px; }
-SPixelIterator &SPixelIterator::operator ++() { ++px; return *this; }
-SPixelIterator SPixelIterator::operator ++(int) { return ++SPixelIterator(*this); }
-SPixelIterator &SPixelIterator::operator --() { --px; return *this; }
-SPixelIterator SPixelIterator::operator --(int) { return --SPixelIterator(*this); }
-SPixelIterator &SPixelIterator::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++px; return *this; }
-SPixelIterator &SPixelIterator::operator -=(std::ptrdiff_t diff) { sforin(i, 0, diff) --px; return *this; }
-SPixelIterator SPixelIterator::operator +(std::ptrdiff_t diff) { return SPixelIterator(*this)+=diff; }
-SPixelIterator SPixelIterator::operator -(std::ptrdiff_t diff) { return SPixelIterator(*this)-=diff; }
-int SPixelIterator::operator -(SPixelIterator it) { return (px.ptr()-it.px.ptr())/px.bpp(); }
-void SPixelIterator::swap(SPixelIterator it1, SPixelIterator it2) { it1.px.swap(it2.px); }
-bool SPixelIterator::operator <(const SPixelIterator &it) const { return px.ptr() < it.px.ptr(); }
-bool SPixelIterator::operator <=(const SPixelIterator &it) const { return px.ptr() <= it.px.ptr(); }
-bool SPixelIterator::operator >(const SPixelIterator &it) const { return px.ptr() > it.px.ptr(); }
-bool SPixelIterator::operator >=(const SPixelIterator &it) const { return px.ptr() >= it.px.ptr(); }
-bool SPixelIterator::operator ==(const SPixelIterator &it) const { return px.ptr() == it.px.ptr(); }
-bool SPixelIterator::operator !=(const SPixelIterator &it) const { return px.ptr() != it.px.ptr(); }
+slib::ImageRow::ImageRow() : _img(nullptr), _row(0) {}
+slib::ImageRow::ImageRow(SImage* img, const int ridx) {
+	_img = img; _row = ridx < 0 ? (int)_img->height() + ridx : ridx;
+}
+slib::ImageRow::ImageRow(const SImage* img, const int ridx) {
+	_img = const_cast<SImage*>(img); _row = ridx < 0 ? (int)_img->height() + ridx : ridx;
+}
+slib::ImageRow::ImageRow(const ImageRow &row) : _img(row._img), _row(row._row) {}
+slib::ImageRow::~ImageRow() {}
+slib::ImageRow & slib::ImageRow::operator=(const ImageRow &row) {
+	_img = row._img; _row = row._row; return *this;
+}
+slib::ImageRow& slib::ImageRow::operator++() { 
+	if (!_img) throw NullException(nullErrorText("Image data source"));
+	++_row;
+	if (_img->height() <= _row) throw RangeException(outRangeErrorText("Row index", _row, 0, _img->height()));
+	return *this; 
+}
+slib::ImageRow & slib::ImageRow::operator--() {
+	if (!_img) throw NullException(nullErrorText("Image data source"));
+	if (_row == 0) throw RangeException(outRangeErrorText("Row index", -1, 0, _img->height()));
+	--_row;
+	return *this;
+}
+slib::Pixel slib::ImageRow::operator[](const int idx) const {
+	if (!_img) throw NullException(nullErrorText("Image data source"));
+	return Pixel(_img->type(), data(idx));
+}
+slib::subyte* slib::ImageRow::data(const int idx) const {
+	if (!_img) throw NullException(nullErrorText("Image data source"));
+	auto p = _img->data() + _img->linesize() * _row;
+	return p + _img->bpp() * (idx < 0 ? (int)_img->width() + idx : idx);
+}
+bool slib::ImageRow::operator<(const ImageRow &row) const {
 
-SPixelCIterator::SPixelCIterator(subyte t, const subyte *p) : px(t, const_cast<subyte *>(p)) {}
-SPixelCIterator::SPixelCIterator(const SPixelCIterator &it) : px(it.px) {}
-SPixelCIterator::~SPixelCIterator() {}
-SPixelCIterator &SPixelCIterator::operator=(const SPixelCIterator &it) { px = it.px; return *this; }
-const SPixel &SPixelCIterator::operator *() { return px; }
-const SPixel *SPixelCIterator::operator ->() { return &px; }
-const SPixel &SPixelCIterator::operator [](std::ptrdiff_t diff) { sforin(i, 0, diff) ++px; return px; }
-SPixelCIterator &SPixelCIterator::operator ++() { ++px; return *this; }
-SPixelCIterator SPixelCIterator::operator ++(int) { return ++SPixelCIterator(*this); }
-SPixelCIterator &SPixelCIterator::operator --() { --px; return *this; }
-SPixelCIterator SPixelCIterator::operator --(int) { return --SPixelCIterator(*this); }
-SPixelCIterator &SPixelCIterator::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++px; return *this; }
-SPixelCIterator &SPixelCIterator::operator -=(std::ptrdiff_t diff) { sforin(i, 0, diff) --px; return *this; }
-SPixelCIterator SPixelCIterator::operator +(std::ptrdiff_t diff) { return SPixelCIterator(*this)+=diff; }
-SPixelCIterator SPixelCIterator::operator -(std::ptrdiff_t diff) { return SPixelCIterator(*this)-=diff; }
-int SPixelCIterator::operator -(SPixelCIterator it) { return (px.ptr()-it.px.ptr())/px.bpp(); }
-void SPixelCIterator::swap(SPixelCIterator it1, SPixelCIterator it2) { it1.px.swap(it2.px); }
-bool SPixelCIterator::operator <(const SPixelCIterator &it) const { return px.ptr() < it.px.ptr(); }
-bool SPixelCIterator::operator <=(const SPixelCIterator &it) const { return px.ptr() <= it.px.ptr(); }
-bool SPixelCIterator::operator >(const SPixelCIterator &it) const { return px.ptr() > it.px.ptr(); }
-bool SPixelCIterator::operator >=(const SPixelCIterator &it) const { return px.ptr() >= it.px.ptr(); }
-bool SPixelCIterator::operator ==(const SPixelCIterator &it) const { return px.ptr() == it.px.ptr(); }
-bool SPixelCIterator::operator !=(const SPixelCIterator &it) const { return px.ptr() != it.px.ptr(); }
+	return _row < row._row; 
+}
+bool slib::ImageRow::operator==(const ImageRow& row) const { 
+
+	return _row == row._row; 
+}
+slib::PixelIterator::PixelIterator() : _img(nullptr) {}
+slib::PixelIterator::PixelIterator(SImage* img, ArrayIterator<subyte> it) : PixelIterator() { 
+	_img = img; _px = Pixel(_img->type(), it.ptr()); 
+}
+slib::PixelIterator::PixelIterator(const PixelIterator &it) : _img(it._img), _px(it._px) {}
+slib::PixelIterator::~PixelIterator() {}
+slib::PixelIterator& slib::PixelIterator::operator=(const slib::PixelIterator& it) { 
+	_img = it._img; _px = it._px; return *this; 
+}
+slib::Pixel & slib::PixelIterator::operator *() { return _px; }
+slib::Pixel * slib::PixelIterator::operator ->() { return &_px; }
+slib::Pixel & slib::PixelIterator::operator [](std::ptrdiff_t diff) { sforin(i, 0, diff) ++_px; return _px; }
+slib::PixelIterator & slib::PixelIterator::operator ++() { ++_px; return *this; }
+slib::PixelIterator slib::PixelIterator::operator ++(int) { return ++PixelIterator(*this); }
+slib::PixelIterator & slib::PixelIterator::operator --() { --_px; return *this; }
+slib::PixelIterator slib::PixelIterator::operator --(int) { return --PixelIterator(*this); }
+slib::PixelIterator & slib::PixelIterator::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++_px; return *this; }
+slib::PixelIterator & slib::PixelIterator::operator -=(std::ptrdiff_t diff) { sforin(i, 0, diff) --_px; return *this; }
+slib::PixelIterator slib::PixelIterator::operator +(std::ptrdiff_t diff) { return PixelIterator(*this)+=diff; }
+slib::PixelIterator slib::PixelIterator::operator -(std::ptrdiff_t diff) { return PixelIterator(*this)-=diff; }
+int slib::PixelIterator::operator -(slib::PixelIterator it) { return (_px._data - it._px._data) / _img->bpp(); }
+void slib::PixelIterator::swap(slib::PixelIterator it1, PixelIterator it2) { Memory<Pixel>::swap(&it1._px, &it2._px); }
+bool slib::PixelIterator::operator <(const slib::PixelIterator &it) const { return _px < it._px; }
+bool slib::PixelIterator::operator <=(const slib::PixelIterator& it) const { return _px < it._px || _px == it._px; }
+bool slib::PixelIterator::operator >(const slib::PixelIterator &it) const { return it._px < _px; }
+bool slib::PixelIterator::operator >=(const slib::PixelIterator &it) const { return it._px < _px || _px == it._px; }
+bool slib::PixelIterator::operator ==(const slib::PixelIterator &it) const { return _px == it._px; }
+bool slib::PixelIterator::operator !=(const slib::PixelIterator &it) const { return !(_px == it._px); }
+slib::PixelCIterator::PixelCIterator() : _img(nullptr) {}
+slib::PixelCIterator::PixelCIterator(const SImage* img, ArrayCIterator<subyte> it) : PixelCIterator() { 
+	_img = img; _px = Pixel(_img->type(), const_cast<subyte*>(it.ptr())); 
+}
+slib::PixelCIterator::PixelCIterator(const slib::PixelCIterator &it) : _img(it._img), _px(it._px) {}
+slib::PixelCIterator::~PixelCIterator() {}
+slib::PixelCIterator &slib::PixelCIterator::operator=(const slib::PixelCIterator &it) { 
+	_img = it._img; _px = it._px; return *this;
+	return *this; 
+}
+const slib::Pixel& slib::PixelCIterator::operator *() { return _px; }
+const slib::Pixel* slib::PixelCIterator::operator ->() { return &_px; }
+const slib::Pixel& slib::PixelCIterator::operator [](std::ptrdiff_t diff) { sforin(i, 0, diff) ++_px; return _px; }
+slib::PixelCIterator &slib::PixelCIterator::operator ++() { ++_px; return *this; }
+slib::PixelCIterator slib::PixelCIterator::operator ++(int) { return ++PixelCIterator(*this); }
+slib::PixelCIterator & slib::PixelCIterator::operator --() { --_px; return *this; }
+slib::PixelCIterator  slib::PixelCIterator::operator --(int) { return --PixelCIterator(*this); }
+slib::PixelCIterator & slib::PixelCIterator::operator +=(std::ptrdiff_t diff) { sforin(i, 0, diff) ++_px; return *this; }
+slib::PixelCIterator & slib::PixelCIterator::operator -=(std::ptrdiff_t diff) { sforin(i, 0, diff) --_px; return *this; }
+slib::PixelCIterator  slib::PixelCIterator::operator +(std::ptrdiff_t diff) { return PixelCIterator(*this)+=diff; }
+slib::PixelCIterator  slib::PixelCIterator::operator -(std::ptrdiff_t diff) { return PixelCIterator(*this)-=diff; }
+int slib::PixelCIterator::operator -(PixelCIterator it) { return (_px._data - it._px._data) / _img->bpp(); }
+void slib::PixelCIterator::swap(PixelCIterator it1, PixelCIterator it2) { Memory<Pixel>::swap(&it1._px, &it2._px); }
+bool slib::PixelCIterator::operator <(const PixelCIterator &it) const { return _px < it._px; }
+bool slib::PixelCIterator::operator <=(const PixelCIterator &it) const { return _px < it._px || _px == it._px; }
+bool slib::PixelCIterator::operator >(const PixelCIterator &it) const { return it._px < _px; }
+bool slib::PixelCIterator::operator >=(const PixelCIterator &it) const { return it._px < _px || it._px == _px; }
+bool slib::PixelCIterator::operator ==(const PixelCIterator &it) const { return _px == it._px; }
+bool slib::PixelCIterator::operator !=(const PixelCIterator &it) const { return !(_px == it._px); }

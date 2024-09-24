@@ -1,87 +1,63 @@
+#include "sio/sfile.h"
 #include "smedia/sfigure.h"
 #include "sutil/sxml.h"
-
-using namespace slib;
-using namespace slib::sio;
-using namespace slib::smedia;
-
-SCanvas::SCanvas() : SDocument<SFigure>() {
-    _type = sshape::GROUP;
-}
-SCanvas::SCanvas(size_t w, size_t h, const char *name, const SColor &col) : SDocument<SFigure>() {
-    _type = sshape::GROUP;
-    _title = name;
-    _background = col;
-	_size = v2f((float)w, (float)h);
-    _frame = sareaf(0, 0, (float)w, (float)h);
-}
-SCanvas::SCanvas(const SCanvas &canvas) : SDocument<SFigure>(canvas) {
-    _background = canvas._background;
-	_size = canvas._size;
-	_frame = canvas._frame;
-}
-SCanvas::~SCanvas() {}
-
-void SCanvas::loadSVG(const char *path) {
-    SXmlDoc doc;
-    doc.load(path);
-    auto node = doc.entity();
-	if (node->tag != "svg") throw SMediaException(ERR_INFO, SMEDIA_ERROR | SLIB_FORMAT_ERROR, node->tag, "SVG");
-}
-void SCanvas::saveSVG(const char *path) {
-    SXmlDoc doc(xml::SVG);
-    doc.root().addChild(SXmlNode::svgNode(this));
-    doc.save(path);
+inline slib::SPointer<slib::SXmlNode> svgDeclaration(const slib::SCanvas& cnvs) {
+    auto area = cnvs.frame();
+    return slib::sxml::node(slib::sxml::PAIRED_TAG, "svg", sattribute({
+        SS_("version", "1.1"),
+        SS_("id", "svg"),
+        SS_("xmlns", "http://www.w3.org/2000/svg"),
+        SS_("xmlns:xlink", "http://www.w3.org/1999/xlink"),
+        SS_("x", "0px"),
+        SS_("y", "0px"),
+        SS_("width", S(area.width) + "px"),
+        SS_("height", S(area.height) + "px"),
+        SS_("viewBox", "0 0 " + S(area.width) + slib::SP + S(area.height)),
+        SS_("xml:space", "preserve")
+        }));
 }
 
-void SCanvas::load(const char *path) {
-    String ext = String::lower(SFile(path).extension());
-    if(ext == "svg") loadSVG(path);
-    /*
-     */
+slib::SCanvas::SCanvas() : SFigure() { _element->figid = "canvas"; }
+slib::SCanvas::SCanvas(const size_t w, const size_t h) : SFigure() { _area = Area<size_t>(0, 0, w, h); }
+slib::SCanvas::SCanvas(const SCanvas& cnvs) : SFigure(cnvs) { _area = cnvs._area; }
+slib::SCanvas::~SCanvas() {}
+const slib::Area<size_t>& slib::SCanvas::frame() const { return _area; }
+void slib::SCanvas::resize(const size_t width, const size_t height) {
+    _area.width = width; _area.height = height;
 }
-void SCanvas::save(const char *path) {
-    String ext = SFile(path).extension();
-    if(ext == "svg") saveSVG(path);
-    /*
-     */
-}
-
-size_t SCanvas::width() const { return (size_t)_size[0]; }
-size_t SCanvas::height() const { return (size_t)_size[1]; }
-v2f SCanvas::size() const { return _size; }
-sareaf SCanvas::frame() const { return _frame; }
-const SColor &SCanvas::background() const { return _background; }
-void SCanvas::resize(size_t w, size_t h) { _size = v2f((float)w, (float)h); }
-void SCanvas::setBackGround(const SColor &col) { _background = col; }
-void SCanvas::setFrame(sareaf area) { _frame = area; }
-
-void SCanvas::setPaint(const SPaint& paint) { _paint = paint; }
-/*
-void drawPoint(v2f pos) {}
-void drawLine(v2f init, v2f end);
-void drawPath();
-void drawRect(float x, float y, float w, float h);
-void drawRect(sareaf area);
-void drawPolygon(const v2fvec& v);
-void drawEllipse(float x, float y, float r);
-void drawEllipse(float x, float y, float w, float h);
-void drawEllipse(sareaf area);
-void drawArc();
-void drawPict(float x, float y, const char* s);
-void drawText(float x, float y, const char* s);
-*/
-void SCanvas::drawFigure(sfig fig) { _root.addFigure(fig); }
-String SCanvas::getClass() const { return "canvas"; }
-String SCanvas::toString() const {
-    auto str = getClass()<<"("<<width()<<","<<height()<<","<<") {";
-    if (_root.childCount()) {
-        sforeach(_root.children()) {
-			 str<< E_->getClass()<<"("<< E_->boundary().ori_x<<" "<< E_->boundary().ori_y<<" "<<
-				 E_->boundary().width<<" "<< E_->boundary().height<<")"<<NEW_LINE;
-        }
+void slib::SCanvas::load(const char* path) {
+    auto ext = slib::sfs::extension(path);
+    if (ext == "svg") {
+        SXml svg;
+        svg.load(path);
+        /*
+        * 
+        */
     }
-    str<<"}";
-    return str;
+    //else if (ext == "js") {}
+    //
 }
-SObject *SCanvas::clone() const { return new SCanvas(*this); }
+void slib::SCanvas::save(const char* path) {
+    auto ext = slib::sfs::extension(path);
+    if (ext == "svg") {
+        SXml svg;
+        svg.addChild(sxml::svgNode(*this));
+        svg.save(path);
+    }
+    //else if (ext == "js") {}
+    //
+}
+slib::String slib::SCanvas::getClass() const { return "canvas"; }
+slib::String slib::SCanvas::toString(const char* format) const {
+    auto f = S(format ? format : "svg");
+    if (f == "svg") {
+        SXml svg;
+        auto root = svgDeclaration(*this);
+        root->addChild(sxml::svgNode(*this));
+        svg.addChild(root);
+        return svg.toString();
+    }
+    //else if (f == "js") {}
+    else throw FormatException(formatErrorText("Canvas format", f, "svg"));
+}
+slib::SObject* slib::SCanvas::clone() const { return new SCanvas(*this); }

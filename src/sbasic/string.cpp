@@ -1,1215 +1,826 @@
-#include "sbasic/array.h"
-#include "sbasic/exception.h"
 #include "sbasic/string.h"
-#include "sobj/sstring.h"
-#include "sobj/stext.h"
-#include "sio/sfile.h"
+#include "sbasic/array.h"
+#include "sbasic/list.h"
+#include "sbasic/map.h"
+#include "sbasic/exception.h"
 
-using namespace slib;
-
-Regex::Regex() : _global(false) {}
-Regex::Regex(const char *s) {
-    String s_(s);
-    size_t len = s_.length(), end = s_.rfind("/");
-    if (len < 3 || s_.first() != '/' || end == NOT_FOUND)
-        throw SException(ERR_INFO, SLIB_FORMAT_ERROR, s, "Numeric text");
-    auto constant = std::regex::ECMAScript;
-    if (end < len-1) {
-		auto p = s_.ptr(end + 1);
-        sforin(i, end+1, len) {
-            if (*p == 'i') constant |= std::regex::icase;
-            else if (*p == 'g') _global = true;
-			++p;
-        }
-    }
-    _rgx = std::regex(s_.substring(1, end-1), constant);
-}
-Regex::~Regex() {}
-bool Regex::match(const char *s) const { std::cmatch m; std::regex_search(s, m, _rgx); return m.size(); }
-bool Regex::equal(const char *s) const { return std::regex_match(s, _rgx); }
-void Regex::search(CArray<size_t> &array, const char *s, const char *e) const {
-    if (_global) {
-        std::cregex_iterator beg(s, e, _rgx), end;
-        while(beg != end) { array.add(beg->position()); ++beg; }
-    }
-    else {
-        std::cmatch m;
-        if(std::regex_search(s, m, _rgx)) array.add(m.position());
-    }
-}
-void Regex::search(Array<String, SMemory<String>> &array, const char *s, const char *e) const {
-    if (_global) {
-        std::cregex_iterator beg(s, e, _rgx), end;
-        while(beg != end) { array.add(beg->str()); ++beg; }
-    }
-    else {
-        std::cmatch m;
-        if(std::regex_search(s, m, _rgx)) array.add(m.str());
-    }
-}
-void Regex::split(Array<String, SMemory<String>> &array, const String *str) const {
-    size_t off = 0;
-    auto p = str->ptr();
-    std::cregex_iterator end;
-    sfortill(it, std::cregex_iterator(p, p+str->size(), _rgx), end) {
-        array.add(str->substring(srange((sint)off, (sint)E_.position())));
-        off = E_.position()+E_.size();
-    }
-}
-String Regex::replace(const char *s, const char *alt) const {
-    if (_global) return String(std::regex_replace(s, _rgx, alt));
-    else return String(std::regex_replace(s, _rgx, alt, std::regex_constants::format_first_only));
-}
-inline String regexOrder(const CArray<sint>&order) {
-    String str;
-    if (order.size()) { sforeach(order) str<<"$"<<E_; }
-    return str;
-}
-String Regex::rearrange(const char *s, const CArray<sint> &order) const {
-    if (_global) return String(std::regex_replace(s, _rgx, regexOrder(order).cstr()));
-    else  return String(std::regex_replace(s, _rgx, regexOrder(order).cstr(), std::regex_constants::format_first_only));
-}
-
-String String::trim(const char *s) {
-    String str;
+bool slib::sstr::isQuoted(const char* s) {
     if (s) {
-        size_t init = 0, end = strlen(s);
-        while (init < end && Char::isWSChar(s[init])) ++init;
-        while (init < end && Char::isWSChar(s[end-1])) --end;
-        size_t len = end-init;
-        if (len) {
-            str.resize(len);
-            memcpy(&str[0], &s[init], len);
+        auto len = strlen(s);
+        if (len < 2) return false;
+        return (s[0] == s[len - 1]) && (s[0] == '"' || s[0] == '\'');
+    }
+    return false;
+}
+bool slib::sstr::isEnclosed(const char* s, const char* bracket) {
+    if (s && bracket) {
+        auto len = strlen(s), blen = strlen(bracket);
+        if (len < blen) return false;
+        blen /= 2;
+        return !memcmp(s, bracket, blen) && !memcmp(&s[len - blen], &bracket[blen], blen);
+    }
+    return false;
+}
+bool slib::sstr::isNumeric(const char* s) {
+    String str(sstr::toLower(sstr::trim(s)));
+#if defined(__GNUC__) && (__GNUC__ < 5)
+    if (str == "nan" || str == "inf" || str == "-inf" || 
+        str == "null" || str == "true" || str == "false") return true;
+    if (str[0] == '+' || str[0] == '-') str.clip(1);
+    bool h = false;
+    if (str[-1] == 'i') {
+        str.resize(str.size() - 1);
+        if (str.match("+")) {
+            if (1 < str.count("+")) return false;
+            auto vals = str.split("+");
+            str = vals[0] + vals[1];
+        }
+        else if (str.match("-")) {
+            if (1 < str.count("-")) return false;
+            auto vals = str.split("-");
+            str = vals[0] + vals[1];
+        }
+    }
+    if (str.beginWith("0x")) { h = true;  str.clip(2); }
+    if (str.beginWith("0b") || str.beginWith("0o")) str.clip(2);
+    if (str.match("/")) {
+        if (1 < str.count("/")) return false;
+        auto vals = str.split("/");
+        str = vals[0] + vals[1];
+    } 
+    if (str.match(".")) {
+        if (1 < str.count(".")) return false;
+        auto vals = str.split(".");
+        str = vals[0] + vals[1];
+    }
+    sfor(str) {
+        auto c = (int)$_;
+        if (0x2f < c && c < 0x3a) continue;
+        if (h && ((0x40 < c && c < 0x47) || (0x60 < c && c < 0x67))) continue;
+        else return false;
+    }
+    return true;
+
+#else
+    return 
+        str.equal(REG("/^[+-]*\\d+/")) || 
+        str.equal(REG("/^0x[0-9a-fA-F]+/")) || 
+        str.equal(REG("/^0o[0-7]+/")) || 
+        str.equal(REG("/^0b[01]+/")) ||
+        str.equal(REG("/^nan/i")) ||
+        str.equal(REG("/^[+-]*inf/i")) ||
+        str.equal(REG("/^true/i")) ||
+        str.equal(REG("/^false/i")) ||
+        str.equal(REG("/^[+-]*\\d+\\.\\d+/i")) ||
+        str.equal(REG("/^[+-]*\\d+\\.*\\d*[eE][+-]*\\d+/"));
+#endif
+}
+slib::String slib::sstr::trim(const char *s) {
+    String str;
+    if (s && s[0] != '\0') {
+        auto init = s, end = s + strlen(s);
+        while (init < end && sutf8::isWS(*init)) ++init;
+        while (init < end && sutf8::isWS(*(end - 1))) --end;
+        if (init < end) {
+            str.resize(end - init);
+            Memory<char>::copy(&str[0], init, str.size());
         }
     }
     return str;
 }
-String String::squot(const char *s) {
+slib::String slib::sstr::squote(const char *s) {
     String str;
     str<<'\''<<(s?s:"")<<'\'';
     return str;
 }
-String String::dquot(const char *s) {
+slib::String slib::sstr::dquote(const char* s) {
     String str;
-    str<<'\"'<<(s?s:"")<<'\"';
+    str << '\"' << s << '\"';
     return str;
 }
-String String::dequot(const char *s) {
-    if (!s || strlen(s) < 3) return "";
-    size_t len = strlen(s)-2;
-    String str(len, '0');
-    memcpy(&str[0], &s[1], len);
-    return str;
-}
-String String::upper(const char *s) {
-    if (!s) return "";
+slib::String slib::sstr::dequote(const char* s, bool check) {
     String str(s);
-    str.transform(slib::sstyle::UPPER_CASE);
+    if (str.size() < 2) return str;
+    bool apply = false;
+    if (check) {
+        auto& b = str[0], & e = str[-1];
+        if ((b == '\'' && e == '\'') ||
+            (b == '\"' && e == '\"') ||
+            (b == '(' && e == ')') ||
+            (b == '{' && e == '}') ||
+            (b == '<' && e == '>') ||
+            (b == '[' && e == ']')) apply = true;
+    }
+    else apply = true;
+    if (!apply) return s;
+    else return str.substring(srange(1, -1));
+}
+slib::String slib::sstr::toUpper(const char *s) {
+    slib::String str(s);
+    sfor(str) $_ = sutf8::toUpper($_);
     return str;
 }
-String String::lower(const char *s) {
-    if (!s) return "";
-    String str(s);
-    str.transform(slib::sstyle::LOWER_CASE);
+slib::String slib::sstr::toLower(const char *s) {
+    slib::String str(s);
+    sfor(str) $_ = sutf8::toLower($_);
     return str;
 }
-String String::enclose(const char *s, const char *c1, const char *c2) {
+slib::String slib::sstr::enclose(const char *s, const char* bracket) {
     String str;
-    str<<(c1?c1:"")<<(s?s:"")<<(c2?c2:"");
+    if (!bracket) throw NullException(nullErrorText("Bracket characters"));
+    int blen = (int)strlen(bracket);
+    sforin(i, 0, blen / 2) str << bracket[i];
+    str << (s ? s : "");
+    sforin(i, blen / 2, blen) str << bracket[i];
     return str;
 }
-String String::wide(const char *s) {
+slib::String slib::sstr::toWide(const char *s) {
     String str;
     if (s) {
-        size_t len = strlen(s);
-        sforin(i, 0, len) str += Char::wideChar(s[i]);
+        int len = (int)strlen(s);
+        sforin(i, 0, len) str << sutf8::toWide(s[i]);
     }
     return str;
 }
-String String::narrow(const char *s) {
+slib::String slib::sstr::toNarrow(const char *s) {
     String str;
     if (s) {
-        size_t i = 0, len = strlen(s);
         while (s[0] != '\0') {
-            str += Char::narrowChar(s);
-            s += Char::u8size(s);
+            str << sutf8::toNarrow(s);
+            s += sutf8::size(s);
         }
     }
     return str;
 }
-#if defined(WIN32_OS) || defined(WIN64_OS)
-String String::toUTF8(const wchar_t* ws) {
+slib::String slib::sstr::fill(const char* s, const char c, const size_t sz, slib::DIRECTION dir) {
+    auto len = s ? strlen(s) : 0;
+    if (sz < len) return s;
+    slib::String str;
+    switch (dir) {
+    case DIRECTION::HEAD:
+        str << slib::String(sz - len, c) << s;
+        break;
+    case DIRECTION::TAIL:
+        str << s << slib::String(sz - len, c);
+        break;
+    case DIRECTION::BI:
+    {
+        auto sz_ = (sz - len) / 2;
+        str << slib::String(sz_, c) << s << slib::String(sz - len - sz_, c);
+        break;
+    }
+    default:
+        break;
+    }
+    return str;
+}
+slib::String slib::sstr::lfill(const char* s, const char c, const size_t sz) {
+    slib::String str(sz, c);
+    auto len = s ? strlen(s) : 0;
+    Memory<char>::copy(&str[(int)(len < sz ? sz - len : 0)], s, len);
+    return str;
+}
+slib::String slib::sstr::rfill(const char* s, const char c, const size_t sz) {
+    slib::String str(sz, c);
+    auto len = s ? strlen(s) : 0;
+    Memory<char>::copy(&str[0], s, (len < sz ? len : sz));
+    return str;
+}
+slib::String slib::sstr::bfill(const char* s, const char c, const size_t sz) {
+    slib::String str(sz, c);
+    auto len = s ? strlen(s) : 0;
+    auto off = (len < sz ? sz - len : 0) / 2;
+    Memory<char>::copy(&str[(int)off], s, (len < sz ? len : sz));
+    return str;
+}
+slib::String slib::SP = { ' ' };
+slib::String slib::CR = { '\r' };
+slib::String slib::LF = { '\n' };
+slib::String slib::CRLF = { '\r', '\n' };
+slib::String slib::TAB = { '\t' };
+slib::String slib::DEL = { '\b' };
+#ifdef WIN_OS
+slib::String slib::NL = slib::CRLF;
+#else
+slib::String slib::NL = slib::LF;
+#endif
+
+#if defined(WIN_OS)
+slib::String slib::String::toUTF8(const wchar_t* ws) {
 	auto wsize = ::WideCharToMultiByte(CP_UTF8, 0U, ws, -1, nullptr, 0, nullptr, nullptr);
 	String str(wsize, '\0');
-	auto res = ::WideCharToMultiByte(CP_UTF8, 0U, ws, -1, str.ptr(), wsize, nullptr, nullptr);
-	if (!res) throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "ws");
-	if (str[-1] == '\0') str.resize(str.length() - 1);
+	auto res = ::WideCharToMultiByte(CP_UTF8, 0U, ws, -1, &str[0], wsize, nullptr, nullptr);
+	if (str[-1] == '\0') str.resize(str.size() - 1);
 	return str;
 }
-String String::toUTF8(const char* s) {
+slib::String slib::String::toUTF8(const char* s) {
 	auto wsize = ::MultiByteToWideChar(CP_ACP, 0U, s, -1, nullptr, 0U);
 	Array<wchar_t> u16s(wsize);
-	auto res = ::MultiByteToWideChar(CP_ACP, 0U, s, -1, u16s.ptr(), wsize);
-	if (!res) throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "s");
-	auto u8size = ::WideCharToMultiByte(CP_UTF8, 0U, u16s.ptr(), -1, nullptr, 0, nullptr, nullptr);
+	auto res = ::MultiByteToWideChar(CP_ACP, 0U, s, -1, u16s.data(), wsize);
+	auto u8size = ::WideCharToMultiByte(CP_UTF8, 0U, u16s.data(), -1, nullptr, 0, nullptr, nullptr);
 	String str(u8size, '\0');
-	res = ::WideCharToMultiByte(CP_UTF8, 0U, u16s.ptr(), -1, str.ptr(), u8size, nullptr, nullptr);
-	if (!res) throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "s");
-	if (str[-1] == '\0') str.resize(str.length() - 1);
+	res = ::WideCharToMultiByte(CP_UTF8, 0U, u16s.data(), -1, &str[0], u8size, nullptr, nullptr);
+	if (str[-1] == '\0') str.resize(str.size() - 1);
 	return str;
 }
 #endif
-bool String::_isLong() const { return (*((uint8_t *)&_str))&0x01; }
-std::pair<char *, size_t> String::_instance() {
-    if (_isLong()) return std::pair<char *, size_t>(_str._ls.str, _str._ls.size);
-    return std::pair<char *, size_t>(_str._ss.str, _str._ss.size>>1);
+
+slib::String::short_string::short_string() { size = 0; memset(ptr, 0, SHORT_STRING_CAPACITY); }
+slib::String::short_string::~short_string() { size = 0; memset(ptr, 0, SHORT_STRING_CAPACITY); }
+void slib::String::short_string::copyTo(short_string& dest) {
+    dest.size = size; 
+    Memory<char>::copy(dest.ptr, ptr, SHORT_STRING_CAPACITY);
 }
-std::pair<const char *, size_t> String::_cinstance() const {
-    if (_isLong()) return std::pair<const char *, size_t>(_str._ls.str, _str._ls.size);
-    return std::pair<const char *, size_t>(_str._ss.str, _str._ss.size>>1);
-}
-void String::_append(const char *s, size_t l) {
-    if (l) {
-        auto tmp = size();
-        resize(tmp+l);
-        memcpy(ptr(tmp), s, l);
+slib::String::long_string::long_string() { capacity = 1; size = 0; ptr = nullptr; }
+slib::String::long_string::~long_string() {
+    if (ptr) {
+        Memory<char>::dealloc(ptr);
+        capacity = 0; size = 0; ptr = nullptr;
     }
-}
-void String::_insert(sinteger idx, const char *s, size_t l) {
-    if (l) {
-        sinteger tmp = (sinteger)size();
-        if (idx < tmp) {
-            resize(tmp+l);
-            auto p = ptr();
-            CMemory<char>::shift(&p[idx+l], &p[idx], tmp-idx);
-            CMemory<char>::copy(&p[idx], s, l);
-        }
-        else _append(s, std::forward<size_t>(l));
-    }
-}
-const char *String::_find(const char *que, size_t s, const char *current, const char *end) const {
-    const char *p_, *q_;
-    size_t shift;
-    bool match;
-    while (current < end) {
-        if (*current == *que) {
-            match = true;
-            shift = 0;
-            p_ = current+1; q_ = que+1;
-            sforin(i, 1, s) {
-                if (*p_ == *que) shift = i;
-                if (*p_ != *q_) {
-                    if (!shift) shift = i+1;
-                    match = false; break;
-                }
-                ++p_; ++q_;
-            }
-            if (match) return current;
-            else current += shift;
-        }
-        else ++current;
-    }
-    return nullptr;
-}
-const char *String::_rfind(const char *que, size_t s, const char *begin, const char *current) const {
-    const char *p_, *q_;
-    size_t shift;
-    bool match;
-    while (begin <= current) {
-        if (*current == *que) {
-            match = true;
-            shift = 0;
-            p_ = current+1; q_ = que+1;
-            sforin(i, 1, s) {
-                if (*p_ == *que) shift = i;
-                if (*p_ != *q_) {
-                    if (!shift) shift = i+1;
-                    match = false; break;
-                }
-                ++p_; ++q_;
-            }
-            if (match) return current;
-            else current -= shift;
-        }
-        else --current;
-    }
-    return nullptr;
 }
 
-String::String() { memset(&_str, 0, sizeof(_str)); }
-String::String(bool b) : String(b?"true":"false") {}
-String::String(int i) : String(std::to_string(i)) {}
-String::String(unsigned int ui) : String(std::to_string(ui)) {}
-String::String(size_t ui) : String(std::to_string(ui)) {}
-#ifdef WIN64_OS
-String::String(long i) : String(std::to_string(i)) {}
-#ifndef MAC_OS
-String::String(unsigned long ui) : String(std::to_string(ui)) {}
-#endif
-#endif
-String::String(long long i) : String(std::to_string(i)) {}
-#ifdef MAC_OS
-String::String(unsigned long long ui) : String(std::to_string(ui)) {}
-#endif
-#ifdef LINUX_OS
-String::String(sinteger i) : String(std::to_string(i)) {}
-#endif
-String::String(float f) : String(std::to_string(f)) {}
-String::String(double d) : String(std::to_string(d)) {}
-String::String(sbyte i) : String(std::to_string(i)) {}
-String::String(subyte ui) : String(std::to_string(ui)) {}
-String::String(sshort i) : String(std::to_string(i)) {}
-String::String(sushort ui) : String(std::to_string(ui)) {}
-String::String(size_t s, const char &c) : String() {
-    if (s < SHORT_STRING_CAPACITY-1) {
-        if (s) {
-            memset(_str._ss.str, c, s);
-            _str._ss.str[s] = '\0';
-			_str._ss.size = (sbyte)(s << 1);
-        }
-    }
-    else {
-        _str._ls.capacity = (((s>>1)+1)<<1)|0x01;
-        _str._ls.str = CMemory<char>::alloc(_str._ls.capacity);
-        _str._ls.size = s;
-        memset(_str._ls.str, c, s);
-        _str._ls.str[s] = '\0';
-    }
-}
-String::String(char c) : String(1, c) {}
-String::String(const Char &c) : String(c.toStr()) {}
-String::String(const char *s) : String() {
-    if (s) {
-        auto len = strlen(s);
-        if (len < SHORT_STRING_CAPACITY-1) {
-            if (len) strcpy(_str._ss.str, s);
-            _str._ss.size = (sbyte)(len << 1);
-        }
-        else {
-            _str._ls.capacity = (((len>>4)+1)<<4)|0x01;
-            _str._ls.str = CMemory<char>::alloc(_str._ls.capacity);
-            strcpy(_str._ls.str, s);
-            _str._ls.size = len;
-        }
-    }
-}
-String::String(const std::string &s) : String() {
-    auto len = s.length();
-    if (len < SHORT_STRING_CAPACITY-1) {
-        if (len) {
-            CMemory<char>::copy(_str._ss.str, &s[0], len);
-            _str._ss.size = (sbyte)(len << 1);
-            _str._ss.str[len] = '\0';
-        }
-    }
-    else {
-        _str._ls.capacity = (((len>>4)+1)<<4)|0x01;
-        _str._ls.str = CMemory<char>::alloc(_str._ls.capacity);
-        CMemory<char>::copy(_str._ls.str, &s[0], len);
-        _str._ls.size = len;
-        _str._ls.str[len] = '\0';
-    }
-}
-String::String(std::initializer_list<char> li) : String(li.size(), 0x00) { sforeach2(*this, li) E1_ = E2_; }
-String::String(String &&s) : String() {
-    memcpy(&_str, &s._str, sizeof(string));
-    memset(&s._str, 0, sizeof(string));
-}
-String::String(const String &s) : String() {
-    auto len = s.length();
-    if (len < SHORT_STRING_CAPACITY-1) {
-        if (len)  {
-            CMemory<char>::copy(_str._ss.str, &s[0], len);
-            _str._ss.size = (sbyte)(len << 1);
-            _str._ss.str[len] = '\0';
-        }
-    }
-    else {
-        _str._ls.capacity = (((len>>4)+1)<<4)|0x01;
-        _str._ls.str = CMemory<char>::alloc(_str._ls.capacity);
-        CMemory<char>::copy(_str._ls.str, &s[0], len);
-        _str._ls.size = len;
-        _str._ls.str[len] = '\0';
-    }
-}
-String::String(const SString &s) : String() {
-    auto len = s.length();
-    if (len < SHORT_STRING_CAPACITY-1) {
-        if (len) {
-            CMemory<char>::copy(_str._ss.str, &s[0], len);
-            _str._ss.size = (sbyte)(len << 1);
-            _str._ss.str[len] = '\0';
-        }
-    }
-    else {
-        _str._ls.capacity = (((len>>4)+1)<<4)|0x01;
-        _str._ls.str = CMemory<char>::alloc(_str._ls.capacity);
-        CMemory<char>::copy(_str._ls.str, &s[0], len);
-        _str._ls.size = len;
-        _str._ls.str[len] = '\0';
-    }
-}
-String::String(const SObjPtr &obj) : String() {
-    if (obj.isNull()) *this = "";
-    else if (obj.isStr()) *this = obj.string();
-    else *this = obj.toString();
-}
-String::~String() {
-    if (_isLong()) CMemory<char>::dealloc(_str._ls.str);
-    memset(&_str, 0, sizeof(_str));
-}
+bool slib::String::_isLong() const { return (reinterpret_cast<const subyte *>(&_str))[0] & 0x01; }
+char* slib::String::_begin() const { return const_cast<char *>(_isLong() ? _str.ls.ptr : &_str.ss.ptr[0]); }
+char* slib::String::_end() const { return const_cast<char*>(_isLong() ? (_str.ls.ptr + _str.ls.size) : &_str.ss.ptr[_str.ss.size>>1]); }
 
-String &String::operator=(bool b) { *this = b?"true":"false"; return *this; }
-String &String::operator=(int i) { *this = std::to_string(i); return *this; }
-String &String::operator=(unsigned int ui) { *this = std::to_string(ui); return *this; }
-String &String::operator=(size_t ui) { *this = std::to_string(ui); return *this; }
-#ifdef WIN64_OS
-String &String::operator=(long i) { *this = std::to_string(i); return *this; }
-#ifndef MAC_OS
-String &String::operator=(unsigned long ui) { *this = std::to_string(ui); return *this; }
-#endif
-#endif
-String &String::operator=(long long i) { *this = std::to_string(i); return *this; }
+slib::String::String() {}
+slib::String::String(const bool n) : String() { append(n ? "true" : "false"); }
+slib::String::String(const int n) : String() { append(std::to_string(n)); }
+slib::String::String(const size_t n) : String() { append(std::to_string(n)); }
+//slib::String::String(const long long n) : String() { append(std::to_string(n)); }
+slib::String::String(const int64_t n) : String() { append(std::to_string(n)); }
 #ifdef MAC_OS
-String &String::operator=(unsigned long long ui) { *this = std::to_string(ui); return *this; }
+slib::String::String(const sinteger n) : String() { append(std::to_string(n)); }
+slib::String::String(const suinteher n) : String() { append(std::to_string(n)); }
 #endif
-#ifdef LINUX_OS
-String &String::operator=(sinteger i) { *this = std::to_string(i); return *this; }
+slib::String::String(const float n) : String() { append(std::to_string(n)); }
+slib::String::String(const double n) : String() { append(std::to_string(n)); }
+slib::String::String(const Char& c) : String() { append(toString(c)); }
+slib::String::String(const char* s) : String() { append(s); }
+slib::String::String(const std::string& s) : String() { append(s); }
+#if defined(WIN32_OS) || defined(WIN64_OS)
+//slib::String::String(const wchar_t* ws);
+//slib::String::String(const std::wstring &ws);
 #endif
-String &String::operator=(float f) { *this = std::to_string(f); return *this; }
-String &String::operator=(double d) { *this = std::to_string(d); return *this; }
-String &String::operator=(sbyte i) { *this = std::to_string(i); return *this; }
-String &String::operator=(subyte ui) { *this = std::to_string(ui); return *this; }
-String &String::operator=(sshort i) { *this = std::to_string(i); return *this; }
-String &String::operator=(sushort ui) { *this = std::to_string(ui); return *this; }
-String &String::operator=(char c) { clear(); resize(1, c); return *this; }
-String &String::operator=(const char *s) {
-    clear(); if (s && s[0] != '\0') copy(s, strlen(s)); return *this;
+slib::String::String(size_t sz, const char c) : String() { resize(sz, c); }
+slib::String::String(std::initializer_list<char> li) : String() { 
+    resize(li.size()); sfor2(*this, li) { $_1 = $_2; }
 }
-String &String::operator=(const std::string &s) {
-    clear(); if (s.size()) copy(&s[0], s.length()); return *this;
-}
-String &String::operator=(String &&s) {
-    clear(); if (s.size()) memcpy(&_str, &s._str, sizeof(string));
-    memset(&s._str, 0, sizeof(string)); return *this;
-}
-String &String::operator=(const String &s) {
-    clear(); if (s.size()) copy(&s[0], s.length()); return *this;
-}
-String &String::operator=(const SString &s) {
-    clear(); if (s.size()) copy(&s[0], s.length()); return *this;
-}
-String &String::operator=(SObjPtr obj) {
-    if (!obj.isNull()) {
-        if (obj.isStr()) *this = obj.string();
-        else *this = obj.toString();
-    }
-    return *this;
-}
-String &String::operator+=(bool b) { *this += b?"true":"false"; return *this; }
-String &String::operator+=(int i) { *this += std::to_string(i); return *this; }
-String &String::operator+=(unsigned int ui) { *this += std::to_string(ui); return *this; }
-String &String::operator+=(size_t ui) { *this += std::to_string(ui); return *this; }
-#ifdef WIN64_OS
-String &String::operator+=(long i) { *this += std::to_string(i); return *this; }
-#ifndef MAC_OS
-String &String::operator+=(unsigned long ui) { *this += std::to_string(ui); return *this; }
-#endif
-#endif
-String &String::operator+=(long long i) { *this += std::to_string(i); return *this; }
-#ifdef MAC_OS
-String &String::operator+=(unsigned long long ui) { *this += std::to_string(ui); return *this; }
-#endif
-#ifdef LINUX_OS
-String &String::operator+=(sinteger i) { *this += std::to_string(i); return *this; }
-#endif
-String &String::operator+=(float f) { *this += std::to_string(f); return *this; }
-String &String::operator+=(double d) { *this += std::to_string(d); return *this; }
-String &String::operator+=(sbyte i) { *this += std::to_string(i); return *this; }
-String &String::operator+=(subyte ui) { *this += std::to_string(ui); return *this; }
-String &String::operator+=(sshort i) { *this += std::to_string(i); return *this; }
-String &String::operator+=(sushort ui) { *this += std::to_string(ui); return *this; }
-String &String::operator+=(char c) { resize(size()+1, c); return (*this); }
-String &String::operator+=(const char *s) { append(s); return (*this); }
-String &String::operator+=(const std::string &s) { append(s); return (*this); }
-String &String::operator+=(const String &s) { append(s); return (*this); }
-String &String::operator+=(const SString &s) { append(s); return (*this); }
-String &String::operator+=(SObjPtr obj) {
-    if (obj.isStr()) append(obj.string());
-    else append(obj.toString());
-    return *this;
-}
-String String::operator+(bool b) const { return String(*this)+=(b?"true":"false"); }
-String String::operator+(int i) const { return String(*this)+=i; }
-String String::operator+(unsigned int ui) const { return String(*this)+=ui; }
-String String::operator+(size_t ui) const { return String(*this)+=ui; }
-#ifdef WIN64_OS
-String String::operator+(long i) const { return String(*this)+=i; }
-#ifndef MAC_OS
-String String::operator+(unsigned long ui) const { return String(*this)+=ui; }
-#endif
-#endif
-String String::operator+(long long i) const { return String(*this)+=i; }
-#ifdef MAC_OS
-String String::operator+(unsigned long long ui) const { return String(*this)+=ui; }
-#endif
-#ifdef LINUX_OS
-String String::operator+(sinteger i) const { return String(*this)+=i; }
-#endif
-String String::operator+(float f) const { return String(*this)+=f; }
-String String::operator+(double d) const { return String(*this)+=d; }
-String String::operator+(sbyte i) const { return String(*this)+=i; }
-String String::operator+(subyte ui) const { return String(*this)+=ui; }
-String String::operator+(sshort i) const { return String(*this)+=i; }
-String String::operator+(sushort ui) const { return String(*this)+=ui; }
-String String::operator+(char c) const { return String(*this) += c; }
-String String::operator+(const char *s) const { return String(*this) += s; }
-String String::operator+(const std::string &s) const { return String(*this) += s; }
-String String::operator+(const String &s) const { return String(*this) += s; }
-String String::operator+(const SString &s) const { return String(*this) += s; }
-String String::operator+(SObjPtr obj) const { return String(*this) += obj; }
-String &String::operator<<(bool b) { *this += b?"true":"false"; return *this; }
-String &String::operator<<(int i) { *this += std::to_string(i); return *this; }
-String &String::operator<<(unsigned int ui) { *this += std::to_string(ui); return *this; }
-String &String::operator<<(size_t ui) { *this += std::to_string(ui); return *this; }
-#ifdef WIN64_OS
-String &String::operator<<(long i) { *this += std::to_string(i); return *this; }
-#ifndef MAC_OS
-String &String::operator<<(unsigned long ui) { *this += std::to_string(ui); return *this; }
-#endif
-#endif
-String &String::operator<<(long long i) { *this += std::to_string(i); return *this; }
-#ifdef MAC_OS
-String &String::operator<<(unsigned long long ui) { *this += std::to_string(ui); return *this; }
-#endif
-#ifdef LINUX_OS
-String &String::operator<<(sinteger i) { *this += std::to_string(i); return *this; }
-#endif
-String &String::operator<<(float f) { *this += std::to_string(f); return *this; }
-String &String::operator<<(double d) { *this += std::to_string(d); return *this; }
-String &String::operator<<(sbyte i) { *this += std::to_string(i); return *this; }
-String &String::operator<<(subyte ui) { *this += std::to_string(ui); return *this; }
-String &String::operator<<(sshort i) { *this += std::to_string(i); return *this; }
-String &String::operator<<(sushort ui) { *this += std::to_string(ui); return *this; }
-String& String::operator<<(char c) { this->add(c); return (*this); }
-String &String::operator<<(const char *s) { return (*this) += s; }
-String &String::operator<<(const std::string &s) { return (*this) += s; }
-String &String::operator<<(const String &s) { return (*this) += s; }
-String &String::operator<<(const SString &s) { return (*this) += s; }
-String& String::operator<<(const SText& t) { return (*this) += t.string(); }
-String& String::operator<<(const sio::SFile& f) { return (*this) += f.path(); }
-String &String::operator<<(SObjPtr obj) { return (*this) += obj; }
-String &String::operator*=(int num) {
-    if (!empty()) {
-        if (!num) clear();
-        else if (1 < num) {
-            auto s = size();
-            resize(s* num); auto ori = ptr(), p = ori+s;
-            sforin(i, 1, num) { CMemory<char>::copy(p, ori, s); p += s; }
-        }
-    }
-    return *this;
-}
-String &String::operator*=(size_t num) { return (*this) *= (int)num; }
-String String::operator*(int num) const { return String(*this) *= num; }
-String String::operator*(size_t num) const { return String(*this) *= (int)num; }
-bool String::isNumeric() const {
-    return equal(R(/true|yes/i)) || equal(R(/false|no/i)) ||
-		equal(R(/[+-]*\\d+/)) || equal(R(/0x[0-9a-fA-F]+/)) ||
-		equal(R(/nan/i)) || equal(R(/[+-]*inf/i)) || equal(R(/[+-]*infinity/i)) ||
-		equal(R(/[+-]*\\d+\\.\\d+/i)) || equal(R(/[+-]*\\d+[eE][+-]*\\d+/)) ||
-		equal(R(/[+-]*\\d+\\/\\d+/)) || equal(R(/[+-]*[0-9.]*[+-]*[0-9.]+i/));
-}
-bool String::isQuoted() const {
-    auto ins = _cinstance();
-    if (ins.second < 2) return false;
-    return (ins.first[0] == '\'' || ins.first[0] == '\"') && ins.first[0] == ins.first[ins.second-1] && ins.first[ins.second-2] != '\\';
-}
-bool String::empty() const { return !size(); }
-size_t String::size() const { return _isLong()?_str._ls.size:(_str._ss.size>>1); }
-size_t String::length() const { return size(); }
-size_t String::capacity() const { return _isLong()?_str._ls.capacity:22; }
-char *String::ptr(size_t idx) { return _isLong()?&_str._ls.str[idx]:_str._ss.str+idx; }
-const char *String::ptr(size_t idx) const { return _isLong()?&_str._ls.str[idx]:_str._ss.str+idx; }
-const char *String::cstr() const { return _isLong()?_str._ls.str:_str._ss.str; }
-std::string String::toStr() const { return std::string(cstr()); }
-char &String::operator[] (sinteger idx) { return at(idx); }
-const char &String::operator[] (sinteger idx) const { return at(idx); }
-char& String::at(sinteger idx) {
-	if (_isLong()) {
-		auto p = idx < 0 ? (sinteger)_str._ls.size + idx : idx;
-		if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
-	}
-	else {
-		auto p = idx < 0 ? (sinteger)(_str._ss.size >> 1) + idx : idx;
-		if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
-	}
-	throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-}
-const char& String::at(sinteger idx) const {
-	if (_isLong()) {
-		auto p = idx < 0 ? (sinteger)_str._ls.size + idx : idx;
-		if (-1 < p && p < _str._ls.size) return _str._ls.str[p];
-	}
-	else {
-		auto p = idx < 0 ? (sinteger)(_str._ss.size >> 1) + idx : idx;
-		if (-1 < p && p < _str._ss.size) return _str._ss.str[p];
-	}
-	throw SException(ERR_INFO, SLIB_RANGE_ERROR);
-}
-char &String::first(){ return at(0); }
-const char &String::first() const{ return at(0); }
-char &String::last() { return at(-1); }
-const char &String::last() const { return at(-1); }
-void String::interpret(subyte* bytes, size_t s) {
-	if (s < SHORT_STRING_CAPACITY - 1) {
-		if (s) Memory<char>::copy(_str._ss.str, (char*)bytes, s);
-		_str._ss.str[s] = '\0';
-		_str._ss.size = (sbyte)(s << 1);
-	}
-	else {
-		_str._ls.str = (char *)bytes;
-		_str._ls.str[s] = '\0';
-		_str._ls.size = s;
-	}
-}
-void String::copy(const char *dat, size_t s) {
-    if (!dat || dat[0] == '\0' || s == 0) clear();
+slib::String::String(String&& s) noexcept : String() { swap(s); }
+slib::String::String(const String& s) : String() { append(s); }
+slib::String::~String() {}
+slib::String& slib::String::operator=(String&& s) noexcept { clear(); swap(s); return *this; }
+slib::String& slib::String::operator=(const String& s) { clear(); append(s); return *this; }
+slib::String& slib::String::operator=(const char* s) { clear(); append(s); return *this; }
+slib::String& slib::String::operator+=(const String& s) { append(s); return *this; }
+slib::String& slib::String::operator+=(const char* s) { append(s); return *this; }
+slib::String& slib::String::operator<<(const char c) { add(c); return *this; }
+slib::String& slib::String::operator<<(const int n) { append(String(n)); return *this; }
+slib::String& slib::String::operator<<(const int64_t n) { append(String(n)); return *this; }
+slib::String& slib::String::operator<<(const size_t n) { append(String(n)); return *this; }
+slib::String& slib::String::operator<<(const float n) { append(String(n)); return *this; }
+slib::String& slib::String::operator<<(const double n) { append(String(n)); return *this; }
+slib::String& slib::String::operator<<(const Char& c) { append(c.toString()); return *this; }
+slib::String& slib::String::operator<<(const String& s) { append(s); return *this; }
+slib::String& slib::String::operator<<(const char* s) { append(s); return *this; }
+slib::String& slib::String::operator*=(const int i) {
+    if (i < 0) throw FormatException(String("Not negative number should be passed to multiply operator of String class. But '") << i << "' was received.");
+    else if (!i) clear();
     else {
-        auto len = strlen(dat);
-        if (s == -1 || len < s) s = len;
-        if (!_isLong() && s < SHORT_STRING_CAPACITY-1) {
-			Memory<char>::copy(_str._ss.str, dat, s);
-            _str._ss.str[s] = '\0';
-            _str._ss.size = (sbyte)(s << 1);
-        }
-        else {
-            reserve((((len>>4)+1)<<4)|0x01);
-            memcpy(ptr(), dat, s);
-            _str._ls.str[s] = '\0';
-            _str._ls.size = s;
-        }
+        slib::String tmp(*this);
+        sforin(k, 0, i - 1) { append(tmp); }
     }
+    return *this;
 }
-void String::clear() { resize(0); }
-void String::resize(size_t s) {
-    if (!_isLong() && s < SHORT_STRING_CAPACITY-1) {
-        _str._ss.str[s] = '\0';
-        _str._ss.size = (sbyte)(s << 1);
-        return;
+slib::String slib::String::operator+(const char c) const { String str(*this); str.add(c); return str; }
+slib::String slib::String::operator+(const char* s) const { String str(*this); str.append(s); return str; }
+slib::String slib::String::operator+(const String& s) const { String str(*this); str.append(s); return str; }
+slib::String slib::String::operator*(const int i) const { slib::String str(*this); str *= i; return str; }
+size_t slib::String::capacity() const { 
+    return _isLong() ? _str.ls.capacity : SHORT_STRING_CAPACITY;
+}
+bool slib::String::empty() const { return size() == 0; }
+size_t slib::String::size() const { return _isLong() ? _str.ls.size : (_str.ss.size >> 1); }
+size_t slib::String::length() const {
+    size_t len = 0; 
+    sforc(*this) ++len;
+    return len;
+}
+void slib::String::reserve(const size_t s) { 
+    if (s < capacity()) return;
+    if (MAX_ARRAY_CAPACITY < s) throw OverFlowException(String("Maximum String class capacity should be less than '") << MAX_ARRAY_CAPACITY << "'. But '" << s << "' was received.");
+    if (_isLong()) {
+        _str.ls.capacity = (s % 2 ? s : s + 1);
+        auto tmp = Memory<char>::alloc(_str.ls.capacity);
+        Memory<char>::copy(tmp, _str.ls.ptr, _str.ls.size);
+        Memory<char*>::swap(&tmp, &_str.ls.ptr);
+        Memory<char>::dealloc(tmp);
     }
     else {
-        if (!_isLong()) reserve((((s>>4)+1)<<4)|0x01);
-        else if (_str._ls.capacity-1 <= s) {
-            auto cap = _str._ls.capacity-1;
-            while (cap <= s) cap<<=1;
-            reserve(cap|0x01);
-        }
+        auto sz = size(), cap = (s % 2 ? s : s + 1);
+        auto tmp = Memory<char>::alloc(cap);
+        Memory<char>::copy(tmp, _str.ss.ptr, sz);
+        _str.ls.capacity = cap;
+        _str.ls.size = sz;
+        _str.ls.ptr = tmp;
     }
-    _str._ls.str[s] = '\0';
-    _str._ls.size = s;
 }
-void String::resize(size_t s, const char &c) {
-    auto tmp = size();
+void slib::String::resize(const size_t s) {
+    auto cap = capacity();
+    if (!cap) reserve(s + 1);
+    else if (cap <= s + 1) {
+        while (cap <= s) { cap <<= 1; }
+        reserve(cap);
+    }
+    if (_isLong()) _str.ls.size = s;
+    else _str.ss.size = (slib::sbyte)(s << 1);
+    *_end() = '\0';
+}
+void slib::String::resize(const size_t s, const char c) {
+    auto sz = size();
+    if (s == sz) return;
     resize(s);
-    if (tmp < s) {
-        auto p = ptr(tmp);
-        sforin(i, tmp, s) { *p = c; ++p; }
-    }
+    memset(_begin() + sz, (int)c, s - sz);
 }
-void String::reserve(size_t s) {
-    if (_isLong()) {
-        if (_str._ls.capacity-1 < s) {
-            _str._ls.capacity = s|0x01;
-            auto tmp = CMemory<char>::alloc(_str._ls.capacity);
-            CMemory<char>::copy(tmp, _str._ls.str, _str._ls.size+1);
-            CMemory<char>::dealloc(_str._ls.str);
-            _str._ls.str = tmp;
-        }
+void slib::String::swap(String& str) {
+    if (_isLong() && str._isLong()) {
+        Memory<size_t>::swap(&_str.ls.capacity, &str._str.ls.capacity);
+        Memory<size_t>::swap(&_str.ls.size, &str._str.ls.size);
+        Memory<char*>::swap(&_str.ls.ptr, &str._str.ls.ptr);
     }
-    else if (SHORT_STRING_CAPACITY-1 < s) {
-        size_t cap = s|0x01, len = _str._ss.size>>1;
-        auto tmp = CMemory<char>::alloc(cap);
-        CMemory<char>::copy(tmp, _str._ss.str, len+1);
-        _str._ls.capacity = cap;
-        _str._ls.size = len;
-        _str._ls.str = tmp;
+    else if (_isLong()) {
+        short_string ss;
+        str._str.ss.copyTo(ss);
+        str._str.ls.size = _str.ls.size;
+        str._str.ls.capacity = _str.ls.capacity;
+        str._str.ls.ptr = _str.ls.ptr;
+        ss.copyTo(_str.ss);
     }
-}
-void String::swap(String &str) {
-    if (_isLong()) {
-        auto tmpc = _str._ls.capacity;
-        auto tmps = _str._ls.size;
-        auto tmpp = _str._ls.str;
-        if (str._isLong()) {
-            _str._ls.capacity = str._str._ls.capacity;
-            _str._ls.size = str._str._ls.size;
-            _str._ls.str = str._str._ls.str;
-        }
-        else {
-            _str._ss.size = str._str._ss.size;
-            CMemory<char>::copy(_str._ss.str, str._str._ss.str, SHORT_STRING_CAPACITY);
-        }
-        str._str._ls.capacity = tmpc;
-        str._str._ls.size = tmps;
-        str._str._ls.str = tmpp;
+    else if (str._isLong()) {
+        short_string ss;
+        _str.ss.copyTo(ss);
+        _str.ls.size = str._str.ls.size;
+        _str.ls.capacity = str._str.ls.capacity;
+        _str.ls.ptr = str._str.ls.ptr;
+        ss.copyTo(str._str.ss);
     }
     else {
-        auto tmps = _str._ss.size;
-        char tmpc[SHORT_STRING_CAPACITY];
-        memcpy(tmpc, _str._ss.str, SHORT_STRING_CAPACITY);
-        if (str._isLong()) {
-            _str._ls.capacity = str._str._ls.capacity;
-            _str._ls.size = str._str._ls.size;
-            _str._ls.str = str._str._ls.str;
-        }
-        else {
-            _str._ss.size = str._str._ss.size;
-            memcpy(_str._ss.str, str._str._ss.str, SHORT_STRING_CAPACITY);
-        }
-        str._str._ss.size = tmps;
-        memcpy(str._str._ss.str, tmpc, SHORT_STRING_CAPACITY);
+        short_string ss;
+        _str.ss.copyTo(ss);
+        str._str.ss.copyTo(_str.ss);
+        ss.copyTo(str._str.ss);
     }
 }
-SArrayIterator<char> String::begin() { return SArrayIterator<char>(ptr()); }
-SArrayCIterator<char> String::begin() const { return SArrayCIterator<char>(cstr()); }
-SArrayIterator<char> String::end() { auto ins = _instance(); return SArrayIterator<char>(&ins.first[ins.second]); }
-SArrayCIterator<char> String::end() const { auto ins = _cinstance(); return SArrayCIterator<char>(&ins.first[ins.second]); }
-void String::add(const char &c) { _append(&c, 1); }
-void String::append(const char *s) { if (s) _append(s, strlen(s)); }
-void String::append(const std::string &s) { _append(s.c_str(), s.length()); }
-void String::append(const String &s) { auto ins = s._cinstance(); _append(ins.first, ins.second); }
-void String::append(const SString &s) { auto ins = s._cinstance(); _append(ins.first, ins.second); }
-void String::insert(sinteger idx, const char *s) { if (s) _insert(idx, s, strlen(s)); }
-void String::insert(sinteger idx, const std::string &s) { _insert(idx, s.c_str(), s.length()); }
-void String::insert(sinteger idx, const String &s) { auto ins = s._cinstance(); _insert(idx, ins.first, ins.second); }
-void String::removeAt(sinteger idx) { remove(idx, 1); }
-void String::remove(size_t off, size_t len) {
-    auto ins = _instance();
-    if (off < ins.second) {
-        if (len == -1 || ins.second < off+len) len = ins.second-off;
-        if (ins.second-off-len) CMemory<char>::shift(&ins.first[off], &ins.first[off+len], ins.second-off-len);
-        resize(ins.second-len);
-    }
-}
-void String::remove(const srange& rng) { remove(rng.begin, (sinteger)rng.end - rng.begin); }
-String& String::replace(const srange &rng, const char *alt) { 
-	replace(rng.begin, (sinteger)rng.end - rng.begin, alt); 
-	return *this;
-}
-String& String::replace(size_t off, size_t len, const char *alt) {
-    if (alt) {
-        auto ins = _instance();
-        if (off < ins.second) {
-            if (len == -1 || ins.second < off+len) len = ins.second-off;
-            auto alen = strlen(alt);
-            if (len < alen) {
-                CMemory<char>::copy(&ins.first[off], alt, len);
-                insert(off+len, &alt[len]);
-            }
-            else if (alen < len) {
-                CMemory<char>::copy(&ins.first[off], alt, alen);
-                remove(off+alen, len-alen);
-            }
-            else CMemory<char>::copy(&ins.first[off], alt, len);
-        }
-    }
-	return *this;
-}
-String& String::replace(const char *ori, const char *alt) {
-    if (ori && alt && ori[0] != '\0') {
-        auto len = strlen(ori), alen = strlen(alt);
-        auto pos = search(ori);
-        if (!pos.empty()) {
-            String tmp;
-            tmp.reserve(capacity());
-            size_t off = 0;
-            sforeach(pos) {
-                if (E_ < off) continue;
-                tmp += substring(off, E_-off);
-                tmp += alt;
-                off = E_+len;
-            }
-            tmp += substring(off, size()-off);
-            swap(tmp);
-        }
-    }
-	return *this;
-}
-String& String::replace(const Regex &rgx, const char *alt) {
-	*this = rgx.replace(cstr(), alt); return *this;
-}
-String& String::rearrange(const Regex &rgx, const CArray<sint> &order) {
-	*this = rgx.rearrange(cstr(), order); return *this;
-}
-String& String::clip(size_t off, size_t len) {
-    auto ins = _instance();
-    if (off < ins.second) {
-        if (off) remove(0, off);
-        if (len == -1 || ins.second < off+len) len = ins.second-off;
-        resize(len);
-    }
-	return *this;
-}
-String& String::clip(const srange& rng) { clip(rng.begin, (sinteger)rng.end - rng.begin); return *this; }
-String& String::fill(size_t s, char fill, subyte lack) {
-    auto tmp = size();
-    if (tmp < s) {
-		resize(s, fill);
-		size_t dif = 0;
-		switch (lack) {
-		case String::HEAD_PART:
-			dif = s - tmp; 
-			break;
-		case String::BOTH_PART:
-			dif = (s - tmp) / 2;
-			break;
-		default:
-			break;
-		}
-		if (dif) {
-			auto p = ptr();
-			CMemory<char>::shift(&p[dif], p, tmp);
-			sforin(i, 0, dif) { *p = fill; ++p; }
-		}
-    }
-	return *this;
-}
-String& String::trimming() {
-    auto ins = _instance();
-    auto beg = ins.first, end = &ins.first[ins.second];
-    while (beg < end && Char::isWSChar(*beg)) ++beg;
-    while (beg < end && Char::isWSChar(*(end-1))) --end;
-    if (ins.first < beg) remove(0, beg-ins.first);
-    resize(end-beg);
-	return *this;
-}
-String& String::transform(subyte trans) {
-    auto ins = _instance();
-    auto beg = ins.first, en = &ins.first[ins.second];
-    if (trans& slib::sstyle::DELETE_QUOTE) { ++beg; --en; }
-    if (ins.first < beg) remove(0, beg-ins.first);
-	resize(en - beg);
-    if (trans& slib::sstyle::SINGLE_QUOTE) { insert(0, "\'"); append("\'"); }
-    if (trans& slib::sstyle::DOUBLE_QUOTE) { insert(0, "\""); append("\""); }
-    if (trans& slib::sstyle::UPPER_CASE)
-        std::transform(begin(), end(), begin(), toupper);
-    else if (trans& slib::sstyle::LOWER_CASE)
-        std::transform(begin(), end(), begin(), tolower);
-    if (trans& slib::sstyle::FULL_WIDTH) {
-		String tmp = String::wide(cstr());
-		this->swap(tmp);
-    }
-    else if (trans& slib::sstyle::HALF_WIDTH) {
-		String tmp = String::narrow(cstr());
-		this->swap(tmp);
-    }
-	return *this;
-}
-String String::substring(size_t off, size_t len) const {
-    auto ins = _cinstance();
-    if (off < ins.second) {
-        if (len == -1 || ins.second < off+len) len = ins.second-off;
-        if (len) {
-            String sub(len, 0);
-            memcpy(&sub[0], &ins.first[off], len);
-            return sub;
-        }
-    }
-    return String();
-}
-String String::substring(const srange &range) const { return substring(range.begin, range.length()); }
-String String::replaced(const char *ori, const char *alt) const {
-    if (!ori || !alt || ori[0] == '\0') return *this;
-    auto ins = _cinstance();
-    if (!ins.second) return "";
-    String str;
-    str.reserve(capacity());
-    size_t len = strlen(ori), alen = strlen(alt);
-    const char *init = ins.first, *end = ins.first+ins.second, *pos = _find(ori, len, init, end);
-    while (pos) {
-        str._append(init, pos-init);
-        str._append(alt, alen);
-        init = pos+len;
-        pos = _find(ori, len, init, end);
-    }
-	if (init != end) str._append(init, end - init);
-    return str;
-}
-String String::replaced(const Regex &rgx, const char *alt) const {
-    return rgx.replace(cstr(), alt);
-}
-String String::rearranged(const Regex &rgx, const intarray &order) const {
-    return rgx.rearrange(cstr(), order);
-}
-String String::filled(size_t size, char fill, subyte dir) const {
-    String str;
-    auto ins = _cinstance();
-    if (ins.second < size) {
-        str.resize(size, fill);
-		switch (dir) {
-		case String::HEAD_PART:
-			CMemory<char>::copy(str.ptr(size - ins.second), ins.first, ins.second);
-			break;
-		case String::TAIL_PART:
-			CMemory<char>::copy(str.ptr(), ins.first, ins.second);
-			break;
-		case String::BOTH_PART:
-			CMemory<char>::copy(str.ptr((size - ins.second) / 2), ins.first, ins.second);
-			break;
-		default:
-			break;
-		}
-    }
-    else str = *this;
-    return str;
-}
-String String::transformed(uint8_t trans) const {
-    String str = *this;
-    str.transform(trans);
-    return str;
-}
-size_t String::charCount() const { size_t count = 0; if (!empty()) { sforeachc(*this) ++count; } return count; }
-size_t String::charIndex(size_t idx) const { return (ubegin()+idx)->index(); }
-Char String::u8charAt(size_t idx) const { return *(ubegin()+idx); }
-String String::strAt(size_t idx) const { return (ubegin()+idx)->toStr(); }
-SUtf8Iterator String::ubegin() { return SUtf8Iterator(this, ptr()); }
-SUtf8CIterator String::ubegin() const { return SUtf8CIterator(this, ptr()); }
-SUtf8Iterator String::uend() { return SUtf8Iterator(this, ptr(size())); }
-SUtf8CIterator String::uend() const { return SUtf8CIterator(this, ptr(size())); }
-size_t String::count(const char *s, size_t offset) const {
-    size_t c = 0;
+slib::ArrayIterator<char> slib::String::iterAt(const int i) { return (i < 0 ? _end() : _begin()) + i; }
+slib::ArrayCIterator<char> slib::String::iterAt(const int i) const { return (i < 0 ? _end() : _begin()) + i; }
+char& slib::String::at(const int i) { auto ptr = (i < 0 ? _end() : _begin()) + i; return *ptr; }
+const char& slib::String::at(const int i) const { auto ptr = (i < 0 ? _end() : _begin()) + i; return *ptr; }
+char& slib::String::operator[](const int i) { return at(i); }
+const char& slib::String::operator[](const int i) const { return at(i); }
+slib::Utf8Iterator slib::String::u8iterAt(const int i) { return (i < 0 ? u8end() : u8begin()) + i; }
+slib::Utf8CIterator slib::String::u8iterAt(const int i) const { return (i < 0 ? u8end() : u8begin()) + i; }
+slib::Char slib::String::charAt(const int i) const { auto it = (i < 0 ? u8end() : u8begin()) + i; return $_; }
+slib::ArrayIterator<char> slib::String::begin() { return ArrayIterator<char>(_begin()); }
+slib::ArrayCIterator<char> slib::String::begin() const { return ArrayCIterator<char>(const_cast<const char*>(_begin())); }
+slib::ArrayIterator<char> slib::String::end() { return ArrayIterator<char>(_end()); }
+slib::ArrayCIterator<char> slib::String::end() const { return ArrayCIterator<char>(const_cast<const char*>(_end())); }
+slib::Utf8Iterator slib::String::u8begin() { return Utf8Iterator(_begin(), *this); }
+slib::Utf8CIterator slib::String::u8begin() const { return Utf8CIterator(_begin(), *this); }
+slib::Utf8Iterator slib::String::u8end() { return Utf8Iterator(_end(), *this); }
+slib::Utf8CIterator slib::String::u8end() const { return Utf8CIterator(_end(), *this); }
+void slib::String::add(const char c) { resize(size() + 1); at(-1) = c; }
+void slib::String::append(const char* s) { 
     if (s) {
-        auto len = strlen(s);
-        while (offset != NOT_FOUND) {
-            offset = find(s, offset);
-            if (offset == NOT_FOUND) break;
-            else { ++c; ++offset; }
-        }
+        auto sz = size(), len = strlen(s);
+        resize(sz + len);
+        if (len) Memory<char>::copy(_begin() + sz, s, len);
     }
-    return c;
 }
-bool String::contain(const char *que, size_t offset) const {
-    return find(que, offset) != NOT_FOUND;
+void slib::String::append(const std::string& s) {
+    auto sz = size(), sz_ = s.size();
+    resize(sz + sz_);
+    if (sz_) Memory<char>::copy(_begin() + sz, s.c_str(), sz_);
 }
-bool String::match(const Regex &rgx, size_t offset) const {
-    return rgx.match(&at((int)offset));
+void slib::String::append(const String& s) { 
+    auto sz = size(), sz_ = s.size();
+    resize(sz + sz_);
+    if (sz_) Memory<char>::copy(_begin() + sz, s.cstr(), sz_);
 }
-bool String::equal(const Regex &rgx) const {
-    return rgx.equal(cstr());
+void slib::String::insert(const int i, const char* s) {
+    if (!s) return;
+    auto len = strlen(s);
+    resize(size() + len);
+    auto p = &at(i);
+    Memory<char>::shift(p, p + len, _end() - p);
+    Memory<char>::copy(p, s, len);
 }
-size_t String::find(const char *que, size_t offset) const {
-    if (que && que[0] != '\0') {
-        auto ins = _cinstance();
-        auto pos = _find(que, strlen(que), ins.first+offset, ins.first+ins.second);
-        if (pos) return pos-ins.first;
+void slib::String::insert(const int i, const String& s) {
+    auto sz = s.size();
+    resize(size() + sz);
+    auto p = &at(i);
+    Memory<char>::shift(p, p + sz, _end() - p);
+    Memory<char>::copy(p, s.cstr(), sz);
+}
+void slib::String::removeAt(const int i) {
+    auto p = &at(i);
+    Memory<char>::shift(p + 1, p, _end() - p - 1);
+    resize(size() - 1);
+}
+void slib::String::remove(const size_t off, const size_t len) {
+    auto sz = size();
+    if (len == (size_t)-1 || sz < off + len) resize(off);
+    else {
+        Memory<char>::shift(_begin() + off + len, _begin() + off, sz - off - len);
+        resize(sz - len);
     }
-    return NOT_FOUND;
 }
-size_t String::rfind(const char *que, size_t offset) const {
-    if (que && que[0] != '\0') {
-        auto ins = _cinstance();
-        auto pos = _rfind(que, strlen(que), ins.first, ins.first+ins.second-offset-1);
-        if (pos) return pos-ins.first;
+void slib::String::remove(const Range<sint>& range) {
+    auto beg = &at(range.begin), end = &at(range.end);
+    if (beg < end) {
+        auto len = end - beg;
+        Memory<char>::shift(end, beg, _end() - beg - len);
+        resize(size() - len);
     }
-    return NOT_FOUND;
+    //else throw 
 }
-sizearray String::search(const char *que, size_t offset) const {
-    sizearray array;
-    if (!que) return array;
-    auto len = strlen(que), pos = offset;
-    while (offset+len <= length()) {
-        if ((pos = find(que, offset))!= NOT_FOUND) {
-            array.add(pos); offset = pos+1;
-        }
+void slib::String::clear() { resize(0); }
+slib::String& slib::String::trim() {
+    if (empty()) return *this;
+    srange range(0, (int)size());
+    srfor(*this) {
+        if (sutf8::isWS($_)) --range.end;
         else break;
     }
-    return array;
-}
-sizearray String::search(const Regex &rgx, size_t offset) const {
-    sizearray array;
-    rgx.search(array, &at((int)offset), &last());
-    return array;
-}
-stringarray String::matched(const Regex &rgx, size_t offset) const {
-    stringarray array;
-    rgx.search(array, &at((int)offset), &last());
-    return array;
-}
-inline void addsubstr(const String &str, stringarray &array, size_t init, size_t current, bool trim, bool ignore) {
-    auto l = current-init;
-    if (trim) {
-        while (init < current && Char::isWSChar(str[(int)init])) ++init;
-        l = current-init;
-        while (0 < l && Char::isWSChar(str[(int)(init+l-1)])) --l;
+    sfor(*this) {
+        if (sutf8::isWS($_)) ++range.begin;
+        else break;
     }
-    if (l) array.add(str.substring(init, l));
-    else if (!ignore) array.add("");
+    if (range.begin < range.end) return clip(range.begin, range.length());
+    else {
+        clear(); return *this;
+    }
 }
-stringarray String::split(const char *sep, bool trim, bool ignore) const {
+slib::String& slib::String::clip(const size_t off, const size_t len) {
+    auto sz = len == (size_t)-1 ? size() - off : len;
+    if (off) {
+        if (size() <= off) throw RangeException(outRangeErrorText("clip offset", off, 0, size()));
+        remove(0, off);
+    }
+    resize(sz);
+    return *this;
+}
+slib::String& slib::String::clip(const srange& range) {
+    return clip(iterAt(range.begin) - begin(), iterAt(range.end) - iterAt(range.begin));
+}
+bool slib::String::beginWith(const char* que) const {
+    if (que) {
+        auto len = strlen(que);
+        return !memcmp(_begin(), que, len);
+    }
+    return false;
+}
+bool slib::String::endWith(const char* que) const {
+    if (que) {
+        auto len = strlen(que);
+        return !memcmp(_end() - len, que, len);
+    }
+    return false;
+}
+slib::String slib::String::substring(const size_t off, size_t length) const {
+    auto sz = size();
+    if (sz < off) throw RangeException(outRangeErrorText("substring offset", off, 0, sz));
+    if (length == (size_t)-1 || sz < off + length) length = sz - off;
+    slib::String str(length, '\0');
+    if (length) Memory<char>::copy(&str[0], &at((int)off), length);
+    return str;
+}
+slib::String slib::String::substring(const srange range) const {
+    size_t off = range.begin < 0 ? size() - (size_t)std::abs(range.begin) : (size_t)range.begin,
+        length = (range.end < 0 ? size() - (size_t)std::abs(range.end) : (size_t)range.end ) - off;
+    return substring(off, length);
+}
+
+slib::String &slib::String::replace(const size_t off, const size_t len, const char* wrd) {
+    if (len == (size_t)-1) {
+        resize(off); append(wrd); return *this;
+    }
+    auto sz = wrd ? strlen(wrd) : 0;
+    slib::String str(size() - len + sz, '\0');
+    Memory<char>::copy(&str[0], _begin(), off);
+    if(wrd) Memory<char>::copy(&str[0] + off, wrd, sz);
+    Memory<char>::copy(&str[0] + off + sz, _begin() + off + len, size() - off - len);
+    swap(str);
+    return *this;
+}
+slib::String &slib::String::replace(const char* ori, const char* alt) {
+    if (empty()) return *this;
+    if (ori) {
+        slib::String str;
+        auto len = strlen(ori);
+        auto off = (size_t)0, pos = find(ori, off);
+        while (pos != NOT_FOUND) {
+            str << substring(off, pos - off) << (alt ? alt : "");
+            off = pos + len, pos = find(ori, off);
+        }
+        str << substring(off, pos);
+        swap(str);
+    }
+    else *this = alt;
+    return *this;
+}
+slib::String &slib::String::replace(const Regex& reg, const char* alt) {
+    if (empty()) return *this;
+    slib::String str;
+    auto set = reg.search(cstr());
+    size_t current = 0;
+    if (set.begin == set.end) return *this;
+    else {
+        auto it = set.begin;
+        while(it != set.end) {
+            if (current == (size_t)$->position()) str << alt;
+            else str << substring(current, (size_t)$->position() - current) << alt;
+            current = (size_t)($->position() + $->length());
+            $NEXT;
+        }
+    }
+    if (current != size()) str << substring(current);
+    swap(str);
+    return *this;
+}
+slib::Array<slib::String> slib::String::split(const char* sep, const bool trimming, const bool ignore_quot, const bool dequote) const {
     stringarray array;
     if (sep) {
         auto len = strlen(sep);
         if (len) {
             bool dq = false;
-            auto ins = _cinstance();
-            size_t off = 0, pos = 0;
-            while (off < ins.second) {
-                if (*ins.first == '\"') dq = !dq;
-                else if (*ins.first == sep[0] && !dq && off+len <= ins.second) {
-                    if (!memcmp(ins.first, sep, len)) {
-                        addsubstr(*this, array, pos, off, trim, ignore);
-                        pos = off+len; off += len-1; ins.first += len-1;
+            size_t off = 0;
+            auto it = begin();
+            while(it <= end() - len) {
+                if ($_ == sep[0] && !memcmp($.ptr(), sep, len)) {
+                    if (ignore_quot || (!ignore_quot && !dq)) {
+                        auto pos = $INDEX(*this);
+                        auto str = substring(off, pos - off);
+                        if (trimming) str.trim();
+                        if (dequote && sstr::isQuoted(str)) str.clip(1, str.size() - 2);
+                        array.add(str);
+                        off = pos + len;
                     }
+                    it += len;
                 }
-                ++off; ++ins.first;
+                else {
+                    if ($_ == '\"') dq = !dq;
+                    $NEXT;
+                }
             }
-            addsubstr(*this, array, pos, off, trim, ignore);
+            if (off == size()) array.add("");
+            else {
+                auto str = substring(off, -1);
+                if (trimming) str.trim();
+                if (dequote && sstr::isQuoted(str)) str.clip(1, str.size() - 2);
+                array.add(str);
+            }
         }
     }
+    else array.add(*this);
     return array;
 }
-stringarray String::splitline(bool trim, bool ignore) const {
+slib::Array<slib::String> slib::String::split(const Regex& reg) const {
+    slib::Array<slib::String> array;
+    auto set = reg.search(cstr());
+    size_t current = 0;
+    if (set.begin == set.end) array.add(*this);
+    else {
+        auto it = set.begin;
+        while (it != set.end) {
+            if (current == (size_t)$->position()) array.add("");
+            else array.add(substring(current, (size_t)$->position() - current));
+            current = (size_t)($->position() + $->length());
+            $NEXT;
+        }
+    }
+    if (current == size()) array.add("");
+    else array.add(substring(current));
+    return array;
+}
+slib::Array<slib::String> slib::String::splitLine(const bool trimming, const bool ignore_quot) const {
     stringarray array;
-    if(empty()) return array;
+    if (empty()) return array;
     bool dq = false;
-    auto ins = _cinstance();
-    auto off = 0, pos = 0;
-    while (off < ins.second) {
-        if (*ins.first == '\"') dq = !dq;
-        else if ((*ins.first == '\n' || *ins.first == '\r') && !dq) {
-            addsubstr(*this, array, pos, off, trim, ignore);
-            if (off < ins.second-1 && *ins.first == '\r' && *(ins.first+1) == '\n') {
-                pos = off+2; ++off; ++ins.first;
+    size_t off = 0;
+    auto it = begin();
+    while (it < end()) {
+        if ($_ == '\n' || $_ == '\r') {
+            if (ignore_quot || (!ignore_quot && !dq)) {
+                auto pos = $INDEX(*this);
+                auto str = substring(off, pos - off);
+                if (trimming) str.trim();
+                array.add(str);
+                off = pos;
+                if (it < end() - 1 && $_ == '\r' && $_NEXT == '\n') {
+                    off += 2; $NEXT;
+                }
+                else off += 1;
             }
-            else pos = off+1;
+            $NEXT;
         }
-        ++off; ++ins.first;
+        else {
+            if ($_ == '\"') dq = !dq;
+            $NEXT;
+        }
     }
-    addsubstr(*this, array, pos, off, trim, ignore);
+    if (off < size()) {
+        auto str = substring(off, -1);
+        if (trimming) str.trim();
+        array.add(str);
+    }
     return array;
 }
-stringarray String::split(const Regex &rgx) const {
-    stringarray array;
-    rgx.split(array, this);
-    return array;
-}
-Map<String, String> String::parse(const char *sep, const char *part, bool trim) const {
+slib::Map<slib::String, slib::String> slib::String::parse(const char* sep, const char* delim, const bool trimming, const bool ignore_quot, bool dequote) const {
     Map<String, String> attr;
     String key;
-    size_t pos, len;
-    stringarray array = split(sep, trim);
-    sforeach(array) {
-        len = E_.size();
-        if (!len) continue;
-        pos = E_.find(part);
-        if (!pos || pos == NOT_FOUND) key = "key";
-        else key = E_.substring(0, pos);
-        pos+=strlen(part);
-        if (trim) {
-            key.trimming();
-            while (pos < len && Char::isWSChar(E_[(int)pos])) ++pos;
-            while (pos < len && Char::isWSChar(E_[(int)(len-1)])) --len;
-        }
-        if (pos == len) attr[key] = "";
-        else attr[key] = E_.substring(pos, len-pos);
+    stringarray array = split(sep, trimming, ignore_quot);
+    sfor(array) {
+        if ($_.empty()) continue;
+        auto strs = $_.split(delim, trimming, ignore_quot, dequote);
+        if (strs.size() < 2) throw FormatException(String("To parse string as map, each element shoud be <KEY>") << delim << "<VALUE>" << sep << "... format. But '" << $_ << "' was received.");
+        attr[strs[0]] = strs[1];
     }
     return attr;
 }
-bool String::beginWith(const char *que) const {
-    if (que) {
-        auto len = strlen(que);
-        if (len <= size()) return !(memcmp(cstr(), que, len));
-    }
-    return false;
-}
-bool String::endWith(const char *que) const {
-    if (que) {
-        auto len = strlen(que);
-        if (len <= size()) return !(memcmp(ptr(size()-len), que, len));
-    }
-    return false;
-}
-bool String::boolean() const {
-    auto ins = _cinstance();
-    return strcmp(ins.first, "false") && strcmp(ins.first, "FALSE") && strcmp(ins.first, "NO") && strcmp(ins.first, "no");
-}
-sbyte String::byteValue() const {
-    try { return atoi(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "byte"));
-    }
-}
-subyte String::ubyteValue() const {
-    try { return atoi(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "ubyte"));
-    }
-}
-sshort String::shortValue() const {
-    try { return atoi(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "short"));
-    }
-}
-sushort String::ushortValue() const {
-    try { return atoi(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "ushort"));
-    }
-}
-int String::intValue() const {
-    try { return atoi(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "int"));
-    }
-}
-unsigned int String::uintValue() const {
-    try { return atol(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "uint"));
-    }
-}
-size_t String::sizeValue() const {
-    try { return atol(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "size"));
-    }
-}
-long String::longValue() const {
-    try { return (long)atoll(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "long"));
-    }
-}
-unsigned long String::ulongValue() const {
-    try { return (unsigned long)atoll(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "ulong"));
-    }
-}
-long long String::llongValue() const {
-    try { return atoll(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "llong"));
-    }
-}
-unsigned long long String::ullongValue() const {
-    try { return atoll(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "ullong"));
-    }
-}
-float String::floatValue() const {
-    try { return (float)atof(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "float"));
-    }
-}
-double String::doubleValue() const {
-    try { return atof(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "double"));
-    }
-}
-sinteger String::integer() const {
-    try { return atoll(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "integer"));
-    }
-}
-suinteger String::uinteger() const {
-    try { return atoll(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "uinteger"));
-    }
-}
-sreal String::real() const {
-    try { return atof(cstr()); }
-    catch (std::invalid_argument e) {
-        throw SException(ERR_INFO, SLIB_CAST_ERROR, cstr(), CAST_TEXT("string", "real"));
-    }
-}
-SNumber String::number() const {
-    //Integer
-    if (equal(R(/[+-]*\\d+/)) || equal(R(/0x[0-9a-fA-F]+/))) return SNumber(atoll(cstr()));
-    else if (equal(R(/null/i))) return SNumber(0);
-    //Real number
-    else if (equal(R(/nan/i))) return SNumber(NAN);
-    else if (equal(R(/[+-]*inf/i)) || equal(R(/[+-]*infinity/i))) {
-        if (match("-")) return SNumber(-INFINITY);
-        else return SNumber(INFINITY);
-    }
-    else if (equal(R(/[+-]*\\d+\\.\\d+/i)) ||
-             equal(R(/[+-]*\\d+\\.*\\d*[eE][+-]*\\d+/))) {
-        return SNumber(atof(cstr()));
-    }
-    //Boolean
-    else if (equal(R(/TRUE|YES/i))) return SNumber(true);
-    else if (equal(R(/FALSE|NO/i)))  return SNumber(false);
-    //Fraction
-    else if (equal(R(/[+-]*\\d+\\/\\d+/))) return SNumber(sfrac(cstr()));
-    //Complex
-    else if (equal(R(/[+-]*[0-9.]*[+-]*[0-9.]+i/))) return SNumber(scomp(cstr()));
-    throw SException(ERR_INFO);
-}
-#if defined(WIN32_OS) || defined(WIN64_OS)
-std::wstring String::unicode() const {
-	auto wsize = ::MultiByteToWideChar(CP_UTF8, 0U, ptr(), -1, nullptr, 0U);
-	std::wstring ws(wsize, '\0');
-	auto res = ::MultiByteToWideChar(CP_UTF8, 0U, ptr(), -1, &ws[0], wsize);
-	if (res == 0) throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "this");
-	return ws;
-}
-String String::localize() const {
-auto wsize = ::MultiByteToWideChar(CP_UTF8, 0U, ptr(), -1, nullptr, 0U);
-	Array<wchar_t> ws(wsize);
-	auto res = ::MultiByteToWideChar(CP_UTF8, 0U, ptr(), -1, ws.ptr(), wsize);
-	if (res == 0) throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "this");
-	auto sjissize = ::WideCharToMultiByte(CP_ACP, 0U, ws.ptr(), -1, nullptr, 0, nullptr, nullptr);
-	String str(sjissize, '\0');
-	res = ::WideCharToMultiByte(CP_ACP, 0U, ws.ptr(), -1, str.ptr(), sjissize, nullptr, nullptr);
-	if (res == 0) throw SException(ERR_INFO, SLIB_FORMAT_ERROR, "this");
-	return str;
-}
-#endif
-String::operator bool() const { return boolean(); }
-String::operator sbyte() const { return byteValue(); }
-String::operator subyte() const { return ubyteValue(); }
-String::operator sshort() const { return shortValue(); }
-String::operator sushort() const { return ushortValue(); }
-String::operator int() const { return intValue(); }
-String::operator unsigned int() const { return uintValue(); }
-String::operator size_t() const { return sizeValue(); }
-#ifdef WIN64_OS
-String::operator long() const { return longValue(); }
-#ifndef MAC_OS
-String::operator unsigned long() const { return ulongValue(); }
-#endif
-#endif
-String::operator long long() const { return llongValue(); }
-#ifdef MAC_OS
-String::operator unsigned long long() const { return ullongValue(); }
-#endif
-#ifdef LINUX_OS
-String::operator sinteger() const { return llongValue(); }
-#endif
-String::operator float() const { return floatValue(); }
-String::operator double() const { return doubleValue(); }
-String::operator const char *() const { return cstr(); }
 
-bool String::operator < (const char *s) const { return strcmp(cstr(), s) < 0; }
-bool String::operator < (const std::string &s) const { return strcmp(cstr(), s.c_str()) < 0; }
-bool String::operator < (const String &s) const { return strcmp(cstr(), s.cstr()) < 0; }
-bool String::operator < (const SString &s) const { return strcmp(cstr(), s.cstr()) < 0; }
-bool String::operator == (const char *s) const { return !strcmp(cstr(), s); }
-bool String::operator == (const std::string &s) const { return !strcmp(cstr(), s.c_str()); }
-bool String::operator == (const String &s) const { return !strcmp(cstr(), s.cstr()); }
-bool String::operator == (const SString &s) const { return !strcmp(cstr(), s.cstr()); }
-bool String::operator != (const char *s) const { return strcmp(cstr(), s); }
-bool String::operator != (const std::string &s) const { return strcmp(cstr(), s.c_str()); }
-bool String::operator != (const String &s) const { return strcmp(cstr(), s.cstr()); }
-bool String::operator != (const SString &s) const { return strcmp(cstr(), s.cstr()); }
-String slib::operator+(const char &c, const String &s) { return String(c)+s; }
-String slib::operator+(const char *s1, const String &s2) { return String(s1)+s2; }
-String slib::operator+(const std::string &s1, const String &s2) { return String(s1)+s2; }
+size_t slib::String::count(const char* que) const {
+    size_t count = 0, off = 0;
+    while (true) {
+        off = find(que, off);
+        if (off != NOT_FOUND) { ++count; ++off; }
+        else break;
+    }
+    return count;
+}
+inline const char* _find(const char *ref, const char* end, const char* que) {
+    if (!que || que[0] == '\0') return nullptr;
+    size_t shift;
+    auto current = ref;
+    while (current < end) {
+        shift = 1;
+        if (*current == *que) {
+            auto r = current + 1, q = que + 1;
+            while (r < end && *q != '\0' && *r == *q) { ++shift; ++r; ++q; }
+            if (*q == '\0') return current;
+        }
+        current += shift;
+    }
+    return nullptr;
+}
+inline const char* _rfind(const char* ref, const char* beg, const char* que) {
+    if (!que || que[0] == '\0') return nullptr;
+    size_t shift, len = strlen(que);
+    auto current = ref, que_ = que + len - 1;
+    while (current >= beg) {
+        shift = 1;
+        if (*current == *que_) {
+            auto r = current - 1, q = que_ - 1;
+            while (r >= beg && q >= que && *r == *q) { ++shift; --r; --q; }
+            if (q == que - 1) return current - len + 1;
+        }
+        current -= shift;
+    }
+    return nullptr;
+}
+size_t slib::String::find(const char* que, const size_t offset) const { 
+    auto ptr = _find(_begin() + offset, _end(), que);
+    if (ptr) return ptr - _begin();
+    else return NOT_FOUND;
+}
+size_t slib::String::find(const Regex& reg, const size_t offset) const {
+    return reg.find(cstr(), offset);
+}
+size_t slib::String::rfind(const char* que, const size_t offset) const {
+    auto ptr = _rfind(_end() - offset - 1, _begin(), que);
+    if (ptr) return ptr - _begin();
+    else return NOT_FOUND;
+}
+size_t slib::String::rfind(const Regex& reg, const size_t offset) const {
+    return reg.find(cstr(), offset, true);
+}
+sizearray slib::String::findAll(const char* que) const {
+    size_t off = 0;
+    sizearray array;
+    while (true) {
+        off = find(que, off);
+        if (off != NOT_FOUND) { array.add(off); ++off; }
+        else break;
+    }
+    return array;
+}
+sizearray slib::String::findAll(const Regex& reg) const {
+    return reg.findAll(cstr());
+}
+bool slib::String::match(const char* que, const size_t offset) const { return find(que, offset) != NOT_FOUND; }
+bool slib::String::match(const Regex& reg) const {
+    return reg.match(cstr());
+}
+bool slib::String::equal(const Regex& reg) const {
+    return reg.equal(cstr());
+}
+slib::Pair<size_t, slib::String> slib::String::search(const Regex& reg) const {
+    auto set = reg.search(cstr());
+    if (set.begin == set.end) return Pair<size_t, slib::String>(NOT_FOUND, "");
+    else return Pair<size_t, slib::String>(set.begin->position(), set.begin->str());
+}
+slib::Array<slib::Pair<size_t, slib::String>> slib::String::searchAll(const Regex& reg) const {
+    auto set = reg.search(cstr());
+    slib::Array<slib::Pair<size_t, slib::String>> res;
+    if (set.begin == set.end) return res;
+    else {
+        auto it = set.begin;
+        while (it != set.end) {
+            res.add(Pair<size_t, slib::String>($->position(), $->str()));
+            $NEXT;
+        }
+    }
+    return res;
+}
+bool slib::String::boolean() const { auto s = sstr::toLower(cstr()); return s == "true" || s == "yes" || s == "ok"; }
+slib::sbyte slib::String::byteValue() const { return atoi(cstr()); }
+slib::subyte slib::String::ubyteValue() const { return atoi(cstr()); }
+slib::sshort slib::String::shortValue() const { return atoi(cstr()); }
+slib::sushort slib::String::ushortValue() const { return atoi(cstr()); }
+int slib::String::intValue() const { return atoi(cstr()); }
+unsigned int slib::String::uintValue() const { return (unsigned)atol(cstr()); }
+size_t slib::String::sizeValue() const { return std::stoull(toStr()); }
+long slib::String::longValue() const { return atol(cstr()); }
+unsigned long slib::String::ulongValue() const { return std::stoul(toStr()); }
+long long slib::String::llongValue() const { return atoll(cstr()); }
+unsigned long long slib::String::ullongValue() const { return std::stoull(toStr()); }
+float slib::String::floatValue() const { return (float)atof(cstr()); }
+double slib::String::doubleValue() const { return atof(cstr()); }
+slib::sinteger slib::String::integer() const { return atoll(cstr()); }
+slib::suinteger slib::String::uinteger() const { return std::stoull(toStr()); }
+slib::sreal slib::String::real() const { return std::stold(toStr()); }
+#if defined(WIN_OS)
+std::wstring slib::String::unicode() const {
+    auto wsize = ::MultiByteToWideChar(CP_UTF8, 0U, _begin(), -1, nullptr, 0U);
+    std::wstring ws(wsize, '\0');
+    auto res = ::MultiByteToWideChar(CP_UTF8, 0U, _begin(), -1, &ws[0], wsize);
+    return ws;
+}
+slib::String slib::String::localize() const {
+    auto wsize = ::MultiByteToWideChar(CP_UTF8, 0U, _begin(), -1, nullptr, 0U);
+    slib::Array<wchar_t> ws(wsize);
+    auto res = ::MultiByteToWideChar(CP_UTF8, 0U, _begin(), -1, ws.data(), wsize);
+    auto sjissize = ::WideCharToMultiByte(CP_ACP, 0U, ws.data(), -1, nullptr, 0, nullptr, nullptr);
+    slib::String str(sjissize, '\0');
+    res = ::WideCharToMultiByte(CP_ACP, 0U, ws.data(), -1, str._begin(), sjissize, nullptr, nullptr);
+    return str;
+}
+#endif
+const char* slib::String::cstr() const { return _begin(); }
+const std::string slib::String::toStr() const { return std::string(cstr()); }
+slib::String::operator const char* () const { return cstr(); }
+
+bool slib::String::operator<(const char* s) const { return strcmp(cstr(), s) < 0; }
+bool slib::String::operator<(const String& s) const { return strcmp(cstr(), s.cstr()) < 0; }
+bool slib::String::operator==(const char* s) const { return !strcmp(cstr(), s); }
+bool slib::String::operator==(const String& s) const { return !strcmp(cstr(), s.cstr()); }
+bool slib::String::operator!=(const char* s) const { return strcmp(cstr(), s); }
+bool slib::String::operator!=(const String& s) const { return strcmp(cstr(), s.cstr()); }
+slib::String slib::toString(const char c, const char* format) { 
+    if (!format) return String(1, c);
+    throw FormatException(formatErrorText("string code", format, ""));
+}
+slib::String slib::toString(const char* s, const char* format) { 
+    if (!format) return String(s);
+    throw FormatException(formatErrorText("string code", format, ""));
+}
+slib::String slib::toString(const slib::String& str, const char* format) { 
+    if (!format) return str;
+    throw FormatException(formatErrorText("string code", format, ""));
+}
+slib::String slib::operator+(const char* s, const slib::String& str) {
+    slib::String str_(s); str_ << str; return str_;
+}
+std::ostream& slib::operator<<(std::ostream& os, const slib::Char& c) {
+    return os << toString(c);
+}
+std::ostream& slib::operator<<(std::ostream& os, const slib::String& str) {
+#ifdef WIN_OS
+    os << str.localize().cstr(); 
+#else
+    os << str.cstr();
+#endif
+    return os;
+}
+
+std::istream& slib::operator>>(std::istream& is, slib::String& str) {
+    std::string s;
+    is >> s;
+    if (s.size()) {
+#if defined(WIN_OS)
+        str = slib::String::toUTF8(s.c_str());
+#else
+        str = s;
+#endif
+    }
+    return is;
+}

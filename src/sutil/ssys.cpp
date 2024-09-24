@@ -1,127 +1,110 @@
 #include "sutil/ssys.h"
+#include "sutil/sjson.h"
+#include "sio/sio.h"
+slib::Response::Response(int c, const char* o, const char* e) : code(c), output(o), error(e) {}
+slib::Response::Response(const slib::Exception& ex) {
+	code = ex.code; output = ex.prefix + " exception. " + ex.message; error = ex.description;
+}
+slib::Response::Response(const slib::Response& res) {
+	code = res.code; output = res.output; error = res.error; attribute = res.attribute;
+}
+slib::Response::~Response() {}
+slib::Response& slib::Response::operator=(const slib::Response& res) {
+	code = res.code; output = res.output; error = res.error; attribute = res.attribute; return *this;
+}
+slib::SObjPtr slib::Response::toObj() const {
+	return {
+		D_("code", code),
+		D_("out", output),
+		D_("err", error),
+		D_("attribute", attribute)
+	};
+}
+slib::SObjPtr slib::Response::json() const { return slib::sjson::parse(output); }
+void slib::Response::clear() {
+	code = 0;
+	output.clear();
+	error.clear();
+	attribute.clear();
+}
+slib::Response::operator bool() const { return code == 0; }
 
-using namespace slib;
-
-String SSystem::charCode() {
-#ifdef  WIN_OS
-	String code;
-	SSystem::exec("chcp", code);
-	code.clip(code.find(":")+1);
-	code.trimming();
-	return code;
+size_t slib::ssys::getPID(const char* name) {
+	String que = sstr::toLower(name);
+#ifdef WIN_OS	
+	auto res = ssys::exec("tasklist", "/FO", "csv", "|", "find", "/I", sstr::dquote(que));
+	auto list = res.output.splitLine();
+	sfor(list) {
+		auto datas = $_.split(",");
+		auto process = sstr::toLower(sstr::dequote(datas[0]));
+		if (process == que) return sstr::dequote(datas[1]).sizeValue();
+	}
+	return NOT_FOUND;
 #else
-	return "UTF-8";
+	auto res = exec("ps", "-a", "|", "grep", sstr::dquote(name));
+	auto list = res.output.splitLine();
+	if (!list.empty() && list[0].size()) {
+		sint idcol = 0, namecol = 0;
+		auto cols = list[0].split(SP);
+		sfori(cols) {
+			if (cols[i] == "PID") idcol = i;
+			else if (cols[i] == "CMD") namecol = i;
+		}
+		sforin(it, list.begin() + 1, list.end()) {
+			auto datas = $_.split(SP);
+			auto process = sstr::toLower(datas[namecol]);
+			if (process == name) return datas[idcol].sizeValue();
+		}
+	}
+	return NOT_FOUND;
 #endif
 }
-String SSystem::userName() {
+//Array<size_t> slib::ssys::getPIDs(const char* name);
+void slib::ssys::kill(size_t pid) {
+	String cmd;
+#ifdef WIN_OS
+	ssys::exec("taskkill", "/pid", pid, "/F");
+#else
+	ssys::exec("kill", pid);
+#endif
+}
+slib::String slib::ssys::userName() {
 	String name;
 #ifdef  WIN_OS
-	DWORD size = 4096;
-	TCHAR buf[4096];
+	DWORD size = 256;
+	TCHAR buf[256];
 	GetUserName(buf, &size);
 	name = String::toUTF8(buf);
 #else
-	char buf[4096];
-	getlogin_r(buf, 4096);
+	char buf[256];
+	getlogin_r(buf, 256);
 	name = const_cast<const char*>(buf);
 #endif
 	return name;
 }
-void SSystem::setCurrent(const char *path) {
-	int res;
-#ifdef  WIN_OS
-	String cur(path);
-	res = chdir(cur.localize());
-#else
-	res = chdir(path);
-#endif
-    if (res) {
-        switch (errno) {
-            default:
-                break;
-        }
-        throw SException(ERR_INFO, SLIB_EXEC_ERROR, "chdir", EXEC_TEXT(std::to_string(errno)));
-    }
-}
-void SSystem::exec(const char *cmd) {
-    if (!cmd) return;
-	auto res = system(cmd);
-    if (res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "SSystem::exec", cmd);
-}
-int SSystem::exec(const char *cmd, String &result) {
-    result.clear();
-    if (!cmd) return 1;
-    FILE *fp;
-    fp = popen(cmd, "r");
-    char buf[4096];
-    if (fp) {
-        while(!feof(fp)) {
-            if(fgets(buf, 4096, fp)) result += buf;
-        }
-        return pclose(fp);
-    }
-    else throw SException(ERR_INFO, SLIB_EXEC_ERROR, "SSystem::exec", cmd);
-}
-size_t SSystem::getPID(const char* name) {
+bool slib::ssys::isInstalled(const char* prog) {
+	Response res;
 #ifdef WIN_OS
-	String res;
-	exec("tasklist /FO csv", res);
-	auto list = res.splitline();
-	sforeach(list) {
-		auto datas = E_.split(",");
-		if (String::dequot(datas[0]).beginWith(name)) 
-			return String::dequot(datas[1]).sizeValue();
-	}
-	return NOT_FOUND;
+	res = ssys::exec(S_(where.exe ) + prog);
 #else
-	String res;
-	exec("ps -a", res);
-	auto list = res.splitline();
-	if (!list.empty() && list[0].size()) {
-		sint pid = 0, cmd = 0;
-		auto it = list.begin();
-		auto cols = E_.split(SPACE, true, true);
-		sforeach_(cit, cols) {
-			if ((*cit) == "PID") pid = cit - cols.begin();
-			else if ((*cit) == "CMD") cmd = cit - cols.begin();
-		}
-		NEXT_;
-		while (it < list.end()) {
-			auto datas = E_.split(SPACE, true, true);
-			if (datas[cmd] == name) return datas[pid].sizeValue();
-			NEXT_;
-		}
-	}
-    return NOT_FOUND;
-
+	res = ssys::exec(S_(which ) + prog);
 #endif
-}
-void SSystem::kill(size_t pid) {
-	String cmd;
-#ifdef WIN_OS
-	cmd = "taskkill";
-	cmd << " /pid " << pid << " /F";
-#else
-	cmd = "kill";
-	cmd << " " << pid;
-#endif
-	exec(cmd);
+	return sfs::exist(res.output.splitLine()[0]);
 }
 
-
-SProcess::SProcess() : _complete(false) {
+slib::SProcess::SProcess() : _complete(false) {
 #ifdef WIN_OS
 	_saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
 	_saAttr.bInheritHandle = TRUE;
 	_saAttr.lpSecurityDescriptor = NULL;
 	_res = CreatePipe(&_pipe[2], &_pipe[3], &_saAttr, 0);
-	if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Child->Parent");
+	//if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Child->Parent");
 	_res = SetHandleInformation(_pipe[2], HANDLE_FLAG_INHERIT, 0);
-	if (!_res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Pipe handle inherit");
+	//if (!_res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Pipe handle inherit");
 	_res = CreatePipe(&_pipe[0], &_pipe[1], &_saAttr, 0);
-	if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Parent->Child");
+	//if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Parent->Child");
 	_res = SetHandleInformation(_pipe[1], HANDLE_FLAG_INHERIT, 0);
-	if (!_res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Pipe handle inherit");
+	//if (!_res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Pipe handle inherit");
 
 	ZeroMemory(&_piProcInfo, sizeof(PROCESS_INFORMATION));
 	ZeroMemory(&_siStartInfo, sizeof(STARTUPINFO));
@@ -132,14 +115,14 @@ SProcess::SProcess() : _complete(false) {
 	_siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 #else
     _res = pipe(&_pipe[2]);
-    if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Child->Parent");
+    //if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Child->Parent");
     _res = pipe(&_pipe[0]);
-    if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Parent->Child");
+    //if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PIPE_ERR, "Process construction", "Parent->Child");
     STD_IN = fileno(stdin);
     STD_OUT = fileno(stdout);
 #endif
 }
-SProcess::~SProcess() {
+slib::SProcess::~SProcess() {
     if (_wait && !_complete) wait();
 #ifdef WIN_OS
 	CloseHandle(_piProcInfo.hProcess);
@@ -150,18 +133,18 @@ SProcess::~SProcess() {
     sforin(i, 0, 4) close(_pipe[i]);
 #endif
 }
-void SProcess::createChild(const char* cmd, bool wait) {
+void slib::SProcess::createChild(const char* cmd, bool wait) {
 #ifdef WIN_OS
 #ifdef UNICODE
 	_res = CreateProcess(NULL, &String(cmd).unicode()[0], NULL, NULL, TRUE, 0, NULL, NULL, &_siStartInfo, &_piProcInfo);
 #else
 	_res = CreateProcess(NULL, &String(cmd).localize()[0], NULL, NULL, TRUE, 0, NULL, NULL, &_siStartInfo, &_piProcInfo);
 #endif
-	if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PROCESS_ERR, "Create child process");
+	//if (!_res) throw SException(ERR_INFO, SLIB_CREATE_PROCESS_ERR, "Create child process");
 #else
     if ((_pid = fork()) < 0) {
         sforin(i, 0, 4) close(_pipe[i]);
-        throw SException(ERR_INFO, SLIB_CREATE_PROCESS_ERR, "Create child process");
+        //throw SException(ERR_INFO, SLIB_CREATE_PROCESS_ERR, "Create child process");
     }
     if (_pid == 0) {
         close(_pipe[1]);
@@ -183,29 +166,29 @@ void SProcess::createChild(const char* cmd, bool wait) {
     _complete = false;
 }
 
-void SProcess::send(const char *cmd, bool receive) {
+void slib::SProcess::send(const char *cmd, bool receive) {
     _msg.clear();
 #ifdef WIN_OS
 	DWORD size;
-	_res = WriteFile(_pipe[1], String(cmd).localize().cstr(), strlen(cmd), &size, NULL);
-	if (!_res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Send to child process", cmd);
+	_res = WriteFile(_pipe[1], String(cmd).localize().cstr(), (DWORD)strlen(cmd), &size, NULL);
+	//if (!_res) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Send to child process", cmd);
 	if (receive) {
 		CHAR chBuf[4096];
 		_res = ReadFile(_pipe[2], chBuf, 4096, &size, NULL);
-		if (!_res || !size) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
+		if (!_res || !size) {}//throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
 		else {
 			chBuf[size] = '\0';
 			_msg += String::toUTF8(const_cast<const char*>(chBuf));
 		}
 	}
 #else
-    write(STD_OUT, cmd, strlen(cmd));
+    auto res = write(STD_OUT, cmd, strlen(cmd));
     if (receive) {
         int size;
         char buf[4096];
         while (true) {
             size = read(STD_IN, buf, 4096);
-            if (size < 0) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
+			if (size < 0) {}//throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
             else if (!size) break;
             else {
                 buf[size] = '\0';
@@ -215,14 +198,14 @@ void SProcess::send(const char *cmd, bool receive) {
     }
 #endif
 }
-void SProcess::receive() {
+void slib::SProcess::receive() {
     _msg.clear();
 #ifdef WIN_OS
 	DWORD dwRead;
 	CHAR chBuf[4096];
 	while (true) {
 		_res = ReadFile(_pipe[2], chBuf, 4096, &dwRead, NULL);
-		if (!_res || !dwRead) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
+		if (!_res || !dwRead) {}//throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
 		else {
 			chBuf[dwRead] = '\0';
 			_msg += String::toUTF8(const_cast<const char*>(chBuf));
@@ -233,7 +216,7 @@ void SProcess::receive() {
     char buf[4096];
     while (true) {
         size = read(STD_IN, buf, 4096);
-        if (size < 0) throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
+		if (size < 0) {}// throw SException(ERR_INFO, SLIB_EXEC_ERROR, "Receive from child process");
         else if (!size) break;
         else {
             buf[size] = '\0';
@@ -242,8 +225,8 @@ void SProcess::receive() {
     }
 #endif
 }
-String& SProcess::message() { return _msg; }
-void SProcess::wait() {
+slib::String& slib::SProcess::message() { return _msg; }
+void slib::SProcess::wait() {
 #ifdef WIN_OS
 	WaitForSingleObject(_piProcInfo.hProcess, INFINITE);
 	_complete = true;
@@ -252,22 +235,22 @@ void SProcess::wait() {
     _complete = true;
 #endif
 }
-int SProcess::processID() {
+int slib::SProcess::processID() {
 #ifdef WIN_OS 
 	return _piProcInfo.dwProcessId;
 #else
 	return _pid;
 #endif
 }
-void SProcess::kill() {
+void slib::SProcess::kill() {
 #ifdef WIN_OS
 	TerminateProcess(_piProcInfo.hProcess, 0);
 #else
-    SSystem::exec(String("kill ")+(sint)_pid);
+    ssys::exec(String("kill ")+(sint)_pid);
 #endif
 }
 
-SharedMemory::SharedMemory(size_t s, const char* n, int i) : _size(s), _name(n) {
+slib::SharedMemory::SharedMemory(size_t s, const char* n, int i) : _size(s), _name(n) {
 #ifndef WIN_OS
 	_pid = i;
 	_child = false;
@@ -276,7 +259,7 @@ SharedMemory::SharedMemory(size_t s, const char* n, int i) : _size(s), _name(n) 
 	fclose(fp);
 #endif
 }
-SharedMemory::~SharedMemory() {
+slib::SharedMemory::~SharedMemory() {
 #ifdef WIN_OS
 	UnmapViewOfFile(_memory);
 	CloseHandle(_map);
@@ -285,47 +268,47 @@ SharedMemory::~SharedMemory() {
 	if (!_child) shmctl(_sid, IPC_RMID, NULL);
 #endif
 }
-void SharedMemory::create() {
+void slib::SharedMemory::create() {
 #ifdef WIN_OS
 #ifdef UNICODE
-	_map = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, _size, _name.unicode().c_str());
+	_map = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (DWORD)_size, _name.unicode().c_str());
 #else
-	_map = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, _size, _name.localize().cstr());
+	_map = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (DWORD)_size, _name.localize().cstr());
 #endif
-	if (_map == NULL) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
+	//if (_map == NULL) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	_memory = MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, _size);
 	if (_memory == NULL) {
 		CloseHandle(_map);
-		throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
+		//throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	}
 #else
 	auto key = ftok(_name.cstr(), _pid);
-	if (key == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
+	//if (key == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	_sid = shmget(key, _size, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
-	if (_sid == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
+	//if (_sid == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	_memory = shmat(_sid, 0, 0);
 	_child = false;
 #endif
 }
-void SharedMemory::share() {
+void slib::SharedMemory::share() {
 #ifdef WIN_OS
 #ifdef UNICODE
 	_map = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, _name.unicode().c_str());
 #else
 	_map = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, _name.localize().cstr());
 #endif
-	if (_map == NULL) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
+	//if (_map == NULL) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	_memory = MapViewOfFile(_map, FILE_MAP_ALL_ACCESS, 0, 0, _size);
 	if (_memory == NULL) {
 		CloseHandle(_map);
-		throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
+		//throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	}
 #else
 	auto key = ftok(_name.cstr(), _pid);
 	_sid = shmget(key, 0, 0);
-	if (_sid == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
+	//if (_sid == -1) throw SException(ERR_INFO, SLIB_SHARED_MEMORY_ALLOC_ERR);
 	_memory = shmat(_sid, 0, 0);
 	_child = true;
 #endif
 }
-void* SharedMemory::pointer() { return (void*)_memory; }
+void* slib::SharedMemory::pointer() { return (void*)_memory; }

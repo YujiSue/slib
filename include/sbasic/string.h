@@ -1,348 +1,212 @@
 #ifndef SLIB_STRING_H
 #define SLIB_STRING_H
-
-#include "sbasic/memory.h"
+#include "sbasic/container.h"
 #include "sbasic/range.h"
-#include "sbasic/sutf8.h"
-
+#include "sbasic/area.h"
+#include "sbasic/zone.h"
+#include "sbasic/u8iter.h"
 namespace slib {
-	template<typename T>
-	class SLIB_DLL SArrayIterator;
-	template<typename T>
-	class SLIB_DLL SArrayCIterator;
-	template<typename T, class M>
-	class SLIB_DLL Array;
-	template<typename T>
-	class SLIB_DLL CArray;
-	template<typename T, size_t S, class M>
-	class SLIB_DLL FixedArray;
-	template<typename T, class M>
-	class SLIB_DLL BiArray;
-	template<class Key, class Val>
-	class SLIB_DLL Map;
-	template<typename T>
-	class SLIB_DLL Region;
-    class SLIB_DLL String;
-    class SLIB_DLL SNumber;
-    class SLIB_DLL SString;
-	class SLIB_DLL SText;
-    class SLIB_DLL SObject;
+    class SLIB_DLL SElement;
     class SLIB_DLL SObjPtr;
-	namespace sio {
-		class SLIB_DLL SFile;
-	}
+    /**
+    * @class Regex
+    * \~english @brief Regular expression class
+    * \~japanese @brief 正規表現クラス
+    */
     class SLIB_DLL Regex {
     private:
         std::regex _rgx;
-        bool _global;
+    public:
+        bool global;
     public:
         Regex();
-        Regex(const char *s);
+        Regex(const char* s);
         ~Regex();
-        bool match(const char *s) const;
-        bool equal(const char *s) const;
-        void search(CArray<size_t>&array, const char *s, const char *e) const;
-        void search(Array<String, SMemory<String>>&array, const char *s, const char *e) const;
-        void split(Array<String, SMemory<String>> &array, const String *str) const;
-        String replace(const char *s, const char *alt) const;
-        String rearrange(const char *s, const CArray<sint> &order) const;
+        Regex& operator=(const char *s);
+        Regex& operator=(const Regex& reg);
+        const std::regex &context() const;
+        bool match(const char* s) const;
+        bool equal(const char* s) const;
+        size_t find(const char* s, size_t offset = 0, bool rev = false) const;
+        Array<size_t> findAll(const char* s) const;
+        Range<std::cregex_iterator> search(const char* s, size_t offset = 0) const;
     };
 
+#define SHORT_STRING_CAPACITY 23
+    /**
+    * @class String
+    * \~english @brief Text string class
+    * \~japanese @brief 文字列クラス
+    */
     class SLIB_DLL String {
-        friend Char;
-    public:
-        static String trim(const char *s);
-        static String squot(const char *s);
-        static String dquot(const char *s);
-        static String dequot(const char *s);
-        static String upper(const char *s);
-        static String lower(const char *s);
-        static String enclose(const char *s, const char *c1, const char *c2);
-        static String wide(const char *s);
-        static String narrow(const char *s);
-#ifdef WIN_OS
-		static String toUTF8(const wchar_t* ws);
-		static String toUTF8(const char* s);
-#endif  
-		static const subyte HEAD_PART = 0x01;
-		static const subyte TAIL_PART = 0x02;
-		static const subyte BOTH_PART = 0x03;
+        friend Regex;
     private:
-        struct short_string {
+        /**
+        * @cond
+        */
+        struct SLIB_DLL short_string {
             sbyte size;
-            char str[SHORT_STRING_CAPACITY];
+            char ptr[SHORT_STRING_CAPACITY];
+            short_string();
+            ~short_string();
+            void copyTo(short_string& dest);
         };
-        struct long_string {
+        struct SLIB_DLL long_string {
             size_t capacity;
             size_t size;
-            char *str;
+            char* ptr;
+            long_string();
+            ~long_string();
         };
-        union string {
-            short_string _ss;
-            long_string _ls;
+        union SLIB_DLL uni_string {
+            short_string ss;
+            long_string ls;
+            uni_string() : ss() {}
+            ~uni_string() {
+                if ((reinterpret_cast<subyte*>(this))[0] & 0x01) ls.~long_string();
+                else ss.~short_string();
+            }
         };
-        
     protected:
-        string _str;
-        
+        uni_string _str;
     protected:
         bool _isLong() const;
-        std::pair<char *, size_t> _instance();
-        std::pair<const char *, size_t> _cinstance() const;
-        void _append(const char *s, size_t l);
-        void _insert(sinteger idx, const char *s, size_t l);
-        const char *_find(const char *que, size_t s, const char *current, const char *end) const;
-        const char *_rfind(const char *que, size_t s, const char *begin, const char *current) const;
-        
+        char* _begin() const;
+        char* _end() const;
+        /**
+        * @endcond
+        */
+    public:
+#ifdef WIN_OS
+        static String toUTF8(const wchar_t* ws);
+        static String toUTF8(const char* s);
+#endif  
     public:
         String();
-        String(bool b);
-        String(int i);
-        String(unsigned int ui);
-        String(size_t ui);
-#ifdef WIN64_OS
-        String(long i);
-#ifndef MAC_OS
-        String(unsigned long ui);
-#endif
-#endif
-        String(long long i);
+        String(const bool n);
+        String(const int n);
+        String(const size_t n);
+        //String(const long long n);
+        String(const int64_t n);
 #ifdef MAC_OS
-        String(unsigned long long ui);
+        String(const sinteger n);
+        String(const suinteher n);
 #endif
-#ifdef LINUX_OS
-        String(sinteger i);
+        String(const float n);
+        String(const double n);
+        String(const Char& c);
+        String(const char* s);
+        String(const std::string& s);
+#if defined(WIN_OS)
+        //String(const wchar_t* ws);
+        //String(const std::wstring &ws);
 #endif
-        String(float f);
-        String(double d);
-        String(sbyte i);
-        String(subyte i);
-        String(sshort i);
-        String(sushort i);
-        String(size_t s, const char &c);
-        String(char c);
-        String(const Char &c);
-        String(const char *s);
-        String(const std::string &s);
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		//String(const wchar_t* ws);
-		//String(const std::wstring &ws);
-#endif
-		String(std::initializer_list<char> li);
-        String(const String &s);
-        String(String &&s);
-        String(const SString &s);
-        String(const SObjPtr &obj);
-        virtual ~String();
-        String &operator=(bool b);
-        String &operator=(int i);
-        String &operator=(unsigned int ui);
-        String &operator=(size_t ui);
-#ifdef WIN64_OS
-        String &operator=(long i);
-#ifndef MAC_OS
-        String &operator=(unsigned long ui);
-#endif
-#endif
-        String &operator=(long long i);
-#ifdef MAC_OS
-        String &operator=(unsigned long long ui);
-#endif
-#ifdef LINUX_OS
-        String &operator=(sinteger i);
-#endif
-        String &operator=(float f);
-        String &operator=(double d);
-        String &operator=(sbyte i);
-        String &operator=(subyte ui);
-        String &operator=(sshort i);
-        String &operator=(sushort ui);
-        String &operator=(char c);
-        String &operator=(const char *s);
-        String &operator=(const std::string &s);
-        String &operator=(const Char &c);
-        String &operator=(String &&s);
-        String &operator=(const String &s);
-        String &operator=(const SString &s);
-        String &operator=(SObjPtr obj);
+        String(size_t sz, const char c);
+        String(std::initializer_list<char> li);
+        String(String&& s) noexcept;
+        String(const String& s);
+        String(const SElement& elem);
+        String(const SObjPtr& obj);
+        ~String();
+
+        String& operator=(String&& s) noexcept;
+        String& operator=(const String& s);
+        String& operator=(const SElement& e);
+        String& operator=(const SObjPtr& o);
+        String& operator=(const char* s);
+
+        String& operator+=(const char* s);
+        String& operator+=(const String& s);
+        String& operator+=(const SElement& e);
+        String& operator+=(const SObjPtr& o);
+        String& operator*=(const int i);
+
+        String& operator<<(const char c);
+        String& operator<<(const int n);
+        String& operator<<(const int64_t n);
+        String& operator<<(const size_t n);
+        String& operator<<(const float n);
+        String& operator<<(const double n);
+        String& operator<<(const char* s);
+        String& operator<<(const Char& c);
+        String& operator<<(const String& s);
+        String& operator<<(const SElement& e);
+        String& operator<<(const SObjPtr& o);
         
-        String &operator+=(bool b);
-        String &operator+=(int i);
-        String &operator+=(unsigned int ui);
-        String &operator+=(size_t ui);
-#ifdef WIN64_OS
-        String &operator+=(long i);
-#ifndef MAC_OS
-        String &operator+=(unsigned long ui);
-#endif
-#endif
-        String &operator+=(long long i);
-#ifdef MAC_OS
-        String &operator+=(unsigned long long ui);
-#endif
-#ifdef LINUX_OS
-        String &operator+=(sinteger i);
-#endif
-        String &operator+=(float f);
-        String &operator+=(double d);
-        String &operator+=(sbyte i);
-        String &operator+=(subyte ui);
-        String &operator+=(sshort i);
-        String &operator+=(sushort ui);
-        String &operator+=(char c);
-        String &operator+=(const char *s);
-        String &operator+=(const std::string &s);
-        String &operator+=(const String &s);
-        String &operator+=(const SString &s);
-        String &operator+=(SObjPtr obj);
+        String operator+(const char c) const;
+        String operator+(const char* s) const;
+        String operator+(const String& s) const;
+        String operator+(const SElement& e) const;
+        String operator+(const SObjPtr& o) const;
+        String operator*(const int i) const;
         
-        String operator+(bool b) const;
-        String operator+(int i) const;
-        String operator+(unsigned int ui) const;
-        String operator+(size_t ui) const;
-#ifdef WIN64_OS
-        String operator+(long i) const;
-#ifndef MAC_OS
-        String operator+(unsigned long ui) const;
-#endif
-#endif
-        String operator+(long long i) const;
-#ifdef MAC_OS
-        String operator+(unsigned long long ui) const;
-#endif
-#ifdef LINUX_OS
-        String operator+(sinteger i) const;
-#endif
-        String operator+(float f) const;
-        String operator+(double d) const;
-        String operator+(sbyte i) const;
-        String operator+(subyte ui) const;
-        String operator+(sshort i) const;
-        String operator+(sushort ui) const;
-        String operator+(char c) const;
-        String operator+(const char *s) const;
-        String operator+(const std::string &s) const;
-        String operator+(const String &s) const;
-        String operator+(const SString &s) const;
-        String operator+(SObjPtr obj) const;
-        
-        String &operator<<(bool b);
-        String &operator<<(int i);
-        String &operator<<(unsigned int ui);
-        String &operator<<(size_t ui);
-#ifdef WIN64_OS
-        String &operator<<(long i);
-#ifndef MAC_OS
-        String &operator<<(unsigned long ui);
-#endif
-#endif
-        String &operator<<(long long i);
-#ifdef MAC_OS
-        String &operator<<(unsigned long long ui);
-#endif
-#ifdef LINUX_OS
-        String &operator<<(sinteger i);
-#endif
-		String& operator<<(float f);
-		String& operator<<(double d);
-		String& operator<<(sbyte i);
-		String& operator<<(subyte ui);
-		String& operator<<(sshort i);
-		String& operator<<(sushort ui);
-		String& operator<<(char c);
-		String& operator<<(const char* s);
-		String& operator<<(const std::string& s);
-		String& operator<<(const String& s);
-		String& operator<<(const SString& s);
-		String& operator<<(const SText& t);
-		String& operator<<(const sio::SFile& f);
-		String& operator<<(SObjPtr obj);
-		String& operator*=(int num);
-		String& operator*=(size_t num);
-		String operator*(int num) const;
-		String operator*(size_t num) const;
-        bool isNumeric() const;
-        bool isQuoted() const;
         bool empty() const;
         size_t size() const;
         size_t length() const;
         size_t capacity() const;
-        char *ptr(size_t idx = 0);
-        const char *ptr(size_t idx = 0) const;
-        const char *cstr() const;
-        std::string toStr() const;
-        char &operator[] (sinteger idx);
-        const char &operator[] (sinteger idx) const;
-        char &at(sinteger idx);
-        const char &at(sinteger idx) const;
-        char &first();
-        const char &first() const;
-        char &last();
-        const char &last() const;
-		void interpret(subyte* bytes, size_t size);
-        void copy(const char *dat, size_t size = -1);
-		void swap(String& str);
-		void reserve(size_t s);
-		virtual void resize(size_t s);
-		virtual void resize(size_t s, const char& c);
-		virtual void clear();
-        SArrayIterator<char> begin();
-        SArrayCIterator<char> begin() const;
-        SArrayIterator<char> end();
-        SArrayCIterator<char> end() const;
-        void add(const char &c);
-        void append(const char *s);
-        void append(const std::string &s);
-        void append(const String &s);
-        void append(const SString &s);
-        void insert(sinteger idx, const char *s);
-        void insert(sinteger idx, const std::string &s);
-        void insert(sinteger idx, const String &s);
-        void insert(sinteger idx, const SString &s);
-        void removeAt(sinteger idx);
-        void remove(size_t off, size_t len = -1);
-        void remove(const srange &rng);
-		String& replace(size_t off, size_t len, const char* alt);
-		String& replace(const srange& rng, const char* alt);
-		String& replace(const char* ori, const char* alt);
-		String& replace(const Regex& rgx, const char* alt);
-		String& rearrange(const Regex& rgx, const CArray<sint>& order);
-		String& clip(size_t off, size_t len = -1);
-		String& clip(const srange& rng);
-		String& fill(size_t s, char fill = ' ', subyte dir = String::TAIL_PART);
-		String& trimming();
-		String& transform(subyte trans);
-        String substring(size_t off, size_t len = -1) const;
-        String substring(const srange &range) const;
-        String replaced(const char *ori, const char *alt) const;
-        String replaced(const Regex &rgx, const char *alt) const;
-        String rearranged(const Regex &rgx, const CArray<sint> &order) const;
-        String filled(size_t size, char fill = ' ', subyte dir = String::TAIL_PART) const;
-        String transformed(subyte trans) const;
-        //UTF-8
-        size_t charCount() const;
-        size_t charIndex(size_t idx) const;
-        Char u8charAt(size_t idx) const;
-        String strAt(size_t idx) const;
-        SUtf8Iterator ubegin();
-        SUtf8CIterator ubegin() const;
-        SUtf8Iterator uend();
-        SUtf8CIterator uend() const;
-        size_t count(const char *s, size_t offset = 0) const;
-        bool contain(const char *que, size_t offset = 0) const;
-        bool match(const Regex &rgx, size_t offset = 0) const;
-        bool equal(const Regex &rgx) const;
-        size_t find(const char *que, size_t offset = 0) const;
-        size_t rfind(const char *que, size_t offset = 0) const;
-		slib::CArray<size_t> search(const char *que, size_t offset = 0) const;
-		slib::CArray<size_t> search(const Regex &rgx, size_t offset = 0) const;
-		slib::Array<slib::String, slib::SMemory<slib::String>> matched(const Regex &rgx, size_t offset = 0) const;
-		slib::Array<slib::String, slib::SMemory<slib::String>> split(const char *sep, bool trim = true, bool ignore = false) const;
-		slib::Array<slib::String, slib::SMemory<slib::String>> splitline(bool trim = true, bool ignore = false) const;
-		slib::Array<slib::String, slib::SMemory<slib::String>> split(const Regex &rgx) const;
-		slib::Map<slib::String, slib::String> parse(const char *sep , const char *part, bool trim = true) const;
-        bool beginWith(const char *que) const;
-        bool endWith(const char *que) const;
+        void reserve(const size_t s);
+        void resize(const size_t s);
+        void resize(const size_t s, const char c);
+
+        ArrayIterator<char> iterAt(const int i);
+        ArrayCIterator<char> iterAt(const int i) const;
+        char& at(const int i);
+        const char& at(const int i) const;
+        char& operator[](const int i);
+        const char& operator[](const int i) const;
+        Utf8Iterator u8iterAt(const int i);
+        Utf8CIterator u8iterAt(const int i) const;
+        Char charAt(const int i) const;
+        bool beginWith(const char* que) const;
+        bool endWith(const char* que) const;
+
+        ArrayIterator<char> begin();
+        ArrayCIterator<char> begin() const;
+        ArrayIterator<char> end();
+        ArrayCIterator<char> end() const;
+        Utf8Iterator u8begin();
+        Utf8CIterator u8begin() const;
+        Utf8Iterator u8end();
+        Utf8CIterator u8end() const;
+
+        void add(const char c);
+        void append(const char* s);
+        void append(const std::string& s);
+        void append(const String& s);
+        void insert(const int i, const char* s);
+        void insert(const int i, const String& s);
+        void removeAt(const int i);
+        void remove(const size_t off, const size_t len = -1);
+        void remove(const srange& range);
+        void clear();
+        void swap(String& str);
+
+        String substring(const size_t off, size_t length = -1) const;
+        String substring(const srange range) const;
+        String& trim();
+        String& clip(const size_t off, const size_t len = -1);
+        String& clip(const srange &range);
+        String& replace(const size_t off, const size_t len, const char* wrd);
+        String& replace(const char* ori, const char* wrd);
+        String& replace(const Regex& reg, const char* wrd);
+        Array<String> split(const char* sep, const bool trim = true, const bool ignore_quot = false, const bool dequote = true) const;
+        Array<String> split(const Regex& reg) const;
+        Array<String> splitLine(const bool trim = true, const bool ignore_quot = false) const;
+        Map<String, String> parse(const char* sep, const char* delim, const bool trim = true, const bool ignore_quot = false, bool dequote = true) const;
+
+        size_t count(const char* que) const;
+        size_t find(const char* que, const size_t offset = 0) const;
+        size_t find(const Regex& reg, const size_t offset = 0) const;
+        size_t rfind(const char* que, const size_t offset = 0) const;
+        size_t rfind(const Regex& reg, const size_t offset = 0) const;
+        Array<size_t> findAll(const char* que) const;
+        Array<size_t> findAll(const Regex& reg) const;
+        bool match(const char* que, const size_t offset = 0) const;
+        bool match(const Regex& reg) const;
+        bool equal(const Regex& reg) const;
+        Pair<size_t, String> search(const Regex& reg) const;
+        Array<Pair<size_t, String>> searchAll(const Regex& reg) const;
+
         bool boolean() const;
         sbyte byteValue() const;
         subyte ubyteValue() const;
@@ -360,96 +224,120 @@ namespace slib {
         sinteger integer() const;
         suinteger uinteger() const;
         sreal real() const;
-        SNumber number() const;
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		std::wstring unicode() const;
-		String localize() const;
+        const char* cstr() const;
+        const std::string toStr() const;
+#if defined(WIN_OS)
+        std::wstring unicode() const;
+        String localize() const;
 #endif  
-        operator bool() const;
-        operator sbyte() const;
-        operator subyte() const;
-        operator sshort() const;
-        operator sushort() const;
-        operator int() const;
-        operator unsigned int() const;
-        operator size_t() const;
-#ifdef WIN64_OS
-        operator long() const;
-#ifndef MAC_OS
-        operator unsigned long() const;
-#endif
-#endif
-        operator long long() const;
-#ifdef MAC_OS
-        operator unsigned long long() const;
-#endif
-#ifdef LINUX_OS
-        operator sinteger() const;
-#endif
-        operator float() const;
-        operator double() const;
-        operator const char *() const;
-        bool operator < (const char *s) const;
-        bool operator < (const std::string &s) const;
-        bool operator < (const String &s) const;
-        bool operator < (const SString &s) const;
-        bool operator == (const char *s) const;
-        bool operator == (const std::string &s) const;
-        bool operator == (const String &s) const;
-        bool operator == (const SString &s) const;
-        bool operator != (const char *s) const;
-        bool operator != (const std::string &s) const;
-        bool operator != (const String &s) const;
-        bool operator != (const SString &s) const;
+        operator const char*() const;
+
+        bool operator<(const char* s) const;
+        bool operator<(const String& s) const;
+        bool operator==(const char* s) const; 
+        bool operator==(const String& s) const;
+        bool operator==(const SObjPtr& o) const;
+        bool operator!=(const char* s) const;
+        bool operator!=(const String& s) const;
+
     };
-	extern SLIB_DLL String operator+(const char& c, const String& s);
-	extern SLIB_DLL String operator+(const char* s1, const String& s2);
-	extern SLIB_DLL String operator+(const std::string& s1, const String& s2);
-	
-	extern inline std::ostream& operator<<(std::ostream& os, const Char& c) {
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		return os << c.toString().localize().cstr();
-#else
-		return os << c.toString().cstr();
-#endif
-	}
-	extern inline std::ostream& operator<<(std::ostream& os, const String& str) {
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		return os << str.localize().cstr();
-#else
-		return os << str.cstr();
-#endif
-	}
-	extern inline std::istream& operator>>(std::istream& is, String& str) {
-		is.seekg(0, std::ios::end);
-		size_t size = is.tellg();
-		is.clear();
-		is.seekg(0);
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		char* buf = new char[size + 1];
-		is.read(buf, size);
-		buf[size] = 0;
-		str = String::toUTF8(buf);
-#else
-		str.resize(size);
-		return is.read(str.ptr(), size);
-#endif
-		return is;
-	}
+    /**
+    * @cond
+    */
+    extern SLIB_DLL slib::String operator+(const char* s, const slib::String& str);
+    extern SLIB_DLL std::ostream& operator<<(std::ostream& os, const slib::Char& ch);
+    extern SLIB_DLL std::ostream& operator<<(std::ostream& os, const slib::String& str);
+    extern SLIB_DLL std::istream& operator>>(std::istream& is, slib::String& str);
+
+    template<class C1, class C2>
+    extern String toString(const slib::Pair<C1, C2>& pair, const char* format = nullptr) {
+        String str;
+        str << pair.first << ":" << pair.second;
+        return str;
+    }
+    template<typename T>
+    extern String toString(const slib::Range<T>& range, const char* format = nullptr) {
+        String str;
+        str << "(" << range.begin << "," << range.end << ")";
+        return str;
+    }
+    template<typename T>
+    extern String toString(const slib::Area<T>& area, const char* format = nullptr) {
+        String str;
+        str << "(" << area.ori_x << "," << area.ori_y << "," << area.width << "," << area.height << ")";
+        return str;
+    }
+    template<typename T>
+    extern String toString(const slib::Zone<T>& zone, const char* format = nullptr) {
+        String str;
+        str << "(" << zone.ori_x << "," << zone.ori_y << "," << zone.ori_z << "," << zone.width << "," << zone.height << "," << zone.depth << ")";
+        return str;
+    }
+    extern SLIB_DLL String toString(const char c, const char* format = nullptr);
+    extern SLIB_DLL String toString(const char* s, const char* format = nullptr);
+    extern SLIB_DLL String toString(const String& str, const char* format = nullptr);
+    /**
+    * @endcond
+    */
+}
+using stringarray = slib::Array<slib::String>;
+/**
+* @cond
+*/
+namespace std {
+    template<>
+    struct hash<slib::String> {
+        size_t operator()(const slib::String& s) const {
+            return hash<std::string>{}(s.toStr());
+        }
+    };
+}
+/**
+* @endcond
+*/
+#define S(X) slib::String(X)
+#define S_(X) slib::String(#X)
+#define REG(X) slib::Regex(X)
+#define REG_(X) slib::Regex(#X)
+
+namespace slib {
+    namespace sstr {
+        extern SLIB_DLL bool isQuoted(const char* s);
+        extern SLIB_DLL bool isEnclosed(const char* s, const char* bracket);
+        extern SLIB_DLL bool isNumeric(const char* s);
+
+        extern SLIB_DLL String trim(const char* s);
+        extern SLIB_DLL String squote(const char* s);
+        extern SLIB_DLL String dquote(const char* s);
+        extern SLIB_DLL String dequote(const char* s, bool check = true);
+        extern SLIB_DLL String enclose(const char* s, const char* bracket);
+        extern SLIB_DLL String fill(const char* s, const char c, const size_t sz, DIRECTION dir);
+        extern SLIB_DLL String lfill(const char* s, const char c, const size_t sz);
+        extern SLIB_DLL String rfill(const char* s, const char c, const size_t sz);
+        extern SLIB_DLL String bfill(const char* s, const char c, const size_t sz);
+
+        extern SLIB_DLL String toWide(const char* s);
+        extern SLIB_DLL String toNarrow(const char* s);
+        extern SLIB_DLL String toLower(const char* s);
+        extern SLIB_DLL String toUpper(const char* s);
+        
+        constexpr char alphabet[32] = "abcdefghijklmnopqrstuvwxyz";
+        constexpr char ALPHABET[32] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        constexpr char arabian[11] = "0123456789";
+        constexpr char hex[17] = "0123456789abcdef";
+        constexpr char HEX[17] = "0123456789ABCDEF";
+
+        extern SLIB_DLL String greek(const size_t s, bool upper = false);
+        extern SLIB_DLL String roman(const size_t s, bool upper = false);
+    }
+    extern SLIB_DLL String SP;
+    extern SLIB_DLL String CR;
+    extern SLIB_DLL String LF;
+    extern SLIB_DLL String CRLF;
+    extern SLIB_DLL String TAB;
+    extern SLIB_DLL String DEL;
+    extern SLIB_DLL String NL;
 }
 
-namespace std {
-	template<>
-	struct hash<slib::Char> {
-		size_t operator()(const slib::Char& c) const {
-			return hash<std::string>{}(c.toStr());
-		}
-	};
-	template<>
-	struct hash<slib::String> {
-		size_t operator()(const slib::String& s) const {
-			return hash<std::string>{}(s.toStr());
-		}
-	};
-}
+
 #endif

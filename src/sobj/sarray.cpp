@@ -1,157 +1,120 @@
 #include "sobj/sarray.h"
+#include "sobj/sobjptr.h"
 #include "sutil/sjson.h"
-#include "sutil/sxml.h"
-
-using namespace slib;
-using namespace slib::sio;
-
-SArray::SArray() : Array<sobj>() {}
-SArray::SArray(int size) : Array<sobj>(size) {}
-SArray::SArray(size_t size) : Array<sobj>(size) {}
-SArray::SArray(std::initializer_list<sobj> li) : Array<sobj>(li) {}
-SArray::SArray(const char *s, const char *sep) : SArray(SString(s).split(sep)) {}
-SArray::SArray(const intarray &iarray) : SArray() {
-    if (iarray.empty()) return;
-	Array<sobj>::resize(iarray.size());
-	sforeach2(*this, iarray) E1_ = E2_;
-}
-SArray::SArray(const stringarray &strarray) : SArray() {
+slib::SArray::SArray() : Array<slib::SObjPtr>() {}
+slib::SArray::SArray(const size_t size) : Array<slib::SObjPtr>(size) {}
+slib::SArray::SArray(const size_t size, const SObjPtr &o) : Array<slib::SObjPtr>(size, o) {}
+slib::SArray::SArray(std::initializer_list<slib::SObjPtr> li) : Array<slib::SObjPtr>(li) {}
+slib::SArray::SArray(const stringarray& strarray) : SArray() {
     if (strarray.empty()) return;
-    Array<sobj>::resize(strarray.size());
-	sforeach2(*this, strarray) E1_ = sobj::toSObj(E2_);
+    Array<slib::SObjPtr>::resize(strarray.size());
+    sfor2(*this, strarray) $_1 = slib::SObjPtr::toObj($_2);
 }
-SArray::SArray(const sobj &obj) : SArray() {
-    if (obj.isNull()) return;
-    if (obj.isArray()) *this = obj.array();
-    else add(obj);
+slib::SArray::SArray(const intarray& iarray) : SArray() {
+    if (iarray.empty()) return;
+    Array<slib::SObjPtr>::resize(iarray.size());
+    sfor2(*this, iarray) $_1 = $_2;
 }
-SArray::SArray(SArray&& array) noexcept : Array(std::forward<Array &&>(array)) {}
-SArray::SArray(const SArray &array) : Array(array) {}
-SArray::~SArray() {}
-SArray &SArray::operator = (const SArray &array) {
-    clear(); resize(array.size());
-	sforeach2(*this, array) E1_ = E2_;
+slib::SArray::SArray(SArray&& array) noexcept : slib::Array<slib::SObjPtr>(std::forward<slib::Array<slib::SObjPtr>&&>(array)) {}
+slib::SArray::SArray(const SArray &array) : slib::Array<slib::SObjPtr>(array) {}
+slib::SArray::~SArray() {}
+slib::SArray & slib::SArray::operator = (const SArray &array) {
+    resize(array.size());
+	sfor2(*this, array) $_1 = $_2;
     return *this;
 }
-void SArray::load(const char *path) {
-    if(!empty()) clear();
-    auto ext = SFile(path).extension();
-	if (ext == "sobj") {
-		sio::SFile file(path, sio::READ);
-		sarray array;
-		file.readSObject(array);
-		*this = array;
-	}
-	else if (ext == "plist") {
-        SXmlDoc doc;
-        doc.load(path);
-        auto node = doc.entity()->children().first();
-        if(doc.type() != xml::PLIST)
-            throw SException(ERR_INFO, SLIB_FORMAT_ERROR, path, "plist");
-        *this = SXmlNode::toPlistObj(node);
-    }
-    else if(ext == "json") {
-        SJson js;
-        js.load(path);
-        *this = js.array();
-    }
-}
-void SArray::save(const char *path) {
-    auto ext = SFile(path).extension();
-	if (ext == "sobj") {
-		sio::SFile file(path, sio::CREATE);
-		file.writeSObject(*this);
-	}
-    else if (ext == "plist") {
-        SXmlDoc doc(xml::PLIST);
-        doc.addToEntity(SXmlNode::plistNode(*this));
-        doc.save(path);
-    }
-    else if(ext == "json") {
-        SJson js(*this);
-        js.save(path);
-    }
-}
-SArray SArray::subarray(size_t off, size_t len) const {
-    if (size() < off+len) len = size()-off;
-    return subarray(begin()+off, begin()+off+len);
-}
-SArray SArray::subarray(SArrayCIterator<SObjPtr> beg, SArrayCIterator<SObjPtr> end) const {
-    SArray array; array.append(beg._ptr, end-beg); return array;
-}
-SArray SArray::subarray(srange range) const {
-    return subarray(range.begin, range.length());
-}
-size_t SArray::search(const sobj& que, size_t offset) const {
-	auto it = begin() + offset;
-	while(it < end()) {
-        if(E_.isNull()) continue;
-        else if(E_ == que) return INDEX_(*this);
-		NEXT_;
+size_t slib::SArray::search(const slib::SObjPtr& que, size_t offset) const {
+    sforin(it, begin() + offset, end()) {
+        if ($_ == que) return $INDEX(*this);
     }
     return NOT_FOUND;
 }
-void SArray::sortBy(const char *key, ORDER order) {
-    if(order == ASC)
-        std::sort(Array<sobj>::begin(), Array<sobj>::end(),
-                  [key](const sobj &s1, const sobj &s2) {
+size_t slib::SArray::findWithKey(const slib::SObjPtr& que, const char* key) const {
+    sfor(*this) {
+        if ($_[key] == que) return $INDEX(*this);
+    }
+    return NOT_FOUND;
+}
+slib::SArray slib::SArray::arrayOfKey(const char* key) const {
+    SArray tmp;
+    sfor(*this) { if ($_.hasKey(key)) tmp.add($_[key]); }
+    return tmp;
+}
+void slib::SArray::sortByKey(const char* key, slib::ORDER order) {
+    if (order == ORDER::ASC)
+        std::sort(Array<slib::SObjPtr>::begin(), Array<slib::SObjPtr>::end(),
+            [key](const slib::SObjPtr& s1, const slib::SObjPtr& s2) {
+                return s1[key] < s2[key];
+            });
+    else 
+        std::sort(Array<slib::SObjPtr>::begin(), Array<slib::SObjPtr>::end(),
+            [key](const slib::SObjPtr& s1, const slib::SObjPtr& s2) {
+                return s2[key] < s1[key];
+            });
+}
+void slib::SArray::sortBy(const char *key, ORDER order) {
+    if(order == ORDER::ASC)
+        std::sort(Array<slib::SObjPtr>::begin(), Array<slib::SObjPtr>::end(),
+                  [key](const slib::SObjPtr &s1, const slib::SObjPtr &s2) {
                       if(!s1.isDict()) return false;
                       else if(!s2.isDict()) return true;
                       return s1[key] < s2[key];
                   });
-    else std::sort(Array<sobj>::begin(), Array<sobj>::end(),
-                   [key](const sobj &s1, const sobj &s2) {
+    else std::sort(Array<slib::SObjPtr>::begin(), Array<slib::SObjPtr>::end(),
+                   [key](const slib::SObjPtr &s1, const slib::SObjPtr &s2) {
                        if(!s1.isDict()) return false;
                        else if(!s2.isDict()) return true;
                        return s2[key] < s1[key];
                    });
 }
-
-String SArray::getClass() const { return "array"; }
-String SArray::toString() const {
-    if(empty()) return "[]";
-    String str = "[", dat;
-    sforeach(*this) {
-        if(E_.isNull()) str += "null,";
-        else if(E_.isNum()) str += E_+",";
-        else if(E_.isArray()) str += E_.toString() + ",";
-        else if(E_.isDict()) str += E_.toString() + ",";
-        else {
-            dat = E_;
-            if(dat.contain("\"")) dat.replace("\"", "\\\"");
-            str += String::dquot(dat)+",";
-        }
-    }
-    str.last() = ']';
-    return str;
-}
-SObject *SArray::clone() const { 
-	if (empty()) return new SArray();
-	auto array = new SArray(size());
-	sforeach2(*array, *this) E1_ = E2_.clone();
-	return array;
-}
-bool SArray::operator < (const sobj &obj) const {
-    if (obj.isNull()) return false;
-    if (obj.isArray()) return (*this) < obj.array();
-    return getClass() < obj->getClass();
-}
-bool SArray::operator < (const SArray &array) const {
+bool slib::SArray::operator < (const SArray &array) const {
     if (size() != array.size()) return size() < array.size();
-	sforeach2(*this, array) {
-		if (E1_ != E2_) return E1_ < E2_;
+	sfor2(*this, array) {
+		if ($_1 != $_2) return $_1 < $_2;
 	}
     return false;
 }
-bool SArray::operator == (const sobj &obj) const {
-    if (obj.isArray()) return (*this) == obj.array();
-    return false;
-}
-bool SArray::operator == (const SArray &array) const {
+bool slib::SArray::operator == (const SArray &array) const {
     if (size() != array.size()) return false;
-	sforeach2(*this, array) {
-		if (E1_ != E2_) return false;
+    sfor2(*this, array) {
+        if ($_1 != $_2) return false;
 	}
     return true;
 }
+slib::String slib::SArray::getClass() const { return "array"; }
+slib::String slib::SArray::toString(const char* format) const {
+    String f = format ? sstr::toLower(format) : "";
+    if (f.empty()) {
+        if (empty()) return "[]";
+        String str = "[", dat;
+        sfor(*this) {
+            if ($_.isNull()) str += "null,";
+            else if ($_.isNum()) str += $_ + ",";
+            else if ($_.isArray()) {
+                if (&$_.array() == this) str += "(self),";
+                else str += $_.toString() + ",";
+            }
+            else if ($_.isDict()) str += $_.toString() + ",";
+            else {
+                dat = $_;
+                dat.replace("\"", "\\\"");
+                str += sstr::dquote(dat) + ",";
+            }
+        }
+        str[-1] = ']';
+        return str;
+    }
+    else if (f == "json") return slib::sjson::toString(*this);
+    else if (f == "csv") return slib::toString((const Array<slib::SObjPtr> &)(*this), ",");
+    else if (f == "tsv") return slib::toString((const Array<slib::SObjPtr> &)(*this), "\t");
+    else return slib::toString((const Array<slib::SObjPtr> &)(*this), f);
+}
+slib::SObject* slib::SArray::clone() const {
+    if (empty()) return new SArray();
+    auto array = new SArray(size());
+    sfor2(*array, *this) $_1 = $_2.clone();
+    return array;
+}
 
+slib::String slib::toString(const slib::SArray& array, const char* format) { return array.toString(format); }
+std::ostream& operator<<(std::ostream& os, const slib::SArray& array) { return os << array.toString(); }

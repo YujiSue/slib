@@ -1,60 +1,39 @@
+#include "sio/stream.h"
+#include "sio/sfile.h"
 #include "sutil/sxml.h"
-
-using namespace slib;
-using namespace slib::sio;
-
-SXmlDoc::SXmlDoc() : SDocument<SXmlNode>() {}
-SXmlDoc::SXmlDoc(suint t) : SDocument<SXmlNode>(t) { _init(); }
-SXmlDoc::SXmlDoc(const SXmlDoc &doc) : SDocument<SXmlNode>(doc) {
-    _definition = doc._definition;
-    _doctype = doc._doctype;
-    _entity = doc._entity;
+slib::SXml::SXml() : SXmlNode(sxml::ROOT_NODE) {}
+slib::SXml::SXml(SObjPtr obj) : SXml() {
+	auto declaration = SXmlNode(sxml::DECLARATION_NODE, "xml", 
+		sattribute({
+			SS_("version", "1.0"),
+			SS_("encoding", "utf-8") 
+			}));
+	auto doctype = SXmlNode(sxml::DOCTYPE_PUB_NODE, "plist",
+		sattribute({
+			SS_("public", "-//Apple Computer//DTD PLIST 1.0//EN"),
+			SS_("dtd", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
+			}));
+	auto entity = SXmlNode(sxml::PAIRED_TAG, "plist",
+		sattribute({
+			SS_("version", "1.0")
+			}));
+	entity.addChild(sxml::plistNode(obj));
+	addChild(declaration);
+	addChild(doctype);
+	addChild(entity);
 }
-SXmlDoc::~SXmlDoc() {}
-void SXmlDoc::_init() {
-	_definition = sxnode(xml::DEFINITION_NODE, "xml");
-	_definition->attribute = { kv("version", "1.0"), kv("encoding", "utf-8") };
-	_root.addChild(_definition);
-	switch (_type) {
-	case xml::PLIST:
-	{
-		_doctype = sxnode(xml::DOCTYPE_PUB_NODE, "plist");
-		_doctype->attribute =
-		{
-			kv("public", "-//Apple Computer//DTD PLIST 1.0//EN"),
-			kv("dtd", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
-		};
-		_root.addChild(_doctype);
-		_entity = sxnode(xml::START_TAG, "plist");
-		_entity->attribute = { kv("version", "1.0") };
-		_root.addChild(_entity);
-		break;
-	}
-	case xml::SVG:
-	{
-		_doctype = sxnode(xml::DOCTYPE_PUB_NODE, "svg", "");
-		_doctype->attribute =
-		{
-			kv("public", "-//W3C//DTD SVG 1.1//EN"),
-			kv("dtd", "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd")
-		};
-		_root.addChild(_doctype);
-		break;
-	}
-	default:
-		break;
-	}
-}
-sxnode SXmlDoc::definition() const { return _definition; }
-sxnode SXmlDoc::doctype() const { return _doctype; }
-sxnode SXmlDoc::entity() const { return _entity; }
-void SXmlDoc::setEntity(sxnode node) { 
+slib::SXml::SXml(const SXml& xml) : SXml() {}
+slib::SXml::~SXml() {}
+/*
+void SXml::setEntity(sxnode node) { 
 	_root.removeChild(node);
 	_entity = node;
 	_root.addChild(_entity);
 }
-void SXmlDoc::addToEntity(sxnode node) { _entity->addChild(node); }
-void SXmlDoc::_read(SFile &file, String &tag, SXmlNode *parent) {
+void SXml::addToEntity(sxnode node) { _entity->addChild(node); }
+*/
+/*
+void SXml::_read(SFile &file, String &tag, SXmlNode *parent) {
     if(file.eof()) return;
     if(tag[0] == '?' && tag.last() == '?') {
 		_type |= xml::XML;
@@ -132,15 +111,35 @@ void SXmlDoc::_read(SFile &file, String &tag, SXmlNode *parent) {
         else parent->addChild(node);
     }
 }
-void SXmlDoc::load(const char *path) {
-    SFile file(path, sio::READ);
-    String buf, tag;
-    while (!(file.eof())) {
-        file.readTo(buf, "<");
-        file.readTo(tag, ">");
-        _read(file, tag, nullptr);
-    }
+*/
+/*
+slib::SXmlNode& slib::SXml::operator[] (int i) { return SXmlNode::child(i); }
+slib::SXmlNode& slib::SXml::operator[] (const char* tag) {
+	sfor(SXmlNode::_children) {
+		if ($_.tag == tag) return $_;
+	}
+	throw NotFoundException(slib::nofoundErrorText(tag, "document"));
 }
+*/
+/*
+slib::ArrayIterator<slib::SPointer<slib::SXmlNode>> slib::SXml::begin() { return SXmlNode::begin(); }
+slib::ArrayCIterator<slib::SPointer<slib::SXmlNode>> slib::SXml::begin() const { return SXmlNode::begin(); }
+slib::ArrayIterator<slib::SPointer<slib::SXmlNode>> slib::SXml::end() { return SXmlNode::end(); }
+slib::ArrayCIterator<slib::SPointer<slib::SXmlNode>> slib::SXml::end() const { return SXmlNode::end(); }
+*/
+void slib::SXml::load(const char *path) {
+	slib::SFile f(path);
+	String buf;
+	f >> buf;
+	buf.trim();
+	auto it = buf.begin();
+	while (it < buf.end()) {
+		addChild(SXmlNode());
+		it = sxml::readXmlNode(it, buf.end(), child(-1));
+	}
+
+}
+/*
 inline void _write(SFile &file, sxnode node) {
 	size_t l = node->layer() - 1;
 	if (node->type == xml::DEFINITION_NODE)
@@ -159,8 +158,7 @@ inline void _write(SFile &file, sxnode node) {
 			file << "SYSTEM " << String::dquot(node->attribute["dtd"]) << ">" << NEW_LINE;
 		else {
 			file << "[" << NEW_LINE;
-			/*
-			 */
+			//
 			file << "]>" << NEW_LINE;
 		}
 	}
@@ -193,13 +191,55 @@ inline void _write(SFile &file, sxnode node) {
 	}
 	file.flush();
 }
-void SXmlDoc::save(const char *path) {
-    SFile file(path, sio::CREATE);
-	sforeach(_root) _write(file, E_);
+*/
+void slib::SXml::save(const char *path, bool formed) {
+	slib::SFile f(path, sio::MAKE);
+	slib::IOStream fos(f, sio::OSTREAM);
+	int l = 0;
+	sfor(SXmlNode::_children) sxml::writeXmlNode(fos, $_, formed, l);
 }
-void SXmlDoc::clear() {
-    _definition.release(); _definition.discard();
-    _doctype.release(); _doctype.discard();
-    _entity.release(); _entity.discard();
-	_root.clearChildren();
-}
+
+
+
+	//sforeach(child, cnvs) {
+	/*
+		if (child.brush().type == slib::sstyle::LINEAR_GRAD || child.brush().type == slib::sstyle::RADIAL_GRAD) {
+			auto brush = E_->brush();
+			
+			
+			auto& gcolor = brush.gradient();
+
+			auto defs = sxnode(xml::START_TAG, "defs", nullptr);
+			if (brush.type == slib::sstyle::LINEAR_GRAD) {
+				auto lgrad = sxnode(xml::START_TAG, "linearGradient", nullptr);
+				lgrad->attribute = { kv("id", "lgrad-" + slib::toString(E_->address(), "-")) };
+				for (int f = 0; f < gcolor.count(); ++f) {
+					auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
+					stop->attribute =
+					{
+						kv("offset", gcolor.points()[f]),
+						kv("stop-color", gcolor[f].toString(SColor::HTML_HEX))
+					};
+					lgrad->addChild(stop);
+				}
+				defs->addChild(lgrad);
+			}
+			else {
+				auto rgrad = sxnode(xml::START_TAG, "radialGradient", nullptr);
+				rgrad->attribute = { kv("id", "rgrad-" + slib::toString(E_->address(), "-")) };
+				for (int f = 0; f < gcolor.count(); ++f) {
+					auto stop = sxnode(xml::SINGLE_TAG, "stop", nullptr);
+					stop->attribute =
+					{
+						kv("offset", gcolor.points()[f]),
+						kv("stop-color", gcolor[f].toString(SColor::HTML_HEX))
+					};
+					rgrad->addChild(stop);
+				}
+				defs->addChild(rgrad);
+			}
+			node->addChild(defs);
+		}
+	*/
+	//	node->addChild(SXmlNode::svgNode(child));
+	//}

@@ -2,150 +2,145 @@
 #define SLIB_SPIXEL_H
 
 #include "sobj/sobject.h"
-#include "smedia/smedia.h"
+#include "smedia/sgraphic.h"
 
 namespace slib {
-    namespace smedia {
-        class SLIB_DLL SColor;
-        class SLIB_DLL SPixel;
-        
-        class SLIB_DLL SImageRow {
-        protected:
-            subyte _bpp, *_data;
-			sushort _type;
-            size_t _width;
-            
-        public:
-            SImageRow();
-            SImageRow(sushort t, size_t w, subyte *p);
-            SImageRow(const SImageRow &row);
-            ~SImageRow();
-            
-            SImageRow &operator=(const SImageRow &row);
-            SImageRow &operator++();
-            SImageRow &operator--();
-            
-            SPixel operator[](size_t idx) const;
-            
-            subyte *ptr() const;
-            
-            bool operator<(const SImageRow &row) const;
-            bool operator==(const SImageRow &row) const;
-        };
-        
-		using spxl = scobj<SPixel, PIXEL_OBJ>;
-        class SLIB_DLL SPixel : public SObject {
-        protected:
-            subyte _bpp, *_data;
-			sushort _type;
+    class SLIB_DLL SImage;
+    class SLIB_DLL Color;
+    class SLIB_DLL PixelIterator;
+    class SLIB_DLL PixelCIterator;
 
-        public:
-            SPixel();
-            SPixel(sushort t, subyte *p);
-            SPixel(const SPixel &px);
-            ~SPixel();
-            
-            SPixel &operator=(const SPixel &px);
-            SPixel &operator=(subyte i);
-            SPixel &operator=(sushort i);
-            SPixel &operator=(suint i);
-            SPixel &operator=(const SColor &col);
-            SPixel &operator++();
-            SPixel &operator--();
-            
-            subyte &operator[](size_t idx);
-            const subyte &operator[](size_t idx) const;
-            subyte *ptr() const;
-            subyte channel() const;
-            subyte depth() const;
-            subyte bpp() const;
-            SColor color() const;
-            
-            void swap(SPixel px);
-            
-            String getClass() const;
-            String toString() const;
-            SObject *clone() const;
-            
-            bool operator<(const SPixel &px) const;
-            bool operator==(const SPixel &px) const;
-        };
-        
-        #define spxl_iter SPixelIterator
-        #define spxl_citer SPixelCIterator
+    class SLIB_DLL Pixel {
+        friend PixelIterator;
+        friend PixelCIterator;
 
-        class SLIB_DLL SPixelIterator {
-        public:
-            typedef std::random_access_iterator_tag iterator_category;
-            typedef SPixel value_type;
-            typedef std::ptrdiff_t difference_type;
-            typedef SPixel* pointer;
-            typedef SPixel& reference;
-            
-            SPixel px;
-            
-        public:
-            SPixelIterator(subyte t, subyte* p);
-            SPixelIterator(const SPixelIterator &it);
-            ~SPixelIterator();
-            SPixelIterator& operator=(const SPixelIterator &it);
-            reference operator *();
-            pointer operator ->();
-            reference operator [](std::ptrdiff_t diff);
-            SPixelIterator &operator ++();
-            SPixelIterator operator ++(int);
-            SPixelIterator &operator --();
-            SPixelIterator operator --(int);
-            SPixelIterator &operator +=(std::ptrdiff_t diff);
-            SPixelIterator &operator -=(std::ptrdiff_t diff);
-            SPixelIterator operator +(std::ptrdiff_t diff);
-            SPixelIterator operator -(std::ptrdiff_t diff);
-            int operator -(SPixelIterator it);
-            void swap(SPixelIterator it1, SPixelIterator it2);
-            bool operator <(const SPixelIterator &it) const;
-            bool operator <=(const SPixelIterator &it) const;
-            bool operator >(const SPixelIterator &it) const;
-            bool operator >=(const SPixelIterator &it) const;
-            bool operator ==(const SPixelIterator &it) const;
-            bool operator !=(const SPixelIterator &it) const;
-        };
-        
-        class SLIB_DLL SPixelCIterator {
-        public:
-            typedef std::random_access_iterator_tag iterator_category;
-            typedef const SPixel value_type;
-            typedef std::ptrdiff_t difference_type;
-            typedef const SPixel* pointer;
-            typedef const SPixel& reference;
-            
-            SPixel px;
-            
-        public:
-            SPixelCIterator(subyte t, const subyte *p);
-            SPixelCIterator(const SPixelCIterator &it);
-            ~SPixelCIterator();
-            SPixelCIterator& operator=(const SPixelCIterator &it);
-            reference operator *();
-            pointer operator ->();
-            reference operator [](std::ptrdiff_t diff);
-            SPixelCIterator &operator ++();
-            SPixelCIterator operator ++(int);
-            SPixelCIterator &operator --();
-            SPixelCIterator operator --(int);
-            SPixelCIterator &operator +=(std::ptrdiff_t diff);
-            SPixelCIterator &operator -=(std::ptrdiff_t diff);
-            SPixelCIterator operator +(std::ptrdiff_t diff);
-            SPixelCIterator operator -(std::ptrdiff_t diff);
-            int operator -(SPixelCIterator it);
-            void swap(SPixelCIterator it1, SPixelCIterator it2);
-            bool operator <(const SPixelCIterator &it) const;
-            bool operator <=(const SPixelCIterator &it) const;
-            bool operator >(const SPixelCIterator &it) const;
-            bool operator >=(const SPixelCIterator &it) const;
-            bool operator ==(const SPixelCIterator &it) const;
-            bool operator !=(const SPixelCIterator &it) const;
-        };
-    }
+    protected:
+        subyte _color, * _data;
+
+    public:
+        Pixel();
+        Pixel(subyte t, subyte* p);
+        Pixel(const Pixel& px);
+        ~Pixel();
+
+        Pixel& operator=(const Pixel& px);
+        Pixel& operator=(const subyte i);
+        Pixel& operator=(const sushort i);
+        Pixel& operator=(const int i);
+        Pixel& operator=(const Color& col);
+        Pixel& operator=(const SColor& col);
+        Pixel& operator++();
+        Pixel& operator--();
+
+        int operator[](const int idx) const;
+        void set(const int idx, const int val);
+        subyte type() const;
+        subyte* data() const;
+        Color color() const;
+
+        bool operator<(const Pixel& px) const;
+        bool operator==(const Pixel& px) const;
+    };
+
+    class SLIB_DLL ImageRow {
+    protected:
+        SImage* _img;
+        size_t _row;
+
+    public:
+        ImageRow();
+        ImageRow(SImage *img, const int ridx);
+        ImageRow(const SImage* img, const int ridx);
+        ImageRow(const ImageRow& row);
+        ~ImageRow();
+
+        ImageRow& operator=(const ImageRow& row);
+        ImageRow& operator++();
+        ImageRow& operator--();
+
+        Pixel operator[](const int idx) const;
+        subyte* data(const int idx = 0) const;
+
+        bool operator<(const ImageRow& row) const;
+        bool operator==(const ImageRow& row) const;
+    };
+
+    class SLIB_DLL PixelIterator {
+        friend Pixel;
+    public:
+        typedef std::random_access_iterator_tag iterator_category;
+        typedef Pixel value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef Pixel* pointer;
+        typedef Pixel& reference;
+    protected:
+        SImage* _img;
+        Pixel _px;
+
+    public:
+        PixelIterator();
+        PixelIterator(SImage *img, ArrayIterator<subyte> it);
+        PixelIterator(const PixelIterator& it);
+        ~PixelIterator();
+        PixelIterator& operator=(const PixelIterator& it);
+        reference operator *();
+        pointer operator ->();
+        reference operator [](std::ptrdiff_t diff);
+        PixelIterator& operator ++();
+        PixelIterator operator ++(int);
+        PixelIterator& operator --();
+        PixelIterator operator --(int);
+        PixelIterator& operator +=(std::ptrdiff_t diff);
+        PixelIterator& operator -=(std::ptrdiff_t diff);
+        PixelIterator operator +(std::ptrdiff_t diff);
+        PixelIterator operator -(std::ptrdiff_t diff);
+        int operator -(PixelIterator it);
+        void swap(PixelIterator it1, PixelIterator it2);
+        bool operator <(const PixelIterator& it) const;
+        bool operator <=(const PixelIterator& it) const;
+        bool operator >(const PixelIterator& it) const;
+        bool operator >=(const PixelIterator& it) const;
+        bool operator ==(const PixelIterator& it) const;
+        bool operator !=(const PixelIterator& it) const;
+    };
+
+    class SLIB_DLL PixelCIterator {
+        friend Pixel;
+    public:
+        typedef std::random_access_iterator_tag iterator_category;
+        typedef const Pixel value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef const Pixel* pointer;
+        typedef const Pixel& reference;
+    protected:
+        const SImage* _img;
+        Pixel _px;
+
+    public:
+        PixelCIterator();
+        PixelCIterator(const SImage* img, ArrayCIterator<subyte> it);
+        PixelCIterator(const PixelCIterator& it);
+        ~PixelCIterator();
+        PixelCIterator& operator=(const PixelCIterator& it);
+        reference operator *();
+        pointer operator ->();
+        reference operator [](std::ptrdiff_t diff);
+        PixelCIterator& operator ++();
+        PixelCIterator operator ++(int);
+        PixelCIterator& operator --();
+        PixelCIterator operator --(int);
+        PixelCIterator& operator +=(std::ptrdiff_t diff);
+        PixelCIterator& operator -=(std::ptrdiff_t diff);
+        PixelCIterator operator +(std::ptrdiff_t diff);
+        PixelCIterator operator -(std::ptrdiff_t diff);
+        int operator -(PixelCIterator it);
+        void swap(PixelCIterator it1, PixelCIterator it2);
+        bool operator <(const PixelCIterator& it) const;
+        bool operator <=(const PixelCIterator& it) const;
+        bool operator >(const PixelCIterator& it) const;
+        bool operator >=(const PixelCIterator& it) const;
+        bool operator ==(const PixelCIterator& it) const;
+        bool operator !=(const PixelCIterator& it) const;
+    };
 }
-
 #endif

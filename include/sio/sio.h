@@ -1,169 +1,146 @@
 #ifndef SLIB_SIO_H
 #define SLIB_SIO_H
+#include "sconfig.h"
+#include "sobj/sobjptr.h"
 
-#include "sbasic.h"
-#include "sobj/snumber.h"
-#include "sobj/sstring.h"
-#include "sobj/sdate.h"
-#include "sobj/sdata.h"
-#include "sobj/sarray.h"
-#include "sobj/sdict.h"
-#include "sobj/stable.h"
-#include "sobj/stext.h"
-#include "sutil/ssys.h"
-extern "C" {
-#include "zlib/zlib.h"
-}
 namespace slib {
+	class SLIB_DLL SFile;
+	/**
+	* @class SIOException
+	* \~english @brief Exception class for IO process.
+	* \~japanese @brief IO関連のプロセスに関する例外クラス
+	*/
+	class SLIB_DLL SIOException : public Exception {
+	public:
+		SIOException();
+		SIOException(int i, const char* msg, const char* desc);
+		~SIOException();
+	};
 	namespace sio {
+		constexpr int FILE_NOT_EXIST_ERROR = 0x0011;
+		constexpr int FILE_OPEN_ERROR = 0x0012;
+		constexpr int FILE_READ_ERROR = 0x0013;
+		constexpr int FILE_WRITE_ERROR = 0x0014;
 
-		constexpr suint FILE_NOT_EXIST_ERROR = 0x0011;
-		constexpr suint FILE_OPEN_ERROR = 0x0012;
-		constexpr suint DIRECTORY_LOAD_ERROR = 0x0013;
-
-		class SLIB_DLL SIOException : public SException {
-		public:
-			SIOException(const char* f, sint l, const char* func, sint e = 0, const char* target = nullptr, const char* note = nullptr);
-			~SIOException();
-		};
-
-#ifdef WIN_OS
-#define ROOT_PATH String("C:\\")
-#define ROOT_DRIVE(X) String(X)+":\\"
-#define PATH_SEPARATOR String("\\")
-#else
-#define ROOT_PATH String("/")
-#define PATH_SEPARATOR String("/")
-#endif
-
-#define SIO_BUFFER_SIZE 256
-#ifdef WIN_OS
-#define HOME_PATH String(getenv("USERPROFILE"))
-#else
-#define HOME_PATH String(getenv("HOME"))
-#endif
-#define CURRENT_PATH currentPath()
+		constexpr int FILE_SYSTEM_ERROR = 0x0015;
 
 
-		extern inline void _EXPAND_ARGS(SDictionary& params) {}
-		template<class... REST>
-		extern inline void _EXPAND_ARGS(SDictionary& params, const char* par, REST... rest) {
-			auto str = String(par);
-			auto pos = str.find("=");
-			if (pos == NOT_FOUND) throw SException(ERR_INFO, SLIB_FORMAT_ERROR);
-			auto key = str.substring(0, pos);
-			auto val = str.substring(pos + 1);
-			if (val.isQuoted()) params[key] = String::dequot(val);
-			else if (val.isNumeric()) params[key] = SNumber::toNumber(val);
-			else if (val == "null") params[key] = snull;
-			else if (String::lower(val) == "true" || String::lower(val) == "yes") params[key] = SNumber(true);
-			else if (String::lower(val) == "false" || String::lower(val) == "no") params[key] = SNumber(false);
-			else params[key] = val;
-			_EXPAND_ARGS(params, rest...);
-		}
-		template<class... Args>
-		extern inline void EXPAND_ARGS(Args... args) {
-			SDictionary params;
-			_EXPAND_ARGS(params, args...);
-		}
+		/**
+		* @cond
+		*/
+		extern SLIB_DLL String nofileErrorText(const char* path);
+		extern SLIB_DLL String fileopenErrorText(const char* path);
+		extern SLIB_DLL String filereadErrorText(const char* path);
+		extern SLIB_DLL String filewriteErrorText(const char* path);
 
-		class SLIB_DLL SFile;
-#define filearray Array<slib::sio::SFile>
+		extern SLIB_DLL String fsErrorMsg(const char* cmd);
+		
 
+#define FileNotFoundException(X) SIOException(sio::FILE_NOT_EXIST_ERROR, "File is not exist.", X)
+#define FileOpenException(X) SIOException(sio::FILE_OPEN_ERROR, "File open error.", X)
+#define FileReadException(X) SIOException(sio::FILE_READ_ERROR, "File read wrror.", X)
+#define FileWriteException(X) SIOException(sio::FILE_WRITE_ERROR, "File write error.", X)
+
+#define FileSystemException(X,Y) SIOException(sio::FILE_SYSTEM_ERROR, X, Y)
+
+		/**
+		* @endcond
+		*/
+	}
+
+	namespace sio {
 		constexpr subyte READ = 0x01;
 		constexpr subyte WRITE = 0x02;
-		constexpr subyte CREATE = 0x04;
-		constexpr subyte APPEND = 0x08;
-		constexpr subyte DIRECTORY = 0x10;
+		constexpr subyte MAKE = 0x12;
+		constexpr subyte APPEND = 0x22;
+		constexpr subyte EDIT = 0x42;
+		constexpr subyte DIRECTORY = 0x08;
 
 		constexpr subyte OVERWRITE = 0x01;
 		constexpr subyte CANCEL_IFEXIST = 0x02;
 		constexpr subyte BACKUP_ORI = 0x04;
 
-		extern inline String currentPath() {
-			String path;
-#if defined(MAC_OS) || defined(UNIX_OS) || defined(LINUX_OS)
-			SSystem::exec("pwd", path);
+		constexpr subyte ISTREAM = 0x10;
+		constexpr subyte OSTREAM = 0x20;
+		constexpr subyte STDIO = 0x01;
+		constexpr subyte STRIO = 0x02;
+		constexpr subyte BYTEIO = 0x04;
+		constexpr subyte FILEIO = 0x08;
+#ifdef WIN_OS
+		constexpr char PATH_SEPARATOR[2] = "\\";
+		constexpr char PATH_DELIMITER[2] = ";";
 #else
-			SSystem::exec("cd", path);
-			path = String::toUTF8(path);
+		constexpr char PATH_SEPARATOR[2] = "/";
+		constexpr char PATH_DELIMITER[2] = ":";
 #endif
-			path.trimming();
+	}
+	namespace ssys {
+		/**
+		* \~english @brief Return root directory path.
+		* \~japanese @brief ルートディレクトリのパスを返す関数
+		*/
+		extern SLIB_DLL String root();
+		/**
+		* \~english @brief Return home directory path.
+		* \~japanese @brief ホームディレクトリのパスを返す関数
+		*/
+		extern SLIB_DLL String home();
+		/**
+		* \~english @brief Return current directory path.
+		* \~japanese @brief 現在ディレクトリのパスを返す関数
+		*/
+		extern SLIB_DLL String current();
+		/**
+		* \~english @brief Change current directory.
+		* \~japanese @brief カレントディレクトリの変更
+		*/
+		extern SLIB_DLL void setCurrent(const char* path);
+	}
+}
+/**
+* @cond
+*/
+inline void _join_path(slib::String& path) {
+	if (path.size()) path.resize(path.size() - strlen(slib::sio::PATH_SEPARATOR));
+}
+template<typename First, typename... Args>
+inline void _join_path(slib::String& path, First& first, Args&... args) {
+	path << first << (slib::String(first).endWith(slib::sio::PATH_SEPARATOR) ? "" : slib::sio::PATH_SEPARATOR);
+	_join_path(path, args...);
+}
+/**
+* @endcond
+*/
+namespace slib {
+	/**
+	* @namespace sfs
+	* \~english @brief Namespace for file system
+	* \~japanese @brief ファイルシステム関連の名前空間
+	*/
+	namespace sfs {
+		/**
+		* \~english @brief Returns the path concatenating all arguments
+		* \~japanese @brief 引数を全てつないだパスを返す関数
+		*/
+		template<typename... Args>
+		extern String joinPath(Args... args) {
+			String path;
+			_join_path(path, args...);
 			return path;
 		}
-		extern inline bool fileExist(const char* s) {
-			int res;
-#if defined(WIN32_OS)
-			struct _stat32 buf;
-			res = _stat32(s, &buf);
-			return !res;
-#elif defined(WIN64_OS)
-			struct _stat64 buf;
-			res = _stat64(s, &buf);
-			return !res;
-#else
-			struct stat buf;
-			res = stat(s, &buf);
-			return !res;
-#endif
-		}
+		extern SLIB_DLL stringarray pathComponents(const char* path);
+		extern SLIB_DLL Pair<slib::String, slib::String> splitPath(const char* path);
+		extern SLIB_DLL String fileName(const char* path, bool ext = true);
+		extern SLIB_DLL String extension(const char* path);
+		extern SLIB_DLL String absolutePath(const char* path);
+		extern SLIB_DLL sushort permission(const char* path);
+		extern SLIB_DLL bool isDir(const char* path);
+		extern SLIB_DLL bool exist(const char* path);
+		extern SLIB_DLL int make(const char* path);
+		extern SLIB_DLL int makeDir(const char *path, bool recurrent = true, sushort permission = 0x0755);
+		extern SLIB_DLL int move(const char* from, const char* to, subyte op = sio::OVERWRITE);
+		extern SLIB_DLL int copy(const char* from, const char* to, subyte op = sio::OVERWRITE);
+		extern SLIB_DLL int remove(const char* path);
 	}
-	extern inline std::ostream& operator<<(std::ostream& os, const SNumber& num) { return os << num.toString(); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SChar& c) { return os << c.toString(); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SString& str) {
-#if defined(WIN32_OS) || defined(WIN64_OS)
-		return os << str.localize().cstr();
-#else
-		return os << str.cstr();
-#endif
-	}
-	extern inline std::ostream& operator<<(std::ostream& os, const SDate& date) { return os << date.toString(); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SData& data) { return os << data.toString(); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SArray& array) { return os << array.toString(); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SDictionary& dict) { return os << toString(dict); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SText& text) {
-		if (text.attributes().empty()) os << text.cstr();
-		else {
-			auto& attr = text.attributes();
-			if (0 < attr[0].first.begin) os << text.string().substring(srange(0, attr[0].first.begin));
-			sforeach(attr) {
-				if (E_.second.type & sstyle::PLAIN) os << PLAIN_TXT_TAG;
-				if (E_.second.type & sstyle::BOLD) os << BOLD_TXT_TAG;
-				if (E_.second.type & sstyle::ITALIC) os << ITALIC_TXT_TAG;
-				if (E_.second.type & sstyle::UNDERLINE) os << UNDERLINE_TXT_TAG;
-				if (E_.second.color == "black") os << DEFAULT_COLOR_TXT_TAG;
-				if (E_.second.color == "red") os << RED_TXT_TAG;
-				if (E_.second.color == "green") os << GREEN_TXT_TAG;
-				if (E_.second.color == "yellow") os << YELLOW_TXT_TAG;
-				if (E_.second.color == "blue") os << BLUE_TXT_TAG;
-				if (E_.second.color == "magenta") os << MAGENTA_TXT_TAG;
-				if (E_.second.color == "cyan") os << CYAN_TXT_TAG;
-				if (E_.second.color == "white") os << WHITE_TXT_TAG;
-				if (E_.second.background == "black") os << DEFAULT_COLOR_TXTBG_TAG;
-				if (E_.second.background == "red") os << RED_TXTBG_TAG;
-				if (E_.second.background == "green") os << GREEN_TXTBG_TAG;
-				if (E_.second.background == "yellow") os << YELLOW_TXTBG_TAG;
-				if (E_.second.background == "blue") os << BLUE_TXTBG_TAG;
-				if (E_.second.background == "magenta") os << MAGENTA_TXTBG_TAG;
-				if (E_.second.background == "cyan") os << CYAN_TXTBG_TAG;
-				if (E_.second.background == "white") os << WHITE_TXTBG_TAG;
-				os << text.string().substring(srange(E_.first.begin, E_.first.end));
-				os << DEFAULT_TXT_TAG;
-				if (it < attr.end() - 1)
-					os << text.string().substring(srange(E_.first.end, (it + 1)->first.begin));
-			}
-			os << DEFAULT_TXT_TAG;
-			if (attr.last().first.end < text.string().length() - 1) os << text.string().substring(attr.last().first.end);
-		}
-		return os;
-	}
-	extern inline std::ostream& operator<<(std::ostream& os, const STable& table) { return os << table.toString(); }
-	template<class Return, class... Args>
-	extern inline std::ostream& operator<<(std::ostream& os, const SFunction<Return(Args...)>& func) { return os << func.toString(); }
-	extern inline std::ostream& operator<<(std::ostream& os, const SObjPtr& obj) { 
-		if (obj.isText()) return os << obj.text();
-		else return os << obj.toString(); 
-	}
-
 }
 #endif
