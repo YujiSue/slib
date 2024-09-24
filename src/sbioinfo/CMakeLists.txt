@@ -29,5 +29,7 @@ add_library(sbioinfo ${BUILD_MODE}
   vcf.cpp
 )
 install(TARGETS sbioinfo ARCHIVE DESTINATION lib LIBRARY DESTINATION lib)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/sbioinfo DESTINATION include/slib FILES_MATCHING PATTERN "*.h")
-install(FILES ${PROJECT_SOURCE_DIR}/include/sbioinfo.h DESTINATION include/slib)
+if (NOT BUILD_ONLY)
+  install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/sbioinfo DESTINATION include/slib FILES_MATCHING PATTERN "*.h")
+  install(FILES ${PROJECT_SOURCE_DIR}/include/sbioinfo.h DESTINATION include/slib)
+endif()
