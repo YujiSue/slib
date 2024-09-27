@@ -12,6 +12,48 @@ namespace slib {
     };
     extern SLIB_DLL Regex makeRegexQuery(const char* que, MATCH m, bool ignore = true);
 
+    template<typename T, class CONTAINER>
+    inline void _bisearch(slib::Range<slib::ArrayIterator<T>>& range, CONTAINER& array, const T& val, std::function<bool(const T&, const T&)> comparer) {
+        if (range.end == range.begin + 1) return;
+        if ((int)(range.end - range.begin) < 16) {
+            if (comparer(*range.begin, val)) {
+                range.end = range.begin;
+                --range.begin;
+            }
+            else if (comparer(val, *(range.end - 1))) {
+                range.begin = range.end - 1;
+            }
+            else {
+                sforin(it, range.begin, range.end) {
+                    if (comparer($_, val)) {
+                        range.begin = it - 1;
+                        range.end = it;
+                        break;
+                    }
+                }
+            }
+            return;
+        }
+        else {
+            slib::ArrayIterator<T> med = range.begin + (int)(range.end - range.begin) / 2;
+            if (comparer(*med, val)) range.end = med;
+            else range.begin = med;
+            _bisearch(range, array, val, comparer);
+        }
+    }
+
+    template<typename T, class CONTAINER>
+    ArrayIterator<T> bisearch(CONTAINER& array, const T& val, std::function<bool(const T&, const T&)> comparer) {
+        if (array.empty()) throw NullException(nullErrorText("Array content"));
+        if (comparer(*array.begin(), val)) return array.begin();
+        else if (comparer(val, *(array.end() - 1))) return array.end();
+        else {
+            Range<ArrayIterator<T>> range(array.begin(), array.end());
+            _bisearch(range, array, val, comparer);
+            return range.end;
+        }
+    }
+
     template<class MATCH, size_t S>
     class PMA {
         typedef PMA<MATCH, S>* pma_ptr;

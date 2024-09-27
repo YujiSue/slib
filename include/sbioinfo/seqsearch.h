@@ -140,16 +140,17 @@ namespace slib {
             void reset();
         };
 
+
         class SLIB_DLL SeqSearch {
             SeqSearchParam* _par;
             Array<AlignExtend> _extenders;
             Array<SLock> _locks;
-            smath::Matrix<Array<Pair<int, int>>> _matches;
             SWork* _threads;
 
         public:
-//            Array<RecycleArray<salign>> aligns;
-            smath::Matrix<RecycleArray<salign>> aligns;
+            smath::Matrix<RArray<AlignPair>> aligns;
+            //smath::Matrix<RecycleArray<salign>> aligns;
+
 
         public:
             SeqSearch();
@@ -158,8 +159,10 @@ namespace slib {
 
             void resize(size_t r, size_t q);
             void reserve(const size_t msz, const size_t asz);
-            void searchAt1(int r, Sequence* ref, DNASeqTrie* trie);
-            void searchAt2(int r, Sequence* ref, DNASeqTrie2* trie);
+
+
+            void searchAt(int r, Sequence* ref, DNASeqTrie* trie);
+            void searchAt(int r, Sequence* ref, DNASeqTrie2* trie);
             void search(Sequence& ref, DNASeqTrie& trie);
             void search(Sequence& ref, DNASeqTrie2& trie);
             void search(SeqList& ref, DNASeqTrie& trie);

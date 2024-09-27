@@ -31,10 +31,14 @@ namespace slib {
         extern SLIB_DLL String bsmFormatErrorText(char*);
 
         //MAGIC
-        constexpr char BGZF_MAGIC[17] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0";
-        constexpr char BAM_MAGIC[5] = "\102\101\115\001";
-        constexpr char BAI_MAGIC[5] = "\102\101\111\001";
-        constexpr char BSM_MAGIC[5] = "\102\123\115\002";
+        constexpr char BGZF_MAGIC[17] = { 
+            (char)0x1F, (char)0x8B, (char)0x08, (char)0x04, 
+            (char)0x00, (char)0x00, (char)0x00, (char)0x00, 
+            (char)0x00, (char)0xFF, (char)0x06, (char)0x00,
+            (char)0x42, (char)0x43, (char)0x02, (char)0x00 };
+        constexpr char BAM_MAGIC[5] = { (char)0x42, (char)0x41, (char)0x4D, (char)0x01 };
+        constexpr char BAI_MAGIC[5] = { (char)0x42, (char)0x41, (char)0x49, (char)0x01 };
+        constexpr char BSM_MAGIC[5] = { (char)0x42, (char)0x53, (char)0x4D, (char)0x02 };
 
         //Constant
         constexpr int DEFAULT_THREAD_COUNT = 8;
