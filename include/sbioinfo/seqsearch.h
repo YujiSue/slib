@@ -142,30 +142,37 @@ namespace slib {
 
 
         class SLIB_DLL SeqSearch {
+            struct Match {
+                int ref, que, len;
+                Match() { ref = -1; que = -1; len = 0; }
+                Match(const int r, const int q, const int l) { ref = r; que = q; len = l; }
+                ~Match() {}
+                Match& operator=(const Match& m) { ref = m.ref; que = m.que; len = m.len; return *this; }
+            };
+
             SeqSearchParam* _par;
-            Array<AlignExtend> _extenders;
-            Array<SLock> _locks;
+            smath::Matrix<AlignExtend> _extender;
+            smath::Matrix<SLock> _locker;
+            smath::Matrix<Array<Match>> _matched;
             SWork* _threads;
 
         public:
-            smath::Matrix<RArray<AlignPair>> aligns;
-            //smath::Matrix<RecycleArray<salign>> aligns;
-
+            smath::Matrix<Array<AlignPair>> aligns;
 
         public:
             SeqSearch();
             SeqSearch(SeqSearchParam* p);
             ~SeqSearch();
 
-            void resize(size_t r, size_t q);
-            void reserve(const size_t msz, const size_t asz);
-
-
+            void resize(const size_t r, const size_t q);
+            void makeAlign(int r, int q, Sequence* ref, ubytearray* que);
             void searchAt(int r, Sequence* ref, DNASeqTrie* trie);
-            void searchAt(int r, Sequence* ref, DNASeqTrie2* trie);
+            void searchAt(int r, const srange& range, Sequence* ref, DNASeqTrie* trie);
             void search(Sequence& ref, DNASeqTrie& trie);
-            void search(Sequence& ref, DNASeqTrie2& trie);
             void search(SeqList& ref, DNASeqTrie& trie);
+            void searchAt(int r, Sequence* ref, DNASeqTrie2* trie);
+            void searchAt(int r, const srange& range, Sequence* ref, DNASeqTrie2* trie);
+            void search(Sequence& ref, DNASeqTrie2& trie);
             void search(SeqList& ref, DNASeqTrie2& trie);
             void setThreads(SWork* w);
             void setParam(SeqSearchParam* p);

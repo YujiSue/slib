@@ -89,206 +89,344 @@ sobj slib::sbio::SeqSearchParam::toObj() {
 slib::sbio::SeqSearch::SeqSearch() : _par(nullptr), _threads(nullptr) {}
 slib::sbio::SeqSearch::SeqSearch(SeqSearchParam* p) : SeqSearch() { setParam(p); }
 slib::sbio::SeqSearch::~SeqSearch() {}
-void slib::sbio::SeqSearch::resize(size_t r, size_t q) {
-    if (_extenders.size() < r) {
-        _extenders.resize(r);
-        sfor(_extenders) $_.setParam(_par);
+void slib::sbio::SeqSearch::resize(const size_t r, const size_t q) {
+    if (_matched.row < r || _matched.col < q) {
+        _matched.resize(r, q);
+        sfor(_matched) $_.reserve(_par->max_match_count + 1);
+        _locker.resize(r, q);
     }
-    if (_locks.size() < q) _locks.resize(q);
-    if (aligns.size() < r * q) {
-        aligns.resize(r, q / 2);
+    auto q_ = q / (_par->complement ? 2 : 1);
+    if (aligns.row < r || aligns.col < q_) {
+        _extender.resize(r, q_);
+        sfor(_extender) $_.setParam(_par);
+        aligns.resize(q_, r);
         sfor(aligns) $_.reserve(_par->max_match_count + 1);
     }
 }
-void slib::sbio::SeqSearch::reserve(const size_t msz, const size_t asz) {
-    sfor(aligns) $_.reserve(asz);
-}
 
-inline bool _checkUniqueAlign(slib::RArray<sbio::AlignPair> &aligns, int rpos, int qpos) {
+inline bool _checkUniqueAlign(slib::Array<sbio::AlignPair>& aligns, sbio::AlignPair& al) {
     sfor(aligns) {
-        if ($_.ref.include(rpos) && $_.query.include(qpos)) return false;
+        if ($_.ref.include(al.ref) && $_.query.include(al.query)) return false;
     }
     return true;
 }
-inline void _setRegion(slib::sbio::Sequence* ref, sregion& region) {
-    if (ref->isMasked() && !ref->mask.empty()) region = srange(0, (int)ref->length() - 1) ^ ref->mask;
-    else region.add(srange(0, (int)ref->length() - 1));
+inline int _checkBack(subyte* ref, subyte* que, int num) {
+    int count = 0;
+    srforin(i, 0, num) {
+        if (ref[i] == *(que - 1)) { ++count; --que; }
+    }
+    return count;
 }
 void slib::sbio::SeqSearch::searchAt(int i, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie* trie) {
-    // Set search region 
-    sregion region;
-    AlignPair al;
-    auto alist = aligns[i];
-    _setRegion(ref, region);
+    if (ref->mask.empty()) searchAt(i, srange(0, ref->length() - 1), ref, trie);
+    else {
+        auto region = srange(0, (int)ref->length() - 1) ^ ref->mask;
+        sforeach(range, region) searchAt(i, range, ref, trie);
+    }
+}
+void slib::sbio::SeqSearch::searchAt(int i, const srange &rng, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie* trie) {
     //
-    auto refseq = ref->data();
+    srange range = rng;
+    //
+    Match tmp;
+    auto* matchrow = _matched[i];
+    auto* lockers = _locker[i];
+    bool mt = _threads != nullptr;
+    //
+    auto refseq = ref->data(range.begin);
+    // Reset trie position
     auto now = trie->root();
-    bool extend = (_par->max_gap || _par->max_miss);
-    // 
-    sfor(region) {
-        // Set range
-        refseq = ref->data($_.begin);
-        // Reset trie position
-        now = trie->root();
-        //
-        while ($_.begin < $_.end) {
-            // Pattern match
-            auto next = (int)(*refseq) + 1;
-            while (!(now->children[next])) now = now->children[0];
-            now = now->children[next];
-            // 
-            if (now->matches.size()) {
-                auto rpos = $_.begin - _par->seed + 1;
-                sforeach(m, now->matches) {
-                    auto& array = alist[m.first / 2];
-                    // 
-                    if (_checkUniqueAlign(array, rpos, m.second)) {
-                        // Clear buffer
-                        al.clear();
-                        // Aligned site
-                        auto l = _par->seed - 1;
-                        if ($_.end < rpos + l) l = rpos - $_.end;
-                        al.ref = sbio::RefPos(i, rpos, rpos + l);
-                        al.query = srange(m.second, m.second + l);
-                        al.cigars.add(Cigar(scigar::PMATCH, l + 1));
-                        _extenders[i].extendExact(ref, &trie->queries[m.first], &al);
-                        // Ignore if matched size is less than min. threshold
-                        if (al.cigars.refSize() < _par->min_match) continue;
-                        // Local extension
-                        if (extend) _extenders[i].extend(ref, &trie->queries[m.first], &al);
-                        // Check capacity
-                        if (array.size() < _par->max_match_count) {
-                            if (_par->complement && (m.first % 2)) al.complement(trie->queries[m.first].size());
-                            if (array.empty() || al.score < array[-1].score) array.add(al);
-                            else {
-                                auto ins = bisearch<AlignPair, RArray<AlignPair>>(array, al,
-                                    [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
-                                if (ins == array.end()) array.add(al);
-                                else array.insert(ins - array.begin(), al);
-                            }
-                        }
-                        // Check score
-                        else if (array[-1].score < al.score) {
-                            if (_par->complement && (m.first % 2)) al.complement(trie->queries[m.first].size());
-                            array.resize(array.size() - 1);
-                            auto ins = bisearch<AlignPair, RArray<AlignPair>>(array, al,
-                                [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
-                            if (ins == array.end()) array.add(al);
-                            else array.insert(ins - array.begin(), al);
-                        }
+    //
+    while (range.begin < range.end) {
+        // Pattern match
+        auto next = (int)(*refseq) + 1;
+        while (!(now->children[next])) now = now->children[0];
+        now = now->children[next];
+        // 
+        if (now->matches.size()) {
+            auto rpos = range.begin - _par->seed + 1;
+            sforeach(m, now->matches) {
+                auto& queseq = trie->queries[m.first];
+                tmp = Match(rpos, m.second, _par->seed);
+                if (0 < tmp.ref && 0 < tmp.que) {
+                    auto ques = queseq.data(tmp.que);
+                    auto dif = _checkBack(refseq, ques, sstat::getMin(1, tmp.ref, tmp.que));
+                    if (dif == 1) continue;
+                }
+                if (tmp.que + tmp.len < queseq.size()) {
+                    auto rend = tmp.ref + tmp.len - 1, qend = tmp.que + tmp.len;
+                    auto refp = refseq;
+                    auto ques = queseq.data(qend);
+                    while (rend < rng.end && qend < queseq.size()) {
+                        if (*(refp + 1) == *ques) { ++rend; ++qend; ++refp; ++ques; }
+                        else break;
+                    }
+                    tmp.len = qend - tmp.que;
+                }
+                // Ignore if matched size is less than min. threshold
+                if (tmp.len < _par->min_match) continue;
+                // 
+                // Spin lock
+                if (mt) lockers[m.first].lock();
+                // 
+                auto& matches = matchrow[m.first];
+                if (matches.size() == _par->max_match_count &&
+                    matches[-1].len < tmp.len) matches.resize(_par->max_match_count - 1);
+                if (matches.size() < _par->max_match_count) {
+                    if (matches.empty()) matches.add(tmp);
+                    else {
+                        auto ins = bisearch<Match, Array<Match>>(matches, tmp,
+                            [](const Match& m1, const Match& m2) { return m1.len < m2.len; });
+                        if (ins == matches.end()) matches.add(tmp);
+                        else matches.insert(ins - matches.begin(), tmp);
                     }
                 }
+                // Unlock
+                if (mt) lockers[m.first].unlock();
             }
-            ++$_.begin; ++refseq;
         }
+        ++range.begin; ++refseq;
     }
 }
 
 void slib::sbio::SeqSearch::searchAt(int i, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie2* trie) {
-    // Set search region 
-    sregion region;
-    srange range;
-    AlignPair al;
-    auto alist = aligns[i];
-    _setRegion(ref, region);
-    //
-    auto refseq = ref->data();
-    auto now = trie->root();
-    int dp = _par->depth();
-    bool extend = (_par->max_gap || _par->max_miss);
-    // 
-    sfor(region) {
-        // Set range
-        range.begin = $_.begin / dp;
-        range.end = $_.end / dp + 1;
-        refseq = ref->data(range.begin);
-        // Reset trie position
-        now = trie->root();
-        //
-        while (range.begin < range.end) {
-            // Pattern match
-            auto next = (int)(*refseq) + 1;
-            while (!(now->children[next])) now = now->children[0];
-            now = now->children[next];
-            // 
-            if (now->matches.size()) {
-                auto rpos = (range.begin - _par->seed2 + 1) * dp;
-                sforeach(m, now->matches) {
-                    auto& array = alist[m.first / 2];
-                    // 
-                    if (_checkUniqueAlign(array, rpos, m.second)) {
-                        // Clear buffer
-                        al.clear();
-                        // Aligned site
-                        auto l = _par->seed - 1;
-                        if ($_.end < rpos + l) l = rpos - $_.end;
-                        al.ref = sbio::RefPos(i, rpos, rpos + l);
-                        al.query = srange(m.second, m.second + l);
-                        al.cigars.add(Cigar(scigar::PMATCH, l + 1));
-                        _extenders[i].extendExact(ref, &trie->queries[m.first], &al);
-                        // Ignore if matched size is less than min. threshold
-                        if (al.cigars.refSize() < _par->min_match) continue;
-                        // Local extension
-                        if (extend) _extenders[i].extend(ref, &trie->queries[m.first], &al);
-                        // Check capacity
-                        if (array.size() < _par->max_match_count) {
-                            if (_par->complement && (m.first % 2)) al.complement(trie->queries[m.first].size());
-                            if (array.empty() || al.score < array[-1].score) array.add(al); 
-                            else {
-                                auto ins = bisearch<AlignPair, RArray<AlignPair>>(array, al,
-                                    [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
-                                if (ins == array.end()) array.add(al);
-                                else array.insert(ins - array.begin(), al);
-                            }
-                        }
-                        // Check score
-                        else if (array[-1].score < al.score) {
-                            if (_par->complement && (m.first % 2)) al.complement(trie->queries[m.first].size());
-                            array.resize(array.size() - 1);
-                            auto ins = bisearch<AlignPair, RArray<AlignPair>>(array, al,
-                                [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
-                            if (ins == array.end()) array.add(al);
-                            else array.insert(ins - array.begin(), al);
-                        }
-                    }
-                }
-            }
-            ++range.begin; ++refseq;
-        }
+    if (ref->mask.empty()) searchAt(i, srange(0, ref->length() - 1), ref, trie);
+    else {
+        auto region = srange(0, (int)ref->length() - 1) ^ ref->mask;
+        sforeach(range, region) searchAt(i, range, ref, trie);
     }
 }
-inline void _runSearchAt1(SeqSearch* ss, int i, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie* trie) { ss->searchAt(i, ref, trie); }
-inline void _runSearchAt2(SeqSearch* ss, int i, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie2* trie) { ss->searchAt(i, ref, trie); }
+void slib::sbio::SeqSearch::searchAt(int i, const srange& rng, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie2* trie) {
+    // Depth
+    int dp = _par->depth();
+    auto decoder = dp == 2 ? sdna::ddec21 : sdna::ddec41;
+    //
+    srange range(rng.begin / dp, rng.end / dp + 1);
+    //
+    Match tmp;
+    auto* matchrow = _matched[i];
+    auto* lockers = _locker[i];
+    bool mt = _threads != nullptr;
+    //
+    subyte refs[4];
+    auto refseq = ref->data(range.begin);
+    // Reset trie position
+    auto now = trie->root();
+    //
+    while (range.begin < range.end) {
+        // Pattern match
+        auto next = (int)(*refseq) + 1;
+        while (!(now->children[next])) now = now->children[0];
+        now = now->children[next];
+        // 
+        if (now->matches.size()) {
+            auto rpos = (range.begin - _par->seed2 + 1) * dp;
+            sforeach(m, now->matches) {
+                auto &queseq = trie->queries[m.first];
+                tmp = Match(rpos, m.second, _par->seed2 * dp);
+                if (tmp.ref < rng.begin) {
+                    auto dif = rng.begin - tmp.ref;
+                    tmp.ref += dif; tmp.que += dif; tmp.len -= dif;
+                }
+                else if (dp <= tmp.ref) {
+                    auto ques = queseq.data(tmp.que);
+                    decoder(*(refseq - _par->seed2), refs);
+                    auto dif = _checkBack(refs, ques, sstat::getMin(dp, tmp.ref, tmp.que));
+                    if (dif == dp) continue;
+                    else { tmp.ref -= dif; tmp.que -= dif; tmp.len += dif; }
+                }
+                if (rng.end < (tmp.ref + tmp.len - 1)) {
+                    auto dif = tmp.ref + tmp.len - rng.end - 1;
+                    tmp.len -= dif;
+                }
+                else if (tmp.que + tmp.len < queseq.size()) {
+                    auto rend = tmp.ref + tmp.len - 1, qend = tmp.que + tmp.len;
+                    auto refp = refseq;
+                    auto ques = queseq.data(qend);
+                    while (true) {
+                        auto num = sstat::getMin(4, rng.end - rend, (int)queseq.size() - qend);
+                        if (!num) break;
+                        auto ext = true;
+                        decoder(*(refp + 1), refs);
+                        sforin(p, 0, num) {
+                            if (refs[p] == *ques) { ++rend; ++qend; ++ques; }
+                            else { ext = false; break; }
+                        }
+                        if (ext) ++refp;
+                        else break;
+                    }
+                    tmp.len = qend - tmp.que;
+                }
+                // Ignore if matched size is less than min. threshold
+                if (tmp.len < _par->min_match) continue;
+                // 
+                // Spin lock
+                if (mt) lockers[m.first].lock();
+                // 
+                auto& matches = matchrow[m.first];
+                if (matches.size() == _par->max_match_count &&
+                    matches[-1].len < tmp.len) matches.resize(_par->max_match_count - 1);
+                if (matches.size() < _par->max_match_count) {
+                    if (matches.empty()) matches.add(tmp);
+                    else {
+                        auto ins = bisearch<Match, Array<Match>>(matches, tmp,
+                            [](const Match& m1, const Match& m2) { return m1.len < m2.len; });
+                        if (ins == matches.end()) matches.add(tmp);
+                        else matches.insert(ins - matches.begin(), tmp);
+                    }
+                }
+                // Unlock
+                if (mt) lockers[m.first].unlock();
+            }
+        }
+        ++range.begin; ++refseq;
+    }
+}
+void slib::sbio::SeqSearch::makeAlign(int r, int q, Sequence* ref, ubytearray* que) {
+    AlignPair al;
+    auto* matches = &_matched[r][(_par->complement ? 2 : 1) * q];
+    auto& als = aligns[q][r];
+    auto& ext = _extender[r][q];
+    // Fwd.
+    sforeach(match, *matches) {
+        al.clear();
+        al.ref = sbio::RefPos(r, match.ref, match.ref + match.len - 1);
+        al.query = srange(match.que, match.que + match.len - 1);
+        al.cigars.add(Cigar(scigar::PMATCH, match.len));
+        al.scoring(&_par->apar);
+        ext.extend(ref, que, &al);
+        if (al.score < _par->min_score) continue;
+        if (als.size() && als[-1].score < al.score) {
+            auto ins = bisearch<AlignPair, Array<AlignPair>>(als, al,
+                [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
+            als.insert(ins - als.begin(), al);
+        }
+        else als.add(al);
+    }
+    ++matches; ++que;
+    if (_par->complement) {
+        // Rev.
+        sforeach(match, *matches) {
+            al.clear();
+            al.ref = sbio::RefPos(r, match.ref, match.ref + match.len - 1);
+            al.query = srange(match.que, match.que + match.len - 1);
+            al.cigars.add(Cigar(scigar::PMATCH, match.len));
+            al.scoring(&_par->apar);
+            ext.extend(ref, que, &al);
+            if (al.score < _par->min_score) continue;
+            al.complement(que->size());
+            if (als.size() && als[-1].score < al.score) {
+                auto ins = bisearch<AlignPair, Array<AlignPair>>(als, al,
+                    [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
+                als.insert(ins - als.begin(), al);
+            }
+            else als.add(al);
+        }
+        ++matches; ++que;
+    }
+}
+inline void _runSearchAt1(SeqSearch* ss, int i, const srange& rng, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie* trie) { ss->searchAt(i, rng, ref, trie); }
+inline void _runSearchAt2(SeqSearch* ss, int i, const srange &rng, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie2* trie) { ss->searchAt(i, rng, ref, trie); }
+inline void _runMakeAlign(SeqSearch* ss, int r, int q, slib::sbio::Sequence* ref, ubytearray* que) { ss->makeAlign(r, q, ref, que); }
 void slib::sbio::SeqSearch::search(Sequence& ref, DNASeqTrie& trie) {
     resize(1, trie.qcount());
-    searchAt(0, &ref, &trie);
-}
-void slib::sbio::SeqSearch::search(Sequence& ref, DNASeqTrie2& trie) {
-    resize(1, trie.qcount());
-    searchAt(0, &ref, &trie);
+    if (ref.mask.empty()) {
+        if (_threads) _threads->addTask(_runSearchAt1, this, 0, srange(0, ref.length() - 1), &ref, &trie);
+        else searchAt(0, srange(0, ref.length() - 1), &ref, &trie);
+    }
+    else {
+        auto unmask = srange(0, ref.length() - 1) ^ ref.mask;
+        sforeach(loc, unmask) {
+            if (_threads) _threads->addTask(_runSearchAt1, this, 0, loc, &ref, &trie);
+            else searchAt(0, loc, &ref, &trie);
+        }
+    }
+    auto* que = trie.queries.data();
+    sforin(q, 0, aligns.row) {
+        if (_threads) _threads->addTask(_runMakeAlign, this, 0, q, &ref, que);
+        else makeAlign(0, q, &ref, que);
+        que += (_par->complement ? 2 : 1);
+    }
 }
 void slib::sbio::SeqSearch::search(SeqList& ref, DNASeqTrie& trie) {
     resize(ref.size(), trie.qcount());
     sfori(ref) {
-        if (_threads) _threads->addTask(_runSearchAt1, this, i, &ref[i], &trie);
-        else searchAt(i, &ref[i], &trie);
+        if (ref[i].mask.empty()) {
+            if (_threads) _threads->addTask(_runSearchAt1, this, i, srange(0, ref[i].length() - 1), &ref[i], &trie);
+            else searchAt(i, srange(0, ref[i].length() - 1), &ref[i], &trie);
+        }
+        else {
+            auto unmask = srange(0, ref[i].length() - 1) ^ ref[i].mask;
+            sforeach(loc, unmask) {
+                if (_threads) _threads->addTask(_runSearchAt1, this, i, loc, &ref[i], &trie);
+                else searchAt(i, loc, &ref[i], &trie);
+            }
+        }
     }
     if (_threads) _threads->complete();
+    sforin(r, 0, aligns.col) {
+        auto* que = trie.queries.data();
+        sforin(q, 0, aligns.row) {
+            if (_threads) _threads->addTask(_runMakeAlign, this, r, q, &ref[r], que);
+            else makeAlign(r, q, &ref[r], que);
+            que += (_par->complement ? 2 : 1);
+        }
+    }
+    if (_threads) _threads->complete();
+}
+void slib::sbio::SeqSearch::search(Sequence& ref, DNASeqTrie2& trie) {
+    resize(1, trie.qcount());
+    if (ref.mask.empty()) {
+        if (_threads) _threads->addTask(_runSearchAt2, this, 0, srange(0, ref.length() - 1), &ref, &trie);
+        else searchAt(0, srange(0, ref.length() - 1), &ref, &trie);
+    }
+    else {
+        auto unmask = srange(0, ref.length() - 1) ^ ref.mask;
+        sforeach(loc, unmask) {
+            if (_threads) _threads->addTask(_runSearchAt2, this, 0, loc, &ref, &trie);
+            else searchAt(0, loc, &ref, &trie);
+        }
+    }
+    auto* que = trie.queries.data();
+    sforin(q, 0, aligns.row) {
+        if (_threads) _threads->addTask(_runMakeAlign, this, 0, q, &ref, que);
+        else makeAlign(0, q, &ref, que);
+        que += (_par->complement ? 2 : 1);
+    }
 }
 void slib::sbio::SeqSearch::search(SeqList& ref, DNASeqTrie2& trie) {
     resize(ref.size(), trie.qcount());
     sfori(ref) {
-        if (_threads) _threads->addTask(_runSearchAt2, this, i, &ref[i], &trie);
-        else searchAt(i, &ref[i], &trie);
+        if (ref[i].mask.empty()) {
+            if (_threads) _threads->addTask(_runSearchAt2, this, i, srange(0, ref[i].length() - 1), &ref[i], &trie);
+            else searchAt(i, srange(0, ref[i].length() - 1), &ref[i], &trie);
+        }
+        else {
+            auto unmask = srange(0, ref[i].length() - 1) ^ ref[i].mask;
+            sforeach(loc, unmask) {
+                if (_threads) _threads->addTask(_runSearchAt2, this, i, loc, &ref[i], &trie);
+                else searchAt(i, loc, &ref[i], &trie);
+            }
+        }
+    }
+    if (_threads) _threads->complete();
+    sforin(r, 0, aligns.col) {
+        auto* que = trie.queries.data();
+        sforin(q, 0, aligns.row) {
+            if (_threads) _threads->addTask(_runMakeAlign, this, r, q, &ref[r], que);
+            else makeAlign(r, q, &ref[r], que);
+            que += (_par->complement ? 2 : 1);
+        }
     }
     if (_threads) _threads->complete();
 }
 void slib::sbio::SeqSearch::setThreads(SWork* w) { _threads = w; }
 void slib::sbio::SeqSearch::setParam(SeqSearchParam* p) { 
     _par = p; 
-    if (1 < _par->nthread) _threads = &_par->threads; 
+    if (1 < _par->nthread && !_threads) _threads = &_par->threads;
 }
 void slib::sbio::SeqSearch::reset() {
-    sfor(_extenders) $_.reset();
+    sfor(_extender) $_.reset();
+    sfor(_matched) $_.clear();
     sfor(aligns) $_.clear();
 }
