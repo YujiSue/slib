@@ -19,13 +19,9 @@ jobs:
     - name: check current
       run: pwd
     - name: check list
-      run: ls
-    - name: set current
-      run: cd ${{ github.workspace }}/libjepg
-    - name: check current
-      run: pwd
+      run: ls ./libjepg
     - name: configure
-      run: ./configure
+      run: ./libjepg/configure
     - name: make
       run: make
     - name: make check
