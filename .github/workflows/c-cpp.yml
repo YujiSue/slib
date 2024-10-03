@@ -18,11 +18,17 @@ jobs:
         path: libjpeg
     - name: check current
       run: pwd
-    -name: change location
-      run: cd ${{ github.workspace }}
+    - name: check list
+      run: ls
+    - name: set current
+      run: cd ${{ github.workspace }}/libjepg
+    - name: check current
+      run: pwd
     - name: configure
       run: ./configure
     - name: make
       run: make
     - name: make check
       run: make check
+    - name: make distcheck
+      run: make distcheck
