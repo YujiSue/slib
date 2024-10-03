@@ -18,8 +18,6 @@ jobs:
         path: libjpeg
     - name: check current
       run: pwd
-    - name: check list
-      run: ls ./libjepg
     - name: configure
       run: ./libjepg/configure
     - name: make
