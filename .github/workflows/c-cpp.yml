@@ -16,6 +16,10 @@ jobs:
       with:
         repository: thorfdbg/libjpeg
         path: libjpeg
+    - name: check current
+      run: pwd
+    -name: change location
+      run: cd ${{ github.workspace }}
     - name: configure
       run: ./configure
     - name: make
