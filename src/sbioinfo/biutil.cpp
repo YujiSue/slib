@@ -91,7 +91,7 @@ bool slib::sbio::RefPos::operator != (const slib::sbio::RefPos& p) const {
 }
 slib::sbio::RefPos slib::sbio::RefPos::toPos(const char* s, const sindex& refindex, bool zerobase) {
 	slib::sbio::RefPos p;
-	slib::String str(s), sep;
+	slib::String str(s), sep = " ";
 	if (str.match(":")) {
 		sep = ":";
 		auto off = str.find(sep);
