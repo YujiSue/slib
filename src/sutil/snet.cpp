@@ -97,7 +97,7 @@ slib::Response slib::sutil::callapi(const char* url, const SDictionary &query, c
     slib::Response res;
     slib::IOStream ostream;
     ostream.setStrOStream(res.output);
-　　slib::String payload;
+    slib::String payload;
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if (!curl) {
