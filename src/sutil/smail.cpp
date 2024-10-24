@@ -3,8 +3,8 @@ slib::smail::Message::Message() {}
 slib::smail::Message::Message(const slib::smail::Message& msg) {
 	msgid = msg.msgid;
 	mailid = msg.mailid;
-	from = msg.mailid;
-	reply = msg.mailid;
+	from = msg.from;
+	reply = msg.reply;
 	subject = msg.subject;
 	to = msg.to;
 	date = msg.date; 
@@ -15,8 +15,8 @@ slib::smail::Message::~Message() {}
 slib::smail::Message& slib::smail::Message::operator=(const slib::smail::Message& msg) {
 	mailid = msg.mailid;
 	msgid = msg.msgid;
-	from = msg.mailid;
-	reply = msg.mailid;
+	from = msg.from;
+	reply = msg.reply;
 	subject = msg.subject;
 	to = msg.to;
 	date = msg.date;
