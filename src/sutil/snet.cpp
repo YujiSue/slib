@@ -103,11 +103,13 @@ slib::Response slib::sutil::callapi(const char* url, const SDictionary &query, c
         res.code = 1;
         return res;
     }
-    String full_url(url);
     if (!query.empty()) {
-        full_url << "?" << preparePayload(query);
+	auto payload = preparePayload(query);
+	curl_easy_setopt(_curl, CURLOPT_POST, true);
+        curl_easy_setopt(_curl, CURLOPT_POSTFIELDS, payload.cstr());
+        curl_easy_setopt(_curl, CURLOPT_POSTFIELDSIZE, payload.size());
     }
-    curl_easy_setopt(curl, CURLOPT_URL, full_url.cstr());
+    curl_easy_setopt(curl, CURLOPT_URL, url);
     if (!header.empty()) {
         struct curl_slist* list = NULL;
         sfor(header) {
