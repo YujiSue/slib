@@ -97,6 +97,7 @@ slib::Response slib::sutil::callapi(const char* url, const SDictionary &query, c
     slib::Response res;
     slib::IOStream ostream;
     ostream.setStrOStream(res.output);
+　　String payload;
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if (!curl) {
@@ -104,12 +105,11 @@ slib::Response slib::sutil::callapi(const char* url, const SDictionary &query, c
         return res;
     }
     if (!query.empty()) {
-	auto payload = preparePayload(query);
+	payload = preparePayload(query);
 	curl_easy_setopt(curl, CURLOPT_POST, true);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.cstr());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, payload.size());
     }
-    curl_easy_setopt(curl, CURLOPT_URL, url);
     if (!header.empty()) {
         struct curl_slist* list = NULL;
         sfor(header) {
@@ -118,6 +118,7 @@ slib::Response slib::sutil::callapi(const char* url, const SDictionary &query, c
         if (list) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
     }
     // Set output call back
+    curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&ostream);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     // Run download
