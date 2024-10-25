@@ -760,6 +760,13 @@ double slib::String::doubleValue() const { return atof(cstr()); }
 slib::sinteger slib::String::integer() const { return atoll(cstr()); }
 slib::suinteger slib::String::uinteger() const { return std::stoull(toStr()); }
 slib::sreal slib::String::real() const { return std::stold(toStr()); }
+bool slib::String::isUtf8() const {
+    sforin(it, begin(), end()) { 
+        if (slib::sutf8::check(it.ptr())) it += slib::sutf8::size(it.ptr());
+	else return false;
+    }
+    return true;
+}
 #if defined(WIN_OS)
 std::wstring slib::String::unicode() const {
     auto wsize = ::MultiByteToWideChar(CP_UTF8, 0U, _begin(), -1, nullptr, 0U);
