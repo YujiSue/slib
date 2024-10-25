@@ -226,6 +226,7 @@ namespace slib {
         sreal real() const;
         const char* cstr() const;
         const std::string toStr() const;
+        bool isUtf8() const;
 #if defined(WIN_OS)
         std::wstring unicode() const;
         String localize() const;
@@ -305,7 +306,7 @@ namespace slib {
         extern SLIB_DLL bool isQuoted(const char* s);
         extern SLIB_DLL bool isEnclosed(const char* s, const char* bracket);
         extern SLIB_DLL bool isNumeric(const char* s);
-
+    
         extern SLIB_DLL String trim(const char* s);
         extern SLIB_DLL String squote(const char* s);
         extern SLIB_DLL String dquote(const char* s);
