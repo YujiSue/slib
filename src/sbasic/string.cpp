@@ -549,6 +549,7 @@ slib::String &slib::String::replace(const Regex& reg, const char* alt) {
 }
 slib::Array<slib::String> slib::String::split(const char* sep, const bool trimming, const bool ignore_quot, const bool dequote) const {
     stringarray array;
+    if (empty()) return array;
     if (sep) {
         auto len = strlen(sep);
         if (len) {
@@ -586,6 +587,7 @@ slib::Array<slib::String> slib::String::split(const char* sep, const bool trimmi
 }
 slib::Array<slib::String> slib::String::split(const Regex& reg) const {
     slib::Array<slib::String> array;
+    if (empty()) return array;
     auto set = reg.search(cstr());
     size_t current = 0;
     if (set.begin == set.end) array.add(*this);
