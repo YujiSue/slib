@@ -1,22 +1,20 @@
 # slib
-## [English](#About)/[日本語](#このライブラリについて)
-
 ## About
 This library is a collection of code that the author has been writing to simplify C++ coding.  
 
 1. libsobj  
 This library defines the main core objects (SObjects) and their inherited objects.  
 * Examples of defined objects:  
-Numbers (SNumber)  
-Strings (SString)  
-Object array (SArray)  
-Associative array(SDictionary)  
-Date (SDate)  
-Byte sequence (SData)  
-File (SFile)  
-Shape(SFigure)  
-Image (SImage)  
-Table (STable)  
+Number  
+String
+Date  
+Data (byte array) 
+Array  
+Dictionary  
+File  
+Table  
+Figure (vector figure)  
+Image (raster image)  
 etc...  
   
 Other features:  
@@ -26,15 +24,29 @@ Other features:
 etc.  
 
 2. libsapp  
-This library makes it easy to create CUI applications. If you set up your application information in an associative array format first, you can have it automatically generate usage and help text. Additionally, a determination whether or not the runtime argument is a required option is also performed.  
+This makes it easy to create CUI applications. If you set up your application information as JSON format first, you can have it automatically generate usage and help text. 
+
+Additionally, a determination whether or not the runtime argument is a required option is also performed.  
 This saves you from having to code the same function every time you create a small CUI app.  
-　　
+  
 3. libsnodeapp  
-This library is designed to create native plugins for node.js easily.  
+This library is designed to create native plugins for Node.js.  
 It includes functions to convert javascript objects received from node.js via Napi into the objects defined in libsobj.  
 
 4. libsbioinfo  
 It is a library of bioinformatics-related functions created for research purposes.
+
+
+# How to install
+
+```sh
+git clone
+cd slib
+cmake  -S . -B build
+cmake --build build
+cmake --install build
+```
+
 
 ## License
 Please see the documents in license folder.

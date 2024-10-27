@@ -1,5 +1,8 @@
 if (BUILD_SOBJ_LIB)
   set(SOBJ_SRC 
+    3rd/crypto/md5c.c
+    3rd/crypto/sha256c.c
+    3rd/crypto/sha512c.c
     3rd/sqlite/sqlite3.c
     3rd/zlib/adler32.c
     3rd/zlib/compress.c
@@ -119,7 +122,7 @@ if (BUILD_SOBJ_LIB)
     if (BUILD_SHARED_LIBS)
       add_compile_definitions(_BUILD_DLL)
     endif()
-    link_directories()
+    link_directories($ENV{PATH})
     link_libraries(libcurl_imp.lib)
     set(CMAKE_CXX_FLAGS "/utf-8 /EHsc")
     set(SOBJ_SRC ${SOBJ_SRC} 
