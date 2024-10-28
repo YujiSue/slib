@@ -764,18 +764,18 @@ slib::Array<slib::PArrayCIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const
     return array;
 }
 slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& attr) {
-    auto it = _find(this, s, attr);
-    if (it) return $_;
+    auto node = _find(this, s, attr);
+    if (node) return *node;
     else throw NotFoundException(nofoundErrorText(s, tag));
 }
 const slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& attr) const {
-    auto it = _find(this, s, attr);
-    if (it) return $_;
+    auto node = _find(this, s, attr);
+    if (node) return *node;
     else throw NotFoundException(nofoundErrorText(s, tag));
 }
-slib::PArray<slib::SXmlNode> slib::SXmlNode::searchAll(const char *tag, const sattribute& attr) const {
+slib::PArray<slib::SXmlNode> slib::SXmlNode::searchAll(const char *s, const sattribute& attr) const {
     slib::PArray<slib::SXmlNode> res;
-    
+    _findall(res, this, s, attr);
     return res;
 }
 		
