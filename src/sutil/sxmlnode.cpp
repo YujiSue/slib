@@ -764,7 +764,7 @@ slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& attr) {
 const slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& attr) const {
     auto it = _find(this, s, attr);
     if (it) return $_;
-    else throw NotFoundException(nofoundErrorText(s));
+    else throw NotFoundException(nofoundErrorText(s, tag));
 }
 slib::SXmlNode &slib::SXmlNode::operator[](const char *s) {
     sfor(*this) {
