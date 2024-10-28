@@ -43,7 +43,8 @@ namespace slib {
     }
 
     template<typename T, class CONTAINER>
-    ArrayIterator<T> bisearch(CONTAINER& array, const T& val, std::function<bool(const T&, const T&)> comparer) {
+    ArrayIterator<T> bisearch(CONTAINER& array, const T& val, 
+        std::function<bool(const T&, const T&)> comparer = [](const T &t1, const T &t2){return t1 < t2;}) {
         if (array.empty()) throw NullException(nullErrorText("Array content"));
         if (comparer(*array.begin(), val)) return array.begin();
         else if (comparer(val, *(array.end() - 1))) return array.end();

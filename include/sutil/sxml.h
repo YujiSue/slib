@@ -69,11 +69,15 @@ namespace slib {
 		void insert(const int idx, const SXmlNode& node);
 		void insertBefore(const SXmlNode& node, SXmlNode& dest);
 		void insertAfter(const SXmlNode& node, SXmlNode& dest);
-		bool match(const char* tag, const sattribute& attr = {}) const;
-		PArrayIterator<SXmlNode> find(const char* tag, const sattribute& attr = {});
-		PArrayCIterator<SXmlNode> find(const char* tag, const sattribute& attr = {}) const;
-		Array<PArrayIterator<SXmlNode>> findAll(const char* tag, const sattribute& attr = {});
-		Array<PArrayCIterator<SXmlNode>> findAll(const char* tag, const sattribute& attr = {}) const;
+		bool match(const char* tag, const SDictionary& attr = {}) const;
+		PArrayIterator<SXmlNode> find(const char* tag, const SDictionary& attr = {});
+		PArrayCIterator<SXmlNode> find(const char* tag, const SDictionary& attr = {}) const;
+		Array<PArrayIterator<SXmlNode>> findAll(const char* tag, const SDictionary& attr = {});
+		Array<PArrayCIterator<SXmlNode>> findAll(const char* tag, const SDictionary& attr = {}) const;
+		SXmlNode &search(const char *tag, const SDictionary& attr = {});
+		const SXmlNode &search(const char *tag, const SDictionary& attr = {}) const;
+		SXmlNode &operator[](const char *tag);
+		const SXmlNode &operator[](const char *tag) const;
 
 		String text() const;
 		void parse(const char* s);

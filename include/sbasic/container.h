@@ -73,6 +73,18 @@ namespace slib {
 		ArrayIterator<Ref> end() { return _end; }
 	};
 
+	namespace sutil {
+		template<class CONTAINER>
+		extern SLIB_DLL void reverse(CONTAINER &container) {
+			if (container.size() < 2) return;
+			auto beg = container.begin(), end = container.end() - 1;
+			while (beg < end) {
+				beg.swap(beg, end);
+				++beg; --end;
+			}
+		} 
+	}
+
 }
 /**
 * @cond

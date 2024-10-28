@@ -681,7 +681,7 @@ void slib::SXmlNode::insertAfter(const SXmlNode& node, SXmlNode& dest) {
     if (dest.isRoot()) throw Exception();
     dest.parent().insert(dest.index() + 1, node);
 }
-bool slib::SXmlNode::match(const char* s, const sattribute& attr) const {
+bool slib::SXmlNode::match(const char* s, const SDictionary& attr) const {
     bool b = (tag == s);
     if (attr.size() && b) {
         sfor(attr) {
@@ -691,32 +691,83 @@ bool slib::SXmlNode::match(const char* s, const sattribute& attr) const {
     }
     return b;
 }
-slib::PArrayIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const sattribute& attr) {
+
+inline slib::SXmlNode *_find(slib::SXmlNode *parent, const char* s, const SDictionary& attr) {
+    sforeach(child, *parent) {
+        if (child.match(s, attr)) return &child;
+        else if (child.count()) {
+            auto node =_find(&child, s, attr):
+            if (node) return node;
+        }
+    }
+    return nullptr;
+}
+inline slib::SXmlNode *_find(const slib::SXmlNode *parent, const char* s, const SDictionary& attr) {
+    sforeach(child, *parent) {
+        if (child.match(s, attr)) return &child;
+        else if (child.count()) {
+            auto node =_find(&child, s, attr):
+            if (node) return node;
+        }
+    }
+    return nullptr;
+}
+
+slib::PArrayIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const SDictionary& attr) {
+    
+    sfor(*this) {
+        if ($_.match(s, attr)) return it;
+        else if (recur) {
+            auto res = $_.find(s, attr);
+            if (res != $_.end()) return res;
+        }
+    }
+    return end();
+}
+slib::PArrayCIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const SDictionary& attr) const {
     sfor(*this) {
         if ($_.match(s, attr)) return it;
     }
     return end();
 }
-slib::PArrayCIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const sattribute& attr) const {
-    sfor(*this) {
-        if ($_.match(s, attr)) return it;
-    }
-    return end();
-}
-slib::Array<slib::PArrayIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const sattribute& attr) {
+slib::Array<slib::PArrayIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const SDictionary& attr) {
     slib::Array<slib::PArrayIterator<slib::SXmlNode>> array;
     sfor(*this) {
         if ($_.match(s, attr)) array.add($);
     }
     return array;
 }
-slib::Array<slib::PArrayCIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const sattribute& attr) const {
+slib::Array<slib::PArrayCIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const SDictionary& attr) const {
     slib::Array<slib::PArrayCIterator<slib::SXmlNode>> array;
     sfor(*this) {
         if ($_.match(s, attr)) array.add($);
     }
     return array;
 }
+slib::SXmlNode &slib::SXmlNode::search(const char *s, const slib::SDictionary& attr) {
+    auto it = _find(this, s, attr);
+    if (it) return $_;
+    else throw NotFoundException(nofoundErrorText(s));
+}
+const slib::SXmlNode &slib::SXmlNode::search(const char *s, const SDictionary& attr) const {
+    auto it = _find(this, s, attr);
+    if (it) return $_;
+    else throw NotFoundException(nofoundErrorText(s));
+}
+slib::SXmlNode &slib::SXmlNode::operator[](const char *s) {
+    sfor(*this) {
+        if ($_.match(s)) return $_;
+    }
+    throw NotFoundException(nofoundErrorText(s));
+}
+const slib::SXmlNode &slib::SXmlNode::operator[](const char *s) const {
+    sfor(*this) {
+        if ($_.match(s)) return $_;
+    }
+    throw NotFoundException(nofoundErrorText(s));
+}
+
+
 
 void _toTxt(slib::String &str, const slib::SXmlNode& node, bool tag = false) {
     if (tag) str << "<" << node.tag << ">";
