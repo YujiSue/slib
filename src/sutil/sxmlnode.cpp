@@ -730,7 +730,6 @@ inline void _findall(slib::PArray<slib::SXmlNode> array, const slib::SXmlNode *p
         if ($_.match(s, attr)) array.add($.sptr());
         else if ($_.count()) _findall(array, &$_, s, attr);
     }
-    return array;
 }
 
 slib::PArrayIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const sattribute& attr) {
