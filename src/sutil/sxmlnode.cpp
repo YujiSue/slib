@@ -704,25 +704,33 @@ bool slib::SXmlNode::match(const char* s, const sattribute& attr) const {
     }
 }
 
-inline slib::SXmlNode *_find(slib::SXmlNode *parent, const char* s, const sattribute& attr) {
-    sforeach(child, *parent) {
-        if (child.match(s, attr)) return &child;
-        else if (child.count()) {
-            auto node =_find(&child, s, attr);
+inline slib::SPointer<slib::SXmlNode> _find(slib::SXmlNode *parent, const char* s, const sattribute& attr) {
+    sfor(*parent) {
+        if ($_.match(s, attr)) return $.sptr();
+        else if ($_.count()) {
+            auto node =_find(&$_, s, attr);
             if (node) return node;
         }
     }
     return nullptr;
 }
-inline const slib::SXmlNode *_find(const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
-    sforeach(child, *parent) {
-        if (child.match(s, attr)) return &child;
-        else if (child.count()) {
-            auto node =_find(&child, s, attr);
+inline const slib::SPointer<slib::SXmlNode> _find(const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
+    sfor(*parent) {
+        if ($_.match(s, attr)) return $.sptr();
+        else if ($_.count()) {
+            auto node =_find(&$_, s, attr);
             if (node) return node;
         }
     }
     return nullptr;
+}
+
+inline void _findall(slib::PArray<slib::SXmlNode> array, const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
+    sfor(*parent) {
+        if ($_.match(s, attr)) array.add($.sptr());
+        else if ($_.count()) _findall(array, &$_, s, attr);
+    }
+    return array;
 }
 
 slib::PArrayIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const sattribute& attr) {
@@ -766,6 +774,12 @@ const slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& at
     if (it) return $_;
     else throw NotFoundException(nofoundErrorText(s, tag));
 }
+slib::PArray<slib::SXmlNode> slib::SXmlNode::searchAll(const char *tag, const sattribute& attr) const {
+    slib::PArray<slib::SXmlNode> res;
+    
+    return res;
+}
+		
 slib::SXmlNode &slib::SXmlNode::operator[](const char *s) {
     sfor(*this) {
         if ($_.match(s)) return $_;

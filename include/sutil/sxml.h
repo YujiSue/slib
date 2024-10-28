@@ -76,6 +76,7 @@ namespace slib {
 		Array<PArrayCIterator<SXmlNode>> findAll(const char* tag, const sattribute& attr = {}) const;
 		SXmlNode &search(const char *tag, const sattribute& attr = {});
 		const SXmlNode &search(const char *tag, const sattribute& attr = {}) const;
+		PArray<SXmlNode> searchAll(const char *tag, const sattribute& attr = {}) const;
 		SXmlNode &operator[](const char *tag);
 		const SXmlNode &operator[](const char *tag) const;
 
