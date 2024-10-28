@@ -681,18 +681,30 @@ void slib::SXmlNode::insertAfter(const SXmlNode& node, SXmlNode& dest) {
     if (dest.isRoot()) throw Exception();
     dest.parent().insert(dest.index() + 1, node);
 }
-bool slib::SXmlNode::match(const char* s, const SDictionary& attr) const {
-    bool b = (tag == s);
-    if (attr.size() && b) {
-        sfor(attr) {
-            if (attribute.hasKey($_.key()) && attribute[$_.key()].match(Regex($_.value()))) continue;
-            else return false;
+bool slib::SXmlNode::match(const char* s, const sattribute& attr) const {
+    if (s) {
+        bool b = (tag == s);
+        if (attr.size() && b) {
+            sfor(attr) {
+                if (attribute.hasKey($_.key()) && attribute[$_.key()].match(Regex($_.value()))) continue;
+                else return false;
+            }
         }
+        return b;
     }
-    return b;
+    else {
+        if (attr.size()) {
+            sfor(attr) {
+                if (attribute.hasKey($_.key()) && attribute[$_.key()].match(Regex($_.value()))) continue;
+                else return false;
+            }
+            return true;
+        }
+        return false;
+    }
 }
 
-inline slib::SXmlNode *_find(slib::SXmlNode *parent, const char* s, const SDictionary& attr) {
+inline slib::SXmlNode *_find(slib::SXmlNode *parent, const char* s, const sattribute& attr) {
     sforeach(child, *parent) {
         if (child.match(s, attr)) return &child;
         else if (child.count()) {
@@ -702,7 +714,7 @@ inline slib::SXmlNode *_find(slib::SXmlNode *parent, const char* s, const SDicti
     }
     return nullptr;
 }
-inline slib::SXmlNode *_find(const slib::SXmlNode *parent, const char* s, const SDictionary& attr) {
+inline slib::SXmlNode *_find(const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
     sforeach(child, *parent) {
         if (child.match(s, attr)) return &child;
         else if (child.count()) {
@@ -713,7 +725,7 @@ inline slib::SXmlNode *_find(const slib::SXmlNode *parent, const char* s, const 
     return nullptr;
 }
 
-slib::PArrayIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const SDictionary& attr) {
+slib::PArrayIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const sattribute& attr) {
     
     sfor(*this) {
         if ($_.match(s, attr)) return it;
@@ -724,32 +736,32 @@ slib::PArrayIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const S
     }
     return end();
 }
-slib::PArrayCIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const SDictionary& attr) const {
+slib::PArrayCIterator<slib::SXmlNode> slib::SXmlNode::find(const char* s, const sattribute& attr) const {
     sfor(*this) {
         if ($_.match(s, attr)) return it;
     }
     return end();
 }
-slib::Array<slib::PArrayIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const SDictionary& attr) {
+slib::Array<slib::PArrayIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const sattribute& attr) {
     slib::Array<slib::PArrayIterator<slib::SXmlNode>> array;
     sfor(*this) {
         if ($_.match(s, attr)) array.add($);
     }
     return array;
 }
-slib::Array<slib::PArrayCIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const SDictionary& attr) const {
+slib::Array<slib::PArrayCIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const char* s, const sattribute& attr) const {
     slib::Array<slib::PArrayCIterator<slib::SXmlNode>> array;
     sfor(*this) {
         if ($_.match(s, attr)) array.add($);
     }
     return array;
 }
-slib::SXmlNode &slib::SXmlNode::search(const char *s, const slib::SDictionary& attr) {
+slib::SXmlNode &slib::SXmlNode::search(const char *s, const slib::sattribute& attr) {
     auto it = _find(this, s, attr);
     if (it) return $_;
     else throw NotFoundException(nofoundErrorText(s));
 }
-const slib::SXmlNode &slib::SXmlNode::search(const char *s, const SDictionary& attr) const {
+const slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& attr) const {
     auto it = _find(this, s, attr);
     if (it) return $_;
     else throw NotFoundException(nofoundErrorText(s));
