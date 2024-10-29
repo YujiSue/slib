@@ -704,19 +704,9 @@ bool slib::SXmlNode::match(const char* s, const sattribute& attr) const {
     }
 }
 
-inline slib::SPointer<slib::SXmlNode> _find(slib::SXmlNode *parent, const char* s, const sattribute& attr) {
+inline const slib::SXmlNode* _find(const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
     sfor(*parent) {
-        if ($_.match(s, attr)) return $.sptr();
-        else if ($_.count()) {
-            auto node =_find(&$_, s, attr);
-            if (node) return node;
-        }
-    }
-    return nullptr;
-}
-inline const slib::SPointer<slib::SXmlNode> _find(const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
-    sfor(*parent) {
-        if ($_.match(s, attr)) return $.sptr();
+        if ($_.match(s, attr)) return &$_;
         else if ($_.count()) {
             auto node =_find(&$_, s, attr);
             if (node) return node;
@@ -725,7 +715,7 @@ inline const slib::SPointer<slib::SXmlNode> _find(const slib::SXmlNode *parent, 
     return nullptr;
 }
 
-inline void _findall(slib::PArray<slib::SXmlNode> array, const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
+inline void _findall(slib::PArray<slib::SXmlNode> &array, const slib::SXmlNode *parent, const char* s, const sattribute& attr) {
     sfor(*parent) {
         if ($_.match(s, attr)) array.add($.sptr());
         else if ($_.count()) _findall(array, &$_, s, attr);
@@ -762,11 +752,6 @@ slib::Array<slib::PArrayCIterator<slib::SXmlNode>> slib::SXmlNode::findAll(const
         if ($_.match(s, attr)) array.add($);
     }
     return array;
-}
-slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& attr) {
-    auto node = _find(this, s, attr);
-    if (node) return *node;
-    else throw NotFoundException(nofoundErrorText(s, tag));
 }
 const slib::SXmlNode &slib::SXmlNode::search(const char *s, const sattribute& attr) const {
     auto node = _find(this, s, attr);
