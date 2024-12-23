@@ -64,6 +64,7 @@ slib::String slib::sbio::sutil::gbkPos(const sregion& reg, const size_t sz, bool
     if (dir) str << "complement(";
     str << "join(";
     sfor(reg) {
+        if (($_.begin < 0 && $_.end < 0) || ($_.begin >= sz && $_.end >= sz)) continue;
         str << ($_.begin < 0 ? "<1" : S($_.begin + 1)) << ".." << (sz == -1 || $_.end < sz ? S($_.end + 1) : ">" + S(sz)) << ",";
     }
     if (reg.size()) str[-1] = ')';

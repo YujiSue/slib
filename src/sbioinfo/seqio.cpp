@@ -39,7 +39,7 @@ void slib::sbio::sio::writeFa(slib::IOStream& stream, const slib::sbio::Sequence
 }
 void slib::sbio::sio::writeFa(IOStream& stream, const  slib::sbio::SeqList& seqs) {
 	sfor(seqs) {
-		stream.print(">", $_.name, SP, $_.attribute.toString(""));
+		stream.print(">", $_.name);
 		auto sz = $_.length();
 		auto off = 0;
 		while (off < sz) {

@@ -268,7 +268,7 @@ slib::sbio::Sequence slib::sbio::Sequence::subsequence(const size_t off, const s
 slib::sbio::Sequence slib::sbio::Sequence::subsequence(const Range<sint>& range) const {
     slib::sbio::Sequence seq;
     seq.setSeqAs(raw(range), (0x01 << 8) | type());
-    seq.name << name << "-subseq(" << range.begin + 1 << "," << range.end + 1 << ")";
+    seq.name << name << "-subseq[" << range.begin + 1 << "," << range.end + 1 << "]";
     sfor(mask) {
         if ($_.overlap(range)) seq.mask.add($_ & range);
     }

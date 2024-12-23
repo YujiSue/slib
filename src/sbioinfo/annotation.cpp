@@ -361,6 +361,7 @@ slib::Array<slib::sbio::GeneInfo>& slib::sbio::AnnotDB::geneInfos(const intarray
     if (_load[0]) {
         _genes.clear(); _load[0] = false;
     }
+    if (records.empty()) return _genes;
     stringarray select;
     if (opts && opts["select"]) select = opts["select"].split(",");
     else select = { "*" };
@@ -406,6 +407,7 @@ slib::Array<slib::sbio::GeneInfo>& slib::sbio::AnnotDB::geneInfos(const intarray
             toTranscriptInfo($_1, $_2);
             tmap[$_1.record] = &$_1;
             $_1.gene = gmap[$_1.idx];
+            $_1.dir = $_1.gene->dir;
             gmap[$_1.idx]->transcripts.add(&$_1);
         }
         auto tindice = tmap.keyset();
@@ -868,7 +870,9 @@ slib::sbio::MotifInfo& slib::sbio::AnnotDB::motifInfo(int id) {
 */
 void slib::sbio::AnnotDB::annotate(Sequence& seq, const RefPos& pos, const sushort types) {
     if (types & (sushort)ANNOT_CATEGORY::GENE || types & (sushort)ANNOT_CATEGORY::TRANSCRIPT) {
-        auto& genes = getGenes(pos);
+        auto& genes = getGenes(pos, {
+            D_("transcript", types & (sushort)ANNOT_CATEGORY::TRANSCRIPT)
+            });
         sforeach(gene, genes) {
             if (types & (sushort)ANNOT_CATEGORY::GENE) {
                 SeqNote gnote(gene);

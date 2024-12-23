@@ -96,7 +96,7 @@ slib::sbio::RefPos slib::sbio::RefPos::toPos(const char* s, const sindex& refind
 		sep = ":";
 		auto off = str.find(sep);
 		auto s_ = str.substring(0, off);
-		p.idx = refindex.hasKey(s_) ? (int)refindex[s_] : s_.intValue();
+		p.idx = refindex.hasKey(s_) ? (int)refindex[s_] : -1;
 		str.clip(off + sep.length());
 		if (str.match("-")) sep = "-";
 		else if (str.match("_")) sep = "_";
