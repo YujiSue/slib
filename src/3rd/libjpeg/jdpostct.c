@@ -17,8 +17,8 @@
  */
 
 #define JPEG_INTERNALS
-#include "libjpeg/jinclude.h"
-#include "libjpeg/jpeglib.h"
+#include "jinclude.h"
+#include "jpeglib.h"
 
 
 /* Private buffer controller object */
@@ -247,7 +247,7 @@ post_process_2pass (j_decompress_ptr cinfo,
  */
 
 GLOBAL(void)
-jinit_d_post_controller (j_decompress_ptr cinfo, jboolean need_full_buffer)
+jinit_d_post_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
 {
   my_post_ptr post;
 

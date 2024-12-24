@@ -2,6 +2,7 @@
  * jmemnobs.c
  *
  * Copyright (C) 1992-1996, Thomas G. Lane.
+ * Modified 2019 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -12,13 +13,13 @@
  * This is very portable in the sense that it'll compile on almost anything,
  * but you'd better have lots of main memory (or virtual memory) if you want
  * to process big images.
- * Note that the max_memory_to_use option is ignored by this implementation.
+ * Note that the max_memory_to_use option is respected by this implementation.
  */
 
 #define JPEG_INTERNALS
-#include "libjpeg/jinclude.h"
-#include "libjpeg/jpeglib.h"
-#include "libjpeg/jmemsys.h"		/* import the system-dependent declarations */
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jmemsys.h"		/* import the system-dependent declarations */
 
 #ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
 extern void * malloc JPP((size_t size));
@@ -66,13 +67,16 @@ jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 
 /*
  * This routine computes the total memory space available for allocation.
- * Here we always say, "we got all you want bud!"
  */
 
 GLOBAL(long)
 jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
 		    long max_bytes_needed, long already_allocated)
 {
+  if (cinfo->mem->max_memory_to_use)
+    return cinfo->mem->max_memory_to_use - already_allocated;
+
+  /* Here we say, "we got all you want bud!" */
   return max_bytes_needed;
 }
 

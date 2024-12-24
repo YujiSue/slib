@@ -12,14 +12,10 @@
  * is shoved onto the user.
  */
 
-#if _WIN32 || _WIN64
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-
 #define JPEG_INTERNALS
-#include "libjpeg/jinclude.h"
-#include "libjpeg/jpeglib.h"
-#include "libjpeg/jmemsys.h"		/* import the system-dependent declarations */
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jmemsys.h"		/* import the system-dependent declarations */
 
 #ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
 extern void * malloc JPP((size_t size));

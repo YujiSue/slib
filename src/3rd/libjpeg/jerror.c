@@ -2,6 +2,7 @@
  * jerror.c
  *
  * Copyright (C) 1991-1998, Thomas G. Lane.
+ * Modified 2012-2015 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -18,21 +19,15 @@
  * These routines are used by both the compression and decompression code.
  */
 
-/* this is not a core library module, so it doesn't define JPEG_INTERNALS */
-
-#if _WIN32 || _WIN64
-#define _CRT_SECURE_NO_WARNINGS 1
-#include <stdlib.h>
-#endif
-
-#include "libjpeg/jinclude.h"
-#include "libjpeg/jpeglib.h"
-#include "libjpeg/jversion.h"
-#include "libjpeg/jerror.h"
-
 #ifdef USE_WINDOWS_MESSAGEBOX
 #include <windows.h>
 #endif
+
+/* this is not a core library module, so it doesn't define JPEG_INTERNALS */
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jversion.h"
+#include "jerror.h"
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */
 #define EXIT_FAILURE  1
@@ -54,7 +49,7 @@
 #define JMESSAGE(code,string)	string ,
 
 const char * const jpeg_std_message_table[] = {
-#include "libjpeg/jerror.h"
+#include "jerror.h"
   NULL
 };
 
@@ -72,7 +67,7 @@ const char * const jpeg_std_message_table[] = {
  * or jpeg_destroy) at some point.
  */
 
-METHODDEF(void)
+METHODDEF(noreturn_t)
 error_exit (j_common_ptr cinfo)
 {
   /* Always display the message */
@@ -167,7 +162,7 @@ format_message (j_common_ptr cinfo, char * buffer)
   const char * msgtext = NULL;
   const char * msgptr;
   char ch;
-  jboolean isstring;
+  boolean isstring;
 
   /* Look up message string in proper table */
   if (msg_code > 0 && msg_code <= err->last_jpeg_message) {
