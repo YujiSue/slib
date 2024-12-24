@@ -192,7 +192,7 @@ void slib::sio::exportJPG(const char* path, const SImage& image, int qual) {
     jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, qual, TRUE);
     jpeg_start_compress(&cinfo, TRUE);
-    JSAMPROW row = (char*)image.data();
+    JSAMPROW row = (unsigned char*)image.data();
     auto rows = image.linesize();
     while (cinfo.next_scanline < cinfo.image_height) {
         jpeg_write_scanlines(&cinfo, &row, 1);

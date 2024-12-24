@@ -35,7 +35,7 @@ if (BUILD_SOBJ_LIB)
     3rd/libtiff/tif_fax3sm.c
     3rd/libtiff/tif_flush.c
     3rd/libtiff/tif_getimage.c
-    3rd/libtiff/tif_jbig.c
+    3rd/libtiff/tif_hash_set.c
     3rd/libtiff/tif_jpeg.c
     3rd/libtiff/tif_jpeg_12.c
     3rd/libtiff/tif_luv.c
@@ -56,8 +56,10 @@ if (BUILD_SOBJ_LIB)
     3rd/libtiff/tif_warning.c
     3rd/libtiff/tif_write.c
     3rd/libtiff/tif_zip.c
+    3rd/libjpeg/jaricom.c
     3rd/libjpeg/jcapimin.c
     3rd/libjpeg/jcapistd.c
+    3rd/libjpeg/jcarith.c
     3rd/libjpeg/jccoefct.c
     3rd/libjpeg/jccolor.c
     3rd/libjpeg/jcdctmgr.c
@@ -68,12 +70,12 @@ if (BUILD_SOBJ_LIB)
     3rd/libjpeg/jcmaster.c
     3rd/libjpeg/jcomapi.c
     3rd/libjpeg/jcparam.c
-    3rd/libjpeg/jcphuff.c
     3rd/libjpeg/jcprepct.c
     3rd/libjpeg/jcsample.c
     3rd/libjpeg/jctrans.c
     3rd/libjpeg/jdapimin.c
     3rd/libjpeg/jdapistd.c
+    3rd/libjpeg/jdarith.c
     3rd/libjpeg/jdatadst.c
     3rd/libjpeg/jdatasrc.c
     3rd/libjpeg/jdcoefct.c
@@ -85,7 +87,6 @@ if (BUILD_SOBJ_LIB)
     3rd/libjpeg/jdmarker.c
     3rd/libjpeg/jdmaster.c
     3rd/libjpeg/jdmerge.c
-    3rd/libjpeg/jdphuff.c
     3rd/libjpeg/jdpostct.c
     3rd/libjpeg/jdsample.c
     3rd/libjpeg/jdtrans.c
@@ -96,27 +97,26 @@ if (BUILD_SOBJ_LIB)
     3rd/libjpeg/jidctflt.c
     3rd/libjpeg/jidctfst.c
     3rd/libjpeg/jidctint.c
-    3rd/libjpeg/jidctred.c
     3rd/libjpeg/jmemmgr.c
     3rd/libjpeg/jmemnobs.c
     3rd/libjpeg/jquant1.c
     3rd/libjpeg/jquant2.c
     3rd/libjpeg/jutils.c
     3rd/libpng/png.c
-    3rd/libpng/pngget.c
-    3rd/libpng/pngpread.c
-    3rd/libpng/pngrio.c
-    3rd/libpng/pngrutil.c
-    3rd/libpng/pngtrans.c
-    3rd/libpng/pngwrite.c
-    3rd/libpng/pngwutil.c
     3rd/libpng/pngerror.c
+    3rd/libpng/pngget.c
     3rd/libpng/pngmem.c
+    3rd/libpng/pngpread.c
     3rd/libpng/pngread.c
+    3rd/libpng/pngrio.c
     3rd/libpng/pngrtran.c
+    3rd/libpng/pngrutil.c
     3rd/libpng/pngset.c
+    3rd/libpng/pngtrans.c
     3rd/libpng/pngwio.c
+    3rd/libpng/pngwrite.c
     3rd/libpng/pngwtran.c
+    3rd/libpng/pngwutil.c
   )
   if(MSVC)
     if (BUILD_SHARED_LIBS)
