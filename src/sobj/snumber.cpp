@@ -114,7 +114,7 @@ SNumber::SNumber(const char* s) {
         str.equal(REG("/^0o[0-7]+/")) ||
         str.equal(REG("/^0b[01]+/"))) {
         _type = stype::INTEGER;
-        _value._i = atoll(s);
+        _value._i = strtoll(str.cstr(), NULL, 0);
     }
     else if (str.equal(REG("/^null/i"))) {
         _type = stype::INTEGER;

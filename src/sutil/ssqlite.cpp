@@ -135,7 +135,6 @@ slib::String slib::sdb::upsertQuery(const String& table, const char* uniq, const
 
 
 
-
 slib::String slib::sdb::countQuery(const String& table, const String& condition) {
 	return String("SELECT COUNT(*) FROM ") << table << 
 		(condition.size() ? " WHERE " + condition : "");

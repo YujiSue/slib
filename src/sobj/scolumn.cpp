@@ -7,6 +7,12 @@ slib::SColumn::SColumn(const SColumn& column) {
 	name = column.name; attribute = column.attribute; _table = column._table; 
 }
 slib::SColumn::~SColumn() {}
+slib::SColumn& slib::SColumn::operator=(const SDictionary& dict) {
+	sfor(dict) {
+		if ($_.key() == "name") name = $_.value();
+		else attribute.insert($_);
+	}
+}
 slib::SColumn& slib::SColumn::operator=(const SColumn& col) {
 	name = col.name; attribute = col.attribute; _table = col._table; 
 	return *this;

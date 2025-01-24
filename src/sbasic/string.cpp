@@ -744,22 +744,22 @@ slib::Array<slib::Pair<size_t, slib::String>> slib::String::searchAll(const Rege
     return res;
 }
 bool slib::String::boolean() const { auto s = sstr::toLower(cstr()); return s == "true" || s == "yes" || s == "ok"; }
-slib::sbyte slib::String::byteValue() const { return atoi(cstr()); }
-slib::subyte slib::String::ubyteValue() const { return atoi(cstr()); }
-slib::sshort slib::String::shortValue() const { return atoi(cstr()); }
-slib::sushort slib::String::ushortValue() const { return atoi(cstr()); }
-int slib::String::intValue() const { return atoi(cstr()); }
-unsigned int slib::String::uintValue() const { return (unsigned)atol(cstr()); }
-size_t slib::String::sizeValue() const { return std::stoull(toStr()); }
-long slib::String::longValue() const { return atol(cstr()); }
-unsigned long slib::String::ulongValue() const { return std::stoul(toStr()); }
-long long slib::String::llongValue() const { return atoll(cstr()); }
-unsigned long long slib::String::ullongValue() const { return std::stoull(toStr()); }
-float slib::String::floatValue() const { return (float)atof(cstr()); }
-double slib::String::doubleValue() const { return atof(cstr()); }
-slib::sinteger slib::String::integer() const { return atoll(cstr()); }
-slib::suinteger slib::String::uinteger() const { return std::stoull(toStr()); }
-slib::sreal slib::String::real() const { return std::stold(toStr()); }
+slib::sbyte slib::String::byteValue() const { return (sbyte)strtol(cstr(), NULL, 0); }
+slib::subyte slib::String::ubyteValue() const { return (subyte)strtoul(cstr(), NULL, 0); }
+slib::sshort slib::String::shortValue() const { return (sshort)strtol(cstr(), NULL, 0); }
+slib::sushort slib::String::ushortValue() const { return (sushort)strtoul(cstr(), NULL, 0); }
+int slib::String::intValue() const { return (int)strtol(cstr(), NULL, 0); }
+unsigned int slib::String::uintValue() const { return (unsigned)strtoul(cstr(), NULL, 0); }
+size_t slib::String::sizeValue() const { return strtoull(cstr(), NULL, 0); }
+long slib::String::longValue() const { return strtol(cstr(), NULL, 0); }
+unsigned long slib::String::ulongValue() const { return strtoul(cstr(), NULL, 0); }
+long long slib::String::llongValue() const { return strtoll(cstr(), NULL, 0); }
+unsigned long long slib::String::ullongValue() const { return strtoull(cstr(), NULL, 0); }
+float slib::String::floatValue() const { return strtof(cstr(), NULL); }
+double slib::String::doubleValue() const { return strtod(cstr(), NULL); }
+slib::sinteger slib::String::integer() const { return strtoll(cstr(), NULL, 0); }
+slib::suinteger slib::String::uinteger() const { return strtoull(cstr(), NULL, 0); }
+slib::sreal slib::String::real() const { return strtold(cstr(), NULL); }
 bool slib::String::isUtf8() const {
     sforin(it, begin(), end()) { 
         if (slib::sutf8::check(it.ptr())) it += slib::sutf8::size(it.ptr());

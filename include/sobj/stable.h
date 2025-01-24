@@ -2,6 +2,8 @@
 #define SLIB_STABLE_H
 #include "smath/numeric.h"
 #include "sobj/sobjptr.h"
+#include "sobj/snumber.h"
+#include "sobj/sstring.h"
 #include "sobj/sdate.h"
 #include "sobj/sdata.h"
 #include "sobj/sarray.h"
@@ -21,6 +23,7 @@ namespace slib {
 		SColumn(const char* name = nullptr, const SDictionary& attr = {});
 		SColumn(const SColumn& column);
 		~SColumn();
+		SColumn& operator=(const SDictionary& dict);
 		SColumn& operator=(const SColumn& col);
 		
 		size_t size() const;
@@ -142,6 +145,10 @@ namespace slib {
 	protected:
 		Array<SColumn> _columns;
 		SArray _rows;
+
+	public:
+		SDictionary attribute;
+
 	public:
 		STable();
 		STable(const size_t row, const size_t col);
@@ -152,6 +159,8 @@ namespace slib {
 
 		STable& operator=(const STable& table);
 		//IO
+		static STable load(const char* path, sobj pref = snull);
+		static void save(const STable &tbl, const char* path, sobj pref = snull);
 		/*
 		void load(sobj obj);
 		void load(const char* path);

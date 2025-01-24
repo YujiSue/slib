@@ -2,33 +2,129 @@
 #include "sio/sfile.h"
 #include "sutil/sjson.h"
 
-slib::STable::STable() : slib::SObject() {}// { / _lastcol = 0; }
+slib::STable::STable() : slib::SObject() {}
 slib::STable::STable(const size_t row, const size_t col) : slib::STable(){ resize(row, col); }
 slib::STable::STable(const Array<SColumn> &cols, const SArray &rows) : STable() {
 	resize(rows.size(), cols.size());
 	sfor2(_columns, cols) $_1 = $_2;
 	sfor2(_rows, rows) $_1 = $_2;
 }
-/*
 slib::STable::STable(const sobj &obj) : STable() {
-    if (obj.isTable()) *this = obj.table();
-    if (obj.isDict()) {
-        if (obj.hasKey("columns")) { sforeach(obj["columns"]) addColumn(SColumn(E_["type"], E_["name"])); }
+	if (!obj) return;
+	if (obj.isTable()) *this = obj.table();
+	else if (obj.isArray()) {
+		if (obj.empty()) return;
+		else if (!obj.isArray()) throw FormatException(formatErrorText("Table array", "array[" + obj.getClass() + "]", "array[array]"));
+		resizeColumn(obj[0].size());
+		sforeach(row, obj) addRow(row);
+	}
+    else if (obj.isDict()) {
+        if (obj.hasKey("cols")) { sfor(obj["cols"]) addColumn(SColumn($_["name"], $_)); }
         if (obj.hasKey("rows")) _rows = obj["rows"];
+		if (obj.hasKey("attribute")) attribute = obj["attribute"];
     }
 }
-*/
 slib::STable::STable(const STable &table) : STable() {
 	_columns = table._columns;
 	_rows = table._rows;
+	attribute = table.attribute;
 }
 slib::STable::~STable() {}
 slib::STable & slib::STable::operator=(const slib::STable &table) {
     clearAll();
     _columns = table._columns;
 	_rows = table._rows;
-    return *this;
+	attribute = table.attribute;
+	return *this;
 }
+
+inline void _addStr(const stringarray& vals, slib::STable& tbl) {
+	if (vals.size() != tbl.ncol())
+		throw FormatException(formatErrorText("Cell count of a single row", S(vals.size()), S(tbl.ncol())));
+	tbl.addRow();
+	auto cellit = tbl[-1].begin();
+	sfor2(tbl.columns(), vals) {
+		if ($_1.attribute.hasKey("type")) {
+			auto type = slib::sstr::toLower($_1.attribute["type"]);
+			if (type == "auto") *cellit = slib::SObjPtr::toObj($_2);
+			else if (type.match("int")) *cellit = $_2.integer();
+			else if (type.match("num")) *cellit = slib::SNumber($_2);
+			else if (type.match("date")) *cellit = slib::SDate((const char *)$_2);
+			else *cellit = $_2;
+		}
+		else *cellit = $_2;
+		++cellit;
+	}
+}
+
+slib::STable slib::STable::load(const char* path, sobj pref) {
+	auto ext = slib::sstr::toLower(slib::sfs::extension(path));
+	bool header = pref.hasKey("header") ? (bool)pref["header"] : false;
+	STable tbl;
+	if (ext == "csv" || ext == "tsv" || ext == "txt") {
+		SFile f(path);
+		String ln,
+			sep = pref.hasKey("sep") ? pref["sep"] : (ext == "csv" ? "," : "\t"),
+			note = pref.hasKey("note") ? pref["note"] : "";
+		f.readLine(ln);
+		if (note.size() && ln.beginWith(note)) {
+			tbl.attribute["note"] = SArray();
+			while (ln.beginWith(note)) {
+				tbl.attribute["note"].add(ln.substring(note.size()));
+			}
+		}
+		if (header) {
+			auto vals = ln.split(sep);
+			sfor(vals) tbl.addColumn(SColumn($_));
+		}
+		else {
+			auto vals = ln.split(sep);
+			if (pref.hasKey("cols")) {
+				tbl.resizeColumn(pref["cols"].size());
+				sfor2(tbl._columns, pref["cols"]) $_1 = $_2;
+			}
+			else sfori(vals) tbl.addColumn(SColumn("Column " + S(i)));
+			_addStr(vals, tbl);
+		}
+		while (f) {
+			f.readLine(ln);
+			auto vals = ln.split(sep);
+			_addStr(vals, tbl);
+		}
+	}
+	else if (ext == "json") {
+		auto obj = sjson::load(path);
+		if (obj.hasKey("cols") && obj.hasKey("rows")) {
+			tbl.resizeColumn(obj["cols"].size());
+			sfor2(tbl._columns, obj["cols"]) $_1 = $_2;
+			tbl._rows.append(obj["rows"]);
+		}
+		else throw FormatException(formatErrorText("Table JSON", obj.toString(), "{\n  cols:{...},\n  rows:{...},\n  (attribute:{...})\n}"));
+		if (obj.hasKey("attribute")) tbl.attribute = obj["attribute"];
+	}
+	return tbl;
+}
+void slib::STable::save(const STable& tbl, const char* path, sobj pref) {
+	auto ext = slib::sstr::toLower(slib::sfs::extension(path));
+	bool header = pref.hasKey("header") ? (bool)pref["header"] : false;
+	if (ext == "csv" || ext == "tsv" || ext == "txt") {
+		SFile f(path, sio::WRITE);
+		if (tbl.attribute.size() && pref["attribute"]) {
+			auto note = pref["note"] ? pref["note"] : "#";
+			if (tbl.attribute.hasKey("note") && tbl.attribute["note"].isArray()) {
+				
+			}
+			else {
+
+			}
+		}
+
+
+
+	}
+	else if (ext == "json") { sjson::save(tbl.toObj(), path); }
+}
+
 /*
 void slib::STable::initWithArray(SArray& array, bool header) {
 	if (array.empty()) return;
@@ -368,6 +464,7 @@ slib::SObjPtr slib::STable::toObj() const {
 	slib::SObjPtr obj = SDictionary();
 	sfor(_columns) { obj["cols"].add($_.toObj()); }
 	obj["rows"] = _rows;
+	if (!attribute.empty()) obj["attribute"] = attribute;
 	return obj;
 }
 

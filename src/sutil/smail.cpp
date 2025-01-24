@@ -284,7 +284,6 @@ inline slib::SObjPtr _parseMail(const slib::SDictionary &content) {
 void slib::sgmail::toMessages(smail::Message& msg, const SDictionary& mail) {
 	sforeach(header, mail["payload"]["headers"]) {
 		if (header.hasKey("name") && header.hasKey("value")) {
-			//SPrint("H:", header["name"]);
 			if (header["name"] == "Message-ID") msg.msgid = header["value"];
 			else if (header["name"] == "From") msg.from = header["value"];
 			else if (header["name"] == "To") {
@@ -294,7 +293,14 @@ void slib::sgmail::toMessages(smail::Message& msg, const SDictionary& mail) {
 				}
 			}
 			else if (header["name"] == "Subject") msg.subject = header["value"];
-			else if (header["name"] == "Date") msg.date = SDate(header["value"], sstyle::EMAIL);
+			else if (header["name"] == "Date") {
+				try {
+					msg.date = SDate(header["value"], sstyle::EMAIL);
+				}
+				catch (slib::Exception ex) {
+					msg.date = SDate(header["value"], "DD MMM YYYY HH:mm:ss L (Z)");
+				}
+			}
 			else msg.header[header["name"]] = header["value"];
 
 		}
