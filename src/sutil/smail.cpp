@@ -298,7 +298,7 @@ void slib::sgmail::toMessages(smail::Message& msg, const SDictionary& mail) {
 					msg.date = SDate(header["value"], sstyle::EMAIL);
 				}
 				catch (slib::Exception ex) {
-					msg.date = SDate(header["value"], "DD MMM YYYY HH:mm:ss L (Z)");
+					msg.date = SDate(header["value"], "DD MMM YYYY HH:mm:ss L");
 				}
 			}
 			else msg.header[header["name"]] = header["value"];
