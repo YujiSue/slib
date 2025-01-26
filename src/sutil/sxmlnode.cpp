@@ -511,10 +511,14 @@ inline void _interpretXmlTag(slib::SXmlNode& node) {
         }
         else if (node.tag.beginWith("<!ENTITY")) {
             node.type = slib::sxml::ENTITY_NODE;
+            node.tag = "ENTITY";
         }
         else throw FormatException(slib::formatErrorText("XML node with exclamation", node.tag, "<!DOCTYPE | <!-- | <![CDATA[ | <!ENTITY"));
     }
     else {
+
+        SPrint(node.tag);
+
         if (node.tag.endWith("/")) {
             node.type = slib::sxml::SINGLE_TAG;
             node.tag.clip(1, node.tag.size() - 2).trim();
