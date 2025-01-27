@@ -516,9 +516,6 @@ inline void _interpretXmlTag(slib::SXmlNode& node) {
         else throw FormatException(slib::formatErrorText("XML node with exclamation", node.tag, "<!DOCTYPE | <!-- | <![CDATA[ | <!ENTITY"));
     }
     else {
-
-        SPrint(node.tag);
-
         if (node.tag.endWith("/")) {
             node.type = slib::sxml::SINGLE_TAG;
             node.tag.clip(1, node.tag.size() - 2).trim();
@@ -539,8 +536,15 @@ slib::ArrayIterator<char> slib::sxml::readXmlNode(slib::ArrayIterator<char> curr
     }
     node.tag.trim();
     _interpretXmlTag(node);
-    if (node.type == DECLARATION_NODE || node.type == INFORMATION_NODE || node.type == DOCTYPE_NODE || node.type == ENTITY_NODE) return current + 1;
+    if (node.type == DECLARATION_NODE || node.type == INFORMATION_NODE || node.type == ENTITY_NODE) return current + 1;
     // Skip psuede node (CDATA / Comment)
+    if (node.type == slib::sxml::DOCTYPE_NODE) {
+        while (current < end && !node.tag.endWith("]>")) {
+            node.tag << (*current);
+            ++current;
+        }
+        node.tag.clear();
+    }
     if (node.type == slib::sxml::CDATA_NODE) {
         while (current < end && !node.tag.endWith("]]>")) {
             node.tag << (*current);
