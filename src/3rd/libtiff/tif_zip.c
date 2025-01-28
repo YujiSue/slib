@@ -38,7 +38,7 @@
  * For scanline access, zlib will be sued as a fallback.
  */
 #include "tif_predict.h"
-#include "zlib.h"
+#include "zlib/zlib.h"
 
 #if LIBDEFLATE_SUPPORT
 #include "libdeflate.h"

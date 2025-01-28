@@ -19,7 +19,7 @@
 
 #ifndef PNGSTRUCT_H
 #define PNGSTRUCT_H
-/* zlib.h defines the structure z_stream, an instance of which is included
+/* zlib/zlib.h defines the structure z_stream, an instance of which is included
  * in this structure and is required for decompressing the LZ compressed
  * data in PNG files.
  */
@@ -27,13 +27,13 @@
    /* We must ensure that zlib uses 'const' in declarations. */
 #  define ZLIB_CONST
 #endif
-#include "zlib.h"
+#include "zlib/zlib.h"
 #ifdef const
-   /* zlib.h sometimes #defines const to nothing, undo this. */
+   /* zlib/zlib.h sometimes #defines const to nothing, undo this. */
 #  undef const
 #endif
 
-/* zlib.h has mediocre z_const use before 1.2.6, this stuff is for compatibility
+/* zlib/zlib.h has mediocre z_const use before 1.2.6, this stuff is for compatibility
  * with older builds.
  */
 #if ZLIB_VERNUM < 0x1260
@@ -44,7 +44,7 @@
 #  define PNGZ_INPUT_CAST(b) (b)
 #endif
 
-/* zlib.h declares a magic type 'uInt' that limits the amount of data that zlib
+/* zlib/zlib.h declares a magic type 'uInt' that limits the amount of data that zlib
  * can handle at once.  This type need be no larger than 16 bits (so maximum of
  * 65535), this define allows us to discover how big it is, but limited by the
  * maximum for size_t.  The value can be overridden in a library build
