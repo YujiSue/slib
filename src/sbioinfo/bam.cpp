@@ -463,7 +463,7 @@ void slib::sbio::BamFile::readBlock(sbam::Block* block) {
 	char magic[16];
 	block->init();
 	block->offset = sbam::VOffset(_file.offset(), 0);
-	if (_file.eof() || _file.offset() == _file.size()) return;
+	if (_file.eof() || (size_t)_file.offset() == _file.size()) return;
 	// Magic check
 	_file.readBytes(magic, 16);
 	if (memcmp(BGZF_MAGIC, magic, 16) != 0) throw BioFileFormatException(BGZF_FORM_ERR, bgzfFormatErrorText(magic));
