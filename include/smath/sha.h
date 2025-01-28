@@ -34,6 +34,10 @@ extern "C" {
 										* big-endian values. */
 # define SHA_LAST_BLOCK  (SHA_CBLOCK-8)
 # define SHA_DIGEST_LENGTH 20
+										
+/**
+* @cond
+*/
 
 	typedef struct SHAstate_st {
 		SHA_LONG h0, h1, h2, h3, h4;
@@ -112,6 +116,9 @@ extern "C" {
 	int SHA512_Final(unsigned char* md, SHA512_CTX* c);
 	unsigned char* SHA512(const unsigned char* d, size_t n, unsigned char* md);
 	void SHA512_Transform(SHA512_CTX* c, const unsigned char* data);
+/**
+* @endcond
+*/
 
 # ifdef  __cplusplus
 }

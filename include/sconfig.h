@@ -164,8 +164,10 @@ extern "C" {
 
 /**
 * @namespace slib
-* ~english @brief Basic namespace for slib
+* \~english @brief Basic namespace for slib
+*  \~japanese @brief slib‚ÌŠî–{–¼‘O‹óŠÔ
 */
+
 namespace slib {
     using sbyte = int8_t;
     using subyte = uint8_t;

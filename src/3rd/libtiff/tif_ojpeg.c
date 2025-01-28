@@ -207,8 +207,8 @@ static const TIFFField ojpegFields[] = {
 #include <setjmp.h>
 #endif
 
-#include "libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/jerror.h"
-#include "libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/jpeglib.h"
+#include "libjpeg/jerror.h"
+#include "libjpeg/jpeglib.h"
 
 #ifndef TIFF_jpeg_source_mgr_defined
 #define TIFF_jpeg_source_mgr_defined
