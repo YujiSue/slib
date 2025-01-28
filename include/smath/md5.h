@@ -46,6 +46,7 @@ If using PROTOTYPES, then PROTO_LIST returns the list, otherwise it
 #endif
 
 /* MD5 context. */
+
 typedef struct {
   UINT4 state[4];                                   /* state (ABCD) */
   UINT4 count[2];        /* number of bits, modulo 2^64 (lsb first) */

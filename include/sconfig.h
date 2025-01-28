@@ -164,7 +164,7 @@ extern "C" {
 
 /**
 * @namespace slib
-* ~english @brief Basic namespace for my library
+* ~english @brief Basic namespace for slib
 */
 namespace slib {
     using sbyte = int8_t;

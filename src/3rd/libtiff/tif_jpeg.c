@@ -73,8 +73,8 @@ int TIFFReInitJPEG_12(TIFF *tif, const JPEGOtherSettings *otherSettings,
                       int scheme, int is_encode);
 int TIFFJPEGIsFullStripRequired_12(TIFF *tif);
 
-#include "libjpeg/jerror.h"
-#include "libjpeg/jpeglib.h"
+#include "libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/jerror.h"
+#include "libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/libjpeg/jpeglib.h"
 
 /* Do optional compile-time version check */
 #if defined(EXPECTED_JPEG_LIB_VERSION) && !defined(LIBJPEG_12_PATH)
