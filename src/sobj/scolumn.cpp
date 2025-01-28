@@ -12,6 +12,7 @@ slib::SColumn& slib::SColumn::operator=(const SDictionary& dict) {
 		if ($_.key() == "name") name = $_.value();
 		else attribute.insert($_);
 	}
+	return *this;
 }
 slib::SColumn& slib::SColumn::operator=(const SColumn& col) {
 	name = col.name; attribute = col.attribute; _table = col._table; 
