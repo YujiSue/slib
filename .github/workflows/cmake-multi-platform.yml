@@ -39,9 +39,7 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }}
 
   wintest:
     runs-on: windows-latest
@@ -74,7 +72,7 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
   linuxtest:
     runs-on: ubuntu-latest
@@ -106,6 +104,5 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }}
 
