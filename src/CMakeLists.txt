@@ -123,7 +123,7 @@ if (BUILD_SOBJ_LIB)
       add_compile_definitions(_BUILD_DLL)
     endif()
     link_directories($ENV{PATH})
-    link_libraries(libcurl_imp.lib)
+    link_libraries(libcurl.lib)
     set(CMAKE_CXX_FLAGS "/utf-8 /EHsc")
     set(SOBJ_SRC ${SOBJ_SRC} 
       3rd/libtiff/tif_win32.c
