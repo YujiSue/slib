@@ -129,7 +129,7 @@ if (BUILD_SOBJ_LIB)
       3rd/libtiff/tif_win32.c
     )
   elseif (APPLE)
-    set(CMAKE_C_FLAGS "-std=c99")
+    set(CMAKE_C_FLAGS "-std=gnu99")
     
   elseif(UNIX)
     set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wextra -Wno-unknown-pragmas -Wno-unused-parameter")
