@@ -129,7 +129,7 @@ if (BUILD_SOBJ_LIB)
       3rd/libtiff/tif_win32.c
     )
   elseif(UNIX)
-    set(CMAKE_C_FLAGS "-std=c90")
+    set(CMAKE_C_FLAGS "-std=c99")
     set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wextra -Wno-unknown-pragmas -Wno-unused-parameter")
     link_directories($ENV{LD_LIBRARY_PATH})
     link_libraries(dl pthread curl)
