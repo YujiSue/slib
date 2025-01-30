@@ -741,7 +741,7 @@ namespace slib {
         SCIterator& operator -=(::std::ptrdiff_t diff);
         SCIterator operator +(::std::ptrdiff_t diff);
         SCIterator operator -(::std::ptrdiff_t diff);
-        sinteger operator -(SCIterator it);
+        std::ptrdiff_t operator -(SCIterator it);
         void swap(SCIterator sit1, SCIterator sit2);
         bool operator ==(const SCIterator& sit) const;
         bool operator !=(const SCIterator& sit) const;
