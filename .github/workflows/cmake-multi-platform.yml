@@ -63,10 +63,9 @@ jobs:
           cd vcpkg
           .\bootstrap-vcpkg.bat
           .\vcpkg install curl:x64-windows
-          $Env:PATH
-          pwd
+          D:\a\slib\slib\vcpkg
+          $Env:Path += ";D:\a\slib\slib\vcpkg\installed\x64-windows\lib"
     
-
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
