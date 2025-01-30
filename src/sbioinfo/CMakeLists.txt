@@ -2,9 +2,9 @@ if(MSVC)
   if (BUILD_SHARED_LIBS)
     add_compile_definitions(_BUILD_DLL)
   endif()
-  set(CMAKE_CXX_FLAGS "/utf-8")
+  link_libraries(sobj)
 elseif(UNIX)
-  set(CMAKE_CXX_FLAGS "-std=c++11 -O2")
+  link_libraries(sobj)
 endif()
 add_library(sbioinfo ${BUILD_MODE} 
   align.cpp
