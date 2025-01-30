@@ -440,14 +440,14 @@ slib::sbio::DirRegion& slib::sbio::DirRegion::operator = (const slib::sbio::DirR
 void slib::sbio::DirRegion::init() { clear(); }
 
 slib::sbio::CODON_TABLE slib::sbio::DEFAULT_CODON = {
-	svec4b({11, 2, 11, 2}), svec4b({16, 16, 16, 16}), svec4b({1, 15, 1, 15}), svec4b({9, 9, 12, 9}),
-	svec4b({5, 8, 5, 8}), svec4b({14, 14, 14, 14}), svec4b({1, 1, 1, 1}), svec4b({10, 10, 10, 10}),
-	svec4b({6, 3, 6, 3}), svec4b({0, 0, 0, 0}), svec4b({7, 7, 7, 7}), svec4b({19, 19, 19, 19}),
-	svec4b({24, 18, 24, 18}), svec4b({15, 15, 15, 15}), svec4b({24, 4, 17, 4}), svec4b({10, 13, 10, 13})
+	slib::svec4b({11, 2, 11, 2}), slib::svec4b({16, 16, 16, 16}), slib::svec4b({1, 15, 1, 15}), slib::svec4b({9, 9, 12, 9}),
+	slib::svec4b({5, 8, 5, 8}), slib::svec4b({14, 14, 14, 14}), slib::svec4b({1, 1, 1, 1}), slib::svec4b({10, 10, 10, 10}),
+	slib::svec4b({6, 3, 6, 3}), slib::svec4b({0, 0, 0, 0}), slib::svec4b({7, 7, 7, 7}), slib::svec4b({19, 19, 19, 19}),
+	slib::svec4b({24, 18, 24, 18}), slib::svec4b({15, 15, 15, 15}), slib::svec4b({24, 4, 17, 4}), slib::svec4b({10, 13, 10, 13})
 };
 slib::sbio::CODON_TABLE slib::sbio::DEFAULT_MT_CODON = {
-	svec4b({11, 2, 11, 2}), svec4b({16, 16, 16, 16}), svec4b({15, 15, 15, 15}), svec4b({12, 9, 12, 9}),
-	svec4b({5, 8, 5, 8}), svec4b({14, 14, 14, 14}), svec4b({1, 1, 1, 1}), svec4b({10, 10, 10, 10}),
-	svec4b({6, 3, 6, 3}), svec4b({0, 0, 0, 0}), svec4b({7, 7, 7, 7}), svec4b({19, 19, 19, 19}),
-	svec4b({24, 18, 24, 18}), svec4b({15, 15, 15, 15}), svec4b({17, 4, 17, 4}), svec4b({10, 13, 10, 13})
+	slib::svec4b({11, 2, 11, 2}), slib::svec4b({16, 16, 16, 16}), slib::svec4b({15, 15, 15, 15}), slib::svec4b({12, 9, 12, 9}),
+	slib::svec4b({5, 8, 5, 8}), slib::svec4b({14, 14, 14, 14}), slib::svec4b({1, 1, 1, 1}), slib::svec4b({10, 10, 10, 10}),
+	slib::svec4b({6, 3, 6, 3}), slib::svec4b({0, 0, 0, 0}), slib::svec4b({7, 7, 7, 7}), slib::svec4b({19, 19, 19, 19}),
+	slib::svec4b({24, 18, 24, 18}), slib::svec4b({15, 15, 15, 15}), slib::svec4b({17, 4, 17, 4}), slib::svec4b({10, 13, 10, 13})
 };
