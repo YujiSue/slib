@@ -63,7 +63,6 @@ jobs:
           cd vcpkg
           .\bootstrap-vcpkg.bat
           .\vcpkg install curl:x64-windows
-          D:\a\slib\slib\vcpkg
           $Env:Path += ";D:\a\slib\slib\vcpkg\installed\x64-windows\lib"
     
     - name: Configure CMake
