@@ -250,8 +250,8 @@ slib::String::String(const size_t n) : String() { append(std::to_string(n)); }
 //slib::String::String(const long long n) : String() { append(std::to_string(n)); }
 slib::String::String(const int64_t n) : String() { append(std::to_string(n)); }
 #ifdef MAC_OS
-slib::String::String(const sinteger n) : String() { append(std::to_string(n)); }
-slib::String::String(const suinteher n) : String() { append(std::to_string(n)); }
+//slib::String::String(const sinteger n) : String() { append(std::to_string(n)); }
+slib::String::String(const suinteger n) : String() { append(std::to_string(n)); }
 #endif
 slib::String::String(const float n) : String() { append(std::to_string(n)); }
 slib::String::String(const double n) : String() { append(std::to_string(n)); }

@@ -89,7 +89,7 @@ namespace slib {
         String(const int n);
         String(const size_t n);
         //String(const long long n);
-        String(const int64_t n);        
+        String(const int64_t n);
 #ifdef MAC_OS
         //String(const sinteger n);
         String(const suinteger n);
