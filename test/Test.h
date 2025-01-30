@@ -2,71 +2,40 @@
 #define SLIB_TEST_H
 
 #include "sobj.h"
-#include "sapp.h"
-#include "sbioinfo.h"
-#include "sapp/snodeapp.h"
-/*
-#define MATH_TEST
-#ifndef MATH_TEST
-#define CALC_TEST
-#define FRAC_TEST
-#define COMP_TEST
-#define LA_TEST
-#define GEOM_TEST
-#define STAT_TEST
-#endif
-#define BASIC_TEST
+using namespace slib;
+
+#define PRINT_TITLE(X) SPrint(S("=")*30,sstr::bfill(X,' ',20),S("=")*30);
+#define PRINT_VALUE(X,Y) SPrint(S(X), " = ", Y);
+#define PRINT_RESULT(F,R) SPrint(S(F), " => ", R);
+#define BROKEN_LINE SPrint(S("- ")*40);
+#define SINGLE_LINE SPrint(S("-")*80);
+#define DOUBLE_LINE SPrint(S("=")*80);
+
 #ifndef BASIC_TEST
-#define RANGE_TEST
-#define AREA_TEST
-#define ZONE_TEST
-#define MEM_TEST
-#define PTR_TEST
-#define ARRAY_TEST
-#define REGION_TEST
-#define LIST_TEST
-#define MAP_TEST
-#define SET_TEST
-#define CHAR_TEST
-#define STRING_TEST
-#define TIME_TEST
-#define NODE_TEST
-#define EXCEPTION_TEST
+#ifdef TEST_ALL
+#define BASIC_TEST 1
 #endif
-
-#define SOBJ_TEST
-#ifndef SOBJ_TEST
-#define SOBJECT_TEST
-#define SNUMBER_TEST
-#define SSTRING_TEST
-#define SDATE_TEST
-#define SDATA_TEST
-#define SARRAY_TEST
-#define SDICT_TEST
-#define SFUNC_TEST
-#define STEXT_TEST
-#define STABLE_TEST
-#define SIO_TEST
-#define SNET_TEST
 #endif
-#define SUTIL_TEST
-#ifndef SUTIL_TEST
-#define CODE_TEST
-#define DB_TEST
-#define THREAD_TEST
-#define PROCESS_TEST
-#define JSON_TEST
-#define XML_TEST
+#ifndef MATH_TEST
+#ifdef TEST_ALL
+#define MATH_TEST 1
 #endif
-
-
-#define APP_TEST
-*/
-
-
-#define SBIOINFO_TEST
-
-
+#endif
+#ifndef OBJ_TEST
+#ifdef TEST_ALL
+#define OBJ_TEST 1
+#endif
+#endif
+#ifndef UTIL_TEST
+#ifdef TEST_ALL
+#define UTIL_TEST 1
+#endif
+#endif
+#ifndef MEDIA_TEST
+#ifdef TEST_ALL
+#define MEDIA_TEST 1
+#endif
+#endif
 
 namespace test {
 	extern void RangeTest();
@@ -109,17 +78,6 @@ namespace test {
 
 }
 namespace test {
-	extern void CalcTest();
-	extern void FracTest();
-	extern void ComplexTest();
-	extern void LinearAlgebraTest();
-	extern void GeometryTest();
-	extern void StatisticTest();
-
-}
-
-
-namespace test {
 	extern void SJsonTest();
 	extern void SXmlTest();
 	extern void SDocumentTest();
@@ -128,18 +86,40 @@ namespace test {
 	extern void SThreadTest();
 }
 
+
+using namespace slib::smath;
 namespace test {
-	extern void SBAnnotTest();
-	extern void SBSeqIOTest();
-	extern void SBSeqTest();
+	extern void CalcTest();
+	extern void RandomTest();
+
+	extern void FracTest();
+	extern void ComplexTest();
+	extern void LATest();
+	extern void GeomTest();
+	extern void StatTest();
+
 }
+
+
+
 namespace test {
 	extern void SPlugInAppTest();
 	extern void SCUIAppTest();
 }
 
+#include "sbioinfo.h"
+using namespace slib::sbio;
+namespace test {
+	extern void SeqTest();
+	extern void SeqIOTest();
+	extern void AnnotTest();
+	extern void BamTest();
+}
+
+
 namespace test {
 	extern void SNodeJSAppTest();
 }
+
 
 #endif

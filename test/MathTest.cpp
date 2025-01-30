@@ -1,10 +1,4 @@
 #include "Test.h"
-#include "sobj.h"
-
-using namespace slib;
-
-#ifdef MATH_TEST
-using namespace slib::smath;
 
 void test::CalcTest() {
 	std::cout << "1.0f==1?" << (smath::isInteger(1.0f) ? "true" : "false") << std::endl; //true

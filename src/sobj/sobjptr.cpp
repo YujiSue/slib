@@ -27,10 +27,25 @@ slib::SObjPtr::SObjPtr(const subyte n) : SObjPtr() { instance = new slib::SNumbe
 slib::SObjPtr::SObjPtr(const sshort n) : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const sushort n) : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const int n) : SObjPtr() { instance = new slib::SNumber(n); }
-slib::SObjPtr::SObjPtr(unsigned int n)  : SObjPtr() { instance = new slib::SNumber(n); }
+slib::SObjPtr::SObjPtr(const unsigned int n)  : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const size_t n) : SObjPtr() { instance = new slib::SNumber(n); }
+#ifndef LINUX_OS
+slib::SObjPtr::SObjPtr(const long n) : SObjPtr() { instance = new slib::SNumber(n); }
+#ifndef MAC_OS
+slib::SObjPtr::SObjPtr(const unsigned long n) : SObjPtr() { instance = new slib::SNumber(n); }
+#endif
+#endif
+slib::SObjPtr::SObjPtr(const long long n) : SObjPtr() { instance = new slib::SNumber(n); }
+#ifdef MAC_OS
+slib::SObjPtr::SObjPtr(const unsigned long long n) : SObjPtr() { instance = new slib::SNumber(n); }
+#endif
+#ifdef LINUX_OS
+slib::SObjPtr::SObjPtr(const sinteger n) : SObjPtr() { instance = new slib::SNumber(n); }
+#endif
 slib::SObjPtr::SObjPtr(const long n) : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const long long n) : SObjPtr() { instance = new slib::SNumber(n); }
+
+
 slib::SObjPtr::SObjPtr(const float n) : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const double n) : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const Fraction<sint>& n) : SObjPtr() { instance = new slib::SNumber(n); }

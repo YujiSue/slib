@@ -37,8 +37,13 @@ void test::SObjTest() {
 	std::cout << fn.func<int, double, const char*>()(1, 2.0, "abc") << std::endl;
 }
 void test::SNumberTest() {
-	std::cout << String("*") * 50 << std::endl;
-	std::cout << "SNumber Test" << NEW_LINE << std::endl;
+	// Header
+	DOUBLE_LINE
+	PRINT_TITLE("SNumber Test")
+	SINGLE_LINE
+
+	// Init.
+	/*
 	std::cout << SNumber::toBinary(0x75) << std::endl; //01110101
 	std::cout << SNumber::toOct(0x96) << std::endl; //226
 	std::cout << SNumber::toHex(135) << std::endl; //87
@@ -51,36 +56,40 @@ void test::SNumberTest() {
 	std::cout << SNumber::toNumber("-1/10").precised(1) << std::endl;
 	std::cout << SNumber::toNumber("0.5+0.3i") << std::endl;
 	std::cout << SNumber::toNumber("-1-1i") << std::endl;
+	*/
 
 	SNumber num1 = 100;
-	std::cout << "num1:" << num1 << std::endl;
+	SPrint("SNumber num1 = 100");
+	PRINT_VALUE("num1", num1);
 	SNumber num2 = 3.0;
-	std::cout << "num2:" << num2 << std::endl;
-	SNumber num3 = sfrac("1/2");
-	std::cout << "num3:" << num3 << std::endl;
-	SNumber num4 = scomp("1+1i");
-	std::cout << "num4:" << num4 << std::endl;
+	SPrint("SNumber num2 = 3.0");
+	PRINT_VALUE("num2", num2);
+	SNumber num3 = true;
+	SPrint("SNumber num3 = true");
+	PRINT_VALUE("num3", num3);
+	SNumber num4 = sfrac("1/2");
+	SPrint("SNumber num4 = sfrac(\"1/2\")");
+	PRINT_VALUE("num4", num4);
+	SNumber num5 = scomplex("1+1i");
+	SPrint("SNumber num5 = scomplex(\"1+1i\")");
+	PRINT_VALUE("num5", num5);
+	
+	BROKEN_LINE
 
-	SNumber num5 = num1 + num1; // addition
-	std::cout << "num5:" << num5 << std::endl;
-	SNumber num6 = num2 - num3; // subtraction
-	std::cout << "num6:" << num6 << std::endl;
-	SNumber num7 = num1 * num2; // 
-	std::cout << "num7:" << num7 << std::endl;
-	SNumber num8 = num2 / num3; // 
-	std::cout << "num8:" << num8 << std::endl;
-	SNumber num9 = num1 % num2; // 
-	std::cout << "num9:" << num9 << std::endl;
-	SNumber num10 = -num1; // 
-	std::cout << "num10:" << num10 << std::endl;
-	++num1; //Increment
-	std::cout << "num1:" << num1 << std::endl;
-	--num10; //Decrement
-	std::cout << "num10:" << num10 << std::endl;
-	num3.setType(SNumber::REAL);
-	std::cout << "converted num3:" << num3 << std::endl;
-	std::cout << (num1/num2).precised(3) << std::endl;
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
+	PRINT_VALUE("-num1", -num1);
+	PRINT_VALUE("num1 + num1", num1 + num1);
+	PRINT_VALUE("num1 * num2", num1 * num2);
+	PRINT_VALUE("num1 / num2", num1 / num2);
+	PRINT_VALUE("num1 * num4", num1 * num4);
+	PRINT_VALUE("num2 * num4", num2 * num4);
+	PRINT_VALUE("num4 + num5", num4 + num5);
+	PRINT_VALUE("num2 * num5", num2 + num5);
+	PRINT_VALUE("num1 / num5", num1 / num5);
+
+	//BROKEN_LINE
+
+
+	DOUBLE_LINE
 }
 void test::SStringTest() {
 	std::cout << String("*") * 50 << std::endl;
@@ -205,56 +214,28 @@ void test::STableTest() {
 	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::SNodeTest() {
-	std::cout << String("*") * 50 << std::endl;
 
-
-
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::SVoidTest() {
-	std::cout << String("*") * 50 << std::endl;
-	std::cout << "SVoid Test" << std::endl;
-	SVoid v1(new SNumber(10));
-	std::cout << v1.ref<SNumber>() << std::endl;
-	SVoid v2(new SString("abc"));
-	std::cout << *v2.cast<SString>() << std::endl;
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
+
 }
 void test::SIOTest() {
-	std::cout << String("*") * 50 << std::endl;
 
-
-
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::SFileTest() {
-	std::cout << String("*") * 50 << std::endl;
 
-
-
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::SNetTest() {
-	std::cout << String("*") * 50 << std::endl;
-	String str;
-	SNetWork net;
-	net.http("https://yujisue.github.io/", true);
-	net.data.asString(str);
-	std::cout << str << std::endl;
 
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
+	SNetWork net;
+
+
+
+
 }
 void test::SImageTest() {
-	std::cout << String("*") * 50 << std::endl;
 
-
-
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }
 void test::SFigureTest() {
-	std::cout << String("*") * 50 << std::endl;
 
-
-
-	std::cout << String("*") * 50 << NEW_LINE << std::endl;
 }

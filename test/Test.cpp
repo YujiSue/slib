@@ -2,16 +2,17 @@
 
 using namespace slib;
 int main() {
-	INIT_DEFAULT_IO(0)
-		try {
-#if defined(BASIC_TEST) || defined(RANGE_TEST)
+
+#ifdef BASIC_TEST
 		test::RangeTest();
-#endif
-#if defined(BASIC_TEST) || defined(AREA_TEST)
 		test::AreaTest();
-#endif
-#if defined(BASIC_TEST) || defined(ZONE_TEST)
 		test::ZoneTest();
+
+		test::CharTest();
+		test::StringTest();
+		test::TimeTest();
+
+		test::ExceptionTest();
 #endif
 #if defined(BASIC_TEST) || defined(MEM_TEST)
 		test::MemoryTest();
@@ -34,94 +35,37 @@ int main() {
 #if defined(BASIC_TEST) || defined(SET_TEST)
 		test::SetTest();
 #endif
-#if defined(BASIC_TEST) || defined(CHAR_TEST)
-		test::CharTest();
-#endif
-#if defined(BASIC_TEST) || defined(STRING_TEST)
-		test::StringTest();
-#endif
-#if defined(BASIC_TEST) || defined(TIME_TEST)
-		test::TimeTest();
-#endif
 #if defined(BASIC_TEST) || defined(NODE_TEST)
 		test::NodeTest();
 #endif
-#if defined(BASIC_TEST) || defined(EXCEPTION_TEST)
-		test::ExceptionTest();
-#endif
-	}
-	catch (SException e) {
-		EXPORT_MSG(e);
-	}
-	try {
-#if defined(MATH_TEST) || defined(CALC_TEST)
+
+#ifdef MATH_TEST
 		test::CalcTest();
-#endif
-#if defined(MATH_TEST) || defined(FRAC_TEST)
 		test::FracTest();
-#endif
-#if defined(MATH_TEST) || defined(COMP_TEST)
 		test::ComplexTest();
+		test::LATest();
+		test::GeomTest();
+		test::StatTest();
 #endif
-#if defined(MATH_TEST) || defined(LA_TEST)
-		test::LinearAlgebraTest();
-#endif
-#if defined(MATH_TEST) || defined(GEOM_TEST)
-		test::GeometryTest();
-#endif
-#if defined(MATH_TEST) || defined(STAT_TEST)
-		test::StatisticTest();
-#endif
-	}
-	catch (SMathException e) {
-		EXPORT_MSG(e);
-	}
-	try {
-#if defined(SOBJ_TEST) || defined(SOBJECT_TEST)
-		test::SObjTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SNUMBER_TEST)
+
+#ifdef SOBJ_TEST
 		test::SNumberTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SSTRING_TEST)
 		test::SStringTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SDATE_TEST)
 		test::SDateTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SDATA_TEST)
 		test::SDataTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SARRAY_TEST)
 		test::SArrayTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SDICT_TEST)
 		test::SDictTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SFUNC_TEST)
 		test::SFuncTest();
-#endif
-#if defined(SOBJ_TEST) || defined(SVOID_TEST)
 		test::SVoidTest();
-#endif
-#if defined(SOBJ_TEST) || defined(STABLE_TEST)
 		test::STableTest();
 #endif
-#if defined(SOBJ_TEST) || defined(SNET_TEST)
-		test::SNetTest();
-#endif
-	}
-	catch (SException e) {
-		EXPORT_MSG(e);
-	}
-	try {
-#if defined(SUTIL_TEST) || defined(DB_TEST)
+
+#ifdef SUTIL_TEST
+
 		test::SDBTest();
+
 #endif
-	}
-	catch (SException e) {
-		EXPORT_MSG(e);
-	}
+		return 0;
 
 #ifdef APP_TEST
 	test::SCUIAppTest();
@@ -131,24 +75,14 @@ int main() {
 		//test::SCodeTest();
 	}
 #endif
-	try {
+
+
 #ifdef SBIOINFO_TEST
 		test::SBAnnotTest();
 		test::SBSeqIOTest();
 		//test::SBSeqTest();
 #endif
-	}
-	catch (sbio::SBioInfoException be) {
-		be.print();
-	}
-	catch (sio::SIOException ie) {
-		ie.print();
-	}
-	catch (SException ex) {
-		ex.print();
-	}
-	return 0;
-}
+
 #ifdef oldtest
 
 
@@ -193,7 +127,7 @@ int main(int argc, const char** argv) {
 	cv::destroyAllWindows();
 	return 0;
 }
-#else
+#enedif
 
 class StringNode : public SNode<StringNode> {
 private:
@@ -204,9 +138,6 @@ public:
 	~StringNode() {}
 
 };
-
-#include "sobj.h"
-
 
 void print(int i) {
 	std::cout << i << std::endl;

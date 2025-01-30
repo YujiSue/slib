@@ -293,10 +293,20 @@ namespace slib {
         SObjPtr(const sushort n);
         SObjPtr(const int n);
         SObjPtr(const unsigned n);
-        SObjPtr(const long n);
-        SObjPtr(const long long n);
-        SObjPtr(const size_t n);
-        //SObjPtr(const sinteger n);
+        SObjPtr(const size_t ui);
+#ifndef LINUX_OS
+        SObjPtr(const long i);
+#ifndef MAC_OS
+        SObjPtr(const unsigned long ui);
+#endif
+#endif
+        SObjPtr(const long long i);
+#ifdef MAC_OS
+        SObjPtr(const unsigned long long ui);
+#endif
+#ifdef LINUX_OS
+        SObjPtr(const sinteger i);
+#endif
         SObjPtr(const float n);
         SObjPtr(const double n);
 
