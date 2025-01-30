@@ -45,6 +45,7 @@ extern "C" {
 #if TARGET_OS_MAC
 #define MAC_OS
 #include <dirent.h>
+#include <dlfcn.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
