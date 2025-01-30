@@ -47,9 +47,9 @@ namespace slib {
             return *this; 
         }
         ArrayIterator<T> operator+(std::ptrdiff_t diff) { ArrayIterator<T> it(*this); it += diff; return it; }
-        const ArrayIterator<T> operator+(std::ptrdiff_t diff) const { ArrayIterator<T> it(*this); it += diff; return const_cast<const ArrayIterator<T>>(it); }
+        const ArrayIterator<T> operator+(std::ptrdiff_t diff) const { ArrayIterator<T> it(*this); it += diff; return *const_cast<const ArrayIterator<T> *>(&it); }
         ArrayIterator<T> operator-(std::ptrdiff_t diff) { ArrayIterator<T> it(*this); it -= diff; return it; }
-        const ArrayIterator<T> operator-(std::ptrdiff_t diff) const { ArrayIterator<T> it(*this); it -= diff; return const_cast<const ArrayIterator<T>>(it); }
+        const ArrayIterator<T> operator-(std::ptrdiff_t diff) const { ArrayIterator<T> it(*this); it -= diff; return *const_cast<const ArrayIterator<T> *>(&it); }
         difference_type operator-(const ArrayIterator<T> it) const { return _ptr - it._ptr; }
         void swap(ArrayIterator<T> it1, ArrayIterator<T> it2) { auto tmp = it1._ptr; it1._ptr = it2._ptr; it2._ptr = tmp; }
         bool operator<(const ArrayIterator<T>& it) const { return _ptr < it._ptr; }
