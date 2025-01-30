@@ -1,10 +1,12 @@
 #ifndef SLIB_STRING_H
 #define SLIB_STRING_H
+
 #include "sbasic/container.h"
 #include "sbasic/range.h"
 #include "sbasic/area.h"
 #include "sbasic/zone.h"
 #include "sbasic/u8iter.h"
+
 namespace slib {
     class SLIB_DLL SElement;
     class SLIB_DLL SObjPtr;
@@ -87,10 +89,10 @@ namespace slib {
         String(const int n);
         String(const size_t n);
         //String(const long long n);
-        String(const int64_t n);
+        String(const int64_t n);        
 #ifdef MAC_OS
         String(const sinteger n);
-        String(const suinteher n);
+        String(const suinteger n);
 #endif
         String(const float n);
         String(const double n);

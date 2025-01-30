@@ -165,7 +165,7 @@ extern "C" {
 /**
 * @namespace slib
 * \~english @brief Basic namespace for slib
-*  \~japanese @brief slib‚ÌŠî–{–¼‘O‹óŠÔ
+*  \~japanese @brief slibã®åŸºæœ¬åå‰ç©ºé–“
 */
 
 namespace slib {
