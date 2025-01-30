@@ -130,7 +130,7 @@ if (BUILD_SOBJ_LIB)
       3rd/libtiff/tif_win32.c
     )
   elseif (APPLE)
-    set(CMAKE_C_FLAGS "-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64")
+    set(CMAKE_C_FLAGS "-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -DPNG_ARM_NEON_OPT=0")
     set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wextra -Wno-unknown-pragmas -Wno-unused-parameter")
     link_directories($ENV{LD_LIBRARY_PATH})
     link_libraries(dl pthread curl)
