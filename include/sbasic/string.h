@@ -92,7 +92,7 @@ namespace slib {
         String(const int64_t n);        
 #ifdef MAC_OS
         String(const sinteger n);
-        String(const suinteger n);
+        //String(const suinteger n);
 #endif
         String(const float n);
         String(const double n);
