@@ -42,10 +42,6 @@ slib::SObjPtr::SObjPtr(const unsigned long long n) : SObjPtr() { instance = new 
 #ifdef LINUX_OS
 slib::SObjPtr::SObjPtr(const sinteger n) : SObjPtr() { instance = new slib::SNumber(n); }
 #endif
-slib::SObjPtr::SObjPtr(const long n) : SObjPtr() { instance = new slib::SNumber(n); }
-slib::SObjPtr::SObjPtr(const long long n) : SObjPtr() { instance = new slib::SNumber(n); }
-
-
 slib::SObjPtr::SObjPtr(const float n) : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const double n) : SObjPtr() { instance = new slib::SNumber(n); }
 slib::SObjPtr::SObjPtr(const Fraction<sint>& n) : SObjPtr() { instance = new slib::SNumber(n); }
