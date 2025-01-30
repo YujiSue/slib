@@ -39,7 +39,7 @@ namespace slib {
         SNumber(int i);
         SNumber(unsigned int ui);
         SNumber(size_t ui);
-#ifdef WIN_OS
+#ifndef LINUX_OS
         SNumber(long i);
 #ifndef MAC_OS
         SNumber(unsigned long ui);

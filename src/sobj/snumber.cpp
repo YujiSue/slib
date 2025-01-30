@@ -23,7 +23,7 @@ SNumber::SNumber(sushort ui) : _type(stype::UINTEGER) { _value._ui = ui; }
 SNumber::SNumber(int i) : _type(stype::INTEGER) { _value._i = i; }
 SNumber::SNumber(unsigned int ui) : _type(stype::UINTEGER) { _value._ui = ui; }
 SNumber::SNumber(size_t ui) : _type(stype::UINTEGER) { _value._ui = ui; }
-#ifdef WIN_OS
+#ifndef LINUX_OS
 SNumber::SNumber(long i) : _type(stype::INTEGER) { _value._i = i; }
 #ifndef MAC_OS
 SNumber::SNumber(unsigned long ui) : _type(stype::UINTEGER) { _value._ui = ui; }
