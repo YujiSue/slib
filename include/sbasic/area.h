@@ -40,8 +40,8 @@ namespace slib {
 		}
 		Area<T>& operator |= (const Area<T>& area) { return this->merge(area); }
 		Area<T>& operator &= (const Area<T>& area) { return this->mask(area); }
-		Area<T> operator | (const Area<T>& area) const { return Area<T>(*this).merge(area); }
-		Area<T> operator & (const Area<T>& area) const { return Area<T>(*this).mask(area); }
+		Area<T> operator | (const Area<T>& area) const { Area<T> a(*this); a.merge(area); return a; }
+		Area<T> operator & (const Area<T>& area) const { Area<T> a(*this); a.mask(area); return a; }
 		T area() const { return width * height; }
         bool include(const T &x, const T &y) const {
 			return ori_x <= x && x < (ori_x + width) && ori_y <= y && y < (ori_y + height);
