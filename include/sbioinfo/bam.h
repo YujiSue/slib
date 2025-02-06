@@ -50,6 +50,9 @@ namespace slib {
         constexpr int BAM_INDEX_BIN = 1<<14;
         
         class SLIB_DLL BamFile;
+        /**
+         * @namespace sbam
+         */
         namespace sbam {
             //Constant
             constexpr sushort MULTI_SEGMENT_READ = 0x0001;
@@ -72,8 +75,9 @@ namespace slib {
             extern SLIB_DLL ushortarray getBins(const sregion& region);
 
             /**
-            * @class sbam::VOffset
+            * @class VOffset
             * \~english @brief Virtual offset
+            * \~japanese @brief オフセット構造体
             */
             class SLIB_DLL VOffset {
             public:
@@ -91,8 +95,9 @@ namespace slib {
                 bool operator == (const VOffset& v) const;
             };
             /**
-            * @class sbam::Header
+            * @class Header
             * \~english @brief BAM header
+            * \~japanese @brief BAMヘッダー情報
             */
             class SLIB_DLL Header {
             public:
@@ -108,8 +113,9 @@ namespace slib {
                 void init();
             };
             /**
-            * @class sbam::Index
+            * @class Index
             * \~english @brief BAM index
+            * \~japanese @brief BAMインデックス情報
             */
             class SLIB_DLL Index {
                 friend BamFile;
@@ -131,8 +137,9 @@ namespace slib {
                 void init();
             };
             /**
-            * @class sbam::Block
+            * @class Block
             * \~english @brief BAM data block
+            * \~japanese @brief BAMデータブロック
             */
             class SLIB_DLL Block {
             public:
@@ -150,7 +157,7 @@ namespace slib {
             };
 
             /**
-            * @class sbam::ReadBytes
+            * @class ReadBytes
             * \~english @brief BAM read byte array
             */
             class SLIB_DLL ReadBytes : public ubytearray {
@@ -186,7 +193,7 @@ namespace slib {
             };
 
             /**
-            * @class sbam::ReadInfo
+            * @class ReadInfo
             * \~english @brief BAM read info
             */
             class SLIB_DLL ReadInfo : public AlignPair {
@@ -239,10 +246,16 @@ namespace slib {
             BamFile(const BamFile &bam);
 			~BamFile();
 			void init();
-			void open(const char* path);
+			/**
+            * \~english @brief Open BAM file, read header information, and load index if exist.
+            */
+            void open(const char* path);
 			void close();
             //void sort();
             //void makeIndex();
+            /**
+            * \~english @brief Load index file (.bai)
+            */
             void loadIndex(const char* path);
 			bool hasIndex() const;
 			suinteger filesize() const;
@@ -251,8 +264,14 @@ namespace slib {
 			String path() const;
 			bool eof();
             sbam::VOffset voffset();
-			void setVOffset(const sbam::VOffset& off);
+            void setVOffset(const sbam::VOffset& off);
+            /**
+            * \~english @brief Get pointer to read info.
+            */
             sbam::ReadBytes* read();
+            /**
+            * \~english @brief Interpret next read info and return.
+            */
             sbam::ReadInfo* next();
             //operator bool() const;
 		};

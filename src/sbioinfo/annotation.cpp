@@ -868,6 +868,7 @@ slib::sbio::MotifInfo& slib::sbio::AnnotDB::motifInfo(int id) {
 
 }
 */
+
 void slib::sbio::AnnotDB::annotate(Sequence& seq, const RefPos& pos, const sushort types) {
     if (types & (sushort)ANNOT_CATEGORY::GENE || types & (sushort)ANNOT_CATEGORY::TRANSCRIPT) {
         auto& genes = getGenes(pos, {
@@ -902,6 +903,46 @@ void slib::sbio::AnnotDB::annotate(Sequence& seq, const RefPos& pos, const susho
     }
     if (types & (sushort)ANNOT_CATEGORY::MUTATION) {
         auto& vars = getVariants(pos);
+        auto& muts = getMutations(pos);
+        sforeach(var, vars) {
+            SeqNote vnote(var);
+            vnote.category = (sushort)ANNOT_CATEGORY::MUTATION;
+            seq.annotation.addNote(vnote);
+        }
+        sforeach(mut, muts) {
+            SeqNote vnote(mut);
+            vnote.category = (sushort)ANNOT_CATEGORY::MUTATION;
+            seq.annotation.addNote(vnote);
+        }
+    }
+}
+void slib::sbio::AnnotDB::annotate(Sequence& seq, const GeneInfo& gene, const sushort types) {
+    if (types & (sushort)ANNOT_CATEGORY::GENE) {
+        SeqNote gnote(gene);
+        gnote.category = (sushort)ANNOT_CATEGORY::GENE;
+        gnote.note = "gid=" + gene.geneid + "&" + gene.attribute.toString("url");
+        seq.annotation.addNote(gnote);
+    }
+    if (types & (sushort)ANNOT_CATEGORY::TRANSCRIPT) {
+        sforeach(rna, gene.transcripts) {
+            SeqNote tnote(*rna);
+            tnote.category = (sushort)ANNOT_CATEGORY::TRANSCRIPT;
+            seq.annotation.addNote(tnote);
+            //
+            if (rna->type == (int)TRANSCRIPT_TYPE::M_RNA) {
+                SeqNote snote(rna->coding(), gene.dir, (subyte)ANNOT_CATEGORY::STRUCTURE, sbio::CDS, rna->name + "-cds");
+                snote.shift(-1);
+                seq.annotation.addNote(snote);
+            }
+            else {
+                SeqNote snote(rna->exons(), gene.dir, (subyte)ANNOT_CATEGORY::STRUCTURE, sbio::EXON, rna->name + "-exon");
+                snote.shift(-1);
+                seq.annotation.addNote(snote);
+            }
+        }
+    }
+    if (types & (sushort)ANNOT_CATEGORY::MUTATION) {
+        auto& vars = variantsOf(gene.record);
         sforeach(var, vars) {
             SeqNote vnote(var);
             vnote.category = (sushort)ANNOT_CATEGORY::MUTATION;
@@ -909,6 +950,7 @@ void slib::sbio::AnnotDB::annotate(Sequence& seq, const RefPos& pos, const susho
         }
     }
 }
+
 
 inline void _splice(slib::sbio::TranscriptAnnotData& rna, const sregion& reg, bool dir) {
     srange tpos(-1, -1);

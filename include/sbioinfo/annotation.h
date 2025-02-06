@@ -227,7 +227,13 @@ namespace slib {
         public:
             AnnotDB(const char* path = nullptr);
             ~AnnotDB();
+            /**
+            * \~english @brief Open database
+            */
             void open(const char* path);
+            /**
+            * \~english @brief Load records
+            */
             void load(const stringarray& li = {});
             bool isOpened();
             bool isLoaded(const char* key) const;
@@ -238,8 +244,13 @@ namespace slib {
 
             Array<AnnotInfo>& getContigs(const RefPos& pos, Array<AnnotInfo> *container = nullptr);
             Array<AnnotInfo>& getContigs(const char* query, slib::MATCH match = MATCH::EXACT, Array<AnnotInfo>* container = nullptr);
-            
+            /**
+            * \~english @brief Get Gene IDs
+            */
             intarray& searchGenes(const RefPos& pos, sobj opts = snull, intarray *container = nullptr);
+            /**
+            * \~english @brief Get Gene IDs
+            */
             intarray& searchGenes(const char* query, slib::MATCH match = MATCH::EXACT, sobj opts = snull, intarray* container = nullptr);
             Array<GeneInfo>& getGenes(const RefPos& pos, sobj opts = snull);
             Array<GeneInfo>& getGenes(const char* query, slib::MATCH match = MATCH::EXACT, sobj opts = snull);
@@ -272,7 +283,8 @@ namespace slib {
             Array<MotifInfo>& motifsOf(int prot, sobj opts = snull);
 
             void annotate(Sequence& seq, const RefPos& pos, const sushort types);
-            void annotate(Variant& var, const SeqList& ref, const VarParam &par, 
+            void annotate(Sequence& seq, const GeneInfo& gene, const sushort types);
+            void annotate(Variant& var, const SeqList& ref, const VarParam &par,
                 const slib::sbio::CODON_TABLE &codon = DEFAULT_CODON, 
                 const slib::sbio::CODON_TABLE& codon2 = DEFAULT_MT_CODON);
         };
