@@ -64,7 +64,7 @@ slib::Pair<slib::String, slib::String> slib::sfs::splitPath(const char* path) {
 	p = str.rfind(REG("/[\\/\\\\]+/"));
 #endif
 	if (p == 0) return Pair<slib::String, slib::String>(ssys::root(), "");
-	else if (p == NOT_FOUND) return Pair<slib::String, slib::String>(str, "");
+	else if (p == NOT_FOUND) return Pair<slib::String, slib::String>("", str);
 	else return Pair<slib::String, slib::String>(str.substring(0, p), str.substring(p + 1, -1));
 }
 slib::String slib::sfs::fileName(const char* path, bool ext) { 
