@@ -336,8 +336,7 @@ sobj slib::sjson::jsObj(const char* s) {
     else if (str[0] == '{') return jsDict(str);
     else if (sstr::isQuoted(str)) return sstr::dequote(str);
     else if (str == "null") return snull;
-    else if (str.match(".")) return SNumber(atof(str.cstr()));
-    return SNumber(atoll(str.cstr()));
+    return SNumber(str.cstr());
 }
 sobj slib::sjson::load(const char* path) {
     slib::String str;

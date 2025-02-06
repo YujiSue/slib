@@ -242,22 +242,42 @@ namespace slib {
             void loadVariants();
             void loadFeatures();
 
+            /**
+            * \~english @brief Return information of contigs located in the specified position
+            */
             Array<AnnotInfo>& getContigs(const RefPos& pos, Array<AnnotInfo> *container = nullptr);
+            /**
+            * \~english @brief Return information of contigs retrieved from the specified query
+            */
             Array<AnnotInfo>& getContigs(const char* query, slib::MATCH match = MATCH::EXACT, Array<AnnotInfo>* container = nullptr);
             /**
-            * \~english @brief Get Gene IDs
+            * \~english @brief Return IDs of genes located in the specified position
             */
             intarray& searchGenes(const RefPos& pos, sobj opts = snull, intarray *container = nullptr);
             /**
-            * \~english @brief Get Gene IDs
+            * \~english @brief Return IDs of genes retrieved from the specified query
             */
             intarray& searchGenes(const char* query, slib::MATCH match = MATCH::EXACT, sobj opts = snull, intarray* container = nullptr);
+            /**
+            * \~english @brief Return information of genes located in the specified position
+            */
             Array<GeneInfo>& getGenes(const RefPos& pos, sobj opts = snull);
+            /**
+            * \~english @brief Return information of genes retrieved from the specified query
+            */
             Array<GeneInfo>& getGenes(const char* query, slib::MATCH match = MATCH::EXACT, sobj opts = snull);
             Array<GeneInfo*>& selectGenes(const RefPos& pos, Array<GeneInfo*>* container = nullptr);
+            /**
+            * \~english @brief Return gene information with the specified record index
+            */
             GeneInfo& geneInfo(int record, sobj opts = snull);
+            /**
+            * \~english @brief Return genes' information with the specified record indice
+            */
             Array<GeneInfo>& geneInfos(const intarray &records, sobj opts = snull);
-
+            /**
+            * \~english @brief Return transcripts' information of the specified gene
+            */
             Array<TranscriptInfo>& transcriptsOf(int gene, sobj opts = snull);
             Array<TranscriptInfo>& getTranscripts(const RefPos& pos, sobj opts = snull);
             Array<TranscriptInfo>& getTranscripts(const char* query, slib::MATCH match = MATCH::EXACT, sobj opts = snull);
@@ -277,9 +297,13 @@ namespace slib {
             
             Array<AnnotInfo>& getFeatures(const RefPos& pos, sobj opts = snull);
             Array<AnnotInfo>& getFeatures(const char* query, slib::MATCH match = MATCH::EXACT, sobj opts = snull);
-
+            /**
+            * \~english @brief Return a list of proteins encoded by the specified gene
+            */
             Array<AnnotInfo>& proteinsOf(int gene, sobj opts = snull);
-
+            /**
+            * \~english @brief Return a list of motifs detected in the specified protein
+            */
             Array<MotifInfo>& motifsOf(int prot, sobj opts = snull);
 
             void annotate(Sequence& seq, const RefPos& pos, const sushort types);

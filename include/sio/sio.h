@@ -76,22 +76,22 @@ namespace slib {
 	}
 	namespace ssys {
 		/**
-		* \~english @brief Return root directory path.
+		* \~english @brief Return root directory path
 		* \~japanese @brief ルートディレクトリのパスを返す関数
 		*/
 		extern SLIB_DLL String root();
 		/**
-		* \~english @brief Return home directory path.
+		* \~english @brief Return home directory path
 		* \~japanese @brief ホームディレクトリのパスを返す関数
 		*/
 		extern SLIB_DLL String home();
 		/**
-		* \~english @brief Return current directory path.
+		* \~english @brief Return current directory path
 		* \~japanese @brief 現在ディレクトリのパスを返す関数
 		*/
 		extern SLIB_DLL String current();
 		/**
-		* \~english @brief Change current directory.
+		* \~english @brief Change current directory
 		* \~japanese @brief カレントディレクトリの変更
 		*/
 		extern SLIB_DLL void setCurrent(const char* path);
