@@ -5,6 +5,7 @@
 #include "sobj/stable.h"
 #include "sutil/sjson.h"
 #include "sio/stream.h"
+//
 inline slib::String jsArrayString(const slib::SArray& array, bool form, int layer) {
     slib::String str = (form ? slib::SP * layer : slib::String()) << "[";
     if (array.empty()) str << "]";
@@ -301,9 +302,13 @@ inline void writeObj(slib::IOStream& strm, const slib::SObjPtr& obj, bool form, 
     }
     else strm << slib::TAB * layer << slib::sjson::jsString(obj);
 }
+// Return 
 slib::String slib::sjson::jsString(const SObjPtr& obj, bool form, int layer) {
+    // Null object
     if (obj.isNull()) return "null";
+    // Numeric object
     else if (obj.isNum()) {
+        // Determine numeric type
         auto ntype = obj.type();
         if (ntype == stype::INTEGER ||
             ntype == stype::UINTEGER ||
@@ -329,6 +334,7 @@ slib::String slib::sjson::jsString(const SObjPtr& obj, bool form, int layer) {
     return (form ? slib::SP * layer : String()) << slib::sstr::dquote(obj);
     */
 }
+// 
 sobj slib::sjson::jsObj(const char* s) {
     auto str = sstr::trim(s);
     if (str.empty()) return snull;
@@ -338,21 +344,36 @@ sobj slib::sjson::jsObj(const char* s) {
     else if (str == "null") return snull;
     return SNumber(str.cstr());
 }
+// Load
 sobj slib::sjson::load(const char* path) {
+    // Result
     slib::String str;
-    SFile f(path); 
-    f >> str;
+    // File obj
+    SFile file(path);
+    // Write out to the file
+    file >> str;
+    // Return object
     return slib::sjson::parse(str);
 }
+// Save
 void slib::sjson::save(const sobj& obj, const char* path, bool form) {
+    // File obj
     slib::SFile file(path, sio::MAKE);
+    // Set stream
     auto strm = IOStream(file, sio::FILEIO | sio::OSTREAM);;
+    // Write out to the stream
     writeObj(strm, obj, form, 0);
 }
+// String => JSON object
 slib::SObjPtr slib::sjson::parse(const char* s) { return jsObj(s); }
+// Stringify
 slib::String slib::sjson::toString(const sobj& obj, bool form) { 
+    // Result
     slib::String str;
+    // Set stream
     auto strm = IOStream(str, sio::STRIO | sio::OSTREAM);
+    // Write out to the stream
     writeObj(strm, obj, form, 0);
+    // Return
     return str;
 }
