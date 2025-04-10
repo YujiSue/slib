@@ -474,7 +474,7 @@ slib::SXmlNode& slib::SXmlNode::operator=(const slib::SXmlNode& node) {
     }
     return node;
     */
-
+//
 inline void _interpretXmlAttribute(slib::SXmlNode& node) {
     if (node.tag.match(" ")) {
         auto pos = node.tag.find(" ");
@@ -482,12 +482,13 @@ inline void _interpretXmlAttribute(slib::SXmlNode& node) {
         node.tag.resize(pos);
         sforeach(attr, attrs) {
             if (attr.empty()) continue;
-            auto kv = attr.split("=");
-            if (kv.size() != 2) throw FormatException(slib::formatErrorText("XML attribute", attr, "KEY=\"VALUE\""));
-            node.attribute[kv[0]] = slib::sstr::dequote(kv[1]);
+            auto split = attr.find("=");
+            if (split == slib::NOT_FOUND) node.attribute[attr] = true;
+            else node.attribute[attr.substring(0, split)] = slib::sstr::dequote(attr.substring(split + 1));
         }
     }
 }
+//
 inline void _interpretXmlTag(slib::SXmlNode& node) {
     if (node.tag.beginWith("<?") && node.tag.endWith("?")) {
         node.tag.clip(2, node.tag.size() - 3).trim();
