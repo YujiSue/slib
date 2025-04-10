@@ -24,19 +24,19 @@ namespace slib {
 		constexpr sushort PAIRED_TAG = 0x0006;
 		constexpr sushort HIDDEN_TAG = 0x0008;
 
-		extern SLIB_DLL SPointer<SXmlNode> declaration(const char* s, const Map<String, String>& attr = {});
+		extern SLIB_DLL SPointer<SXmlNode> declaration(const char* s, const slib::SDictionary& attr = {});
 		extern SLIB_DLL SPointer<SXmlNode> doctype();
 		extern SLIB_DLL SPointer<SXmlNode> leaf(const char* s, const Map<String, String>& attr = {}, const char* c = nullptr);
-		extern SLIB_DLL SPointer<SXmlNode> node(const sushort t, const char* s = nullptr, const Map<String, String>& attr = {}, const char* c = nullptr);
+		extern SLIB_DLL SPointer<SXmlNode> node(const sushort t, const char* s = nullptr, const SDictionary& attr = {}, const char* c = nullptr);
 		extern SLIB_DLL SPointer<SXmlNode> comment(const char* s);
 
 		extern SLIB_DLL SPointer<SXmlNode> plistNode(SObjPtr obj);
 		extern SLIB_DLL SObjPtr toPlistObj(const SXmlNode& node);
 
-		extern SLIB_DLL void setSvgTextStyle(sattribute& attribute, const TextAttribute& attr);
-		extern SLIB_DLL void setSvgStroke(sattribute &attribute, const Stroke& strk);
-		extern SLIB_DLL void setSvgBrush(sattribute& attribute, const SColor& brush, const String &fid);
-		extern SLIB_DLL void setSvgTransform(sattribute& attribute, const Transform2D& transform);
+		extern SLIB_DLL void setSvgTextStyle(SDictionary& attribute, const TextAttribute& attr);
+		extern SLIB_DLL void setSvgStroke(SDictionary&attribute, const Stroke& strk);
+		extern SLIB_DLL void setSvgBrush(SDictionary& attribute, const SColor& brush, const String &fid);
+		extern SLIB_DLL void setSvgTransform(SDictionary& attribute, const Transform2D& transform);
 		extern SLIB_DLL SPointer<SXmlNode> svgDeclaration(const slib::SCanvas& cnvs);
 		extern SLIB_DLL SPointer<SXmlNode> svgNode(const SCanvas& cnvs);
 		extern SLIB_DLL SPointer<SXmlNode> svgNode(const SFigure &fig);
@@ -55,12 +55,12 @@ namespace slib {
 		sushort type;
 		String tag;
 		stringarray content;
-		Map<String, String> attribute;
+		SObjPtr attribute;
 
 	public:
 		SXmlNode();
-		SXmlNode(const char* s, const Map<String, String>& attr = {}, const char* c = nullptr);
-		SXmlNode(const sushort t, const char* s = nullptr, const Map<String, String>& attr = {}, const char* c = nullptr);
+		SXmlNode(const char* s, const SDictionary& attr = {}, const char* c = nullptr);
+		SXmlNode(const sushort t, const char* s = nullptr, const SDictionary& attr = {}, const char* c = nullptr);
 		SXmlNode(const SXmlNode& node);
 		virtual ~SXmlNode();
 		SXmlNode& operator=(const SXmlNode& node);

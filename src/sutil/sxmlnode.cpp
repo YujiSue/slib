@@ -6,7 +6,7 @@
 #include "sutil/scode.h"
 #include "sutil/sxml.h"
 
-slib::SPointer<slib::SXmlNode> slib::sxml::declaration(const char* s, const Map<String, String>& attr) {
+slib::SPointer<slib::SXmlNode> slib::sxml::declaration(const char* s, const SDictionary& attr) {
     return new SXmlNode(slib::sxml::DECLARATION_NODE, s, attr);
 }
 slib::SPointer<slib::SXmlNode> slib::sxml::doctype() {
@@ -15,7 +15,7 @@ slib::SPointer<slib::SXmlNode> slib::sxml::doctype() {
 slib::SPointer<slib::SXmlNode> slib::sxml::leaf(const char* s, const Map<String, String>& attr, const char* c) {
     return new SXmlNode((c ? slib::sxml::SINGLE_TAG : slib::sxml::PAIRED_TAG), s, attr, c);
 }
-slib::SPointer<slib::SXmlNode> slib::sxml::node(const sushort t, const char* s, const Map<String, String>& attr, const char* c) {
+slib::SPointer<slib::SXmlNode> slib::sxml::node(const sushort t, const char* s, const SDictionary& attr, const char* c) {
     return new SXmlNode(t, s, attr, c);
 }
 slib::SPointer<slib::SXmlNode> slib::sxml::comment(const char* s) {
@@ -101,7 +101,7 @@ slib::SObjPtr slib::sxml::toPlistObj(const slib::SXmlNode& node) {
     return snull;
 }
 
-void slib::sxml::setSvgTextStyle(sattribute& attribute, const TextAttribute& attr) {
+void slib::sxml::setSvgTextStyle(SDictionary& attribute, const TextAttribute& attr) {
     String style;
     style << (attr.style & slib::sstyle::BOLD ? "font-weight: bold; ": "") <<
         (attr.style & slib::sstyle::ITALIC ? "font-style: italic; " : "") <<
@@ -114,7 +114,7 @@ void slib::sxml::setSvgTextStyle(sattribute& attribute, const TextAttribute& att
     if (style.size()) attribute["style"] = style;
 }
 
-void slib::sxml::setSvgStroke(sattribute& attribute, const slib::Stroke& stroke) {
+void slib::sxml::setSvgStroke(SDictionary& attribute, const slib::Stroke& stroke) {
     if (stroke.type == sstyle::NO_STROKE) attribute["stroke-width"] = "0";
     else attribute["stroke-width"] = S(stroke.width);
     attribute["stroke"] = stroke.color.toString("html");
@@ -152,7 +152,7 @@ void slib::sxml::setSvgStroke(sattribute& attribute, const slib::Stroke& stroke)
     //    attribute["stroke-dasharray"] = slib::toString(stroke.interval, ",");
 }
 
-void slib::sxml::setSvgTransform(sattribute& attribute, const slib::Transform2D& transform) {
+void slib::sxml::setSvgTransform(SDictionary& attribute, const slib::Transform2D& transform) {
     slib::String trans = "";
     if (transform.rotation != 0.0f)
         trans << "rotate(" << slib::smath::rad2deg(transform.rotation) << "," << transform.origin[0] << "," << transform.origin[1] << ") ";
@@ -169,7 +169,7 @@ void slib::sxml::setSvgTransform(sattribute& attribute, const slib::Transform2D&
         attribute["transform"] = trans;
     }
 }
-void slib::sxml::setSvgBrush(sattribute& attribute, const slib::SColor& brush, const slib::String& fid) {
+void slib::sxml::setSvgBrush(SDictionary& attribute, const slib::SColor& brush, const slib::String& fid) {
     if (brush.isGradient()) {
         if (brush.type() & scolor::LINEAR_GRAD) attribute["fill"] = String("url(#lgrad-") + fid + ")";
         else attribute["fill"] = String("url(#rgrad-") + fid + ")";
@@ -245,7 +245,7 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                 }
                 else {
                     auto rgrad = slib::SXmlNode(sxml::PAIRED_TAG, "radialGradient", {
-                        SS_("id", "rgrad-" + child.figId())
+                        D_("id", S("rgrad-") << child.figId())
                         });
                     /*
                     */
@@ -277,10 +277,10 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
             if (fig.isLine()) {
                 auto& line = fig.line();
                 node = SXmlNode(sxml::SINGLE_TAG, "line", {
-                    SS_("x1", S(line.vertex[0][0])),
-                    SS_("y1", S(line.vertex[0][1])),
-                    SS_("x2", S(line.vertex[1][0])),
-                    SS_("y2", S(line.vertex[1][1]))
+                    D_("x1", S(line.vertex[0][0])),
+                    D_("y1", S(line.vertex[0][1])),
+                    D_("x2", S(line.vertex[1][0])),
+                    D_("y2", S(line.vertex[1][1]))
                     });
                 setSvgStroke(node.attribute, fig.stroke());
                 setSvgTransform(node.attribute, fig.transform());
@@ -292,7 +292,7 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                     "C" << curve.vertex[1][0] << "," << curve.vertex[1][1] <<
                     SP << curve.vertex[2][0] << "," << curve.vertex[2][1] <<
                     SP << curve.vertex[3][0] << "," << curve.vertex[3][1];
-                node = SXmlNode(sxml::SINGLE_TAG, "path", { SS_("d", str) });
+                node = SXmlNode(sxml::SINGLE_TAG, "path", { D_("d", str) });
                 setSvgStroke(node.attribute, fig.stroke());
                 setSvgTransform(node.attribute, fig.transform());
             }
@@ -313,7 +313,7 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                     last = pt; ++pt;
                 }
                 if (path.isClosed()) str << "z";
-                node = SXmlNode(sxml::SINGLE_TAG, "path", { SS_("d", str) });
+                node = SXmlNode(sxml::SINGLE_TAG, "path", { D_("d", str) });
                 setSvgStroke(node.attribute, fig.stroke());
                 if (path.isClosed()) setSvgBrush(node.attribute, fig.color(), fig.figId());
                 setSvgTransform(node.attribute, fig.transform());
@@ -322,10 +322,10 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
             else if (fig.isRect()) {
                 auto& rect = fig.rectangle();
                 node = SXmlNode(sxml::SINGLE_TAG, "rect", {
-                    SS_("x", S(rect.vertex[0][0])),
-                    SS_("y", S(rect.vertex[0][1])),
-                    SS_("width", S(rect.width())),
-                    SS_("height", S(rect.height()))
+                    D_("x", S(rect.vertex[0][0])),
+                    D_("y", S(rect.vertex[0][1])),
+                    D_("width", S(rect.width())),
+                    D_("height", S(rect.height()))
                     });
                 setSvgStroke(node.attribute, fig.stroke());
                 setSvgBrush(node.attribute, fig.color(), fig.figId());
@@ -335,10 +335,10 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                 auto& ellipse = fig.ellipse();
                 auto center = ellipse.center();
                 node = SXmlNode(sxml::SINGLE_TAG, "ellipse", {
-                    SS_("cx", S(center[0])),
-                    SS_("cy", S(center[1])),
-                    SS_("rx", S(ellipse.width())),
-                    SS_("ry", S(ellipse.height()))
+                    D_("cx", S(center[0])),
+                    D_("cy", S(center[1])),
+                    D_("rx", S(ellipse.width())),
+                    D_("ry", S(ellipse.height()))
                     });
                 setSvgStroke(node.attribute, fig.stroke());
                 setSvgBrush(node.attribute, fig.color(), fig.figId());
@@ -354,7 +354,7 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                     "A" << rad[0] << "," << rad[1] << ",0,0,0," <<
                     center[0] + rad[0] * cos(2.0 * snum::PI * arc.phase[1]) << "," <<
                     center[1] - rad[1] * sin(2.0 * snum::PI * arc.phase[1]);
-                node = SXmlNode(sxml::SINGLE_TAG, "path", { SS_("d", str) });
+                node = SXmlNode(sxml::SINGLE_TAG, "path", { D_("d", str) });
                 setSvgStroke(node.attribute, fig.stroke());
                 setSvgBrush(node.attribute, fig.color(), fig.figId());
                 setSvgTransform(node.attribute, fig.transform());
@@ -364,7 +364,7 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                 String pts;
                 sforeach(pt, polygon.vertex) pts << pt[0] << "," << pt[1] << SP;
                 if (pts.size()) pts.resize(pts.size() - 1);
-                node = SXmlNode(sxml::SINGLE_TAG, "polygon", { SS_("points", pts) });
+                node = SXmlNode(sxml::SINGLE_TAG, "polygon", { D_("points", pts) });
                 setSvgStroke(node.attribute, fig.stroke());
                 setSvgBrush(node.attribute, fig.color(), fig.figId());
                 setSvgTransform(node.attribute, fig.transform());
@@ -373,9 +373,9 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                 auto& pict = fig.pict();
                 if (pict.loaded()) {
                     node = SXmlNode(sxml::SINGLE_TAG, "image", {
-                        SS_("xlink:href", pict.url()),
-                        SS_("width", S(pict.boundary.width)),
-                        SS_("height", S(pict.boundary.height))
+                        D_("xlink:href", pict.url()),
+                        D_("width", S(pict.boundary.width)),
+                        D_("height", S(pict.boundary.height))
                         });
                 }
                 if (pict.figid.size()) node.attribute["id"] = pict.figid;
@@ -386,8 +386,8 @@ slib::SPointer<slib::SXmlNode> slib::sxml::svgNode(const slib::SFigure& fig) {
                 auto& caption = fig.caption();
                 auto pos = caption.position();
                 node = SXmlNode(sxml::PAIRED_TAG, "text", {
-                    SS_("x", pos[0]),
-                    SS_("y", pos[1])
+                    D_("x", pos[0]),
+                    D_("y", pos[1])
                     });
                 node.content = { caption.text() };
                 setSvgTextStyle(node.attribute, caption.attribute());
@@ -408,11 +408,11 @@ slib::SFigure slib::sxml::toSVGObj(const slib::SXmlNode& node) {
 
 
 
-slib::SXmlNode::SXmlNode() : slib::SNode<slib::SXmlNode>() { type = slib::sxml::PAIRED_TAG; }
-slib::SXmlNode::SXmlNode(const char* s, const sattribute& attr, const char* c) : slib::SNode<slib::SXmlNode>() {
+slib::SXmlNode::SXmlNode() : slib::SNode<slib::SXmlNode>() { type = slib::sxml::PAIRED_TAG; attribute = SDictionary(); }
+slib::SXmlNode::SXmlNode(const char* s, const SDictionary& attr, const char* c) : slib::SNode<slib::SXmlNode>() {
     type = slib::sxml::PAIRED_TAG; tag = s; attribute = attr; content = { sxml::encode(c) }; 
 }
-slib::SXmlNode::SXmlNode(sushort t, const char* s, const sattribute& attr, const char* c) : slib::SNode<slib::SXmlNode>() {
+slib::SXmlNode::SXmlNode(sushort t, const char* s, const SDictionary& attr, const char* c) : slib::SNode<slib::SXmlNode>() {
     type = t; tag = s; attribute = attr; content = { sxml::encode(c) };
 }
 slib::SXmlNode::SXmlNode(const slib::SXmlNode &node) : slib::SNode<slib::SXmlNode>(node) {
