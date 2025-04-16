@@ -157,6 +157,7 @@ inline sobj toArray(const char** cur) {
     }
     return array;
 }
+// 
 inline sobj toDict(const char** cur) {
     slib::SDictionary dict;
     slib::String key;
@@ -266,7 +267,12 @@ inline slib::SObjPtr jsDict(slib::String& str) {
     }
     return snull;
 }
+// 
+inline void readObj(slib::IOStream& strm, slib::SObjPtr& obj) {
 
+
+}
+// 
 inline void writeObj(slib::IOStream& strm, const slib::SObjPtr& obj, bool form, int layer) {
     if (obj.isArray()) {
         strm << "[";

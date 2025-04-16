@@ -136,11 +136,11 @@ SNumber::SNumber(const char* s) {
         _value._r = atof(s);
     }
     //Boolean
-    else if (str.equal(REG("/^TRUE|YES|OK/i"))) {
+    else if (str.equal(REG("/TRUE|YES|OK/i"))) {
         _type = stype::BOOL;
         _value._b = true;
     }
-    else if (str.equal(REG("/^FALSE|NO|NG/i"))) {
+    else if (str.equal(REG("/FALSE|NO|NG/i"))) {
         _type = stype::BOOL;
         _value._b = false;
     }
