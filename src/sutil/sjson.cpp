@@ -145,7 +145,7 @@ inline sobj toArray(const char** cur) {
                 if (!sq) dq = !dq;
                 break;
             case '\\':
-                ++cur;
+                ++(*cur);
                 ++len;
                 break;
             default:
