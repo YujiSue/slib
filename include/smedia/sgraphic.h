@@ -313,7 +313,7 @@ namespace slib {
         BOTTOM_RIGHT = 0x22,
         CENTER = 0x33,
     };
-    class Transform2D {
+    class SLIB_DLL Transform2D {
     public:
         smath::Vector2D<float> origin, scale, shift, shear;
         float rotation;

@@ -617,8 +617,14 @@ void slib::sbio::VarFilter::subtract(VarList& vl1, VarList& vl2) {
 			if ((*vit)->flag & UNAVAILABLE_FLAG) continue;
 			if ($_->lt(**vit, param)) break;
 			if ($_->equal(**vit, reference, param)) {
-				if (!($_->flag & NOT_USE_FLAG)) $_->flag |= UNAVAILABLE_FLAG;
-				else if (!((*vit)->flag & NOT_USE_FLAG)) (*vit)->flag |= UNAVAILABLE_FLAG;
+				if (!($_->flag & NOT_USE_FLAG)) {
+					$_->flag |= UNAVAILABLE_FLAG;
+					$_->attribute["filter"] = "Background";
+				}
+				else if (!((*vit)->flag & NOT_USE_FLAG)) {
+					(*vit)->flag |= UNAVAILABLE_FLAG;
+					(*vit)->attribute["filter"] = "Background";
+				}
 			}
 		}
 	}
@@ -981,64 +987,155 @@ inline String breakSeq(SVar* var, SeqList* ref, int len) {
 */
 void slib::sbio::VarFilter::check(slib::sbio::Variant* var) {
 	if ((var->flag & NOT_USE_FLAG) || (var->flag & UNAVAILABLE_FLAG)) return;
-	bool passed = true;
+	// Target
+	if (target && target->size()) {
+		if (!target->at(var->pos[0].idx).overlap(var->pos[0])) {
+			if (var->pos[1].idx == -1) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Off Target";
+				return;
+			}
+			else if (!target->at(var->pos[1].idx).overlap(var->pos[1])) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Off Target";
+				return;
+			}
+		}
+	}
+	// Genotype
+	if (param->homo_select) {
+		if (!(var->genotype & HOMO_VAR)) {
+			var->flag = UNAVAILABLE_FLAG;
+			var->attribute["filter"] = "Not Homozygous Variant";
+			return;
+		}
+	}
+	//
 	if (var->flag & SMALL_VARIANT) {
 		if (var->type == SNV || var->type == MNV) {
-			if (var->depth[0][0] < param->vcp.min_depth[0] ||
-				(var->read[0] + var->read[1]) < param->vcp.min_vdepth[0] ||
-				var->qual < param->vcp.min_qual[0] ||
-				var->frequency < param->vcp.min_freq[0]) passed = false;
+			if (var->depth[0][0] < param->vcp.min_depth[0]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Allele Depth";
+				return;
+			}
+			if ((var->read[0] + var->read[1]) < param->vcp.min_vdepth[0]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Variant Allele Depth";
+				return;
+			}
+			if (var->qual < param->vcp.min_qual[0]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low VariantCall Score";
+				return;
+			}
+			if (var->frequency < param->vcp.min_freq[0]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Variant Allele Frequency";
+				return;
+			}
 		}
 		else if (var->type == DELETION) {
-			if (var->depth[0][0] < param->vcp.min_depth[1] ||
-				(var->read[0] + var->read[1]) < param->vcp.min_vdepth[1] ||
-				var->qual < param->vcp.min_qual[1] ||
-				var->frequency < param->vcp.min_freq[1]) passed = false;
+			if (var->depth[0][0] < param->vcp.min_depth[1]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Allele Depth";
+				return;
+			}
+			if ((var->read[0] + var->read[1]) < param->vcp.min_vdepth[1]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Variant Allele Depth";
+				return;
+			}
+			if (var->qual < param->vcp.min_qual[1]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low VariantCall Score";
+				return;
+			}
+			if (var->frequency < param->vcp.min_freq[1]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Variant Allele Frequency";
+				return;
+			}
 		}
 		else if (var->type == INSERTION || var->type == DUPLICATION) {
-			if (var->depth[0][0] < param->vcp.min_depth[2] ||
-				(var->read[0] + var->read[1]) < param->vcp.min_vdepth[2] ||
-				var->qual < param->vcp.min_qual[2] ||
-				var->frequency < param->vcp.min_freq[2]) passed = false;
+			if (var->depth[0][0] < param->vcp.min_depth[2]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Allele Depth";
+				return;
+			}
+			if ((var->read[0] + var->read[1]) < param->vcp.min_vdepth[2]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Variant Allele Depth";
+				return;
+			}
+			if (var->qual < param->vcp.min_qual[2]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low VariantCall Score";
+				return;
+			}
+			if (var->frequency < param->vcp.min_freq[2]) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Low Variant Allele Frequency";
+				return;
+			}
 		}
 	}
 	else if (var->flag & CN_VARIANT) {
 		if (var->pos[0].length(true) < param->cnvp.min_length) {
-			if (var->pos[1].idx == -1) passed = false;
-			else if (var->pos[1].length(true) < param->cnvp.min_length) passed = false;
+			var->flag = UNAVAILABLE_FLAG;
+			var->attribute["filter"] = "Short Copy Number Variant";
+			return;
+		}
+		if (var->pos[0].length(true) < param->cnvp.min_length) {
+			if (var->pos[1].idx == -1) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Short Copy Number Variant";
+				return;
+			}
+			else if (var->pos[1].length(true) < param->cnvp.min_length) {
+				var->flag = UNAVAILABLE_FLAG;
+				var->attribute["filter"] = "Short Copy Number Variant";
+				return;
+			}
 		}
 	}
 	else if (var->flag & SR_VARIANT) {
-		//
-		if ((var->read[0] + var->read[1]) < param->svp.min_read ||
-			var->frequency < param->svp.min_freq ||
-			var->qual < param->svp.min_qual ||
-			param->svp.read_bias < sbio::sutil::readBias(var->read)) passed = false;
-		//
-	}
-	// Genotype
-	if (param->homo_select) {
-		if (!(var->genotype & HOMO_VAR)) passed = false;
-	}
-	// Target
-	if (passed && target && target->size()) {
-		if (!target->at(var->pos[0].idx).overlap(var->pos[0])) {
-			if (var->pos[1].idx == -1) passed = false;
-			else if (!target->at(var->pos[1].idx).overlap(var->pos[1])) passed = false;
+		if ((var->read[0] + var->read[1]) < param->svp.min_read) {
+			var->flag = UNAVAILABLE_FLAG;
+			var->attribute["filter"] = "Low Split/Chimeric Read";
+			return;
 		}
+		if (var->qual < param->svp.min_qual) {
+			var->flag = UNAVAILABLE_FLAG;
+			var->attribute["filter"] = "Low Quality Variant";
+			return;
+		}
+		if (var->frequency < param->svp.min_freq) {
+			var->flag = UNAVAILABLE_FLAG;
+			var->attribute["filter"] = "Low Allele Frequency";
+			return;
+		}
+		if (param->svp.read_bias < sbio::sutil::readBias(var->read)) {
+			var->flag = UNAVAILABLE_FLAG;
+			var->attribute["filter"] = "Biased Strand";
+			return;
+		}
+		//
 	}
 	// Annotation
-	if (passed && param->annot < 0xFF) {
+	if (param->annot < 0xFF) {
 		subyte site = 0;
 		sfor(var->annotation) {
 			sforeach(rna, $_.transcripts) site |= rna.site;
 		}
-		if (!(param->annot & site)) passed = false;
-	}
-	// Final
-	if (!passed) {
-		var->flag |= UNAVAILABLE_FLAG;
-		var->attribute["filter"] = "NG";
+		if (!(param->annot & site)) {
+			var->flag = UNAVAILABLE_FLAG;
+			if (param->annot & CDS) var->attribute["filter"] = "Not CDS Variant";
+			else if (param->annot & UTR) var->attribute["filter"] = "Not UTR Variant";
+			else if (param->annot & EXON) var->attribute["filter"] = "Not Exon Variant";
+			else if (param->annot & INTRON) var->attribute["filter"] = "Not Intron Variant";
+			else var->attribute["filter"] = "NG Variant";
+			return;
+		}
 	}
 }
 void slib::sbio::VarFilter::filter(slib::sbio::VarList& list) { sfor(list) check($_); }

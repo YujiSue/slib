@@ -13,8 +13,8 @@ slib::String slib::sbio::refMisErrorText(const char* s1, int n1, int l1, const c
 		" are mismatched in size";
 	return str;
 }
-
 #ifdef _WINDLL
+/*
 slib::String slib::SP = { ' ' };
 slib::String slib::CR = { '\r' };
 slib::String slib::LF = { '\n' };
@@ -22,6 +22,7 @@ slib::String slib::CRLF = { '\r', '\n' };
 slib::String slib::TAB = { '\t' };
 slib::String slib::DEL = { '\b' };
 slib::String slib::NL = slib::CRLF;
+*/
 slib::IOStream slib::DEFAULT_ISTREAM = slib::IOStream(std::cin);
 slib::IOStream slib::DEFAULT_OSTREAM = slib::IOStream(std::cout);
 #endif

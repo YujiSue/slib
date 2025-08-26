@@ -521,7 +521,7 @@ void slib::sbio::sio::writeHead(const stringarray& cols, slib::IOStream& strm) {
 void slib::sbio::sio::writeVariant(const slib::sbio::Variant& var, const stringarray &cols, const slib::Array<slib::Pair<slib::String, int>>& ref, slib::IOStream& strm) {
 	sfor(cols) {
 		auto endl = ($ == (cols.end() - 1));
-		if ($_ == "VarID")  strm << var.varid << (endl ? slib::LF : slib::TAB);
+		if ($_ == "VarID" || $_ == "ID")  strm << var.varid << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "Sample")  strm << (var.attribute.hasKey("sample") ? var.attribute["sample"] : "") << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "Tag")  strm << sbio::sutil::varTypeStr(var.type) << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "Type")  strm << sbio::sutil::varTypeDesc(var.type) << (endl ? slib::LF : slib::TAB);
@@ -566,8 +566,8 @@ void slib::sbio::sio::writeVariant(const slib::sbio::Variant& var, const stringa
 		else if ($_ == "Genotype") strm << (var.genotype & sbio::HOMO_VAR ? "Homo": "Hetero") << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "Dp" || $_ == "Dp1" || $_ == "Cov" || $_ == "Cov1")  strm << slib::numToString(var.depth[0][0], "%.2f") << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "Dp2" || $_ == "Cov2")  strm << (var.pos[1].idx == -1 ? "-" : slib::numToString(var.depth[1][0], "%.2f")) << (endl ? slib::LF : slib::TAB);
-		else if ($_ == "ADp" || $_ == "Allele cov")  strm << S((int)var.read[0] + (int)var.read[1]) << (endl ? slib::LF : slib::TAB);
-		else if ($_ == "CDp" || $_ == "Control cov")  strm << slib::numToString(var.depth[0][1], "%.2f") << (endl ? slib::LF : slib::TAB);
+		else if ($_ == "ADp" || $_ == "Allele Cov")  strm << S((int)var.read[0] + (int)var.read[1]) << (endl ? slib::LF : slib::TAB);
+		else if ($_ == "CDp" || $_ == "Control Cov")  strm << slib::numToString(var.depth[0][1], "%.2f") << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "VarRead")  strm << (int)var.read[0] << "|" << (int)var.read[1] << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "Copy" || $_ == "Copy1")  strm << slib::numToString(var.copy[0], "%.2f") << (endl ? slib::LF : slib::TAB);
 		else if ($_ == "Copy2")  strm << slib::numToString(var.copy[1], "%.2f") << (endl ? slib::LF : slib::TAB);
@@ -589,7 +589,11 @@ void slib::sbio::sio::writeVariant(const slib::sbio::Variant& var, const stringa
 		else if ($_ == "Substitution") {
 			writeSubstitution(var, strm); strm << (endl ? slib::LF : slib::TAB);
 		}
-		else if ($_ == "Mutant") strm << (var.attribute.hasKey("mutant") ? var.attribute["mutant"].toString("csv") : "") << (endl ? slib::LF : slib::TAB);
+		else if ($_ == "Mutant") 
+			strm << (var.attribute.hasKey("mutant") ? var.attribute["mutant"].toString("csv") : "") << (endl ? slib::LF : slib::TAB);
+		else if ($_ == "Effect") {
+			writeVarEffect(var, strm); strm << (endl ? slib::LF : slib::TAB);
+		}
 		else if ($_ == "Filter")  strm << (var.attribute.hasKey("filter") ? S(var.attribute["filter"] == "." ? "PASS" : var.attribute["filter"]) :
 			S((var.flag & NOT_USE_FLAG || var.flag & UNAVAILABLE_FLAG) ? "NG" : "PASS")) << (endl ? slib::LF : slib::TAB);
 	}
@@ -661,6 +665,26 @@ void slib::sbio::sio::writeSubstitution(const slib::sbio::Variant& var, slib::IO
 	}
 	if (subst.size()) subst.resize(subst.size() - 1);
 	strm << subst;
+	if (5 < var.annotation.size()) strm << ", ...";
+}
+void slib::sbio::sio::writeVarEffect(const slib::sbio::Variant& var, slib::IOStream& strm) {
+	if (var.annotation.empty()) return;
+	auto min = sstat::getMin(5, (int)var.annotation.size());
+	String ef, subef;
+	sforin(i, 0, min) {
+		sfor(var.annotation[i].transcripts) {
+			if ($_.effect == sbio::VARIANT_EFFECT::DELETERIOUS || $_.effect == sbio::VARIANT_EFFECT::HIGH_IMPACT) subef = "Deleterious";
+			else if ($_.effect == sbio::VARIANT_EFFECT::MODERATE || $_.effect == sbio::VARIANT_EFFECT::TOLERATED) subef = "Moderate or none";
+			else if ($_.effect == sbio::VARIANT_EFFECT::UNKNOWN) subef = "Unknown";
+			else if ($_.effect == sbio::VARIANT_EFFECT::PATHOGENIC) subef = "Pathogenic";
+			else if ($_.effect == sbio::VARIANT_EFFECT::BENIGN) subef = "Benign";
+			if (0.f <= $_.score) subef << " (" << $_.score << ")";
+			ef << subef << "|";
+		}
+		if (ef.size()) ef[-1] = ',';
+	}
+	if (ef.size()) ef.resize(ef.size() - 1);
+	strm << ef;
 	if (5 < var.annotation.size()) strm << ", ...";
 }
 

@@ -6,8 +6,8 @@ slib::SAppException::SAppException(int i, const char* msg, const char* desc) : s
 slib::SAppException::SAppException(slib::Exception& ex) : slib::Exception(ex) { prefix = "App"; }
 slib::SAppException::SAppException(slib::Response& res) : slib::Exception(res.code, "Exec error.", res.error) { prefix = "App"; }
 slib::SAppException::~SAppException() {}
-
 #ifdef _WINDLL
+/*
 slib::String slib::SP = { ' ' };
 slib::String slib::CR = { '\r' };
 slib::String slib::LF = { '\n' };
@@ -15,10 +15,10 @@ slib::String slib::CRLF = { '\r', '\n' };
 slib::String slib::TAB = { '\t' };
 slib::String slib::DEL = { '\b' };
 slib::String slib::NL = slib::CRLF;
+*/
 slib::IOStream slib::DEFAULT_ISTREAM = slib::IOStream(std::cin);
 slib::IOStream slib::DEFAULT_OSTREAM = slib::IOStream(std::cout);
 #endif
-
 /*
  * SApp class definition
  */

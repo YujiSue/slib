@@ -138,7 +138,8 @@ void slib::sbio::VarList::load(const char *path, SeqList *ref) {
 	_load = true;
 }
 void slib::sbio::VarList::save(const char *path, const char *opts) {
-	auto attr = opts ? S(opts).parse(";", "=") : sattribute();
+	sattribute attr;
+	if (opts) attr = S(opts).parse(";", "=");
 	auto ext = sfs::extension(path);
 	if (ext == "txt") {
 		SFile tf(path, slib::sio::MAKE);
@@ -227,7 +228,9 @@ void slib::sbio::VarList::VarList::tidyUp(size_t s) {
 	});
 	this->resize(s);
 }
-void slib::sbio::VarList::VarList::addFlag(sushort f) { sfor(*this) $_->flag |= f; }
+void slib::sbio::VarList::VarList::addFlag(sushort f) { 
+	sfor(*this) $_->flag |= f; 
+}
 void slib::sbio::VarList::VarList::removeFlag(sushort f) {
 	sfor(*this) { if ($_->flag & f) $_->flag -= f; }
 }
@@ -240,6 +243,6 @@ void slib::sbio::VarList::clearAll() {
     attribute.clear();
 }
 slib::String slib::sbio::VarList::path() const {
-	if (_file) return _file.file().path();
+	if (!_file.isNull()) return _file.file().path();
 	return "";
 }

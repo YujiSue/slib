@@ -333,14 +333,32 @@ namespace slib {
         extern SLIB_DLL String greek(const size_t s, bool upper = false);
         extern SLIB_DLL String roman(const size_t s, bool upper = false);
     }
-    extern SLIB_DLL String SP;
-    extern SLIB_DLL String CR;
-    extern SLIB_DLL String LF;
-    extern SLIB_DLL String CRLF;
-    extern SLIB_DLL String TAB;
-    extern SLIB_DLL String DEL;
-    extern SLIB_DLL String NL;
+    //extern SLIB_DLL String SP;
+    //extern SLIB_DLL String CR;
+    //extern SLIB_DLL String LF;
+    //extern SLIB_DLL String CRLF;
+    //extern SLIB_DLL String TAB;
+    //extern SLIB_DLL String DEL;
+    //extern SLIB_DLL String NL;
 }
-
+#define SP String({(char)0x20})
+#define CR String({'\r'})
+#define LF String({'\n'})
+#define CRLF String({'\r','\n'})
+#define TAB String({'\t'})
+#define BS String({'\b'})
+//slib::String slib::SP = {' '};
+//slib::String slib::CR = { '\r' };
+//slib::String slib::LF = { '\n' };
+//slib::String slib::CRLF = { '\r', '\n' };
+//slib::String slib::TAB = { '\t' };
+//slib::String slib::DEL = { '\b' };
+#ifdef WIN_OS
+#define NL String({'\r','\n'})
+//slib::String slib::NL =  { '\r', '\n' };
+#else
+#define NL String({'\n'})
+//slib::String slib::NL = { '\n' };
+#endif
 
 #endif

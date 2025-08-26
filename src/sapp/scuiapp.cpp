@@ -304,7 +304,17 @@ int slib::sapp::SCuiApp::init(int argc, const char** argv) {
 						}
 						else if (app_option[sop]["type"] == "bool") preference[sop] = true;
 						else if (app_option[sop]["type"] == "num") { arg++; preference[sop] = N(arg[0]); }
-						else { 
+						else if (app_option[op]["type"] == "array") {
+							arg++;
+							if (!preference.hasKey(sop)) preference[sop] = SArray();
+#ifdef WIN_OS
+							preference[sop].add(slib::String::toUTF8(arg[0]));
+#else
+							preference[sop].add(arg[0]);
+#endif
+
+						}
+						else {
 							arg++; 
 #ifdef WIN_OS
 							preference[sop] = slib::String::toUTF8(arg[0]);
@@ -329,6 +339,16 @@ int slib::sapp::SCuiApp::init(int argc, const char** argv) {
 					auto& fnc = app_option[op]["func"].function<void, const SDictionary&, const SObjPtr&>();
 					fnc(profile, preference["_cmd_"]);
 					return 1;
+				}
+				else if (app_option[op]["type"] == "array") { 
+					arg++; 
+					if (!preference.hasKey(op)) preference[op] = SArray();
+#ifdef WIN_OS
+					preference[op].add(slib::String::toUTF8(arg[0]));
+#else
+					preference[op].add(arg[0]);
+#endif
+
 				}
 				else {
 					arg++; 

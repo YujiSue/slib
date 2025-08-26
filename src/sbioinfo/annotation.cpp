@@ -1181,78 +1181,80 @@ inline void setVarSite(slib::sbio::Variant& var, slib::sbio::TranscriptAnnotData
 
 void slib::sbio::AnnotDB::annotate(slib::sbio::Variant& var, const slib::sbio::SeqList& ref, const slib::sbio::VarParam& par,
     const slib::sbio::CODON_TABLE& codon, const slib::sbio::CODON_TABLE& codon2) {
-    auto& genes1 = selectGenes(var.pos[0]);
-    var.annotation.resize(genes1.size());
-    sfor2(var.annotation, genes1) {
-        $_1.gid = $_2->geneid;
-        $_1.name = $_2->name;
-        $_1.type = (GENE_TYPE)$_2->type;
-        sforeach(rna, $_2->transcripts) {
-            if (var.pos[0].overlap(*rna)) {
-                TranscriptAnnotData dat;
-                dat.name = rna->name;
-                dat.type = (TRANSCRIPT_TYPE)rna->type;
-                setVarSite(var, dat, *rna, par.splice_reg);
-                // Simple variant
-                if (var.pos[1].idx == -1) {
-                    // CDS
-                    if (dat.site & CDS) setAAVar(var, dat, *rna, ref, codon, codon2);
-                    // Non CDS
-                    else {
-                        // In mRNA
-                        if (dat.type == TRANSCRIPT_TYPE::M_RNA) {
-                            dat.substitution.prefix = 'c';
-                        }
-                        // In ncRNA
+    if (var.annotation.empty()) {
+        auto& genes1 = selectGenes(var.pos[0]);
+        var.annotation.resize(genes1.size());
+        sfor2(var.annotation, genes1) {
+            $_1.gid = $_2->geneid;
+            $_1.name = $_2->name;
+            $_1.type = (GENE_TYPE)$_2->type;
+            sforeach(rna, $_2->transcripts) {
+                if (var.pos[0].overlap(*rna)) {
+                    TranscriptAnnotData dat;
+                    dat.name = rna->name;
+                    dat.type = (TRANSCRIPT_TYPE)rna->type;
+                    setVarSite(var, dat, *rna, par.splice_reg);
+                    // Simple variant
+                    if (var.pos[1].idx == -1) {
+                        // CDS
+                        if (dat.site & CDS) setAAVar(var, dat, *rna, ref, codon, codon2);
+                        // Non CDS
                         else {
-                            dat.substitution.prefix = 'g';
+                            // In mRNA
+                            if (dat.type == TRANSCRIPT_TYPE::M_RNA) {
+                                dat.substitution.prefix = 'c';
+                            }
+                            // In ncRNA
+                            else {
+                                dat.substitution.prefix = 'g';
+                            }
+                            //
+                            if (var.type == SNV || var.type == MNV) {
+                                dat.mutation = SUBSTITUTION;
+                                dat.substitution.ori = var.attribute.hasKey("_ref_") ? var.attribute["_ref_"].toString() : ref[var.pos[0].idx].raw(var.pos[0].begin - 1, var.pos[0].length(true));
+                                dat.substitution.alt = var.alt;
+                            }
+                            else if (var.type == DELETION) {
+                                if (var.pos[0].include(*rna)) dat.mutation = NULL_MUT;
+                                else if (var.pos[0].include(rna->begin))
+                                    dat.mutation = ($_2->dir ? TAIL_LESION : HEAD_LESION);
+                                else if (var.pos[0].include(rna->end))
+                                    dat.mutation = ($_2->dir ? HEAD_LESION : TAIL_LESION);
+                                else dat.mutation = INDEL;
+                            }
+                            else if (var.type == DUPLICATION || var.type == MULTIPLICATION) {
+                                if (var.pos[0].include(*rna)) dat.mutation = MULTI_COPY;
+                                else dat.mutation = INDEL;
+                            }
+                            else if (var.type == INSERTION) dat.mutation = INDEL;
                         }
-                        //
-                        if (var.type == SNV || var.type == MNV) {
-                            dat.mutation = SUBSTITUTION;
-                            dat.substitution.ori = var.attribute.hasKey("_ref_") ? var.attribute["_ref_"].toString() : ref[var.pos[0].idx].raw(var.pos[0].begin - 1, var.pos[0].length(true));
-                            dat.substitution.alt = var.alt;
-                        }
-                        else if (var.type == DELETION) {
-                            if (var.pos[0].include(*rna)) dat.mutation = NULL_MUT;
-                            else if (var.pos[0].include(rna->begin))
-                                dat.mutation = ($_2->dir ? TAIL_LESION : HEAD_LESION);
-                            else if (var.pos[0].include(rna->end))
-                                dat.mutation = ($_2->dir ? HEAD_LESION : TAIL_LESION);
-                            else dat.mutation = INDEL;
-                        }
-                        else if (var.type == DUPLICATION || var.type == MULTIPLICATION) {
-                            if (var.pos[0].include(*rna)) dat.mutation = MULTI_COPY;
-                            else dat.mutation = INDEL;
-                        }
-                        else if (var.type == INSERTION) dat.mutation = INDEL;
                     }
+                    else dat.mutation |= GENE_SPLIT;
+                    $_1.transcripts.add(dat);
                 }
-                else dat.mutation |= GENE_SPLIT;
-                $_1.transcripts.add(dat);
             }
         }
-    }
-    if (-1 < var.pos[1].idx) {
-        auto& genes2 = selectGenes(var.pos[1]);
-        sfor(genes2) {
-            GeneAnnotData gdat;
-            gdat.gid = $_->geneid;
-            gdat.name = $_->name;
-            gdat.type = (GENE_TYPE)$_->type;
-            sforeach(rna, $_->transcripts) {
-                if (var.pos[1].overlap(*rna)) {
-                    TranscriptAnnotData tdat;
-                    tdat.name = rna->name;
-                    tdat.type = (TRANSCRIPT_TYPE)rna->type;
-                    setVarSite(var, tdat, *rna, par.splice_reg);
-                    if (var.type & INSERTION) tdat.mutation |= REARRANGE_MUT;
-                    else if (var.type & TRANSLOCATION) tdat.mutation |= GENE_SPLIT;
-                    else if (var.type & INVERSION) tdat.mutation |= REARRANGE_MUT;
-                    gdat.transcripts.add(tdat);
+        if (-1 < var.pos[1].idx) {
+            auto& genes2 = selectGenes(var.pos[1]);
+            sfor(genes2) {
+                GeneAnnotData gdat;
+                gdat.gid = $_->geneid;
+                gdat.name = $_->name;
+                gdat.type = (GENE_TYPE)$_->type;
+                sforeach(rna, $_->transcripts) {
+                    if (var.pos[1].overlap(*rna)) {
+                        TranscriptAnnotData tdat;
+                        tdat.name = rna->name;
+                        tdat.type = (TRANSCRIPT_TYPE)rna->type;
+                        setVarSite(var, tdat, *rna, par.splice_reg);
+                        if (var.type & INSERTION) tdat.mutation |= REARRANGE_MUT;
+                        else if (var.type & TRANSLOCATION) tdat.mutation |= GENE_SPLIT;
+                        else if (var.type & INVERSION) tdat.mutation |= REARRANGE_MUT;
+                        gdat.transcripts.add(tdat);
+                    }
                 }
+                var.annotation.add(gdat);
             }
-            var.annotation.add(gdat);
         }
     }
     //
@@ -1935,7 +1937,7 @@ slib::sbio::AASubstitution& slib::sbio::AASubstitution::operator=(const slib::sb
     return *this;
 }
 slib::sbio::TranscriptAnnotData::TranscriptAnnotData() { 
-    type = TRANSCRIPT_TYPE::MISC_RNA; site = 0; mutation = 0; score = 0.f; effect = VARIANT_EFFECT::UNKNOWN;
+    type = TRANSCRIPT_TYPE::MISC_RNA; site = 0; mutation = 0; score = -1.f; effect = VARIANT_EFFECT::UNKNOWN;
 }
 slib::sbio::TranscriptAnnotData::TranscriptAnnotData(TranscriptInfo* ti) : TranscriptAnnotData() {
     type = (TRANSCRIPT_TYPE)ti->type;

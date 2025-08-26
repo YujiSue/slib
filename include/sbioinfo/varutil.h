@@ -204,6 +204,7 @@ namespace slib {
 			extern SLIB_DLL void writeVariantSites(const slib::sbio::Variant& var, slib::IOStream& strm);
 			extern SLIB_DLL void writeMutationType(const slib::sbio::Variant& var, slib::IOStream& strm);
 			extern SLIB_DLL void writeSubstitution(const slib::sbio::Variant& var, slib::IOStream& strm);
+			extern SLIB_DLL void writeVarEffect(const slib::sbio::Variant& var, slib::IOStream& strm);
 		}
 		namespace sutil {
 			extern SLIB_DLL float readBias(const sushort* r);

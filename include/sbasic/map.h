@@ -29,12 +29,12 @@ namespace slib {
         
     public:
         Map() : _capacity(0), _size(0), _seed(0), _ptr(nullptr), _vacant(nullptr) {}
-        Map(std::initializer_list<Pair<Key, Val>> li) : Map() {
+        Map(std::initializer_list<Pair<Key, Val>> li) : Map<Key, Val>() {
             reserve(li.size() * 4 / 3 + 1);
             sfor(li) insert($_);
         }
         Map(Map<Key, Val>&& map) noexcept { swap(map); }
-        Map(const Map<Key, Val>& map) : Map() {
+        Map(const Map<Key, Val>& map) : Map<Key, Val>() {
             reserve(map.capacity());
             sfor(map) insert($_);
         }

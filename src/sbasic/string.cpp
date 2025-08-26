@@ -193,6 +193,7 @@ slib::String slib::sstr::bfill(const char* s, const char c, const size_t sz) {
     Memory<char>::copy(&str[(int)off], s, (len < sz ? len : sz));
     return str;
 }
+/*
 slib::String slib::SP = { ' ' };
 slib::String slib::CR = { '\r' };
 slib::String slib::LF = { '\n' };
@@ -200,11 +201,11 @@ slib::String slib::CRLF = { '\r', '\n' };
 slib::String slib::TAB = { '\t' };
 slib::String slib::DEL = { '\b' };
 #ifdef WIN_OS
-slib::String slib::NL = slib::CRLF;
+slib::String slib::NL =  { '\r', '\n' };
 #else
-slib::String slib::NL = slib::LF;
+slib::String slib::NL = { '\n' };
 #endif
-
+*/
 #if defined(WIN_OS)
 slib::String slib::String::toUTF8(const wchar_t* ws) {
 	auto wsize = ::WideCharToMultiByte(CP_UTF8, 0U, ws, -1, nullptr, 0, nullptr, nullptr);

@@ -123,7 +123,7 @@ inline void slib::sbio::svcf::readInfo(slib::String& info, Array<Variant>& varia
 }
 inline void slib::sbio::svcf::readFormat(slib::String& fkey, slib::String& format, Array<Variant>& variants, const SDictionary& dict) {
 	if (fkey == ".") { sfor(variants) $_.attribute["format"] = snull; return; }
-	else { sfor(variants) $_.attribute["format"] = {D_("_key_", fkey)}; }
+	//else { sfor(variants) $_.attribute["format"] = { D_("_key_", SArray(fkey.split(":"))) }; }
 	auto keys = fkey.split(":"), attributes = format.split(":");
 	sfor2(keys, attributes) {
 		if ($_1 == "GT") {
@@ -180,6 +180,7 @@ inline void slib::sbio::svcf::readFormat(slib::String& fkey, slib::String& forma
 }
 inline void slib::sbio::svcf::setUniqueValue(Array<Variant>& variants, const SDictionary& attribute) {
 	sforeach(var, variants) {
+		Map<String, int> gidx;
 		sforeach(prog, attribute["_prog_"]) {
 			if (prog == "tvc") {
 				var.depth[0][0] = var.attribute["info"]["FDP"];
@@ -193,106 +194,250 @@ inline void slib::sbio::svcf::setUniqueValue(Array<Variant>& variants, const SDi
 				var.frequency = (float)var.read[0] / var.depth[0][0];
 			}
 			else if (prog == "gdv") {}
-			else if (prog == "evep") {
-
-
-
+			else if (prog == "vep" && var.attribute["info"].hasKey("CSQ")) {
+				auto annots = var.attribute["info"]["CSQ"].split(",");
+				sforeach(annot, annots) {
+					auto cols = annot.split("|");
+					if (cols[1].match("upstream_gene") || cols[1].match("downstream_gene_variant") || cols[1].match("intergenic")) {
+						/*
+						* 
+						*/
+						continue;
+					}
+					else if (cols[1].beginWith("TF") || cols[1].beginWith("regulatory")) {
+						/*
+						*
+						*/
+						continue;
+					}
+					//
+					if (!gidx.hasKey(cols[4])) {
+						gidx[cols[4]] = (int)var.annotation.size();
+						var.annotation.add();
+						auto& gdat = var.annotation[-1];
+						gdat.gid = cols[4];
+						gdat.name = cols[3];
+					}
+					if (cols[5] != "Transcript") continue;
+					//
+					auto& gdat = var.annotation[gidx[cols[4]]];
+					sbio::TranscriptAnnotData tdat;
+					tdat.name = cols[6];
+					tdat.site = 0;
+					tdat.mutation = (var.type == SNV || var.type == MNV) ? SUBSTITUTION : INDEL;
+					//
+					if (cols[1].match("5_prime_UTR")) tdat.site |= sbio::UTR5;
+					if (cols[1].match("3_prime_UTR")) tdat.site |= sbio::UTR3;
+					if (cols[1].beginWith("splice_")) tdat.site |= sbio::INTRON | sbio::SPLICE_SITE;
+					//
+					if (cols[1] == "transcript_ablation") tdat.mutation = NULL_MUT;
+					if (cols[1] == "transcript_amplification") tdat.mutation = COPY_MUT;
+					if (cols[1].match("missense") || cols[1].match("protein_altering")) tdat.mutation = sbio::MISSENSE;
+					if (cols[1].match("synonymous") || cols[1].match("coding_sequence")) tdat.mutation = sbio::SYNONYMOUS;
+					if (cols[1] == "stop_gained") tdat.mutation = sbio::NONSENSE;
+					if (cols[1].beginWith("inframe")) tdat.mutation = sbio::IN_FRAME;
+					if (cols[1].beginWith("frameshift")) tdat.mutation = sbio::FRAME_SHIFT;
+					if (cols[1] == "start_lost") tdat.mutation = sbio::FMET_LOSS;
+					if (cols[1] == "stop_lost" || cols[1].match("incomplete_terminal_codon")) tdat.mutation = sbio::TERM_LOSS;
+					//
+					if (cols[7].match("pseudo")) {
+						gdat.type = GENE_TYPE::PSEUDO_GENE;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::PSEUDO_GENE_TRANSCRIPT;
+					}
+					else if (cols[7].match("lncRNA")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::LNC_RNA;
+					}
+					else if (cols[7].match("lincRNA")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::LINC_RNA;
+					}
+					else if (cols[7].match("antisense")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::AS_RNA;
+					}
+					else if (cols[7].beginWith("sense_")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::LNC_RNA;
+					}
+					else if (cols[7].beginWith("tRNA")) {
+						gdat.type = GENE_TYPE::MISC_GENE;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::T_RNA;
+					}
+					else if (cols[7].beginWith("rRNA")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::R_RNA;
+					}
+					else if (cols[7].beginWith("miRNA")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::MI_RNA;
+					}
+					else if (cols[7].beginWith("snRNA")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::SN_RNA;
+					}
+					else if (cols[7].beginWith("snoRNA")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::SNO_RNA;
+					}
+					else if (cols[7].beginWith("misc")) {
+						gdat.type = GENE_TYPE::NON_CODING;
+						tdat.site |= sbio::EXON;
+						tdat.type = TRANSCRIPT_TYPE::MISC_RNA;
+					}
+					else if (cols[7] == "protein_coding" || cols[7].beginWith("IG_") || cols[7].beginWith("TR_")) {
+						gdat.type = GENE_TYPE::PROTEIN_CODING;
+						tdat.type = TRANSCRIPT_TYPE::M_RNA;
+						if (cols[13] != "") tdat.site |= sbio::CDS;
+						//
+						if (cols[14] != "" && cols[15] != "") {
+							tdat.substitution.prefix = 'p';
+							auto ppos = cols[14].split("-");
+							tdat.substitution.pos.begin = ppos[0].intValue();
+							if (ppos.size() == 2) tdat.substitution.pos.end = ppos[1].intValue();
+							else tdat.substitution.pos.end = tdat.substitution.pos.begin;
+							auto strs = cols[15].split("/");
+							tdat.substitution.ori = strs[0];
+							if (strs.size() == 2) tdat.substitution.alt = strs[1];
+							else tdat.substitution.alt = tdat.substitution.ori;
+						}
+						else if (cols[13] != "") {
+							tdat.substitution.prefix = 'c';
+							auto cpos = cols[13].split("-");
+							tdat.substitution.pos.begin = cpos[0].intValue();
+							if (cpos.size() == 2) tdat.substitution.pos.end = cpos[1].intValue();
+							else tdat.substitution.pos.end = tdat.substitution.pos.begin;
+						}
+					}
+					//
+					if (cols[2] == "MODIFIER") tdat.effect = VARIANT_EFFECT::UNKNOWN;
+					else if (cols[2] == "MODERATE") tdat.effect = VARIANT_EFFECT::MODERATE;
+					else if (cols[2] == "HIGH") tdat.effect = VARIANT_EFFECT::HIGH_IMPACT;
+					else if (cols[2] == "LOW") tdat.effect = VARIANT_EFFECT::TOLERATED;
+					gdat.transcripts.add(tdat);
+				}
 			}
 			else if (prog == "sift") {
 				if (var.attribute["info"].hasKey("SIFTINFO")) {
 					//Allele|Transcript|GeneId|GeneName|Region|VariantType|Ref_Amino_Acid/Alt_AminoAcid|Amino_position|SIFT_score|SIFT_median|SIFT_num_seqs|Allele_Type|SIFT_prediction
 					auto annots = var.attribute["info"]["SIFTINFO"].split(",");
-					Map<String, int> gidx;
 					sforeach(annot, annots) {
 						auto cols = annot.split("|");
-						if (!gidx.hasKey(cols[2])) {
+						bool tannotated = false;
+						if (gidx.hasKey(cols[2])) {
+							auto& gdat = var.annotation[gidx[cols[2]]];
+							sforeach(tdat, gdat.transcripts) {
+								if (tdat.name == cols[1]) {
+									if (cols[8] != "NA") {
+										tdat.score = cols[8].floatValue();
+									}
+									if (cols[12] == "TOLERATED") tdat.effect = VARIANT_EFFECT::TOLERATED;
+									else if (cols[12].match("DELETERIOUS")) tdat.effect = VARIANT_EFFECT::DELETERIOUS;
+									tannotated = true;
+									break;
+								}
+							}
+						}
+						else {
 							gidx[cols[2]] = (int)var.annotation.size();
 							var.annotation.add();
 							auto& gdat = var.annotation[-1];
 							gdat.gid = cols[2];
 							gdat.name = cols[3];
 						}
-						auto& gdat = var.annotation[gidx[cols[2]]];
-						sbio::TranscriptAnnotData tdat;
-						tdat.name = cols[1];
-						if (cols[4] == "CDS") {
-							if (gdat.type != GENE_TYPE::PROTEIN_CODING) gdat.type = GENE_TYPE::PROTEIN_CODING;
-							tdat.site = sbio::CDS; 
-							tdat.type = TRANSCRIPT_TYPE::M_RNA;
+						if(!tannotated) {
+							auto& gdat = var.annotation[gidx[cols[2]]];
+							sbio::TranscriptAnnotData tdat;
+							tdat.name = cols[1];
+							if (cols[4] == "CDS") {
+								if (gdat.type != GENE_TYPE::PROTEIN_CODING) gdat.type = GENE_TYPE::PROTEIN_CODING;
+								tdat.site = sbio::CDS;
+								tdat.type = TRANSCRIPT_TYPE::M_RNA;
+							}
+							else if (cols[4] == "UTR_3") {
+								if (gdat.type != GENE_TYPE::PROTEIN_CODING) gdat.type = GENE_TYPE::PROTEIN_CODING;
+								tdat.site = sbio::UTR3;
+								tdat.type = TRANSCRIPT_TYPE::M_RNA;
+							}
+							else if (cols[4] == "UTR_5") {
+								if (gdat.type != GENE_TYPE::PROTEIN_CODING) gdat.type = GENE_TYPE::PROTEIN_CODING;
+								tdat.site = sbio::UTR5;
+								tdat.type = TRANSCRIPT_TYPE::M_RNA;
+							}
+							else if (cols[4] == "tRNA") {
+								if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
+								tdat.site = sbio::EXON;
+								tdat.type = TRANSCRIPT_TYPE::T_RNA;
+							}
+							else if (cols[4] == "rRNA") {
+								if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
+								tdat.site = sbio::EXON;
+								tdat.type = TRANSCRIPT_TYPE::R_RNA;
+							}
+							else if (cols[4] == "ncRNA") {
+								if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
+								tdat.site = sbio::EXON;
+								tdat.type = TRANSCRIPT_TYPE::NC_RNA;
+							}
+							else if (cols[4] == "lincRNA") {
+								if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
+								tdat.site = sbio::EXON;
+								tdat.type = TRANSCRIPT_TYPE::LINC_RNA;
+							}
+							else if (cols[4] == "snoRNA") {
+								if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
+								tdat.site = sbio::EXON;
+								tdat.type = TRANSCRIPT_TYPE::SNO_RNA;
+							}
+							else if (cols[4] == "miRNA") {
+								if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
+								tdat.site = sbio::EXON;
+								tdat.type = TRANSCRIPT_TYPE::MI_RNA;
+							}
+							else if (cols[4] == "piRNA") {
+								if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
+								tdat.site = sbio::EXON;
+								tdat.type = TRANSCRIPT_TYPE::PI_RNA;
+							}
+							if (cols[5] == "SYNONYMOUS") tdat.mutation = sbio::SYNONYMOUS;
+							else if (cols[5] == "NONSYNONYMOUS") tdat.mutation = sbio::MISSENSE;
+							else if (cols[5] == "START-LOST") tdat.mutation = sbio::FMET_LOSS;
+							else if (cols[5] == "STOP-GAIN") tdat.mutation = sbio::NONSENSE;
+							else if (cols[5].beginWith("FRAMESHIFT")) {
+								if (tdat.site & CDS) tdat.mutation = sbio::FRAME_SHIFT;
+								else tdat.mutation = sbio::INDEL;
+							}
+							else if (cols[5].beginWith("NONFRAMESHIFT")) {
+								if (tdat.site & CDS) tdat.mutation = sbio::FRAME_SHIFT;
+								else tdat.mutation = sbio::INDEL;
+							}
+							if (cols[6] != "NA/NA") {
+								tdat.substitution.prefix = 'p';
+								auto strs = cols[6].split("/");
+								tdat.substitution.ori = strs[0];
+								tdat.substitution.alt = strs[1];
+							}
+							if (cols[7] != "NA") {
+								tdat.substitution.pos.begin = cols[7].intValue();
+								tdat.substitution.pos.end = tdat.substitution.pos.begin;
+							}
+							if (cols[8] != "NA") {
+								tdat.score = cols[8].floatValue();
+							}
+							if (cols[12] == "TOLERATED") tdat.effect = VARIANT_EFFECT::TOLERATED;
+							else if (cols[12].match("DELETERIOUS")) tdat.effect = VARIANT_EFFECT::DELETERIOUS;
+							gdat.transcripts.add(tdat);
 						}
-						else if (cols[4] == "UTR_3") {
-							if (gdat.type != GENE_TYPE::PROTEIN_CODING) gdat.type = GENE_TYPE::PROTEIN_CODING;
-							tdat.site = sbio::UTR3; 
-							tdat.type = TRANSCRIPT_TYPE::M_RNA;
-						}
-						else if (cols[4] == "UTR_5") {
-							if (gdat.type != GENE_TYPE::PROTEIN_CODING) gdat.type = GENE_TYPE::PROTEIN_CODING;
-							tdat.site = sbio::UTR5;
-							tdat.type = TRANSCRIPT_TYPE::M_RNA;
-						}
-						else if (cols[4] == "tRNA") {
-							if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
-							tdat.site = sbio::EXON; 
-							tdat.type = TRANSCRIPT_TYPE::T_RNA;
-						}
-						else if (cols[4] == "rRNA") {
-							if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
-							tdat.site = sbio::EXON; 
-							tdat.type = TRANSCRIPT_TYPE::R_RNA;
-						}
-						else if (cols[4] == "ncRNA") {
-							if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
-							tdat.site = sbio::EXON;
-							tdat.type = TRANSCRIPT_TYPE::NC_RNA;
-						}
-						else if (cols[4] == "lincRNA") {
-							if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
-							tdat.site = sbio::EXON;
-							tdat.type = TRANSCRIPT_TYPE::LINC_RNA;
-						}
-						else if (cols[4] == "snoRNA") {
-							if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
-							tdat.site = sbio::EXON;
-							tdat.type = TRANSCRIPT_TYPE::SNO_RNA;
-						}
-						else if (cols[4] == "miRNA") {
-							if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
-							tdat.site = sbio::EXON; 
-							tdat.type = TRANSCRIPT_TYPE::MI_RNA;
-						}
-						else if (cols[4] == "piRNA") {
-							if (gdat.type == GENE_TYPE::MISC_GENE) gdat.type = GENE_TYPE::NON_CODING;
-							tdat.site = sbio::EXON; 
-							tdat.type = TRANSCRIPT_TYPE::PI_RNA;
-						}
-						if (cols[5] == "SYNONYMOUS") tdat.mutation = sbio::SYNONYMOUS;
-						else if (cols[5] == "NONSYNONYMOUS") tdat.mutation = sbio::MISSENSE;
-						else if (cols[5] == "START-LOST") tdat.mutation = sbio::FMET_LOSS;
-						else if (cols[5] == "STOP-GAIN") tdat.mutation = sbio::NONSENSE;
-						else if (cols[5].beginWith("FRAMESHIFT")) {
-							if (tdat.site & CDS) tdat.mutation = sbio::FRAME_SHIFT;
-							else tdat.mutation = sbio::INDEL;
-						}
-						else if (cols[5].beginWith("NONFRAMESHIFT")) {
-							if (tdat.site & CDS) tdat.mutation = sbio::FRAME_SHIFT;
-							else tdat.mutation = sbio::INDEL;
-						}
-						if (cols[6] != "NA/NA") {
-							tdat.substitution.prefix = 'p';
-							auto strs = cols[6].split("/");
-							tdat.substitution.ori = strs[0];
-							tdat.substitution.alt = strs[1];
-						}
-						if (cols[7] != "NA") {
-							tdat.substitution.pos.begin = cols[7].intValue();
-							tdat.substitution.pos.end = tdat.substitution.pos.begin;
-						}
-						if (cols[8] != "NA") {
-							tdat.score = cols[8].floatValue();
-						}
-						if (cols[12] == "TOLERATED") tdat.effect = VARIANT_EFFECT::TOLERATED;
-						else if (cols[12].match("DELETERIOUS")) tdat.effect = VARIANT_EFFECT::DELETERIOUS;
-						gdat.transcripts.add(tdat);
 					}
 				}
 			}
