@@ -3,7 +3,7 @@
 #define SLIB_VERSION_MAJOR 1
 #define SLIB_VERSION_SUB 2
 #define SLIB_VERSION_MINOR 1
-
+#define NOMINMAX
 extern "C" {
 #include <float.h>
 #include <stdio.h>
@@ -140,6 +140,7 @@ extern "C" {
 #define sfor(V) for(auto it=(V).begin();it<(V).end();++it)
 #define srfor(V) for(auto it=(V).end()-1;((V).begin()-1)<it;--it)
 #define sforeach(I,V) for(auto & I : V)
+#define sforenum(I,V) for(auto I=slib::IndexedIterator<decltype((V).begin())>(0,(V).begin());(I)<(V).end();++(I))
 #define sfor2(X,Y) for(auto it=std::make_pair((X).begin(),(Y).begin());it.first<(X).end();++it.first,++it.second)
 #define srfor2(X,Y) for(auto it=std::make_pair((X).end()-1,(Y).end()-1);((X).begin()-1)<it.first;--it.first,--it.second)
 #define sforc(V) for(auto it=(V).u8begin();it<(V).u8end();++it)
@@ -260,6 +261,22 @@ namespace slib {
         Pair& operator=(const Pair& p) { first = p.first; second = p.second; return *this; }
         bool operator==(const Pair<C1, C2>& p) const { return first == p.first && second == p.second; }
     };
+
+    template <class Iter>
+    class IndexedIterator {
+    public:
+        int index;
+        Iter iterator;
+    public:
+        IndexedIterator(int i, Iter it) : index(0), iterator(it) {}
+        IndexedIterator(const IndexedIterator& iter) : index(iter.index), iterator(iter.iterator) {}
+        ~IndexedIterator() {}
+        decltype(*iterator) operator*() { return *iterator; }
+        IndexedIterator& operator=(const IndexedIterator& iter) { index = iter.index; iterator = iter.iterator; return *this; }
+        IndexedIterator& operator++() { ++index; ++iterator; return *this; }
+        bool operator<(const Iter& iter) { return iterator < iter; }
+    };
+
 }
 template <class C1, class C2>
 extern std::ostream& operator<<(std::ostream& os, const slib::Pair<C1, C2>& pair) { return os << pair.first << ":" << pair.second; }

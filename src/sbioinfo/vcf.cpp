@@ -13,6 +13,7 @@ inline void toSNV(slib::sbio::Variant& var, slib::String& a, stringarray& data) 
 	var.pos[0].end = var.pos[0].begin;
 	var.alt = a;
 	var.attribute["_ref_"] = data[3];
+
 }
 inline void toMNV(slib::sbio::Variant& var, slib::String& a, stringarray& data) {
 	int off = 0, end;

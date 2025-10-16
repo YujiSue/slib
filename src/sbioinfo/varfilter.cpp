@@ -641,7 +641,7 @@ void slib::sbio::VarFilter::common(VarList& vl1, VarList& vl2) {
 	sint count = 0;
 	sfor(vl1) {
 		sforin(vit, it + 1, vl1.end()) {
-			if (!((*vit)->lt(*$_, param))) break;
+			if ($_->lt(**vit, param)) break;
 			if ($_->equal(**vit, reference, param)) {
 				if ($_->flag & UNAVAILABLE_FLAG) { $_->flag -= UNAVAILABLE_FLAG; ++count; }
 				else if ((*vit)->flag & UNAVAILABLE_FLAG) { (*vit)->flag -= UNAVAILABLE_FLAG; ++count; }

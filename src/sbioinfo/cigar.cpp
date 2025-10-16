@@ -67,7 +67,7 @@ slib::sbio::CigarArray::CigarArray(const char *s) : CigarArray() {
     String lstr;
     auto p = s;
     while (*p != '\0') {
-        if (sutf8::isNumChar(*p)) lstr << String(*p);
+        if (sutf8::isNumChar(*p)) lstr << *p;
         else {
             add(Cigar(sbio::scigar::index(*p), lstr.intValue()));
             lstr.clear();

@@ -92,6 +92,14 @@ namespace slib {
 		* 
 		*/
 		extern SLIB_DLL bool isInstalled(const char *prog);
+		/**
+		 * 
+		 */
+		extern SLIB_DLL String getEnv(const char *key);
+		/**
+		 * 
+		 */
+		extern SLIB_DLL void setEnv(const char *key, const char *value);
 	}
 
 	class SLIB_DLL SProcess {

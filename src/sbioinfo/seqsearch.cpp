@@ -110,13 +110,23 @@ inline bool _checkUniqueAlign(slib::Array<sbio::AlignPair>& aligns, sbio::AlignP
     }
     return true;
 }
+/*
 inline int _checkBack(subyte* ref, subyte* que, int num) {
     int count = 0;
     srforin(i, 0, num) {
-        if (ref[i] == *(que - 1)) { ++count; --que; }
+        if (ref[i] == *(que)) { ++count; --que; }
     }
     return count;
 }
+inline int _checkNext(subyte* ref, subyte* que, int num) {
+    int count = 0;
+    srforin(i, 0, num) {
+        if (ref[i] == (*que)) { ++count; ++que; }
+    }
+    return count;
+}
+*/
+
 void slib::sbio::SeqSearch::searchAt(int i, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie* trie) {
     if (ref->mask.empty()) searchAt(i, srange(0, ref->length() - 1), ref, trie);
     else {
@@ -149,9 +159,9 @@ void slib::sbio::SeqSearch::searchAt(int i, const srange &rng, slib::sbio::Seque
                 auto& queseq = trie->queries[m.first];
                 tmp = Match(rpos, m.second, _par->seed);
                 if (0 < tmp.ref && 0 < tmp.que) {
-                    auto ques = queseq.data(tmp.que);
-                    auto dif = _checkBack(refseq, ques, sstat::getMin(1, tmp.ref, tmp.que));
-                    if (dif == 1) continue;
+                    auto refs = refseq - _par->seed;
+                    auto ques = queseq.data(tmp.que) - 1;
+                    if ((*refs) == (*ques)) continue;
                 }
                 if (tmp.que + tmp.len < queseq.size()) {
                     auto rend = tmp.ref + tmp.len - 1, qend = tmp.que + tmp.len;
@@ -231,7 +241,32 @@ void slib::sbio::SeqSearch::searchAt(int i, const srange& rng, slib::sbio::Seque
                 else if (dp <= tmp.ref) {
                     auto ques = queseq.data(tmp.que);
                     decoder(*(refseq - _par->seed2), refs);
-                    auto dif = _checkBack(refs, ques, sstat::getMin(dp, tmp.ref, tmp.que));
+
+                    /* DEBUG
+                    if (i == 1 && m.first/2 == 9) {
+                        sforin(d, 0, dp) {
+                            std::cout << DNA_BASE16[refs[d]];
+                            if (d < dp - 1) std::cout << ":";
+                        }
+                        std::cout << std::endl;
+                        auto qp = ques - dp;
+                        auto qi = tmp.que - dp;
+                        sforin(d, 0, dp) {
+                            if (qi > 0) std::cout << DNA_BASE16[qp[0]];
+                            else std::cout << "-";
+                            ++qp; ++qi;
+                            if (d < dp - 1) std::cout << ":";
+                        }
+                        std::cout << std::endl;
+                    }
+                    */
+                    auto dif = 0;
+                    auto len = sstat::getMin(dp, tmp.ref, tmp.que);
+                    sforin(l, 0, len) {
+                        if (refs[dp - l - 1] == (*(ques - l - 1))) ++dif;
+                        else break;
+                    }
+                    //auto dif = _checkBack(refs, ques - 1, sstat::getMin(dp, tmp.ref, tmp.que));
                     if (dif == dp) continue;
                     else { tmp.ref -= dif; tmp.que -= dif; tmp.len += dif; }
                 }
@@ -240,7 +275,43 @@ void slib::sbio::SeqSearch::searchAt(int i, const srange& rng, slib::sbio::Seque
                     tmp.len -= dif;
                 }
                 else if (tmp.que + tmp.len < queseq.size()) {
-                    auto rend = tmp.ref + tmp.len - 1, qend = tmp.que + tmp.len;
+                    auto count = 0;
+                    auto ques = queseq.data(tmp.que + tmp.len);
+                    auto refp = refseq + 1;
+                    auto rl = rng.end - (tmp.ref + tmp.len - 1);
+                    auto ql = (int)queseq.size() - (tmp.que + tmp.len);
+                    while (true) {
+                        decoder(*refp, refs);
+
+                        /* DEBUG
+                        if (i == 1 && m.first/2 == 9) {
+                            sforin(d, 0, dp) {
+                                std::cout << DNA_BASE16[refs[d]];
+                                if (d < dp - 1) std::cout << ":";
+                            }
+                            std::cout << std::endl;
+                            auto qp = ques;
+                            sforin(d, 0, dp) {
+                                if (d < ql) std::cout << DNA_BASE16[qp[0]];
+                                else std::cout << "-";
+                                ++qp;
+                                if (d < dp - 1) std::cout << ":";
+                            }
+                            std::cout << std::endl;
+                        }
+                        */
+                        auto dif = 0;
+                        auto len = sstat::getMin(dp, rl, ql);
+                        sforin(l, 0, len) {
+                            if (refs[l] == ques[l]) ++dif;
+                            else break;
+                        }
+                        count += dif;
+                        if (dif < dp) break;
+                        else { ++refp; rl -= dp; ql -= dp; ques += dp; }
+                    }
+                    tmp.len += count;
+                    /*
                     auto refp = refseq;
                     auto ques = queseq.data(qend);
                     while (true) {
@@ -256,12 +327,26 @@ void slib::sbio::SeqSearch::searchAt(int i, const srange& rng, slib::sbio::Seque
                         else break;
                     }
                     tmp.len = qend - tmp.que;
+                    */
                 }
                 // Ignore if matched size is less than min. threshold
                 if (tmp.len < _par->min_match) continue;
                 // 
                 // Spin lock
                 if (mt) lockers[m.first].lock();
+                //
+                
+
+
+                /* DEBUG
+                if (i == 3) {
+
+                    SPrint("  ", m.first, "::", tmp.ref, "/", tmp.que, "|", tmp.len);
+
+                }
+                */
+
+
                 // 
                 auto& matches = matchrow[m.first];
                 if (matches.size() == _par->max_match_count &&
@@ -295,13 +380,40 @@ void slib::sbio::SeqSearch::makeAlign(int r, int q, Sequence* ref, ubytearray* q
         al.cigars.add(Cigar(scigar::PMATCH, match.len));
         al.scoring(&_par->apar);
         ext.extend(ref, que, &al);
+
+
+        /* DEBUG
+        if (r == 1 && q == 9) {
+
+            String rs = ref->raw(al.ref);
+            String qs; qs.resize(al.query.length(true));
+            sdna::decode(que->data(), al.query.begin, al.query.length(true), (subyte*)&qs[0]);
+
+            std::cout << al.alref(rs) << std::endl;
+            std::cout << al.match() << std::endl;
+            std::cout << al.alque(qs) << std::endl;
+
+        }
+        */
+
+
         if (al.score < _par->min_score) continue;
+        bool add = true;
+        if (als.size()) {
+            sforeach(align, als) {
+                if (align.ref.include(al.ref)) {
+                    add = false; break;
+                }
+            }
+        }
+        /*
         if (als.size() && als[-1].score < al.score) {
             auto ins = bisearch<AlignPair, Array<AlignPair>>(als, al,
                 [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
             als.insert(ins - als.begin(), al);
         }
-        else als.add(al);
+        */
+        if(add) als.add(al);
     }
     ++matches; ++que;
     if (_par->complement) {
@@ -312,18 +424,64 @@ void slib::sbio::SeqSearch::makeAlign(int r, int q, Sequence* ref, ubytearray* q
             al.query = srange(match.que, match.que + match.len - 1);
             al.cigars.add(Cigar(scigar::PMATCH, match.len));
             al.scoring(&_par->apar);
+            
+            /* DEBUG
+            if (r == 1 && q == 9) {
+
+                String rs = ref->raw(al.ref);
+                String qs; qs.resize(al.query.length(true));
+                sdna::decode(que->data(), al.query.begin, al.query.length(true), (subyte*)&qs[0]);
+
+                std::cout << al.ref.begin << "-" << al.ref.end << std::endl;
+
+
+                std::cout << al.alref(rs) << std::endl;
+                std::cout << al.match() << std::endl;
+                std::cout << al.alque(qs) << std::endl;
+
+            }
+            */
+
             ext.extend(ref, que, &al);
+
+            /* DEBUG
+            if (r == 1 && q == 9) {
+
+                String rs = ref->raw(al.ref);
+                String qs; qs.resize(al.query.length(true));
+                sdna::decode(que->data(), al.query.begin, al.query.length(true), (subyte*)&qs[0]);
+
+                std::cout << al.alref(rs) << std::endl;
+                std::cout << al.match() << std::endl;
+                std::cout << al.alque(qs) << std::endl;
+
+            }
+            */
+
+
             if (al.score < _par->min_score) continue;
             al.complement(que->size());
+            bool add = true;
+            if (als.size()) {
+                sforeach(align, als) {
+                    if (align.ref.include(al.ref)) {
+                        add = false; break;
+                    }
+                }
+            }
+            if (add) als.add(al);
+            /*
             if (als.size() && als[-1].score < al.score) {
                 auto ins = bisearch<AlignPair, Array<AlignPair>>(als, al,
                     [](const AlignPair& p1, const AlignPair& p2) { return p1.score < p2.score; });
                 als.insert(ins - als.begin(), al);
             }
             else als.add(al);
+            */
         }
         ++matches; ++que;
     }
+    als.sort([](const AlignPair& p1, const AlignPair& p2) { return p2.score < p1.score; });
 }
 inline void _runSearchAt1(SeqSearch* ss, int i, const srange& rng, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie* trie) { ss->searchAt(i, rng, ref, trie); }
 inline void _runSearchAt2(SeqSearch* ss, int i, const srange &rng, slib::sbio::Sequence* ref, slib::sbio::DNASeqTrie2* trie) { ss->searchAt(i, rng, ref, trie); }

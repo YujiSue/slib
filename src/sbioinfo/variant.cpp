@@ -156,6 +156,58 @@ bool slib::sbio::SVar::lt(const SVar& var, SVParam* par) const {
 	}
 }
 bool _checkBreakSite(const slib::sbio::SVar* v1, const slib::sbio::SVar* v2, slib::sbio::SVParam* par) {
+	bool breaktype[4] = {
+		(v1->type >> 8) & slib::sbio::UNCLEAR_TAIL,
+		(v2->type >> 8) & slib::sbio::UNCLEAR_TAIL,
+		(v1->type >> 8) & slib::sbio::UNCLEAR_HEAD,
+		(v2->type >> 8) & slib::sbio::UNCLEAR_HEAD
+	};
+	bool strict = true;
+	bool eq[2] = { false, false };
+	int dif[4] = { 0, 0, 0, 0 };
+
+
+	if (breaktype[0] || breaktype[1]) {
+		strict = false;
+		if (breaktype[0]) {
+			// both has unclear tail
+			if (breaktype[1]) dif[0] = std::abs(v1->pos[0].dir ? (v1->pos[0].begin - v2->pos[0].begin) : (v1->pos[0].end - v2->pos[0].end));
+			// only v2 has strict tail
+			else dif[0] = v1->pos[0].dir ? (v1->pos[0].begin - v2->pos[0].begin) : (v2->pos[0].end - v1->pos[0].end);
+		}
+		// only v1 has strict tail
+		else if (breaktype[1]) dif[0] = v1->pos[0].dir ? (v2->pos[0].begin - v1->pos[0].begin) : (v1->pos[0].end - v2->pos[0].end);
+		eq[0] = -par->break_site_len <= dif[0] && dif[0] <= par->max_gap;
+	}
+	else {
+		dif[0] = v1->pos[0].dir ? (v2->pos[0].begin - v1->pos[0].begin) : (v1->pos[0].end - v2->pos[0].end);
+		dif[1] = (int)(v1->alt.match("|") ? v1->alt.find("|") : v1->alt.size()) -
+			(int)(v2->alt.match("|") ? v2->alt.find("|") : v2->alt.size());
+		eq[0] = std::abs(dif[0]) <= par->break_site_len || std::abs(dif[0] + dif[1]) <= par->break_site_len;
+	}
+	if (breaktype[2] || breaktype[3]) {
+		strict = false;
+		if (breaktype[2]) {
+			// both has unclear head
+			if (breaktype[3]) dif[2] = std::abs(v1->pos[1].dir ? (v1->pos[1].end - v2->pos[1].end) : (v1->pos[1].begin - v2->pos[1].begin));
+			// only v2 has strict head
+			else dif[2] = v1->pos[1].dir ? (v2->pos[1].end - v1->pos[1].end) : (v1->pos[1].begin - v2->pos[1].begin);
+		}
+		// only v1 has strict head
+		else if (breaktype[3]) dif[2] = v1->pos[0].dir ? (v1->pos[1].end - v2->pos[1].end) : (v2->pos[1].begin - v1->pos[1].begin);
+		eq[1] = -par->break_site_len <= dif[2] && dif[2] <= par->max_gap;
+	}
+	else {
+		dif[2] = v1->pos[1].dir ? (v1->pos[1].end - v2->pos[1].end) : (v2->pos[1].begin - v1->pos[1].begin);
+		dif[3] = (int)(v1->alt.size() - (v1->alt.match("|") ? v1->alt.find("|") : 0)) -
+			(int)(v2->alt.size() - (v2->alt.match("|") ? v2->alt.find("|") : 0));
+		eq[1] = std::abs(dif[2]) <= par->break_site_len || std::abs(dif[2] + dif[3]) <= par->break_site_len;
+	}
+	if (strict) {
+		return (eq[0] && eq[1]) || std::abs(dif[0] + dif[1] + dif[2] + dif[3]) <= par->break_site_len;
+	}
+	else return eq[0] && eq[1];
+	/*
 	bool eq1 = false, eq2 = false;
 	auto t1 = (v1->type >> 8) & slib::sbio::UNCLEAR_TAIL,
 		t2 = (v2->type >> 8) & slib::sbio::UNCLEAR_TAIL;
@@ -198,6 +250,7 @@ bool _checkBreakSite(const slib::sbio::SVar* v1, const slib::sbio::SVar* v2, sli
 		eq2 = std::abs(dif) <= par->break_site_len || std::abs(dif + adif) <= par->break_site_len;
 	}
 	return eq1 && eq2;
+	*/
 }
 bool _checkBreakSeq(const slib::sbio::SVar* v1, const slib::sbio::SVar* v2, slib::sbio::SeqList* ref, slib::sbio::SVParam* par) {
 	// break site check
@@ -287,7 +340,14 @@ bool _checkBreakSeq(const slib::sbio::SVar* v1, const slib::sbio::SVar* v2, slib
 			buffer[1] << ref->at(v2->pos[1].idx).raw(v2->pos[1].begin, len[1]);
 		}
 		auto dist = slib::smath::levenshtein(buffer[0].cstr(), buffer[0].size(), buffer[1].cstr(), buffer[1].size());
-		//SPrint(" >>> ", buffer[0], slib::NL, " >>> ", buffer[1], slib::NL, "Dist. = ", dist);
+		
+		// DEBUG
+		
+		std::cout << "Dist:" << buffer[0] << "/" << buffer[1] << " | " << dist << std::endl;
+
+
+		//
+
 		return dist <= par->max_dist;
 	}
 	else {

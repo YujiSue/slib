@@ -19,6 +19,16 @@ slib::String slib::NL = slib::CRLF;
 slib::IOStream slib::DEFAULT_ISTREAM = slib::IOStream(std::cin);
 slib::IOStream slib::DEFAULT_OSTREAM = slib::IOStream(std::cout);
 #endif
+
+#if defined(WIN_OS)
+slib::String slib::sapp::DEFAULT_CONFIG_DIR = slib::sfs::joinPath(slib::ssys::home(), "AppData", "Roaming");
+#elif defined(MAC_OS)
+slib::String slib::sapp::DEFAULT_CONFIG_DIR = slib::sfs::joinPath(slib::ssys::home(), "Library", "Application Support");
+#elif defined(UNIX_OS)
+slib::String slib::sapp::DEFAULT_CONFIG_DIR = slib::sfs::joinPath(slib::ssys::home(), "/.config");
+#elif defined(LINUX_OS)
+slib::String slib::sapp::DEFAULT_CONFIG_DIR = slib::sfs::joinPath(slib::ssys::home(), "/.config");
+#endif
 /*
  * SApp class definition
  */

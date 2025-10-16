@@ -46,7 +46,9 @@ namespace slib {
             constexpr subyte PADDING = 6;
             constexpr subyte PMATCH = 7;
             constexpr subyte MMATCH = 8;
+
             constexpr char LABEL[10] = "MIDNSHP=X";
+            
             extern inline subyte SLIB_DLL index(const char c);
         }
         /**

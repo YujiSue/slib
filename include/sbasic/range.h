@@ -10,7 +10,16 @@ namespace slib {
 	template<typename T>
 	class Range {
 	public:
-		T begin, end;
+		/**
+		 * \~english @brief Begin of rage
+		 * \~japanese @brief 範囲開始値
+		 */
+		T begin;
+		/**
+		 * \~english @brief End of rage
+		 * \~japanese @brief 範囲終了値
+		 */
+		T end;
 
 	public:
 		Range() : begin(T()), end(T()) {}

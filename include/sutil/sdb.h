@@ -109,6 +109,7 @@ namespace slib {
 		SDBTable& grouping(const stringarray& keys);
 		SDBTable& limit(const size_t lim, const size_t off = 0);
 	};
+	
 	/**
 	* @class SDataBase
 	* \~english @brief Database class
@@ -132,6 +133,7 @@ namespace slib {
 		SDataBase(const char* s);
 		~SDataBase();
 		void open(const char* s);
+		//void connect(const char* s);
 		void close();
 		SArray tables();
 		SDictionary schema(const char* name);

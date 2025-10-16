@@ -91,6 +91,20 @@ bool slib::ssys::isInstalled(const char* prog) {
 #endif
 	return sfs::exist(res.output.splitLine()[0]);
 }
+slib::String slib::ssys::getEnv(const char *key) { 
+	auto val = getenv(key);
+	return getenv(key); 
+}
+void slib::ssys::setEnv(const char *key, const char *value) {
+	int res = 0;
+#if defined(WIN_OS)
+	String str = S(key) << "=" << value;
+	res = putenv(str);
+#else
+	res = setenv(key, value);
+#endif
+	if (!res) {}
+}
 
 slib::SProcess::SProcess() : _complete(false) {
 #ifdef WIN_OS

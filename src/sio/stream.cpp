@@ -19,7 +19,7 @@ slib::IOStream::IOStream(slib::SFile& s, const subyte m) {
 	else setFileOStream(s);
 }
 slib::IOStream::~IOStream() {}
-void slib::IOStream::setStdIStream(std::istream& s) { _mode = sio::ISTREAM | sio::STDIO; _strm.is = &s; }
+void slib::IOStream::setStdIStream(std::istream& s) { _mode = sio::ISTREAM | sio::STDIO; _strm.is = &s; (*_strm.is) >> std::noskipws; }
 void slib::IOStream::setStdOStream(std::ostream& s) { _mode = sio::OSTREAM | sio::STDIO; _strm.os = &s; }
 void slib::IOStream::setStrIStream(slib::String& s) { _mode = sio::ISTREAM | sio::STRIO; _strm.ss = &s; }
 void slib::IOStream::setStrOStream(slib::String& s) { _mode = sio::OSTREAM | sio::STRIO; _strm.ss = &s; }
@@ -28,7 +28,7 @@ void slib::IOStream::setFileOStream(slib::SFile& s) { _mode = sio::OSTREAM | sio
 
 slib::IOStream& slib::IOStream::operator>>(slib::String& s) {
 	if (_mode & sio::ISTREAM) {
-		if (_mode & sio::STDIO) { (*_strm.is) >> s; }
+		if (_mode & sio::STDIO) { (*_strm.is) >>  s; flush(); }
 		else if (_mode & sio::STRIO) { s << (*_strm.ss); }
 		else if (_mode & sio::FILEIO) { (*_strm.fs) >> s; }
 	}
@@ -38,7 +38,7 @@ slib::IOStream& slib::IOStream::operator>>(slib::String& s) {
 void slib::IOStream::read(slib::String& s) { *this >> s; }
 void slib::IOStream::readLine(String& s) {
 	if (_mode & sio::ISTREAM) {
-		if (_mode & sio::STDIO) { (*_strm.is) >> s; }
+		if (_mode & sio::STDIO) { (*_strm.is) >> s; flush(); }
 		else if (_mode & sio::STRIO) { 
 			auto c = _strm.ss->cstr();
 			while (true) {
@@ -83,6 +83,11 @@ void slib::IOStream::writeBytes(const subyte* b, const size_t sz) {
 void slib::IOStream::writeBytes(const ubytearray& bytes) { writeBytes(bytes.data(), bytes.size()); }
 void slib::IOStream::flush() {
 	if (_mode == (sio::OSTREAM | sio::STDIO)) { (*_strm.os) << std::flush; }
+	else if (_mode == (sio::ISTREAM | sio::STDIO)) {
+		(*_strm.is).clear();
+		(*_strm.is).ignore();
+		_strm.is->rdbuf()->pubsync();
+	}
 	else if (_mode == (sio::OSTREAM | sio::FILEIO)) { (*_strm.fs).flush(); }
 }
 slib::IOStream slib::DEFAULT_ISTREAM = slib::IOStream(std::cin);

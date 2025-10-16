@@ -35,8 +35,8 @@ void slib::sbio::GeneInfo::clear() {
     geneid.clear(); description.clear(); synonym.clear();
     transcripts.clear(); attribute.clear();
 }
-slib::sbio::TranscriptInfo::TranscriptInfo() : gene(nullptr), slib::sbio::AnnotInfo() {}
-slib::sbio::TranscriptInfo::TranscriptInfo(const TranscriptInfo& tinfo) : slib::sbio::AnnotInfo(tinfo) {
+slib::sbio::TranscriptInfo::TranscriptInfo() : gene(nullptr), product(nullptr), slib::sbio::AnnotInfo() {}
+slib::sbio::TranscriptInfo::TranscriptInfo(const TranscriptInfo& tinfo) : gene(nullptr), product(nullptr), slib::sbio::AnnotInfo(tinfo) {
     gene = tinfo.gene; structures = tinfo.structures;
 }
 slib::sbio::TranscriptInfo::~TranscriptInfo() {}
