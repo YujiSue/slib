@@ -343,7 +343,7 @@ bool _checkBreakSeq(const slib::sbio::SVar* v1, const slib::sbio::SVar* v2, slib
 		
 		// DEBUG
 		
-		std::cout << "Dist:" << buffer[0] << "/" << buffer[1] << " | " << dist << std::endl;
+		// std::cout << "Dist:" << buffer[0] << "/" << buffer[1] << " | " << dist << std::endl;
 
 
 		//
