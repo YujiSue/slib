@@ -101,7 +101,7 @@ void slib::ssys::setEnv(const char *key, const char *value) {
 	String str = S(key) << "=" << value;
 	res = putenv(str);
 #else
-	res = setenv(key, value);
+	res = setenv(key, value, 1);
 #endif
 	if (!res) {}
 }
