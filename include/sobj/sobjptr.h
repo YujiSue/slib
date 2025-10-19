@@ -191,15 +191,9 @@ namespace slib {
         const SCanvas& canvas() const;
 
         template<class Cls>
-        Cls& as() {
-            if (eclass == E_CLASS::OBJECT && element.obj) return element.obj->as<Cls>();
-            else throw CastException(castErrorText("SElement", typeid(Cls).name()));
-        }
+        Cls& as();
         template<class Cls>
-        const Cls& as() const {
-            if (eclass == E_CLASS::OBJECT && element.obj) return element.obj->as<Cls>();
-            else throw CastException(castErrorText("SElement", typeid(Cls).name()));
-        }
+        const Cls& as() const;
 
         template<class Ret, class... Args>
         SFunction<Ret, Args...>& function();
@@ -769,6 +763,17 @@ namespace slib {
         bool operator >(const SCIterator& sit) const;
         bool operator >=(const SCIterator& sit) const;
     };
+
+    template<class Cls>
+    Cls& SElement::as() {
+        if (isObj()) return element.obj->as<Cls>();
+        else throw CastException(castErrorText("SElement", typeid(Cls).name()));
+    }
+    template<class Cls>
+    const Cls& SElement::as() const {
+        if (isObj()) return element.obj->as<Cls>();
+        else throw CastException(castErrorText("SElement", typeid(Cls).name()));
+    }
 
     template<class Ret, class... Args>
     SFunction<Ret, Args...>& SElement::function() {
