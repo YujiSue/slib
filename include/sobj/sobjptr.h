@@ -192,19 +192,13 @@ namespace slib {
 
         template<class Cls>
         Cls& as() {
-            if (instanceOf<SVoid>(element.obj)) return any().ref<Cls>();
-            else if (instanceOf<Cls>(element.obj)) return *dynamic_cast<Cls*>(element.obj);
-            else {
-                //throw CastException(castErrorText(getClass(), ));
-            }
+            if (eclass == E_CLASS::OBJECT && element.obj) return element.obj->as<Cls>();
+            else throw CastException(castErrorText("SElement", typeid(Cls).name()));
         }
         template<class Cls>
         const Cls& as() const {
-            if (instanceOf<SVoid>(element.obj)) return any().ref<Cls>();
-            else if (instanceOf<Cls>(element.obj)) return *dynamic_cast<const Cls*>(element.obj);
-            else {
-                //Cls cls; throw CastException(castErrorText(getClass(), cls.getClass()));
-            }
+            if (eclass == E_CLASS::OBJECT && element.obj) return element.obj->as<Cls>();
+            else throw CastException(castErrorText("SElement", typeid(Cls).name()));
         }
 
         template<class Ret, class... Args>
