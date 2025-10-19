@@ -157,10 +157,10 @@ bool slib::sbio::SVar::lt(const SVar& var, SVParam* par) const {
 }
 bool _checkBreakSite(const slib::sbio::SVar* v1, const slib::sbio::SVar* v2, slib::sbio::SVParam* par) {
 	bool breaktype[4] = {
-		(v1->type >> 8) & slib::sbio::UNCLEAR_TAIL,
-		(v2->type >> 8) & slib::sbio::UNCLEAR_TAIL,
-		(v1->type >> 8) & slib::sbio::UNCLEAR_HEAD,
-		(v2->type >> 8) & slib::sbio::UNCLEAR_HEAD
+		(bool)((v1->type >> 8) & slib::sbio::UNCLEAR_TAIL),
+		(bool)((v2->type >> 8) & slib::sbio::UNCLEAR_TAIL),
+		(bool)((v1->type >> 8) & slib::sbio::UNCLEAR_HEAD),
+		(bool)((v2->type >> 8) & slib::sbio::UNCLEAR_HEAD)
 	};
 	bool strict = true;
 	bool eq[2] = { false, false };

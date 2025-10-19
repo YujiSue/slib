@@ -7,7 +7,7 @@ namespace slib {
 		template<typename T>
 		extern inline size_t argmax(T* val, size_t s) {
 			size_t idx = 0; T max = *val;
-			sforin(i, 1, s) {
+			sforin(i, 1_u, s) {
 				if (max < *val) { max = *val; idx = i; }
 				++val;
 			}
@@ -16,7 +16,7 @@ namespace slib {
 		template<typename T, size_t D>
 		extern inline size_t argmax(const smath::VectorND<T, D>& vec) {
 			size_t idx = 0; T max = vec[0];
-			sforin(i, 1, D) {
+			sforin(i, 1_u, D) {
 				if (max < vec[i]) { max = vec[i]; idx = i; }
 			}
 			return idx;
@@ -42,7 +42,7 @@ namespace slib {
 		template<typename T>
 		extern inline T maxValue(T* val, size_t s) {
 			T max = *val;
-			sforin(i, 1, s) {
+			sforin(i, 1_u, s) {
 				if (max < *val) max = *val;
 				++val;
 			}
@@ -77,7 +77,7 @@ namespace slib {
 		template<typename T>
 		extern inline size_t argmin(T* val, size_t s) {
 			size_t idx = 0; T min = *val;
-			sforin(i, 1, s) {
+			sforin(i, 1_u, s) {
 				if ((*val) < min) { min = *val; idx = i; }
 				++val;
 			}
@@ -104,7 +104,7 @@ namespace slib {
 		template<typename T>
 		extern inline T minValue(T* val, size_t s) {
 			T min = *val;
-			sforin(i, 1, s) {
+			sforin(i, 1_u, s) {
 				if (*val < min) min = *val;
 				++val;
 			}
@@ -119,7 +119,7 @@ namespace slib {
 		template<typename T>
 		extern inline T sum(T* val, const size_t sz) {
 			T s = smath::zero<T>();
-			sforin(i, 0, sz) { s += (*val); ++val; }
+			sforin(i, 0_u, sz) { s += (*val); ++val; }
 			return s;
 		}
 		template<typename T>
