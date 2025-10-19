@@ -137,3 +137,6 @@ slib::String slib::SDictionary::toString(const char * format) const {
 	}
 }
 slib::SObject * slib::SDictionary::clone() const { return new SDictionary(*this); }
+
+slib::String slib::toString(const slib::SDictionary& dict, const char* format) { return dict.toString(format); }
+std::ostream& operator<<(std::ostream& os, const slib::SDictionary& dict) { return os << dict.toString(); }
