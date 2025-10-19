@@ -20,11 +20,11 @@ namespace slib {
         ListData(T&& t) noexcept : ListData() { Memory<T>::assign(&_data, std::forward<T&&>(t)); }
         ListData(const T& t) : ListData() { Memory<T>::assign(&_data, t); }
         ListData(const ListData& li) {
-            _data = li.data; _prev = li._prev; _next = li._next;
+            _data = li._data; _prev = li._prev; _next = li._next;
         }
         ~ListData() {}
         ListData& operator=(const ListData& li) {
-            _data = li.data; _prev = li._prev; _next = li._next; return *this;
+            _data = li._data; _prev = li._prev; _next = li._next; return *this;
         }
         T& value() { return _data; };
         const T& value() const { return _data; };
