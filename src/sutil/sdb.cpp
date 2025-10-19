@@ -29,7 +29,7 @@ slib::SDBTable::SDBTable(const char* s, SDataBase *db) : SDBTable() {
 	_schema = _db->schema(name);
 }
 slib::SDBTable::~SDBTable() { name.clear(); _db = nullptr; }
-
+const slib::SDictionary &slib::SDBTable::schema() const { return _schema; }
 slib::SDBTable& slib::SDBTable::prepare() { _prepare = true; return *this; }
 void slib::SDBTable::complete() { 
 	_db->commit(); 
@@ -308,7 +308,7 @@ slib::SArray slib::SDataBase::tables() {
 	SArray array;
 	prepare("PRAGMA table_list");
 	fetch();
-	sfor(_result) array.add($_[0]);
+	sfor(_result) array.add($_[1]);
 	return array;
 }
 slib::SDBTable slib::SDataBase::table(const char* name) { return SDBTable(name, this); }

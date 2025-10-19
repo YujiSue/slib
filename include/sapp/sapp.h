@@ -10,11 +10,6 @@
 #include "sapp/appexception.h"
 namespace slib {
 	namespace sapp {
-		extern SLIB_DLL String DEFAULT_DATA_DIR;
-		extern SLIB_DLL String DEFAULT_CONFIG_DIR;
-		extern SLIB_DLL String DEFAULT_LOG_DIR;
-
-	
 		/**
 		 * @class SApp
 		 * \~english @brief Basic application class 

@@ -5,17 +5,12 @@
 #include "sio/sfile.h"
 #include "sutil/ssys.h"
 
-#ifdef MAC_OS
-#define DEFAULT_LOCAL_APPDIR "~/Library/Application Support"
-#elif defined(WIN_OS)
-#define DEFAULT_LOCAL_APPDIR "~\\AppData\\Local"
-#else
-#define DEFAULT_LOCAL_APPDIR "~/MyApp"
-#endif
-
 namespace slib {
 	namespace sapp {
-		
+		extern SLIB_DLL String DEFAULT_DATA_DIR;
+		extern SLIB_DLL String DEFAULT_CONFIG_DIR;
+		extern SLIB_DLL String DEFAULT_LOG_DIR;
+
 		constexpr subyte ERROR_LOG = 0x01;
 		constexpr subyte OK_LOG = 0x02;
 		constexpr subyte PROGRESS_LOG = 0x04;

@@ -190,7 +190,22 @@ namespace slib {
         SCanvas& canvas();
         const SCanvas& canvas() const;
 
-
+        template<class Cls>
+        Cls& as() {
+            if (instanceOf<SVoid>(instance)) return any().ref<Cls>();
+            else if (instanceOf<Cls>(instance)) return *dynamic_cast<Cls*>(element.obj);
+            else {
+                //throw CastException(castErrorText(getClass(), ));
+            }
+        }
+        template<class Cls>
+        const Cls& as() const {
+            if (instanceOf<SVoid>(instance)) return any().ref<Cls>();
+            else if (instanceOf<Cls>(instance)) return *dynamic_cast<const Cls*>(element.obj);
+            else {
+                //Cls cls; throw CastException(castErrorText(getClass(), cls.getClass()));
+            }
+        }
 
         template<class Ret, class... Args>
         SFunction<Ret, Args...>& function();

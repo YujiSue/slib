@@ -48,6 +48,8 @@ namespace slib {
 		SDBTable();
 		SDBTable(const char* name, SDataBase* db);
 		~SDBTable();
+
+		const SDictionary &schema() const;
 		
 		SDBTable& prepare();
 		void complete();
