@@ -112,7 +112,7 @@ namespace slib {
 				if (D == 2) return MatrixND<T, D>(elements[3], -elements[1], -elements[2], elements[0]) / det;
 				else {
 					MatrixND<T, D> inv;
-					auto p = &inv.vec.elements[0];
+					auto p = &inv.elements[0];
 					sforin(r, 0_u, D) {
 						sforin(c, 0_u, D) { *p = ((r + c) % 2 ? -1 : 1) * cofactor(r, c).determinant(); ++p; }
 					}

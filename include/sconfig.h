@@ -226,7 +226,7 @@ namespace slib {
     */
     template <size_t S>
     extern inline void invertEndian(void* buf) {
-        size_t n = S / 2;
+        int n = (int)S / 2;
         subyte* start = (subyte*)buf, * end = &start[S - 1], tmp;
         sforin(i, 0, n) {
             tmp = *start; *start = *end; *end = tmp; ++start; --end;

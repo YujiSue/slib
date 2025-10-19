@@ -17,7 +17,7 @@ namespace slib {
 		template<class... Args>
 		static inline void init(std::mutex* ptr, Args... args) {}
 		static inline void destroy(std::mutex* ptr) { ptr->~mutex(); }
-		static inline void clear(std::mutex* ptr) { memset(ptr, 0, sizeof(std::mutex)); }
+		static inline void clear(std::mutex* ptr) { ptr->unlock(); }
 		static inline void copy(std::mutex* dest, const std::mutex* src, const size_t sz) {}
 		static inline void move(std::mutex** dest, std::mutex** src) {}
 		static inline void shift(std::mutex* from, std::mutex* to, const size_t sz) {}
