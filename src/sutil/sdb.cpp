@@ -308,7 +308,10 @@ slib::SArray slib::SDataBase::tables() {
 	SArray array;
 	prepare("PRAGMA table_list");
 	fetch();
-	sfor(_result) array.add($_[1]);
+	sfor(_result) {
+		if ($_[1].beginWith("sqlite_")) continue;
+		array.add($_[1]);
+	}
 	return array;
 }
 slib::SDBTable slib::SDataBase::table(const char* name) { return SDBTable(name, this); }
