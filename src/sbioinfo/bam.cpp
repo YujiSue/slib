@@ -421,6 +421,7 @@ inline slib::String auxString(const ubytearray& a) {
 		//
 		aux << "\t";
 	}
+	if (aux.size()) aux.resize(aux.size() - 1);
 	return aux;
 }
 slib::String slib::sbio::sbam::ReadInfo::raw() const {
@@ -430,7 +431,9 @@ slib::String slib::sbio::sbam::ReadInfo::raw() const {
 }
 slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) const {
 	String str;
-	str << name << TAB << String(flag) << TAB << (reference ? reference->at(ref.idx).name : S(ref.idx)) << TAB << ref.begin + 1 << TAB <<
+	str << name << TAB << String(flag) << TAB << 
+		(reference ? reference->at(ref.idx).name : S(ref.idx)) << TAB << 
+		(ref.begin + 1) << TAB <<
 		(int)mapq << TAB << cigars.toString() << TAB << 
 		(next.idx == -1 ? "*" : 
 			(ref.idx == next.idx ? "=" : 
