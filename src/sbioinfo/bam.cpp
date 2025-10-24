@@ -417,6 +417,7 @@ inline slib::String auxString(const ubytearray& a) {
 			memcpy(&f, it.ptr(), 4);
 			aux << S(f);
 		}
+		//
 		aux << "\t";
 	}
 	return aux;
@@ -430,7 +431,7 @@ slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) cons
 	String str;
 	str << name << TAB << String(flag) << TAB << (reference ? reference->at(ref.idx).name : ref.idx) << TAB << ref.begin + 1 << TAB <<
 		(int)mapq << TAB << cigars.toString() << TAB << 
-		next.idx << TAB << next.begin << TAB << seq.size() << TAB << 
+		(next.idx == -1 ? '*' : (char)next.idx) << TAB << (next.begin == -1 ? 0 : next.begin) << TAB << tmplen << TAB <<
 		raw() << TAB << qualString(qual) << TAB << auxString(auxiliary);
 	return str;
 }
