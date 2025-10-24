@@ -211,7 +211,7 @@ namespace slib {
                 ~ReadInfo();
                 void clear();
                 String raw() const;
-                String toString() const;
+                String toString(const SeqList *reference = nullptr) const;
                 bool operator<(const ReadInfo& ri) const;
                 bool operator==(const ReadInfo& ri) const;
             };

@@ -394,9 +394,9 @@ slib::String slib::sbio::sbam::ReadInfo::raw() const {
 	sdna::decode(seq.data(), 0, seq.size(), (subyte*)&str[0]);
 	return str;
 }
-slib::String slib::sbio::sbam::ReadInfo::toString() const {
+slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) const {
 	String str;
-	str << name << TAB << String(flag) << TAB << ref.idx << TAB << ref.begin + 1 << TAB <<
+	str << name << TAB << String(flag) << TAB << (reference ? reference->at(ref.idx).name : ref.idx) << TAB << ref.begin + 1 << TAB <<
 		(int)mapq << TAB << cigars.toString() << TAB << 
 		next.idx << TAB << next.begin << TAB << seq.size() << TAB << 
 		raw() << TAB << qualString(qual);
