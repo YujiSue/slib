@@ -384,7 +384,8 @@ void slib::sbio::sbam::ReadInfo::clear() {
 	seq.clear();
 	auxiliary.clear();
 }
-inline slib::String qualString(const slib::String& q, int qi = 33) {
+//inline slib::String qualString(const slib::String& q, int qi = 33) {
+inline slib::String qualString(const ubytearray& q, int qi = 33) {
 	slib::String qual(q.size(), '\0');
 	sfor2(q, qual) { $_2 = (char)((int)$_1 + qi); }
 	return qual;
@@ -399,7 +400,7 @@ slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) cons
 	str << name << TAB << String(flag) << TAB << (reference ? reference->at(ref.idx).name : ref.idx) << TAB << ref.begin + 1 << TAB <<
 		(int)mapq << TAB << cigars.toString() << TAB << 
 		next.idx << TAB << next.begin << TAB << seq.size() << TAB << 
-		raw() << TAB << qualString(qual);
+		raw() << TAB << qualString(qual) << TAB << auxiliary;
 	return str;
 }
 bool slib::sbio::sbam::ReadInfo::operator<(const slib::sbio::sbam::ReadInfo& ri) const { return ref < ri.ref; }
@@ -534,7 +535,6 @@ slib::sbio::sbam::ReadInfo* slib::sbio::BamFile::next() {
 	//
 	readBytes(&tmp, 4); total -= 4; _checkSize(total);
 	_read.seq.resize(tmp);
-	_read.qual.resize(tmp);
 	_read.query = srange(0, tmp - 1);
 	//
 	readBytes(&_read.next.idx, 4); total -= 4; _checkSize(total);
@@ -553,11 +553,12 @@ slib::sbio::sbam::ReadInfo* slib::sbio::BamFile::next() {
 	}
 	_read.ref.end = _read.ref.begin + (sint)_read.cigars.refSize() - 1;
 	//
-	_read.auxiliary.resize((_read.seq.size() - 1) / 2 + 1);
-	readBytes(_read.auxiliary.data(), _read.auxiliary.size()); 
-	total -= (int)_read.auxiliary.size(); _checkSize(total);
-	sdna::expand2(_read.auxiliary.data(), 0, _read.seq.size(), _read.seq.data());
+	_read.qual.resize((_read.seq.size() - 1) / 2 + 1);
+	readBytes(_read.qual.data(), _read.qual.size());
+	total -= (int)_read.qual.size(); _checkSize(total);
+	sdna::expand2(_read.qual.data(), 0, _read.seq.size(), _read.seq.data());
 	//
+	_read.qual.resize(_read.seq.size());
 	readBytes(&_read.qual[0], _read.qual.size());
 	total -= (int)_read.qual.size(); _checkSize(total);
 	//
