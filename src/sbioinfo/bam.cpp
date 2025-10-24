@@ -384,11 +384,30 @@ void slib::sbio::sbam::ReadInfo::clear() {
 	seq.clear();
 	auxiliary.clear();
 }
-//inline slib::String qualString(const slib::String& q, int qi = 33) {
 inline slib::String qualString(const ubytearray& q, int qi = 33) {
 	slib::String qual(q.size(), '\0');
 	sfor2(q, qual) { $_2 = (char)((int)$_1 + qi); }
 	return qual;
+}
+inline slib::String auxString(const ubytearray& a) {
+	slib::String aux;
+	int count = 0;
+	bool key = false;
+	sfor(a) {
+		if ($_ == 0) {
+			aux << "\t";
+			key = true;
+		}
+		else {
+			aux << (char)$_;
+			if (key) ++count;
+			if (count == 2) {
+				aux << ':';
+				key = false;
+			}
+		}
+	}
+	return aux;
 }
 slib::String slib::sbio::sbam::ReadInfo::raw() const {
 	slib::String str(seq.size(), '\0');
@@ -400,7 +419,7 @@ slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) cons
 	str << name << TAB << String(flag) << TAB << (reference ? reference->at(ref.idx).name : ref.idx) << TAB << ref.begin + 1 << TAB <<
 		(int)mapq << TAB << cigars.toString() << TAB << 
 		next.idx << TAB << next.begin << TAB << seq.size() << TAB << 
-		raw() << TAB << qualString(qual) << TAB << auxiliary;
+		raw() << TAB << qualString(qual) << TAB << auxString(auxiliary);
 	return str;
 }
 bool slib::sbio::sbam::ReadInfo::operator<(const slib::sbio::sbam::ReadInfo& ri) const { return ref < ri.ref; }

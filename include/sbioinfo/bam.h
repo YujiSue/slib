@@ -201,10 +201,10 @@ namespace slib {
             public:
                 sint tmplen;
                 RefPos next;
-                String name, /*qual, */auxiliary;
+                String name;
                 subyte mapq;
                 sushort bin, flag;
-                ubytearray seq, qual/*, auxiliary*/;
+                ubytearray seq, qual, auxiliary;
             public:
                 ReadInfo();
                 ReadInfo(const ReadInfo& ri);
