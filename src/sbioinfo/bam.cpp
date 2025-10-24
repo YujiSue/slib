@@ -391,17 +391,33 @@ inline slib::String qualString(const ubytearray& q, int qi = 33) {
 }
 inline slib::String auxString(const ubytearray& a) {
 	slib::String aux;
-	int count = 0;
-	sfor(a) {
-		if ($_ == 0) {
-			aux << "\t";
-			count = 0;
+	auto it = a.begin();
+	while(it < a.end()) {
+		aux << (char)$_; $NEXT;
+		aux << (char)$_; $NEXT;
+		aux << ":";
+		if ($_ == (slib::subyte)'Z') {
+			aux << "Z:"; $NEXT;
+			while ($_ != 0x00) {
+				aux << (char)$_; $NEXT;
+			}
+			$NEXT;
 		}
-		else {
-			aux << (char)$_;
-			++count;
-			if (count == 2 || count == 3) aux << ':';
+		else if ($_ == (slib::subyte)'A') {
+			aux << "A:"; $NEXT;
+			aux << (char)$_; $NEXT;
 		}
+		else if ($_ == (slib::subyte)'i' || $_ == (slib::subyte)'c') {
+			aux << "i:"; $NEXT;
+			aux << S((int)$_); $NEXT;
+		}
+		else if ($_ == (slib::subyte)'f') {
+			aux << "f:"; $NEXT;
+			float f;
+			memcpy(&f, it.ptr(), 4);
+			aux << S(f);
+		}
+		aux << "\t";
 	}
 	return aux;
 }
