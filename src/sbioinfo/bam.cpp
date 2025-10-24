@@ -429,9 +429,13 @@ slib::String slib::sbio::sbam::ReadInfo::raw() const {
 }
 slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) const {
 	String str;
-	str << name << TAB << String(flag) << TAB << (reference ? reference->at(ref.idx).name : ref.idx) << TAB << ref.begin + 1 << TAB <<
+	str << name << TAB << String(flag) << TAB << (reference ? reference->at(ref.idx).name : S(ref.idx)) << TAB << ref.begin + 1 << TAB <<
 		(int)mapq << TAB << cigars.toString() << TAB << 
-		(next.idx == -1 ? '*' : (char)next.idx) << TAB << (next.begin == -1 ? 0 : next.begin) << TAB << tmplen << TAB <<
+		(next.idx == -1 ? "*" : 
+			(ref.idx == next.idx ? "=" : 
+				(reference ? reference->at(next.idx).name : S(next.idx)))) << TAB <<
+		(next.begin == -1 ? 0 : next.begin) << TAB << 
+		tmplen << TAB <<
 		raw() << TAB << qualString(qual) << TAB << auxString(auxiliary);
 	return str;
 }
