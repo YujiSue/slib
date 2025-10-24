@@ -409,7 +409,7 @@ inline slib::String auxString(const ubytearray& a) {
 		}
 		else if ($_ == (slib::subyte)'i' || $_ == (slib::subyte)'c') {
 			aux << "i:"; $NEXT;
-			aux << S((int)$_); $NEXT;
+			aux << S((unsigned int)$_); $NEXT;
 		}
 		else if ($_ == (slib::subyte)'f') {
 			aux << "f:"; $NEXT;
@@ -434,7 +434,7 @@ slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) cons
 		(next.idx == -1 ? "*" : 
 			(ref.idx == next.idx ? "=" : 
 				(reference ? reference->at(next.idx).name : S(next.idx)))) << TAB <<
-		(next.begin == -1 ? 0 : next.begin) << TAB << 
+		(next.begin == -1 ? 0 : (next.begin + 1)) << TAB <<
 		tmplen << TAB <<
 		raw() << TAB << qualString(qual) << TAB << auxString(auxiliary);
 	return str;

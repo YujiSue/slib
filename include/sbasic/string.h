@@ -87,6 +87,7 @@ namespace slib {
         String();
         String(const bool n);
         String(const int n);
+        String(const unsigned int n);
         String(const size_t n);
         //String(const long long n);
         String(const int64_t n);

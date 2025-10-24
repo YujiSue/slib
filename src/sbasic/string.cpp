@@ -247,6 +247,7 @@ char* slib::String::_end() const { return const_cast<char*>(_isLong() ? (_str.ls
 slib::String::String() {}
 slib::String::String(const bool n) : String() { append(n ? "true" : "false"); }
 slib::String::String(const int n) : String() { append(std::to_string(n)); }
+slib::String::String(const unsigned int n) : String() { append(std::to_string(n)); }
 slib::String::String(const size_t n) : String() { append(std::to_string(n)); }
 //slib::String::String(const long long n) : String() { append(std::to_string(n)); }
 slib::String::String(const int64_t n) : String() { append(std::to_string(n)); }
