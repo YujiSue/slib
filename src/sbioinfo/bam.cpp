@@ -431,8 +431,9 @@ slib::String slib::sbio::sbam::ReadInfo::raw() const {
 }
 slib::String slib::sbio::sbam::ReadInfo::toString(const SeqList *reference) const {
 	String str;
-	str << name << TAB << String(flag) << TAB << 
-		(reference ? reference->at(ref.idx).name : S(ref.idx)) << TAB << 
+	str << name << TAB << String(flag) << TAB <<
+		(ref.idx == -1 ? "*" : 
+			(reference ? reference->at(ref.idx).name : S(ref.idx))) << TAB << 
 		(ref.begin + 1) << TAB <<
 		(int)mapq << TAB << 
 		(cigars.size() ? cigars.toString() : "*") << TAB <<
