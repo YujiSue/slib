@@ -407,9 +407,10 @@ inline slib::String auxString(const ubytearray& a) {
 			aux << "A:"; $NEXT;
 			aux << (char)$_; $NEXT;
 		}
-		else if ($_ == (slib::subyte)'i' || $_ == (slib::subyte)'c') {
+		else if ($_ == (slib::subyte)'i' || $_ == (slib::subyte)'c' || $_ == (slib::subyte)'C') {
 			aux << "i:"; $NEXT;
-			aux << S((unsigned int)$_); $NEXT;
+			if ($_ == (slib::subyte)'C') { aux << S((unsigned int)$_); $NEXT; }
+			else { aux << S((int)$_); $NEXT; }
 		}
 		else if ($_ == (slib::subyte)'f') {
 			aux << "f:"; $NEXT;
