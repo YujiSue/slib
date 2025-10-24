@@ -392,19 +392,15 @@ inline slib::String qualString(const ubytearray& q, int qi = 33) {
 inline slib::String auxString(const ubytearray& a) {
 	slib::String aux;
 	int count = 0;
-	bool key = false;
 	sfor(a) {
 		if ($_ == 0) {
 			aux << "\t";
-			key = true;
+			count = 0;
 		}
 		else {
 			aux << (char)$_;
-			if (key) ++count;
-			if (count == 2) {
-				aux << ':';
-				key = false;
-			}
+			++count;
+			if (count == 2 || count == 3) aux << ':';
 		}
 	}
 	return aux;
